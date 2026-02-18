@@ -14,4 +14,10 @@ Natural language processing is unstructured data. As for numerical input  we can
 Token is smaller than a word
 Token < Word
 
-1 token  =   about 0.6 tokens
+1 word  =   about 0.6 tokens
+
+![[Pasted image 20260218092854.png]]
+import nltk  (for tokenization)
+
+![[Pasted image 20260218092925.png]]
+![[Pasted image 20260218092936.png]]
