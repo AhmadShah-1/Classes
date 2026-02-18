@@ -171,3 +171,10 @@ temp/
 *.tmp
 *.bak
 *.orig
+
+#################################################
+# 📂 PROJECTS
+#################################################
+Classes/Fall 2025/AAI551_EngineeringProgrammingPython/Work/Project/Tableau_Fabric_SQL_Converter/
+Classes/Fall 2025/AAI646_Pattern Recognition and Classification/Work/Project/AAI-464-Stock-Trading/
+Classes/Fall 2025/EE595_AppliedMachineLearning/Project/Applied-Machine-Learning-Project/
