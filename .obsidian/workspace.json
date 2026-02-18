@@ -4,19 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "5a0306ef6b314b46",
+        "id": "e97d6e012e733a54",
         "type": "tabs",
         "children": [
           {
-            "id": "026083247660d3b8",
+            "id": "157a377a0b9f6b48",
             "type": "leaf",
             "state": {
-              "type": "video",
-              "state": {
-                "file": "Classes/Spring 2025/Deep Learning/Recordings/Lecture2.mp4"
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "Lecture2"
+              "title": "New tab"
             }
           }
         ]
@@ -169,10 +167,10 @@
       "github-sync:Sync with Remote": false
     }
   },
-  "active": "026083247660d3b8",
+  "active": "157a377a0b9f6b48",
   "lastOpenFiles": [
-    "Classes/Spring 2025/Deep Learning/Lecture 2.md",
     "Classes/Spring 2025/Deep Learning/Recordings/Lecture2.mp4",
+    "Classes/Spring 2025/Deep Learning/Lecture 2.md",
     "Classes/Spring 2025/Status.md",
     "Classes/Spring 2025/Deep Learning/Recordings",
     "Untitled.md",
