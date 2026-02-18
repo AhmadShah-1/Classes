@@ -1,0 +1,789 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 3. How You Run Programs"><div class="chapter" id="how_you_run_programs">
+<h1><span class="label">Chapter 3. </span>How You Run Programs</h1>
+
+<p>OK, it’s time to start running some code. Now that you have a handle on Python’s purpose and execution model, you’re finally ready to start some real Python programming.</p>
+
+<p>There are multiple ways to tell Python to execute the code you type, and this chapter covers all the major program launching techniques in common use today. Along the way, you’ll learn both how to run code <em>interactively</em>, and how to save it in <em>files</em> to be run using a variety of techniques—with command lines, icon clicks, the IDLE GUI, mobile apps, web-based interfaces, module imports, and more.</p>
+
+<p>As for the previous chapter, if you have prior programming experience and are anxious to start digging into Python itself, you may want to skim this chapter and move on to <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>. But don’t skip this chapter’s early coverage of preliminaries and conventions, its overview of debugging techniques, or its first look at module <em>imports</em>—a topic essential to understanding Python’s program architecture, which we won’t revisit until <a data-type="xref" href="part05.html#modules_and_packages">Part V</a>. It’s also worthwhile to browse the sections on IDEs and apps, to sample tools that may be more useful once you start coding larger programs.</p>
+
+<section data-type="sect1" data-pdf-bookmark="Installing Python"><div class="sect1" id="installing_python">
+<h1>Installing Python</h1>
+
+<p>This book will generally assume that you have access to a recent version of Python on your computer, tablet, or phone. Python installation is not required for this book, and isn’t necessary in some contexts, but you’ll need a Python to work along with examples and do end-of-part exercises, and both are great ways to make concepts more concrete.</p>
+
+<p>If you don’t have a Python and wish to set one up, see <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a> now for per-platform install help. In short:</p>
+
+<ul>
+	<li>
+	<p><em>Windows</em> and <em>macOS</em> users fetch <a contenteditable="false" data-primary="installation" data-secondary="Windows" data-type="indexterm" id="id1566"></a><a contenteditable="false" data-primary="Windows" data-secondary="Python installation" data-type="indexterm" id="id1567"></a><a contenteditable="false" data-primary="installation" data-secondary="macOS" data-type="indexterm" id="id1568"></a><a contenteditable="false" data-primary="macOS" data-secondary="Python installation" data-type="indexterm" id="id1569"></a>and run a self-installing executable file that puts Python on their devices. Simply double-click and say Yes or Next at all prompts.</p>
+	</li>
+	<li>
+	<p><em>Linux</em> (including Windows <em>WSL</em>) users <a contenteditable="false" data-primary="installation" data-secondary="Linux" data-type="indexterm" id="id1570"></a><a contenteditable="false" data-primary="Linux" data-secondary="Python installation" data-type="indexterm" id="id1571"></a>may have a usable Python preinstalled on their computers, but can install one if needed or desired from their distribution’s repositories.</p>
+	</li>
+	<li>
+	<p><em>Android</em> and <em>iOS</em> users <a contenteditable="false" data-primary="installation" data-secondary="Android" data-type="indexterm" id="id1572"></a><a contenteditable="false" data-primary="Android" data-secondary="Python installation" data-type="indexterm" id="id1573"></a>install an app that allows them to run Python locally on their phones and tablets.</p>
+	</li>
+	<li>
+	<p><em>Unix</em> (and some Linux) users often <a contenteditable="false" data-primary="installation" data-secondary="Unix" data-type="indexterm" id="id1574"></a><a contenteditable="false" data-primary="Unix, Python installation" data-type="indexterm" id="id1575"></a>compile Python from its full source code distribution package.</p>
+	</li>
+</ul>
+
+<p>For example, smartphone users fetch a Python app at an app store, and Windows and macOS PC users get an installer at the <a href="https://www.python.org/downloads/">downloads page</a> of Python’s main website. Python may also be had through other distribution channels, and some Python coding modes covered ahead, such as <em>Jupyter</em> notebooks, have unique install and usage steps. You may not be able to select a Python version in some contexts, but this book uses Python 3.12, so closer to that is better.</p>
+
+<p>Before you install, you should generally check to see if Python is already present. Look for it on Windows in the Start menu, and on most platforms by running a Python command line as described both in <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a> and this chapter’s next section. To see how, let’s take installs as a given, and move on to learning the many ways to run Python code.</p>
+</div></section>
+
+<section data-type="sect1" data-pdf-bookmark="Interactive Code"><div class="sect1" id="interactive_code">
+<h1>Interactive Code</h1>
+
+<p>This section gets us started with the basics of interactive Python coding. Because it’s our first look at running code, we also cover some startup logistics here, such as setting up a working directory, so be sure to read this section first if you’re relatively new to programming. This section also explains some conventions used throughout the book, so most readers should probably take at least a quick look here.</p>
+
+<section data-type="sect2" data-pdf-bookmark="Starting an Interactive REPL"><div class="sect2" id="starting_an_interactive_repl">
+<h2>Starting an Interactive REPL</h2>
+
+<p>By most measures, the simplest way to <a contenteditable="false" data-primary="interactive coding" data-secondary="REPLs (real-eval-print loops)" data-tertiary="starting" data-type="indexterm" id="icrppl"></a><a contenteditable="false" data-primary="REPLs (real-eval-print loops)" data-secondary="starting" data-type="indexterm" id="rpstt"></a><a contenteditable="false" data-primary="interactive command-line" data-secondary="REPLs (real-eval-print loops)" data-type="indexterm" id="id1576"></a>run Python code is to type it at Python’s interactive command line, sometimes called the <em>interactive prompt</em>, and often more concisely labeled the <em>REPL</em> (which stands for read–eval–print loop).</p>
+
+<p>There are a variety of ways to start this command line—in a coding GUI or app, in a web notebook, from a system console, and so on. Assuming Python is installed locally as an executable program on your device, the most platform-neutral way to start an interactive interpreter session is to simply type a <em>Python command</em> at your device’s console prompt, without any arguments. Since this is most common, nearly universal, and arguably simplest, let’s start here.</p>
+
+<p>Despite this scheme’s generality, <a contenteditable="false" data-primary="interactive coding" data-secondary="Windows" data-type="indexterm" id="id1577"></a><a contenteditable="false" data-primary="interactive coding" data-secondary="macOS" data-type="indexterm" id="id1578"></a><a contenteditable="false" data-primary="interactive coding" data-secondary="Android" data-type="indexterm" id="id1579"></a><a contenteditable="false" data-primary="Windows" data-secondary="interactive coding and" data-type="indexterm" id="id1580"></a><a contenteditable="false" data-primary="macOS" data-secondary="interactive coding and" data-type="indexterm" id="id1581"></a><a contenteditable="false" data-primary="Android" data-secondary="interactive coding and" data-type="indexterm" id="id1582"></a>both the Python command you’ll type and where you’ll type it vary per platform. On <em>Windows</em>, <em>macOS</em>, and <em>Android</em>, for example, <code>py</code>, <code>python3</code>, and <code>python</code>, respectively, do the job as follows:</p>
+
+<pre data-type="programlisting">
+$ <code><strong>py</strong></code>
+Python 3.12.3 (…<code><em>etc</em></code>…, Apr  9 2024, 14:05:25) [MSC v.1938 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+&gt;&gt;&gt; <code><strong>^Z</strong></code>
+
+$ <code><strong>python3</strong></code>
+Python 3.12.2 (…<code><em>etc</em></code>…, Feb  6 2024, 17:02:06) [Clang 13.0.0…)] on darwin
+Type "help", "copyright", "credits" or "license" for more information.
+&gt;&gt;&gt; <code><strong>^D</strong></code>
+
+$ <code><strong>python</strong></code>
+Python 3.11.4 (…<code><em>etc</em></code>…, Jul  2 2023, 11:17:00) [Clang 14.0.7…)] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+&gt;&gt;&gt; <code><strong>^D</strong></code></pre>
+
+<p>A <code>python3</code> works on <em>Android</em> and <em>Linux</em>, too, if you want to narrow this to one exception—for Windows’ <code>py</code>. This book uses <code>python3</code> in platform-neutral examples just because it works almost everywhere. If you’re working on Windows, instead use <code>py</code> (or <code>py -3</code> to ensure Python 3.X); <code>python3</code> works on Windows, too, but is reserved for a lesser Store install today per <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a>. Also per that appendix, all these commands must be on your system search path (generally known as <code>PATH</code>) and require a full pathname if they’re not, but most installs set this up automatically.</p>
+
+<p>Typing a Python command at your system prompt like this begins an interactive Python session (i.e., REPL). The <code>$</code> character at the start of listings here stands for a generic system prompt on all platforms throughout this book—it will likely vary on your device and is not input that you type yourself. On <em>Windows</em>, a Ctrl+Z key combo (followed by Enter) ends this session as shown; on <em>Unix</em> (which includes macOS, Linux, and Android), it’s Ctrl+D instead.</p>
+
+<p>You’ll notice that the interactive prompt opens with a message that identifies the Python being used (e.g., “3.12.3” is Python 3.12) and the platform it’s running on (e.g., “win32” for Windows, “darwin” for macOS, and “linux” for both Linux and Android in Python 3.12), followed by a line with tips for more info. We’re going to omit these opening lines in this book, except where they’re helpful.</p>
+
+<p>The notion of a system prompt (a.k.a. <em>shell</em> or <em>console</em>) where you type the Python command is generic, but exactly how you access it varies by platform. It might be <em>Command Prompt</em> or <em>PowerShell</em> on <span class="keep-together">Windows</span>; <em>Terminal</em> on macOS and Linux; the <em>Termux</em> app on Android; or a dedicated terminal screen in some apps like <em>Pydroid 3</em>.</p>
+
+<p>On most platforms, you can also start an interactive session in ways that don’t require typing a command at all, but they vary even more widely. On <em>Windows</em>, for example, a Start-menu option opens a similar REPL, as do the IDLE GUI on all PCs, dedicated screens in apps on Android and iOS, and some web-browser interfaces. We’ll cover some of these options ahead, but see <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a> for more platform tips, and the web for more help with other options.</p>
+
+<p>Anywhere you see the <code>&gt;&gt;&gt;</code> prompt, though, you’re in an interactive Python session and REPL—you can type any Python statement or expression here and run it immediately by simply pressing the Enter key (or similar button). We will do so in a moment, but first we need to get a few admin details sorted out to make sure all <a contenteditable="false" data-primary="interactive coding" data-secondary="REPLs (real-eval-print loops)" data-startref="icrppl" data-tertiary="starting" data-type="indexterm" id="id1583"></a><a contenteditable="false" data-primary="REPLs (real-eval-print loops)" data-secondary="starting" data-startref="rpstt" data-type="indexterm" id="id1584"></a>readers are set to go.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Where to Run: Code Folders"><div class="sect2" id="where_to_run_code_folders">
+<h2>Where to Run: Code Folders</h2>
+
+<p>Now that you’re starting to learn <em>how</em> to run code, you’ll also need to know <em>where</em> to run code. You can save <a contenteditable="false" data-primary="interactive coding" data-secondary="REPLs (real-eval-print loops)" data-tertiary="code folders" data-type="indexterm" id="icrppfd"></a><a contenteditable="false" data-primary="REPLs (real-eval-print loops)" data-secondary="code folders" data-type="indexterm" id="rppstt"></a>and run code anywhere you can make files, but this book has two recommendations for using its examples, especially for newcomers:</p>
+
+<dl>
+	<dt>Work in a dedicated code folder</dt>
+	<dd>To avoid stomping on other content, run this <a contenteditable="false" data-primary="code folders" data-secondary="dedicated" data-type="indexterm" id="id1585"></a>book’s examples from a dedicated code <em>folder</em> (a.k.a. directory) on your device. For instance, this book runs all its code in a folder nested in the user account (or “home”) folder on each device. Your code folder can be located wherever you like and called whatever you wish, but running out of one folder will help you keep track of your work and simplify some tasks.</dd>
+	<dt>Work in per-chapter subfolders of your code folder</dt>
+	<dd>To avoid clutter and filename collisions, also <a contenteditable="false" data-primary="code folders" data-secondary="per-chapter subfolders" data-type="indexterm" id="id1586"></a>organize your code into per-chapter <em>subfolders</em>, nested in your dedicated code folder. Per-chapter subfolders will ensure that <em>imports</em> in examples will work without advanced settings (that you’ll learn later). There’s more on imports and directories in an upcoming note. For now, keep in mind that console commands in this book will implicitly be run in a per-chapter subfolder of a dedicated code folder on the host. The folder name will normally be omitted for platform neutrality and is irrelevant to the code.</dd>
+</dl>
+
+<p class="pagebreak-before">If you’ll be using this book’s <em>examples package</em>, it’s already done the setup work for you. For example, unzipping the examples creates a code folder named <em>LP6E</em>, whose <em>Chapter03</em> subfolder has this chapter’s code. If you’ll be using this package to avoid typing code or copying from emedia, simply run its examples in the subfolder of the chapter you’re studying. This is where REPLs will be started and where script files will be run. As you’ll learn later, this is also where <em>data files</em> that our scripts create will show up, unless scripts use filenames with explicit folder paths.</p>
+
+<p>If you’ll be creating code <a contenteditable="false" data-primary="code folders" data-secondary="directory structure" data-type="indexterm" id="id1587"></a>on your own, you should probably <em>create</em> a similar code directory structure of your own before we move on. On PCs, use your system’s file explorer, or run a command line: <code>mkdir <em>folder</em></code> works on Windows and Unix. On Android, you can also use a file explorer (or <code>mkdir</code> in <span class="keep-together">Termux</span>), but be sure to pick a folder accessible to your Python app. Some coding interfaces may offer other ways to create folders; see your tool for info.</p>
+
+<p>Once your per-chapter code folders are set to go, always <em>start</em> there to write, save, and run the examples in this book. How you’ll do this depends on your usage mode. In consoles, a portable <code>cd <em>folder</em></code> command changes directories. In a GUI like IDLE, opening and running a file may go to its folder. And in other interfaces, you might launch a REPL for a file in the UI or use other schemes too varied to cover here. As a fallback, Python’s <code>os.getcwd()</code> you’ll meet shortly <a contenteditable="false" data-primary="interactive coding" data-secondary="REPLs (real-eval-print loops)" data-startref="icrppfd" data-tertiary="code folders" data-type="indexterm" id="id1588"></a><a contenteditable="false" data-primary="REPLs (real-eval-print loops)" data-secondary="code folders" data-startref="rppstt" data-type="indexterm" id="id1589"></a>shows the current directory, and its <code>os.chdir('<em>path</em>')</code> changes it—as long as you import <code>os</code> first.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="What Not to Type: Prompts and Comments"><div class="sect2" id="what_not_to_type_prompts_and_comments">
+<h2>What Not to Type: Prompts and Comments</h2>
+
+<p>Speaking of commands, remember not to <a contenteditable="false" data-primary="interactive coding" data-secondary="$ character" data-type="indexterm" id="id1590"></a><a contenteditable="false" data-primary="$ character in interactive coding" data-type="indexterm" id="id1591"></a><a contenteditable="false" data-primary="interactive coding" data-secondary="prompts" data-type="indexterm" id="id1592"></a><a contenteditable="false" data-primary="interactive coding" data-secondary="comments" data-type="indexterm" id="id1593"></a><a contenteditable="false" data-primary="comments" data-secondary="interactive coding" data-type="indexterm" id="id1594"></a><a contenteditable="false" data-primary="prompts, interactive coding" data-type="indexterm" id="id1595"></a>type the <code>$</code> character used at the start of this book’s command lines to denote a system console prompt; type just the text <em>after</em> these prompts. This may sound simple to experienced programmers, but it’s a very common first error for beginners, and we’re not excluding anyone here.</p>
+
+<p>Similarly, do not type the <code>&gt;&gt;&gt;</code> and <code>...</code> prompt characters shown at the start of lines in interpreter interaction listings and used by this book to denote code run in a REPL; type just the text <em>after</em> these prompts. These are prompts that Python’s standard REPL displays automatically as visual guides for interactive code entry and may or may not appear in your interface. For instance, the <code>...</code> prompt is used for <em>continuation lines</em> in <a contenteditable="false" data-primary="continuation lines in interactive coding" data-type="indexterm" id="id1596"></a>some REPLs, but is just a label in IDLE, and is omitted by some of this book’s listings for easier copy/paste; either way, don’t type it yourself.</p>
+
+<p>To help you remember this, user inputs you must type are shown in <code><strong>bold</strong></code> in this book, and prompts are not. Also keep in mind that commands typed after these system and Python prompts are meant to be run immediately and are not generally intended to be saved in the source files we will be creating; you’ll see why this distinction matters ahead.</p>
+
+<p>In the same vein, you normally don’t need to type text that starts with a <code>#</code> character in this book’s code listings—as you’ll learn later, these are <em>comments</em>, not executable code. Except when <code>#</code> is used to introduce a <code>#!</code> directive at the top of a script, you can safely omit it and the rest of the line that follows it (there’s more about <code>#!</code> in <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a>).</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Other Python REPLs"><div class="sect2" id="other_python_repls">
+<h2>Other Python REPLs</h2>
+
+<p>Having said all that, you should also <a contenteditable="false" data-primary="interactive coding" data-secondary="REPLs (real-eval-print loops)" data-tertiary="IPython" data-type="indexterm" id="id1597"></a><a contenteditable="false" data-primary="REPLs (real-eval-print loops)" data-secondary="IPython" data-type="indexterm" id="id1598"></a><a contenteditable="false" data-primary="IPython" data-type="indexterm" id="id1599"></a>know that Python REPLs can also be had in systems that convolute the traditional model covered in this chapter. <em>IPython</em>, for example, provides an alternative, separately installed, and enhanced Python interactive session, which labels commands by number and doesn’t use <code>&gt;&gt;&gt;</code> prompts. <em>Jupyter</em> notebooks provide the IPython REPL, too, and run it in a web browser instead of system console (we’ll explore Jupyter later in this chapter).</p>
+
+<p>To muddy this story further, the <em>PyPy</em> system of <a data-type="xref" href="ch02.html#how_python_runs_programs">Chapter 2</a> uses <code>&gt;&gt;&gt;&gt;</code> for its REPL prompts to distinguish it from CPython’s ternary <code>&gt;&gt;&gt;</code> (though you may have to look hard to tell); the <em>IDLE</em> GUI covered ahead displays <code>&gt;&gt;&gt;</code> off to the side (and not in a system console); smartphone <em>apps</em> may vary too (see <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a>); and the interactive prompt can technically be changed to anything (it’s <code>sys.ps1</code> to your code, and can be set in a startup file, per Python docs).</p>
+
+<p>All of which means that your Python interactive session may differ from the mainstream model that this chapter often employs. Depending on your tools and goals, you might see a different prompt or none at all, and you might type interactive Python code into a web browser, GUI, or app instead of the system console.</p>
+
+<p>In general, though, this book recommends the traditional and simpler options it demos and covers, when you’re first starting out. IPython and Jupyter, for example, have learning curves of their own, and Jupyter is geared toward scientific work, which is just one of many Python roles. If and when you opt to use alternative coding interfaces like these, and others sure to arise in the future, extrapolate to their REPLs’ minor differences as needed.</p>
+
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>REPL futurism</em>: The standard CPython is scheduled to improve its interactive REPL interface in version 3.13, not yet released as this book was written. Per plans, the REPL will gain color prompts, automatic indentation, multiline editing and paste, and colorized exceptions borrowed from other UIs and IDEs. Colors won’t matter in this book’s print version, of course, and the future is not yet written, but a more colorful future may have arrived by the time you read this note.</p>
+<p>Tip: Setting environment variable <code>PYTHON_COLORS</code> to 0 disables the new REPL colors if you find that future distracting.</p>
+</div>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Running Code Interactively"><div class="sect2" id="running_code_interactively">
+<h2>Running Code Interactively</h2>
+
+<p>With those preliminaries out of the way, let’s move <a contenteditable="false" data-primary="interactive coding" data-secondary="running code" data-type="indexterm" id="ittcdr"></a>on to typing some actual code. However it’s started, the Python interactive session begins by printing some informational text (again, mostly omitted hereafter), then prompts for input with <code>&gt;&gt;&gt;</code> (or similar) when it’s waiting for you to type a new Python statement or expression.</p>
+
+<p>When working interactively, the results of your code are displayed below the <code>&gt;&gt;&gt;</code> input lines after you press the Enter key (or similar). For instance, here are the results of two Python <code>print</code> statements:</p>
+
+<pre data-type="programlisting">
+$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>print('Hello world!')</strong></code>
+Hello world!
+&gt;&gt;&gt; <code><strong>print(2 ** 8)</strong></code>
+256</pre>
+
+<p>There it is—we’ve just run some Python code (it’s not much, but it proves the point). We’re still skipping most code details for now, but in brief, <code>print</code> is a built-in tool that sends a line displaying whatever you pass to it, to wherever you’re working; because <a contenteditable="false" data-primary="function calls" data-type="indexterm" id="id1600"></a>it’s a <em>function call</em> in Python, the parentheses in this code are required. We’ve used it here to display a Python string and an integer, as shown by the output lines that appear after each <code>&gt;&gt;&gt;</code> input line.</p>
+
+<p>When coding interactively like this, you can type as many Python commands as you like; each is run immediately after it’s entered. Moreover, because the interactive session automatically prints the results of expressions you type, you don’t usually need to say “print” explicitly at this prompt; the format of the following automatic displays can differ slightly from <code>print</code>, but it’s not yet important to know how:</p>
+
+<pre data-type="programlisting">
+&gt;&gt;&gt; <code><strong>language = 'Python'</strong></code>
+&gt;&gt;&gt; <code><strong>language</strong></code>
+'Python'
+&gt;&gt;&gt; <code><strong>2 ** 8</strong></code>
+256
+&gt;&gt;&gt; <code><strong>^Z</strong></code>                     <code><em># Use Ctrl-D (on Unix) or Ctrl-Z (on Windows) to exit</em></code>
+$</pre>
+
+<p>Here, the first line saves a value by <a contenteditable="false" data-primary="variables" data-type="indexterm" id="id1601"></a><a contenteditable="false" data-primary="expressions" data-type="indexterm" id="id1602"></a>assigning it to a <em>variable</em> (<code>language</code>), which is created by the <code>=</code> assignment; and the last two lines typed are <em>expressions</em> (<code>language</code> and <code>2 ** 8</code>), whose results are displayed automatically. Again, to exit an interactive session like this and return to your system prompt, type Ctrl+D on Unix-like machines, and Ctrl+Z on Windows. In the IDLE GUI discussed later, either type Ctrl+D everywhere, or simply close the window.</p>
+
+<p>Notice the <em>italicized note</em> about this on the <a contenteditable="false" data-primary="comments" data-type="indexterm" id="id1603"></a>right side of this listing—starting with <code><em>#</em></code> here. This book uses these throughout to add remarks about what is being illustrated, but you don’t need to type this text yourself; if you do, they’re ignored by Python as <em>comments</em>. In fact, much like system <code>$</code> and Python <code>&gt;&gt;&gt;</code> prompts, you shouldn’t type this when it’s on a system command line; the <code>#…</code> part is ignored by Python but may be an error in system shells.</p>
+
+<p>Now, we didn’t do much in this session’s code—just typed some Python <code>print</code> and assignment statements, along with a few expressions, all of which we’ll study in detail later. The main thing to notice is that the Python REPL executes the code entered on each line immediately, when the Enter key (or similar) is pressed.</p>
+
+<p>For example, when we typed the first <code>print</code> statement at the <code>&gt;&gt;&gt;</code> prompt, the output (a Python string) was echoed back right away. There was no need to create a source code file, and no need to run the code through a compiler and linker first, as you’d normally do when using a language such as C or C++. Strictly speaking, interactive code is compiled to bytecode in memory and run by the PVM in CPython (see <a data-type="xref" href="ch02.html#how_python_runs_programs">Chapter 2</a>), but you don’t need to care.</p>
+
+<p>As you’ll see in later chapters, you <a contenteditable="false" data-primary="multiline statements" data-type="indexterm" id="id1604"></a>can also run <em>multiline statements</em> (e.g., <code>for</code> loops) at the interactive prompt; such a statement may prompt for continuation lines with <code>...</code> as noted earlier and runs immediately after you’ve entered all of its lines and pressed Enter <em>twice</em> to add a blank line. Blank lines aren’t required (and are ignored) in code files, but are needed to let some REPLs know your statements are complete. Also, bear in mind that the current and standard REPL runs just <em>one</em> statement at a time—don’t paste large code <a contenteditable="false" data-primary="interactive coding" data-secondary="running code" data-startref="ittcdr" data-type="indexterm" id="id1605"></a>blocks at its prompt!</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Why the Interactive Prompt?"><div class="sect2" id="why_the_interactive_promptquestion_mark">
+<h2>Why the Interactive Prompt?</h2>
+
+<p>The interactive prompt runs code and <a contenteditable="false" data-primary="interactive coding" data-secondary="prompt" data-type="indexterm" id="ittcdpp"></a><a contenteditable="false" data-primary="prompts, interactive coding" data-type="indexterm" id="prpttcd"></a>echoes results as you go, but it doesn’t save your code in a file. Although this means you won’t do the bulk of your real-world coding in interactive sessions, the interactive prompt turns out to be a great place to both learn the language and test program files on the fly. Here’s a quick rundown of these roles.</p>
+
+<section data-type="sect3" data-pdf-bookmark="Learning"><div class="sect3" id="learning">
+<h3>Learning</h3>
+
+<p>Because it executes code immediately, the interactive prompt is ideal for experimenting with code and learning the language, and we’ll be using it throughout this book to demonstrate smaller examples and amplify concepts. In fact, this is the first rule of thumb to remember: if you’re ever in doubt about how a piece of Python code works, fire up the interactive command line and try the code out to see what happens.</p>
+
+<p>For instance, suppose you’re reading a Python program’s code and you come across an expression like <code>'Hack!' * 8</code> whose meaning you don’t understand. At this point, you can spend 10 minutes wading through manuals, books, and the web to try to figure out what the code does, or you can simply run it interactively:</p>
+
+<pre data-type="programlisting">
+$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>'Hack!' * 8</strong></code>                                  <code><em># Learning by trying</em></code>
+'Hack!Hack!Hack!Hack!Hack!Hack!Hack!Hack!'</pre>
+
+<p>This immediate feedback you receive at the interactive prompt is often the quickest way to deduce what a piece of code does. Here, it’s clear that it does string repetition: in Python, <code>*</code> means multiply for numbers, but repeat for strings—it’s like concatenating a string to itself repeatedly (there’s more on strings in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>).</p>
+
+<p>Chances are good that you won’t break anything by experimenting this way—at least, not yet. To do real damage, like deleting files and running shell commands, you must really try by importing modules explicitly (we’ll sample tools that can make you that dangerous later in this chapter). Straight Python code, though, is almost always safe to run.</p>
+
+<p>For instance, watch what happens when you <em>make a mistake</em> at the interactive prompt:</p>
+
+<pre data-type="programlisting">
+&gt;&gt;&gt; <code><strong>X</strong></code>                                            <code><em># Making mistakes is OK</em></code>
+Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+NameError: name 'X' is not defined</pre>
+
+<p>In Python, using a variable before it has been assigned a value is always an error—otherwise, if names were filled in with defaults, some errors might go undetected until it’s too late. This means you must initialize counters to zero before you can add to them, must initialize lists to empty before extending them, and so on. You don’t need to declare variables in Python, but they must be assigned before you can fetch their values.</p>
+
+<p>Other error messages try to be more helpful in Python today with “Did you…?” tips—as when looking for the <code>sys.ps1</code> prompt hook mentioned earlier. You must import modules like <code>sys</code> before using them (though you probably won’t need the reminder fairly soon, and we’ll be truncating some error messages in this book for brevity):</p>
+
+<pre data-type="programlisting">
+&gt;&gt;&gt; <code><strong>sys.ps1</strong></code>                                      <code><em># Requires "import sys"</em></code>
+Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+NameError: name 'sys' is not defined. Did you forget to import 'sys'?</pre>
+
+<p>You’ll learn more about all that later. The important point here is that you won’t <em>crash</em> Python or your computer when you make a mistake this way. Instead, you get a meaningful error message pointing out the mistake and the line of code that made it, and you can continue on in your session or script. In fact, once you get comfortable with Python, its error messages may often provide as much debugging support as you’ll need (watch for more about debugging options in the sidebar <a data-type="xref" href="#debugging_python_code">“Debugging Python Code”</a>).</p>
+</div></section>
+
+<section data-type="sect3" data-pdf-bookmark="Testing"><div class="sect3" id="testing">
+<h3>Testing</h3>
+
+<p>Besides serving as a tool for experimenting while you’re learning the language, the interactive interpreter is also an ideal place to test code you’ve written in files. You can import your module files interactively and run tests on the tools they define by typing calls at the interactive prompt on the fly.</p>
+
+<p>For instance, the following tests a function in a precoded module that ships with Python in its standard library (detail: <code>os.getcwd</code> prints the name of the directory you’re currently working in, here on a macOS host), but you can do the same once you start writing module files of your own:</p>
+
+<pre data-type="programlisting">
+&gt;&gt;&gt; <code><strong>import os</strong></code>
+&gt;&gt;&gt; <code><strong>os.getcwd()</strong></code>                                  <code><em># Testing on the fly</em></code>
+'/Users/me/code'</pre>
+
+<p>More generally, the interactive prompt is a place to test program components, regardless of their <span class="keep-together">source—you</span> can import and test functions and classes in your Python files, type calls to linked-in C functions, exercise Java classes under Jython, and more. Partly because of its interactive nature, Python supports an experimental and exploratory programming style you’ll find convenient. Although Python programmers also test with in-file code (and you’ll learn ways to make this simple later <a contenteditable="false" data-primary="interactive coding" data-secondary="prompt" data-startref="ittcdpp" data-type="indexterm" id="id1606"></a><a contenteditable="false" data-primary="prompts, interactive coding" data-startref="prpttcd" data-type="indexterm" id="id1607"></a>in the book), for many, the interactive prompt is still their first line of testing defense.</p>
+</div></section>
+</div></section>
+</div></section>
+
+<section data-type="sect1" data-pdf-bookmark="Program Files"><div class="sect1" id="program_files">
+<h1>Program Files</h1>
+
+<p>Although the interactive prompt is great for experimenting and testing, it has one big disadvantage: programs you type there go away as soon as the Python interpreter executes them. Because the code you type interactively is never stored in a file, you can’t run it again without retyping it from scratch. Cut-and-paste and command recall can help some here, but not much, especially when you start writing larger programs. To cut and paste code from an interactive session, you would have to edit out Python prompts, program outputs, and so on—which is too tedious to try.</p>
+
+<p>To save programs permanently, you need <a contenteditable="false" data-primary="program files" data-secondary="modules" data-type="indexterm" id="id1608"></a><a contenteditable="false" data-primary="modules" data-type="indexterm" id="id1609"></a>to write your code in <em>files</em>, which are usually known as <em>modules</em>. Modules are simply text files containing Python statements. Once they are coded, you can ask the Python interpreter to execute the statements in such a file any number of times, and in a variety of <span class="keep-together">ways—by</span> system command lines, by file icon clicks, by options in the IDLE user interface, and more. Regardless of how it is run, Python executes all the code in a module file from top to bottom each time you run the file.</p>
+
+<p>Terminology in this domain can vary by role. For instance, module files are often referred <a contenteditable="false" data-primary="modules" data-secondary="files" data-type="indexterm" id="id1610"></a><a contenteditable="false" data-primary="programs" data-secondary="module files" data-type="indexterm" id="id1611"></a>to as <em>programs</em> in Python—that is, a program is considered to be a series of precoded statements stored in a file for repeated execution. Module files that are run directly <a contenteditable="false" data-primary="scripts" data-type="indexterm" id="id1612"></a><a contenteditable="false" data-primary="program files" data-secondary="scripts" data-type="indexterm" id="id1613"></a>are also sometimes called <em>scripts</em>—an informal term usually meaning a top-level program file. Some reserve the term <em>module</em> for a file imported from another file, and <em>script</em> for the main file of a program; we generally will here too (stay tuned for more on the meaning of top-level, imports, and main files later in this chapter).</p>
+
+<p>Whatever you call them, the next few sections explore ways to run code typed into files. In <a contenteditable="false" data-primary="program files" data-secondary="command line" data-type="indexterm" id="prgccd"></a><a contenteditable="false" data-primary="command line" data-secondary="program files" data-type="indexterm" id="id1614"></a>this section, you’ll learn how to run files in the most basic and portable way: by listing their names in a Python <em>command line</em> entered at your computer’s system prompt. Though this might seem primitive to some—and can often be avoided altogether by using alternatives discussed later—for many programmers, a system console window for command lines, together with a text editor window, constitutes as much of an integrated development environment as they will ever need and provides more direct control over programs.</p>
+
+<section data-type="sect2" data-pdf-bookmark="A First Script"><div class="sect2" id="a_first_script">
+<h2>A First Script</h2>
+
+<p>Let’s get started. Open your favorite text editor, type or copy/paste the statements in <a data-type="xref" href="#example_three_onedot_scriptonedotpy">Example 3-1</a> into a new text file named <em>script1.py</em>, and save it in your working <a contenteditable="false" data-primary="script1.py" data-type="indexterm" id="scptpy"></a>code directory that you set up earlier (make it now if you skipped over that step). Any editor will work, including vi, Notepad, a smartphone app’s editor, and the IDLE GUI coming up soon. You can also find this file in the book examples package, but typing code is an important exercise early on.</p>
+
+<div data-type="example" id="example_three_onedot_scriptonedotpy">
+<h5><span class="label">Example 3-1. </span>script1.py</h5>
+
+<pre data-type="programlisting">
+<em># A first Python script</em>
+import sys                  <code><em># Load a library module</em></code>
+print(sys.platform)
+print(2 ** 100)             <code><em># Raise 2 to a power</em></code>
+x = 'Hack!'
+print(x * 8)                <code><em># String repetition</em></code></pre>
+</div>
+
+<p>This file is our first official Python script (not counting the two-liner in <a data-type="xref" href="ch02.html#how_python_runs_programs">Chapter 2</a>). You shouldn’t worry too much about this file’s contents just yet, but as a brief description, its code:</p>
+
+<ul>
+	<li>
+	<p>Imports a Python module (libraries of additional tools) to fetch the name of the platform</p>
+	</li>
+	<li>
+	<p>Runs three <code>print</code> function calls to display the script’s results</p>
+	</li>
+	<li>
+	<p>Uses a variable named <code>x</code>, created when it’s assigned, to hold on to a string object</p>
+	</li>
+	<li>
+	<p>Applies various object operations that we’ll begin exploring in the next chapter</p>
+	</li>
+</ul>
+
+<p>The <code>sys.platform</code> here <a contenteditable="false" data-primary="sys.platform" data-type="indexterm" id="id1615"></a>is just a string that identifies the kind of computer you’re working on; it lives in a Python module called <code>sys</code> (part of its standard library), which you must import to load (again, more on imports later). Also notice how this file uses explicit <code>print</code> calls; unlike the REPL, output in files is never automatic, so you must say <code>print</code> in files to see their output (and forgetting this is a regular first mistake, but at least you’ve been warned!).</p>
+
+<p>For color, this file adds some <a contenteditable="false" data-primary="comments" data-type="indexterm" id="id1616"></a>Python <em>comments</em>—the text after the <code>#</code> characters. These were mentioned earlier, but should be more formal now that they’re showing up in scripts. Comments can show up on lines by themselves, or to the right of code on a line. The text after a <code>#</code> is simply ignored as a human-readable note and is not considered part of the statement’s syntax. If you’re copying this code, you can ignore the comments; they are just informative. This book uses a different formatting style to make comments more visually distinctive, but they’ll be normal text in your code.</p>
+
+<p>Again, don’t focus on the syntax of the code in this file for now; you’ll learn about all of it later. The main point to notice is that you’ve typed this code into a file, rather than at the interactive prompt. In the process, you’ve coded a fully functional Python script.</p>
+
+<p>Notice, though, that the module file is named <em>script1.py</em>. As for all <em>top-level</em> files (i.e., files run directly), it could also be named simply <em>script1</em>, but files of code you want to <em>import</em> in another file or REPL have to end with a <em>.py</em> suffix. Because you may want to import them in the future, it’s a good idea to use <em>.py</em> suffixes for most Python files that you code. Also, some text editors and file explorers detect Python files by their <em>.py</em> suffix; if the suffix is not present, you may not get features like syntax colorization and automatic indentation <a contenteditable="false" data-primary="script1.py" data-startref="scptpy" data-type="indexterm" id="id1617"></a>in editors or tap-to-run in explorers.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Running Files with Command Lines"><div class="sect2" id="running_files_with_command_lines">
+<h2>Running Files with Command Lines</h2>
+
+<p>Once you’ve saved the preceding <a contenteditable="false" data-primary="command line" data-secondary="program file running" data-type="indexterm" id="cmmlgfr"></a>section’s text file, you can ask Python to run it by listing its full filename as the first argument to a Python command—like the following typed at the system shell’s <code>$</code> prompt on a Unix device (but don’t type this at a Python REPL prompt, and read on to the next paragraph if this doesn’t work right away for you):</p>
+
+<pre data-type="programlisting">
+$ <code><strong>python3 script1.py</strong></code>
+darwin
+1267650600228229401496703205376
+Hack!Hack!Hack!Hack!Hack!Hack!Hack!Hack!</pre>
+
+<p>Just as for starting the REPL we studied earlier, the command name may vary (e.g., use <code>py</code> instead of <code>python3</code> on Windows, usually), and you can type such a command in whatever your system provides for command-line entry—<em>Command Prompt</em> on Windows, <em>Terminal</em> on macOS, or the <em>Termux</em> app on Android, among others. You might also run this code file with a dedicated run button in a GUI, app, or browser-based UI, but we’ll postpone such options until later in this chapter (see also <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a> for all things platform specific).</p>
+
+<p>Be sure to run your Python command in the same working directory where you’ve saved your <a contenteditable="false" data-primary="working directory, commands" data-type="indexterm" id="id1618"></a><a contenteditable="false" data-primary="directories" data-secondary="commands" data-type="indexterm" id="id1619"></a>script file (<code>cd</code> there first if needed), and run it at the system prompt, not Python’s <code>&gt;&gt;&gt;</code> prompt. Also like starting the REPL, you may have to replace the command’s first word with a full directory path if Python isn’t on your <code>PATH</code> setting, but most installs automatically ensure that it is (see <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a> for more on Python installs and <code>PATH</code>).</p>
+
+<p>If all works as planned, this shell command (or similar) makes Python run the code in this file line by line, and you will see the output of the script’s three <code>print</code> statements—the name of the underlying platform as known to Python, 2 raised to the power 100, and the result of the same string repetition expression we saw earlier (there’s more on the meaning of the last two of these in <a data-type="xref" href="part02.html#objects_and_operations">Part II</a>).</p>
+
+<p>If all <em>didn’t</em> work as planned, you’ll get an error message—make sure you’ve entered the code in your file exactly as shown, and try again. We’ll talk about debugging options in the sidebar <a data-type="xref" href="#debugging_python_code">“Debugging Python Code”</a>, but at this point in the book your best bet is probably rote imitation. And if all else fails, you might also try running under the IDLE GUI discussed ahead—a tool that sugarcoats some launching details, though sometimes at the expense of the more explicit control you have when using command lines.</p>
+
+<p>If copying code grows too tedious or error-prone, you can also fetch this book’s examples on the web, though <a contenteditable="false" data-primary="program files" data-secondary="command line" data-startref="prgccd" data-type="indexterm" id="id1620"></a><a contenteditable="false" data-primary="command line" data-secondary="program file running" data-startref="cmmlgfr" data-type="indexterm" id="id1621"></a>again, typing code initially will help you learn to avoid syntax errors. See the <a href="preface01.html#preface">Preface</a> for info on obtaining the examples.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Command-Line Usage Variations"><div class="sect2" id="command_line_usage_variations">
+<h2>Command-Line Usage Variations</h2>
+
+<p>When you type a command to run a Python code file, the command you type is run by a system <em>shell</em> <a contenteditable="false" data-primary="command line" data-secondary="shell programs" data-type="indexterm" id="id1622"></a><a contenteditable="false" data-primary="shell programs" data-secondary="command line" data-type="indexterm" id="id1623"></a>program (e.g., <em>Bash</em> on Unix). Because of this, all of the shell’s syntax is available for more custom runs. For instance, you can route the printed output of a Python script to a file to save it for later use or inspection, by using special shell syntax:</p>
+
+<pre data-type="programlisting">
+$ <code><strong>python3 script1.py &gt; saveit.txt</strong></code></pre>
+
+<p>In this case, the three output lines shown in the prior <a contenteditable="false" data-primary="streams" data-secondary="redirection, shells" data-type="indexterm" id="id1624"></a><a contenteditable="false" data-primary="shell programs" data-secondary="stream redirection" data-type="indexterm" id="id1625"></a>run are stored in the file <em>saveit.txt</em> instead of being printed. This is generally known as <em>stream redirection</em>; it works for both output (<code>&gt;</code>) and input (<code>&lt;</code>) text and is available on Windows and Unix-like systems. This is useful for testing, as you can write programs that watch for changes in other programs’ outputs. It also has little to do with Python, though (Python simply supports it), so we will skip further details on shell redirection syntax here. Redirection is for command lines only, though, because it’s a function of the system shell.</p>
+
+<p>On <em>Windows</em>, you can also type just the <em>name</em> of your script and omit the name of Python itself. Because Windows uses filename associations to find a program with which to run a file, the file’s name is enough to run a <em>.py</em> file. The following command, for example, will automatically be run by Python on Windows (technically, by Python’s <code>py</code> Windows launcher described in <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a>):</p>
+
+<pre data-type="programlisting">
+$ <code><strong>script1.py</strong></code></pre>
+
+<p>This works just as though you had clicked on the file’s icon in File Explorer (a launch mode covered later). One fine point here: Command Prompt runs programs this way in its own window, but PowerShell may not; use <code>py</code> to view unredirected output in the latter if needed (or use the icon-click <code>input()</code> trick also coming up).</p>
+
+<p>Finally, remember to give the full path to your script file if it lives in a different directory than the one in which you are working. For example, the <code>py</code> Python command in the following, run in PowerShell on Windows, assumes Python is in your system path but runs a file located elsewhere:</p>
+
+<pre data-type="programlisting">
+PS C:\Users\me\code&gt; <code><strong>cd D:\temp\savecode</strong></code>               <code><em># Go to a different folder</em></code>
+PS D:\temp\savecode&gt; <code><strong>py C:\Users\me\code\script1.py</strong></code>    <code><em># Run a script elsewhere</em></code>
+win32
+1267650600228229401496703205376
+Hack!Hack!Hack!Hack!Hack!Hack!Hack!Hack!</pre>
+
+<p>If your <code>PATH</code> doesn’t include Python’s directory, and neither Python nor your script file is in the directory you’re working in, use full paths for <em>both</em>—like the following on macOS, which for good measure throws in output stream redirection to a file located outside the <em>current working directory</em> (where you are when this command is run):</p>
+
+<pre data-type="programlisting">
+$ <code><strong>/usr/local/bin/python3 /Users/me/code/script1.py &gt; /Users/me/data/saveit.py</strong></code></pre>
+
+<p>This is a lot to type, but also pathological and atypical. To keep your commands simpler than this, make sure Python is on your <code>PATH</code>, and <code>cd</code> to script or data folders first. Again, most installs set up <code>PATH</code> automatically, so you need only focus on script and data folders when running commands.</p>
+</div></section>
+</div></section>
+
+<section data-type="sect1" data-pdf-bookmark="Other Ways to Run Files"><div class="sect1" id="other_ways_to_run_files">
+<h1>Other Ways to Run Files</h1>
+
+<p>If you’re not a fan of command lines, you can generally avoid them by launching Python scripts with file icon clicks, development GUIs, and other schemes that vary per platform and role. This book generally recommends command-line usage for learners, both because it’s simple, and because it’s a common, general, portable, and powerful way to run code. But it’s not required. While the Python world is too rich in options for exhaustive coverage here, let’s take a quick tour of the most prominent command-line alternatives to close out this chapter.</p>
+
+<section data-type="sect2" data-pdf-bookmark="Clicking and Tapping File Icons"><div class="sect2" id="clicking_and_tapping_file_icons">
+<h2>Clicking and Tapping File Icons</h2>
+
+<p>On most PC platforms, Python program files can be run by simply clicking or tapping their filename or icon <a contenteditable="false" data-primary="program files" data-secondary="file icons" data-type="indexterm" id="id1626"></a><a contenteditable="false" data-primary="file icons, program running" data-type="indexterm" id="id1627"></a>in the local file explorer. For example, this works automatically on <em>Windows</em> in File Explorer, thanks to filename associations set up during Python’s install. Clicks also run code files on <em>macOS</em> in Finder, if made to Open With the Python Launcher included in the macOS install; drags to the Python Launcher app when available work the same as clicks.</p>
+
+<p>The file-clicks story is more involved on <em>Linux</em>, where files likely need executable permission and a <code>#!</code> first line to name Python. On smartphones, tapping a filename in a file explorer on <em>Android</em> (or Files on <em>iOS</em>) may open the file in an associated Python app, but this may work only for some explorer/app combos, and may not give access to all of a program’s files in some contexts. For more insight, consult your platform and app docs, or experiment on your device.</p>
+
+<p>Also see <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a> for more info. As noted there, Windows and Linux clicks don’t keep the window open for viewing output and error messages after programs end: if a script just prints and exits, it, well, just prints and exits—the console window appears, and text is printed there, but the console window closes and disappears on program exit. Per <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a>, coding a closing call to Python’s <code>input()</code> forces a pause before exit so you can see output, but this doesn’t help for error messages. Use other run techniques when this matters.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="The IDLE Graphical User Interface"><div class="sect2" id="the_idle_graphical_user_interface">
+<h2>The IDLE Graphical User Interface</h2>
+
+<p>So far, we’ve seen how to run Python code <a contenteditable="false" data-primary="GUIs (graphical user interfaces)" data-secondary="IDLE" data-type="indexterm" id="gugudl"></a><a contenteditable="false" data-primary="IDLE GUI" data-type="indexterm" id="idlgiu"></a>with interactive sessions, system command lines, and icon clicks. If you’re looking for something a bit more visual, <em>IDLE</em> provides a <em>GUI</em> for Python programming, and it’s a standard and free part of the Python system. IDLE is usually referred to as an <em>integrated development environment</em> (IDE), because it binds together multiple development tasks <a contenteditable="false" data-primary="IDEs (integrated development environments)" data-secondary="IDLE" data-type="indexterm" id="id1628"></a>into a single view.</p>
+
+<p>In short, IDLE lets you edit, run, browse, and debug Python programs, all from the same GUI. Because it’s coded in Python with the <code>tkinter</code> GUI toolkit, it runs portably on all Python PC platforms—<em>Windows</em>, <em>macOS</em>, and <em>Linux</em>. For many, IDLE represents an easy-to-use alternative to typing command lines, a less problem-prone alternative to clicking on icons, and a great way for newcomers to get started editing and running code. You’ll sacrifice some control in the bargain, but this typically becomes important only later in your Python career.</p>
+
+<p>IDLE install and startup are covered in <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a>, so we won’t repeat the full details here. In brief, it’s standard with the <em>python.org</em> Python installers for Windows and macOS and can be had separately in Linux repositories. Once installed, it can be launched with the usual suspects: <em>Start</em> on Windows, <em>Launchpad</em> or <em>Finder</em> on macOS, a command line on Linux, and file right-clicks where supported.</p>
+
+<p><a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a> also has screenshots that capture IDLE in action on each platform, but <a data-type="xref" href="#idle_with_its_dark_theme_on_windows">Figure 3-1</a> captures its dark theme on Windows for both variety and a quicker look; as it demos, after running this chapter’s <em>script1.py</em> from <a data-type="xref" href="#example_three_onedot_scriptonedotpy">Example 3-1</a> in the edit window on top, its output appears in the interactive Shell <span class="keep-together">window</span>.</p>
+
+<figure class="width-75"><div id="idle_with_its_dark_theme_on_windows" class="figure"><img alt="" src="assets/lpy6_0301.png" width="1175" height="832"/>
+<h6><span class="label">Figure 3-1. </span>IDLE with its dark theme on Windows</h6>
+</div></figure>
+
+<p>Tip: because IDLE is just a Python script on the module search path in the standard library, you can also generally run it on any platform and from any directory by typing the following Python command in a system console window (use <code>py</code> instead of <code>python3</code> on Windows, as usual). Python’s <code>–m</code> flag simply locates a module using the normal import search, but runs it as a top-level script (<a data-type="xref" href="part05.html#modules_and_packages">Part V</a> covers both this search, and the “.” package syntax required here):</p>
+
+<pre data-type="programlisting">
+$ <code><strong>python3 -m idlelib.idle</strong></code>         <code><em># Find and run idle.py in a package folder</em></code></pre>
+
+<p>Once IDLE is started, its usage is straightforward and documented in its in-program Help. In brief, the Shell window provides the usual interactive REPL with command recall, and each edit window allows you to view, modify, and run a file of code. The Shell’s <em>File</em>→<em>New File</em> and <em>File</em>→<em>Open</em>… start and open code files. Edit windows’ <em>Run</em>→<em>Run Module</em> runs code in the window where it’s selected, and <em>Run</em>→<em>Run… Customized</em> supports passing command-line arguments to scripts (which is out of scope here and not a full system shell, but useful for scripts that expect these).</p>
+
+<p>IDLE has many more features, but as a sampler: it also does tab completions, pop-up balloon help for functions, and object attribute lists as you type code, and includes an object browser and GUI debugger. To use IDLE’s <em>debugger</em>, enable it in the Debug menu, set breakpoints by right-clicks in edit windows, and run. For simpler debugging needs, right-click on the text of any <em>error message</em> in the Shell window to jump to the line of code where the error occurred.</p>
+
+<p>For more IDLE tips, see this book’s <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a>, IDLE’s own Help menu, and the notes for your platform in “Python Setup and Usage” in Python’s standard manuals. Like most GUIs, the best way to learn IDLE may be to test-drive it for yourself. At the end of the day, its usability may be essential for some beginners, but it comes with an extra learning curve, is not as flexible as command lines, and adds sugarcoating that might be a negative when your programming needs outgrow <a contenteditable="false" data-primary="GUIs (graphical user interfaces)" data-secondary="IDLE" data-startref="gugudl" data-type="indexterm" id="id1629"></a><a contenteditable="false" data-primary="IDLE GUI" data-startref="idlgiu" data-type="indexterm" id="id1630"></a>its scope. As always, vet for yourself on a PC near you.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Other IDEs for Python"><div class="sect2" id="other_ides_for_python">
+<h2>Other IDEs for Python</h2>
+
+<p>Because IDLE is free, portable, and a standard part of Python, it’s a nice first development tool to become familiar <a contenteditable="false" data-primary="IDEs (integrated development environments)" data-type="indexterm" id="id1631"></a>with if you want to use an IDE at all. There are, however, a handful of alternative IDEs for Python developers, some of which are substantially more powerful and robust than IDLE.</p>
+
+<p>Among these, <em>PyCharm</em>, <em>PyDev</em>, <em>Wing</em>, <em>VSCode</em>, <em>Spyder</em>, and <em>PyScripter</em> all come <a contenteditable="false" data-primary="PyCharm" data-type="indexterm" id="id1632"></a><a contenteditable="false" data-primary="PyDev" data-type="indexterm" id="id1633"></a><a contenteditable="false" data-primary="Wing" data-type="indexterm" id="id1634"></a><a contenteditable="false" data-primary="VSCode" data-type="indexterm" id="id1635"></a><a contenteditable="false" data-primary="Spyder" data-type="indexterm" id="id1636"></a><a contenteditable="false" data-primary="PyScripter" data-type="indexterm" id="id1637"></a>with the usual edit-and-run GUIs, but some add additional and advanced tools such as code refactoring and source-control integration. These IDEs also have major learning curves and are not recommended for most Python beginners. Still, you may wish to file this away for later in your Python career when you’ve mastered the language and move on to industrial-strength development.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Smartphone Apps"><div class="sect2" id="smartphone_apps">
+<h2>Smartphone Apps</h2>
+
+<p>If you’re running this book’s examples on <a contenteditable="false" data-primary="smartphone apps" data-type="indexterm" id="id1638"></a>an Android or iOS smartphone or tablet, you’ll be using an app. Some, like <em>Termux</em> on Android, come with a traditional command line and support all the REPL and file commands we’ve seen. In others, though, you’ll launch code files with devices in the app’s user interface (e.g., button taps), instead of traditional command lines. This isn’t much different in spirit from running code in IDLE or other IDEs, but because details vary per app, see <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a> for mobile platform tips, as well as your app’s docs for more info.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="WebAssembly for Browsers"><div class="sect2" id="webassembly_for_browsers">
+<h2>WebAssembly for Browsers</h2>
+
+<p>Although an emerging technology, it’s also <a contenteditable="false" data-primary="Wasm (WebAssembly)" data-type="indexterm" id="id1639"></a>possible to run Python code in web browsers. This is enabled today by <em>WebAssembly</em> (a.k.a. <em>Wasm</em>), which defines a portable bytecode format that is run by web browsers, much as the Python PVM runs its own bytecode (see <a data-type="xref" href="ch02.html#how_python_runs_programs">Chapter 2</a>). By compiling the Python interpreter’s source code to this format with tools like the <em>Emscripten</em> LLVM-based compiler, web browsers are able to run Python, and hence your Python programs. While other Python-in-the-browser initiatives of the past have largely fizzled, WebAssembly is standardized by the World Wide Web Consortium (W3C) and already supported by all major desktop and mobile web browsers.</p>
+
+<p>Compiling Python itself to Wasm is not trivial (and far too much to ask of Python beginners), but the <em>Pyodide</em> system has already done most of the work for you: it’s a port of CPython to the WebAssembly/Emscripten platform compiled and ready <a contenteditable="false" data-primary="CPython" data-secondary="WebAssembly/Emscripten platform" data-type="indexterm" id="id1640"></a>to run, with JavaScript integration for access to the browser Document Object Model (DOM) and web APIs. To use Pyodide in a web page, you’ll load it from a server and initialize it in a browser, with an HTML document that uses provided JavaScript code and API tools. The end result can run many Python programs in web browsers, with no local installs required.</p>
+
+<p>The chief downsides of this model seem to be <em>speed</em> and <em>utility</em>. Downloading a compiled CPython interpreter to run a Python script in a browser is not quick, and the speed of Python scripts in this context may vary. Moreover, Pyodide comes with a fixed set of Python tools, and Python scripts run by browsers live in a sandbox with limited access to tools and resources on the host device. Persistent storage, for example, may support POSIX file calls and paths, but is virtual and ultimately limited in this context to options supported by browsers.</p>
+
+<p>Hence, while this option may avoid some Python installs and open possibilities for Python on the web, it’s not as useful for general software development as others, and its future is impossible to predict. Watch the web for more on this evolving story—including the alternative <em>MicroPython</em> for Wasm, which is smaller than CPython but implements a constrained Python subset per <a data-type="xref" href="ch02.html#how_python_runs_programs">Chapter 2</a>, and the <em>py2wasm</em> Python-to-Wasm compiler, announced just as <a contenteditable="false" data-type="indexterm" data-primary="compilers" data-secondary="Python-to-Wasm" id="id1641"></a>this book was being written.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Jupyter Notebooks for Science"><div class="sect2" id="jupyter_notebooks_for_science">
+<h2>Jupyter Notebooks for Science</h2>
+
+<p>We met this option earlier in conjunction with REPLs. <em>Jupyter</em> is a set of tools that allow Python code to <a contenteditable="false" data-primary="Jupyter Notebooks" data-type="indexterm" id="id1642"></a>be run in web browsers, with a focus on supporting scientific-programming tasks. Its primary and classic tools require a server to be separately installed and launched to run the code you enter in a web page, but it also comes in a form that runs code locally in browsers using the <em>WebAssembly</em> and <em>Pyodide</em> systems described in the preceding section. In both forms, Jupyter pages follow a flexible notebook paradigm, with interactive coding using the <em>IPython</em> REPL we also met earlier, code cells that run with a button click, visualization using Python numeric tools, and more.</p>
+
+<p>While Jupyter is a useful and popular tool in many STEM roles, it’s not targeted at general-purpose software development and isn’t as broadly applicable as traditional tools like command lines stressed in this book. See other resources for usage details if Jupyter notebooks may be a part of your Python coding future.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Ahead-of-Time Compilers for Speed"><div class="sect2" id="ahead_of_time_compilers_for_speed">
+<h2>Ahead-of-Time Compilers for Speed</h2>
+
+<p>Also per <a data-type="xref" href="ch02.html#how_python_runs_programs">Chapter 2</a>, a number of AOT compiler systems, including <em>Nuitka</em> and <em>Shed Skin</em>, compile <a contenteditable="false" data-primary="AOT (ahead-of-time) compilers" data-type="indexterm" id="id1643"></a><a contenteditable="false" data-primary="compilers" data-secondary="AOT (ahead-of-time)" data-type="indexterm" id="id1644"></a>Python programs all the way to machine code, much like C and C++ compilers. Once you install such a system, you’ll run its compiler on a file of Python code first, and then run the resulting program like any other executable. AOT compilers can boost program speed but add extra development steps that slow the programming process substantially, and negate some of the advantage of using Python. Especially for Python newcomers, these systems are probably best explored after learning the Python language using more accessible options, like traditional REPLs, IDEs, and command lines.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Running Code in Code"><div class="sect2" id="running_code_in_code">
+<h2>Running Code in Code</h2>
+
+<p>This chapter has talked about “importing modules” a few times without really explaining what this term means. We’ll study modules and larger program architecture in depth in <a data-type="xref" href="part05.html#modules_and_packages">Part V</a>, but because imports are also a way to launch programs, this section will introduce enough module basics to get you started. Like imports, the Python <code>exec</code> built-in can be used to launch files in code too, and tools in standard-library modules let you launch programs with command lines. While we can’t go into full detail in this chapter, this section briefly surveys the launchers in this department.</p>
+
+<section data-type="sect3" data-pdf-bookmark="Importing modules"><div class="sect3" id="importing_modules">
+<h3>Importing modules</h3>
+
+<p>In simple terms, every file of Python source <a contenteditable="false" data-primary="modules" data-secondary="importing" data-type="indexterm" id="id1645"></a>code whose name ends in a <em>.py</em> extension is a <em>module</em>. No special code or syntax is required to make a file a module: any such file will do. Other files can access the items a module defines by <em>importing</em> that module—which essentially loads another file and grants access to that file’s contents. The contents of a module are made available to the outside world through its <em>attributes</em>—a term defined informally in the next section.</p>
+
+<p>This module paradigm turns out to <a contenteditable="false" data-primary="modules" data-secondary="program architecture" data-type="indexterm" id="id1646"></a>be the core idea behind <em>program architecture</em> in Python. Larger programs usually take the form of multiple module files, which import tools from other module files. One of the modules is designated as the main or <em>top-level</em> file, also often called the <em>script</em>—the file launched to start the entire program, which runs line by line as usual. Below this level, it’s all modules importing modules.</p>
+
+<p>We’ll delve into such architectural issues in more detail later in this book. This chapter is mostly interested in the fact that import operations <em>run</em> the code in a file that is being loaded as a final step. Because of this, importing a file is yet another way to launch it. For instance, if you start an interactive session (from a system command line or otherwise), you can run the <em>script1.py</em> file we wrote earlier in <a data-type="xref" href="#example_three_onedot_scriptonedotpy">Example 3-1</a> with a simple <code>import</code> statement—which is really Python code running other Python code:</p>
+
+<pre data-type="programlisting">
+$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>import script1</strong></code>
+darwin
+1267650600228229401496703205376
+Hack!Hack!Hack!Hack!Hack!Hack!Hack!Hack!</pre>
+
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Where to run imports</em>: Be sure to run this Python command in the directory (i.e., folder) containing <em>script1.py</em>. Per this chapter’s earlier coverage of code folders, this is easiest if you save module files and run imports in a per-chapter folder for the chapter you’re working in. Later in this book, you’ll learn that imports in a REPL search for a module in the <em>current directory</em>, plus those listed on environment variable <code>PYTHONPATH</code> or specified otherwise. The current directory part of this will suffice for most imports you’re likely to try until then—as long as all your code files reside there.</p>
+</div>
+</div></section>
+
+<section data-type="sect3" data-pdf-bookmark="Reloading modules"><div class="sect3" id="reloading_modules-id00073">
+<h3>Reloading modules</h3>
+
+<p>Imports work to run a file, but only <a contenteditable="false" data-primary="modules" data-secondary="reloads" data-type="indexterm" id="id1647"></a>once per session (really, <em>process</em>—a program run) by default. After the first import, later imports do nothing, even if you change and save the module’s source file again in another window:</p>
+
+<pre data-type="programlisting">
+&gt;&gt;&gt; <code><strong>import script1</strong></code>
+&gt;&gt;&gt; <code><strong>import script1</strong></code></pre>
+
+<p>This is by design; imports are too expensive an operation to repeat more than once per file in a given program run. As you’ll learn in <a data-type="xref" href="ch22.html#modules_the_big_picture">Chapter 22</a>, imports must find files, compile them to bytecode, and run the code line by line, and importers usually care only that the module’s lines have defined its exports.</p>
+
+<p>If you really want to force Python to run the file again in the same session without stopping and restarting the REPL, you need to instead call the <code>reload</code> function available in the <code>importlib</code> standard-library module (and previously in the now-defunct <code>imp</code> module, and a built-in function before that: that’s three incarnations, for anyone counting!):</p>
+
+<pre data-type="programlisting">
+&gt;&gt;&gt; <code><strong>from importlib import reload</strong></code>
+&gt;&gt;&gt; <code><strong>reload(script1)</strong></code>
+darwin
+1267650600228229401496703205376
+Hack!Hack!Hack!Hack!Hack!Hack!Hack!Hack!
+&lt;module 'script1' from '/Users/me/Code/script1.py'&gt;</pre>
+
+<p>The <code>from</code> statement here simply copies a name out of a module (more on this in the next section). The <code>reload</code> function itself loads and runs the current version of your file’s source code, picking up the file’s changes if you’ve modified and saved it in another window.</p>
+
+<p>This allows you to edit and use new code on the fly in the current Python interactive session. The <code>reload</code> function expects the name of an already-loaded module object, so you have to have successfully imported a module before you can reload it (and if the import failed with an error, you can’t yet reload and must import again).</p>
+
+<p>Notice that <code>reload</code> also expects parentheses around the module object name, whereas <code>import</code> does <span class="keep-together">not—<code>reload</code></span> is a function that is <em>called</em> with an argument, and <code>import</code> is a statement. That’s also why you get back an extra output line when reloading—the odd last line is just the display representation of the <code>reload</code> call’s return value, a Python module object. You’ll learn more about using functions in general in <a data-type="xref" href="ch16.html#function_basics">Chapter 16</a>; for now, when you hear “function,” remember that parentheses are required to run a call, even if there’s nothing <a contenteditable="false" data-primary="modules" data-secondary="reloading" data-startref="modreld" data-type="indexterm" id="id1648"></a>to send.</p>
+</div></section>
+
+<section data-type="sect3" data-pdf-bookmark="Module attributes: a first look"><div class="sect3" id="module_attributes_a_first_look">
+<h3>Module attributes: a first look</h3>
+
+<p>Imports and reloads provide a natural program launch option because import operations <a contenteditable="false" data-primary="modules" data-secondary="attributes" data-type="indexterm" id="modttbr"></a>execute files as a last step. In the broader scheme of things, though, modules serve the role of <em>libraries</em> of tools, as you’ll learn in <a data-type="xref" href="part05.html#modules_and_packages">Part V</a>. The basic idea is straightforward, though: a module is mostly just a package of variable names, known as a <em>namespace</em>, and the names within that package are called <em>attributes</em>—variable names that are attached to a specific object (like a module).</p>
+
+<p>In more concrete terms, all the names assigned at the top level of a module’s file become its attributes, and a module’s importers gain access to all of them. These names are usually assigned to tools exported by the module—functions, classes, variables, and so on—that are intended to be used in other files and other programs. Externally, a module file’s names can be fetched with two <a contenteditable="false" data-primary="modules" data-secondary="file names" data-type="indexterm" id="id1649"></a>Python statements, <code>import</code> and <code>from</code>, and may be reset with the <code>reload</code> call.</p>
+
+<p>To illustrate, use a text editor to create a one-line Python module file called <em>myfile.py</em> in your working directory, with the contents in <a data-type="xref" href="#example_three_twodot_myfiledotpy">Example 3-2</a>.</p>
+
+<div data-type="example" id="example_three_twodot_myfiledotpy">
+<h5><span class="label">Example 3-2. </span>myfile.py</h5>
+
+<pre data-type="programlisting">
+title = 'Learning Python, 6th Edition'</pre>
+</div>
+
+<p>This may be one of the world’s simplest Python modules (it contains a single assignment statement), but it’s enough to illustrate the point. When this file is imported, its code is run to generate the module’s attribute. That is, the assignment statement creates a variable and module attribute named <code>title</code>.</p>
+
+<p>You can access this module’s <code>title</code> attribute in other components in two different ways. First, you can load the module as a whole with an <code>import</code> statement, and then <em>qualify</em> the module name with the attribute name to fetch it (note that we’re letting the interpreter print automatically here):</p>
+
+<pre data-type="programlisting">
+$ <code><strong>python3</strong></code>                          <code><em># Start Python REPL</em></code>
+&gt;&gt;&gt; <code><strong>import myfile</strong></code>                  <code><em># Run file, load module as a whole</em></code>
+&gt;&gt;&gt; <code><strong>myfile.title</strong></code>                   <code><em># Use its attribute names: '.' to qualify</em></code>
+'Learning Python, 6th Edition'</pre>
+
+<p>In general, the dot expression syntax <code><em>object</em>.<em>attribute</em></code> lets you fetch any attribute attached to any object and is one of the most common operations in Python code. Here, we’ve used it to access the string variable <code>title</code> inside the module <code>myfile</code>—in other words, <code>myfile.title</code>.</p>
+
+<p>Alternatively, you can fetch (really, copy) names out of a module with <code>from</code> statements:</p>
+
+<pre data-type="programlisting">
+$ <code><strong>python3</strong></code>                          <code><em># Restart Python REPL</em></code>
+&gt;&gt;&gt; <code><strong>from myfile import title</strong></code>         <code><em># Run file, copy its names</em></code>
+&gt;&gt;&gt; <code><strong>title</strong></code>                          <code><em># Use name directly: no need to qualify</em></code>
+'Learning Python, 6th Edition'</pre>
+
+<p>As you’ll see in more detail later, <code>from</code> is just like an <code>import</code>, with an extra assignment to names in the importing code. Technically, <code>from</code> copies a module’s <em>attributes</em>, such that they become simple <em>variables</em> in the recipient. So, you can refer to the imported string this time as <code>title</code> (a variable) instead of <code>myfile.title</code> (an attribute).</p>
+
+<p>Naturally, modules usually define more than one name to be used both in and outside their files. <a data-type="xref" href="#example_three_threedot_threenamesdotpy">Example 3-3</a>, for instance, defines three.</p>
+
+<div data-type="example" id="example_three_threedot_threenamesdotpy">
+<h5><span class="label">Example 3-3. </span>threenames.py</h5>
+
+<pre data-type="programlisting">
+a = 'PC'                       <code><em># Define three attributes</em></code>
+b = 'Phone'                    <code><em># Exported to other files</em></code>
+c = 'Tablet'
+print(a, b, c)                 <code><em># Also used as variables in this file</em></code></pre>
+</div>
+
+<p>This code file, <em>threenames.py</em>, assigns three variables, and so generates three attributes for the outside world. It also uses its own three variables in a <code>print</code> statement, as you see when this is run as a top-level file from a system prompt:</p>
+
+<pre data-type="programlisting">
+$ <code><strong>python3 threenames.py</strong></code>
+PC Phone Tablet</pre>
+
+<p>All of this file’s code also runs as usual the first time it is imported elsewhere, by either an <code>import</code> or <code>from</code>. Clients of this file that use <code>import</code> get a module with attributes, while clients that use <code>from</code> get copies of the file’s names:</p>
+
+<pre data-type="programlisting">
+$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>import threenames</strong></code>                    <code><em># Grab the whole module: it runs here</em></code>
+PC Phone Tablet
+
+&gt;&gt;&gt; <code><strong>threenames.b, threenames.c</strong></code>           <code><em># Access its attributes: qualify to use</em></code>
+('Phone', 'Tablet')
+
+&gt;&gt;&gt; <code><strong>from threenames import b, c</strong></code>          <code><em># Copy multiple names out: use directly</em></code>
+&gt;&gt;&gt; <code><strong>b, c</strong></code>
+('Phone', 'Tablet')</pre>
+
+<p>The results here are printed in parentheses because they are really <em>tuples</em>—a kind of object created by the comma in the inputs (and covered in the next part of this book)—that you can safely accept on faith for now.</p>
+
+<p>From a grander perspective, modules form the highest layer of Python program architecture: as self-contained namespaces, they naturally support code organization and reuse, and they automatically minimize name collisions in your code. We’ll deal with their loftier goals later in this book.</p>
+
+<p>For this chapter, it’s enough to know that imports and reloads are another way to run your code files, though probably a <em>secondary option</em>: due to complicated quirks that we’ll skip here (e.g., <code>reload</code> updates importers using <code>import</code> but not <code>from</code>), tools like command lines and IDEs are generally <a contenteditable="false" data-primary="modules" data-secondary="attributes" data-startref="modttbr" data-type="indexterm" id="id1650"></a>better bets for running Python code.</p>
+</div></section>
+
+<section data-type="sect3" data-pdf-bookmark="The exec built-in"><div class="sect3" id="the_exec_built_in">
+<h3>The exec built-in</h3>
+
+<p>Python also provides a way to launch files with code that does not rely on the module concepts of the preceding <a contenteditable="false" data-primary="exec function" data-type="indexterm" id="xcfct"></a><a contenteditable="false" data-primary="functions" data-secondary="exec" data-type="indexterm" id="fcxce"></a>section. The <code>exec</code> built-in function compiles and runs whatever Python source code statements are in the string you pass to it. Along with its <code>eval</code> expression cousin, this supports many dynamic roles you’ll meet in upcoming chapters.</p>
+
+<p>By passing a code file’s loaded contents to <code>exec</code>, though, this yields another way to launch code files from a REPL or other file without having to import and later reload. Each such <code>exec</code> runs the <em>current</em> version of the code read from a file, without requiring imports or reloads. For instance, using <a data-type="xref" href="#example_three_onedot_scriptonedotpy">Example 3-1</a>’s <em>script1.py</em> again:</p>
+
+<pre data-type="programlisting">
+$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>exec(open('script1.py').read())</strong></code>
+darwin
+1267650600228229401496703205376
+Hack!Hack!Hack!Hack!Hack!Hack!Hack!Hack!</pre>
+
+<p>To understand this code, you must first know that the <code>open</code> and <code>read</code> nested inside it run first, and left to right, and load the file’s entire contents as a string. We’ll study files in the next part of this book, so take this as a preview for now. (This was also a forward knowledge dependency added in Python 3.X, but that’s what this book presents.)</p>
+
+<p>Once the file is loaded, though, the <code>exec</code> call has an effect similar to an import, but it doesn’t actually import the module. Instead, each time you run an <code>exec</code>/<code>open</code> combo this way it runs the file’s code anew and unconditionally—as though you had pasted the file’s code at the place where <code>exec</code> is called. As one consequence, this <code>exec</code>/<code>open</code> scheme does not require module reloads after file changes.</p>
+
+<p>On the downside, because it works as if you’ve pasted code into the place where it is called, <code>exec</code> has the potential to silently overwrite variables you may currently be using. For example, our <em>script1.py</em> assigns to a variable named <code>x</code>. If that name is also being used in the place where <code>exec</code> is called, the name’s value is replaced—sans warning:</p>
+
+<pre data-type="programlisting">
+&gt;&gt;&gt; <code><strong>x = 999</strong></code>
+&gt;&gt;&gt; <code><strong>exec(open('script1.py').read())</strong></code>    <code><em># Code run in this namespace by default</em></code>
+…<code><em>same output</em></code>…
+&gt;&gt;&gt; <code><strong>x</strong></code>                                  <code><em># Its assignments can overwrite names here</em></code>
+'Hack!'</pre>
+
+<p>This potential for name collisions is a downside shared by the last section’s <code>from</code> statement. By contrast, the basic <code>import</code> statement makes the file a separate module namespace so that its assignments will not change variables in the importer’s scope. The price you pay for its namespace partitioning of modules <a contenteditable="false" data-primary="exec function" data-startref="xcfct" data-type="indexterm" id="id1651"></a><a contenteditable="false" data-primary="functions" data-secondary="exec" data-startref="fcxce" data-type="indexterm" id="id1652"></a>is the need to reload and qualify.</p>
+</div></section>
+
+<section data-type="sect3" data-pdf-bookmark="Command-line launchers"><div class="sect3" id="command_line_launchers">
+<h3>Command-line launchers</h3>
+
+<p>Finally, Python code can also be run by Python <a contenteditable="false" data-primary="command line" data-secondary="launchers" data-type="indexterm" id="id1653"></a><a contenteditable="false" data-primary="os module" data-type="indexterm" id="id1654"></a>code that uses standard-library tools that spawn command lines in parallel processes. The <code>os</code> module’s <code>system</code> call, for instance, runs a command as if you typed it at a system console (its <code>0</code> return value echoed at the end here means all worked well):</p>
+
+<pre data-type="programlisting">
+$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>import os</strong></code>
+&gt;&gt;&gt; <code><strong>os.system('python3 script1.py')</strong></code>
+darwin
+1267650600228229401496703205376
+Hack!Hack!Hack!Hack!Hack!Hack!Hack!Hack!
+0</pre>
+
+<p>This <code>os</code> module’s <code>popen</code> call does similar but returns a file object from which you can read the spawned command’s printed output as a string for use in the spawning code; and Python’s <code>subprocess.run</code> call can be used to launch programs by command lines with much more control over the fine points. We’ll deploy <code>popen</code> in <a data-type="xref" href="ch21.html#the_benchmarking_interlude">Chapter 21</a>.</p>
+
+<p>Though related to running code, all these tools are well beyond the scope of this getting-started chapter, so consult Python’s library manuals for the full story if and when such utilities become useful in your future work. And a caution: these tools, along with <code>exec</code>, will happily run any command line you throw at them—<em>including one to erase all your files!</em>—so they’re best limited to running Python commands unless and until you’re sure that other commands are safe.</p>
+</div></section>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Other Launch Options"><div class="sect2" id="other_launch_options">
+<h2>Other Launch Options</h2>
+
+<p>You’ve already seen a blizzard of code-launching options for Python, but this accounting is still incomplete. For example, Python code can also be run today by:</p>
+
+<ul>
+	<li>
+	<p>Programs written in C, C++, Java, and more, <a contenteditable="false" data-primary="Python" data-secondary="embedding" data-type="indexterm" id="id1655"></a>which <em>embed</em> Python and Python code</p>
+	</li>
+	<li>
+	<p>Text <em>editors</em> that <a contenteditable="false" data-primary="text editors" data-type="indexterm" id="id1656"></a>aren’t full IDEs, but know how to run Python code you’re editing</p>
+	</li>
+	<li>
+	<p>Excel <em>spreadsheets</em>, when <a contenteditable="false" data-primary="Excel" data-type="indexterm" id="id1657"></a>calculating a sheet’s cells coded in Python</p>
+	</li>
+	<li>
+	<p>Web <em>servers</em> that spawn scripts <a contenteditable="false" data-primary="web server scripts" data-type="indexterm" id="id1658"></a><a contenteditable="false" data-primary="scripts" data-secondary="web servers" data-type="indexterm" id="id1659"></a>automatically in response to browser UI actions</p>
+	</li>
+	<li>
+	<p>Users launching <em>standalone executables</em>, which we <a contenteditable="false" data-primary="standalone executables" data-type="indexterm" id="id1660"></a>explored in <a data-type="xref" href="ch02.html#how_python_runs_programs">Chapter 2</a></p>
+	</li>
+	<li>
+	<p>And (as usual) more</p>
+	</li>
+</ul>
+
+<p>Moreover, launching techniques tend to evolve as rapidly as everything else in computing, and future options are impossible to foresee. In general, because Python keeps pace with such changes, you should be able to launch Python programs in whatever way makes sense for the machines you use, both now and in the future—be that by swiping on your smartphone, grabbing icons in a virtual reality, or shouting a script’s name over your coworkers’ conversations.</p>
+</div></section>
+</div></section>
+
+<section data-type="sect1" data-pdf-bookmark="Which Option Should I Use?"><div class="sect1" id="which_option_should_i_usequestion_mark">
+<h1>Which Option Should I Use?</h1>
+
+<p>With all these options, beginners might naturally ask, Which one is best for me? In general, you should try both basic command lines and the IDLE GUI if you are just getting started with Python, unless you’ll be working in smartphone apps or web-based notebooks with interfaces that are more unique. Command lines are simple and powerful, but IDLE provides a user-friendly GUI environment that hides some underlying details and works the same on all PCs.</p>
+
+<p>If, on the other hand, you are an experienced programmer, you might be more comfortable with simply the text editor of your choice in one window, and a system console interface in another for launching edited programs via Python command lines. Because the choice of development environments is very subjective, this book can’t offer much more in the way of universal guidelines. In general, whatever environment you like to use will be the best for you to use.</p>
+</div></section>
+
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00013">
+<h1>Chapter Summary</h1>
+
+<p>In this chapter, we’ve explored common ways to launch Python programs: by running code typed interactively and by running code stored in files with system command lines, file icon clicks, IDE GUIs such as IDLE, and more. We’ve covered a lot of pragmatic startup territory here. This chapter’s goal was to equip you with enough information to enable you to start writing some code, which you’ll do in the next part of this book. There, we will start exploring the Python language itself, beginning with its core <em>data types</em>—the objects that are the subjects of your programs.</p>
+
+<p>First, though, take the usual chapter quiz to exercise and review what you’ve learned here. Because this is the last chapter in this part of the book, it’s followed with a set of more complete exercises that test your mastery of this entire part’s topics. For help and answers for the latter set of problems, or just for a refresher, be sure to turn to <a data-type="xref" href="app02.html#appendix_b_solutions_to_end_of_part_exe">Appendix B</a> after you’ve given the exercises a try.</p>
+</div></section>
+
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000124">
+<h1>Test Your Knowledge: Quiz</h1>
+
+<ol>
+	<li>
+	<p>How can you start a Python interactive interpreter session (REPL)?</p>
+	</li>
+	<li>
+	<p>Where do you type a system command line to launch a script file?</p>
+	</li>
+	<li>
+	<p>Name four or more ways to run the code saved in a script file.</p>
+	</li>
+	<li>
+	<p>What pitfall is related to clicking file icons on Windows and Linux?</p>
+	</li>
+	<li>
+	<p>Why might you need to reload a module?</p>
+	</li>
+	<li>
+	<p>How do you run a script from within the IDLE GUI?</p>
+	</li>
+	<li>
+	<p>How are modules, attributes, and namespaces related?</p>
+	</li>
+</ol>
+</div></section>
+
+<section data-type="sect1" class="pagebreak-before" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000123">
+<h1 class="less_space">Test Your Knowledge: Answers</h1>
+
+<ol>
+	<li>
+	<p>A Python interactive session can be started by typing a Python command line in your system’s console window. Type <code>py</code> on Windows and <code>python3</code> everywhere else and type it into a <em>Command Prompt</em> or <em>PowerShell</em> window on Windows, <em>Terminal</em> on macOS and Linux, and the <em>Termux</em> app on Android. Another alternative is to launch <em>IDLE</em>, as its main Shell window is an interactive session. Other IDEs, smartphone apps, and browser-based systems may offer REPLs in more unique ways.<a contenteditable="false" data-primary="interactive coding" data-secondary="REPLs (real-eval-print loops)" data-tertiary="starting" data-type="indexterm" id="id1661"></a><a contenteditable="false" data-primary="REPLs (real-eval-print loops)" data-secondary="starting"> </a><a contenteditable="false" data-type="indexterm" data-primary="interactive coding" data-secondary="command line" id="id1662"></a><a contenteditable="false" data-type="indexterm" data-primary="command line" id="id1663"></a></p>
+	</li>
+	<li>
+	<p>You type system command lines in the same interface used to launch an interactive session by command line. This is whatever your platform provides as a system console: again, <em>Command Prompt</em> or <em>PowerShell</em> on Windows, <em>Terminal</em> on macOS and Linux, <em>Termux</em> on Android, or other. You type this at the system’s prompt shown as <code>$</code> in this book, not at the Python interactive interpreter’s <code>&gt;&gt;&gt;</code> prompt used to enter Python code—be careful not to confuse these prompts, because Python and the system shell are different systems.</p>
+	</li>
+	<li>
+	<p>Code in a script (really, module) file can be run with system command lines, file icon clicks, imports and reloads, the <code>exec</code> built-in function, <code>os</code> module tools, and IDE GUI devices such as IDLE’s <em>Run</em>→<em>Run Module</em> menu option. Some platforms support more specialized launching techniques, like drag and drop on macOS, app UIs on smartphones, and web notebooks. In addition, some text editors have unique ways to run Python code, some Python programs are provided and run as standalone executables, and some systems use Python code in embedded mode, where it is run by an enclosing program written in another language. Though in its early days, code may also be run in web browsers with a Python port to WebAssembly like Pyodide.</p>
+	</li>
+	<li>
+	<p>Scripts that print and then exit cause the output file to disappear immediately, before you can view the output. <code>input()</code> can pause before exit so the output window stays open, but error messages generated by your script also appear in an output window that closes before you can examine its contents—and before an <code>input()</code> pause is reached. Hence, system command lines and IDEs such as IDLE are better for most development.</p>
+	</li>
+	<li>
+	<p>Python imports (i.e., loads) a module <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="importing" id="id1664"></a>only once per process, by default, so if you’ve changed its source code and want to run the new version without stopping and restarting Python, you’ll have to reload it. You must import a module at least once before you can reload it. Running files of code from a system shell command line, via an icon click, or in an IDE such as IDLE generally makes this a nonissue, as those launch schemes usually run the current version of the source code file each time. An <code>exec</code>/<code>open</code> pair can avoid reloads too.</p>
+	</li>
+	<li>
+	<p>Within the text edit window of the file you wish to run, select the window’s <em>Run</em>→<em>Run Module</em> menu option. This runs the window’s source code as a top-level script file in IDLE and displays its output back in the interactive Python “Shell” window.</p>
+	</li>
+	<li>
+	<p>Each module file is automatically a namespace—that is, a package of variables reflecting the assignments made at the top level of the file. Each of the module’s variables becomes an attribute of the module when it’s imported and are accessed by “.” qualification or <code>from</code> name copies. Namespaces help avoid name collisions in Python programs: because each module file is a self-contained namespace, files must explicitly import other files in order to use their names.</p>
+	</li>
+</ol>
+</div></section>
+
+<section data-type="sect1" class="pagebreak-before" data-pdf-bookmark="Test Your Knowledge: Part I Exercises"><div class="sect1" id="test_your_knowledge_part_i_exercises">
+<h1 class="less_space">Test Your Knowledge: Part I Exercises</h1>
+
+<p>It’s time to start doing a little coding on your own. This first exercise session is fairly simple, but it is designed to make sure you’re ready to work along with the rest of the book, and a few of its questions hint at topics to come in later chapters. Be sure to check the section <a data-type="xref" href="app02.html#part_icomma_getting_started">“Part I, Getting Started”</a> in <a data-type="xref" href="app02.html#appendix_b_solutions_to_end_of_part_exe">Appendix B</a> for the answers; the exercises and their solutions sometimes contain supplemental information not discussed in the main text, so you’re encouraged to take a peek at the solutions even if you manage to answer all the questions on your own.</p>
+
+<ol>
+	<li>
+	<p><em>Interaction</em>: Using a <a contenteditable="false" data-type="indexterm" data-primary="interactive coding" data-secondary="exercise" id="id1665"></a>system command line, IDLE, or any other method that works on your device, start the Python interactive command line (the <code>&gt;&gt;&gt;</code> prompt, a.k.a. REPL) and type the expression <code>'Hello World!'</code> (including the quotes). The string should be echoed back to you. The purpose of this exercise is to get your environment configured to run Python. In rare scenarios, you may need to type the full path to the Python executable or add its path to your <code>PATH</code> environment variable. See <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a> for tips on environment-variable settings if needed.</p>
+	</li>
+	<li>
+	<p><em>Programs</em>: With the text editor of <a contenteditable="false" data-type="indexterm" data-primary="programs" data-secondary="exercise" id="id1666"></a>your choice, write a simple module file containing the single statement <code>print('Hello module world!')</code> and store it as <em>module1.py</em>. Now, run this file by using any launch option you like: running it in IDLE, clicking or tapping on its file icon, starting it by command line in a console (e.g., <code>python3 module1.py</code>), executing it in code with tools like <code>exec</code> and imports/reloads, or by using UI options in apps, other IDEs, and web notebooks. In fact, experiment by running your file with as many of the launch techniques discussed in this chapter as you can. Which technique seems easiest to you?</p>
+	</li>
+	<li>
+	<p><em>Modules</em>: Start the Python <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="exercise" id="id1667"></a>interactive command line (<code>&gt;&gt;&gt;</code> prompt) and import the module you wrote in exercise 2. Try moving the file to a different directory and importing it again from its original directory (i.e., run Python in the original directory when you import). What happens? Hint: there’s still a <em>.pyc</em> bytecode file for <em>module1</em> in a <em>__pycache__</em> subdirectory there, but it’s named oddly. In general, imports search for modules in the current directory, plus every directory listed on the <code>PYTHONPATH</code> environment variable—as you’ll learn in <a data-type="xref" href="part05.html#modules_and_packages">Part V</a>.</p>
+	</li>
+	<li>
+	<p><em>Scripts</em>: If your platform <a contenteditable="false" data-type="indexterm" data-primary="scripts" data-secondary="exercise" id="id1668"></a>supports it, copy your <em>module1.py</em> module file to another named <em>script1.py</em>; then add the <code>#!</code> line to the top of <em>script1.py</em>, give this file executable privileges, and run it directly as an executable (e.g., sans the “python3”). What does the first line need to contain? <code>#!</code> lines traditionally have meaning only on Unix-like platforms (e.g., macOS, Linux, and Android), but also apply to Windows today, thanks to the <code>py</code> Windows launcher. If you’re working on Windows, also try running your file by listing just its name in a Command Prompt window without the word <code>py</code> before it, via the Start menu, <code>Windows+R</code> Run dialog, or other schemes. On macOS, try a drag-and-drop to the Python Launcher app in Applications (or elsewhere).</p>
+	</li>
+	<li>
+	<p><em>Errors and debugging</em>: Experiment <a contenteditable="false" data-type="indexterm" data-primary="errors" data-secondary="exercise" id="id1669"></a><a contenteditable="false" data-type="indexterm" data-primary="debugging" data-secondary="exercise" id="dbgg"></a>with typing mathematical expressions and assignments at the Python interactive command line (that is, REPL). Along the way, type the expressions <code>2 ** 500</code> and <code>1 / 0</code>, and reference an undefined variable name as we did early on in this chapter. What happens?</p>
+
+	<p>You may not know it yet, but when you make a mistake, you’re doing exception processing, a topic we’ll explore in depth in <a data-type="xref" href="part07.html#exceptions">Part VII</a>. As you’ll learn there, you are technically triggering what’s known <a contenteditable="false" data-type="indexterm" data-primary="exception handlers" id="id1670"></a>as the <em>default exception handler</em>—logic that prints a standard error message. If you do not catch an error, the default handler does and prints the standard error message in response.</p>
+
+	<p class="pagebreak-before">Exceptions are also bound up <a contenteditable="false" data-type="indexterm" data-primary="exceptions" data-secondary="debugging and" id="id1671"></a><a contenteditable="false" data-type="indexterm" data-primary="debugging" data-secondary="exceptions and" id="id1672"></a>with the notion of <em>debugging</em> in Python. When you’re first starting out, Python’s default error messages on exceptions will probably provide as much error-handling support as you need—they give the cause of the error, as well as showing the lines in your code that were active when the error occurred. For more about debugging, see the upcoming sidebar <a data-type="xref" href="#debugging_python_code">“Debugging Python Code”</a>.</p>
+	</li>
+	<li>
+	<p><em>Breaks and cycles</em>: In any <a contenteditable="false" data-type="indexterm" data-primary=" breaks" id="id1673"></a><a contenteditable="false" data-type="indexterm" data-primary="cycles" id="id1674"></a>Python REPL, type:</p>
+
+	<pre data-type="programlisting">
+L = [1, 2]              <code><em># Make a 2-item list</em></code>
+L.append(L)             <code><em># Append L as a single item to itself</em></code>
+L                       <code><em># Print L: a cyclic/circular object</em></code></pre>
+
+	<p>What happens? In all but the most ancient of Python versions, you’ll see a strange output that is described in the <a data-type="xref" href="app02.html#appendix_b_solutions_to_end_of_part_exe">Appendix B</a> solution, and which will make more sense when you study object <em>references</em> in the next part of the book. Why do you think your version of Python responds the way it does for this code?</p>
+	</li>
+	<li>
+	<p><em>Documentation</em>: Spend at <a contenteditable="false" data-type="indexterm" data-primary="documentation" id="id1675"></a>least five minutes browsing the Python library and language manuals before moving on to get a feel for the available tools in the standard library and the structure of the documentation set. It takes at least this long to become familiar with the locations of major topics in the manual set; once you’ve done this, it’s easy to find what you need. You can find this manual via the Python Start menu entry on some Windows, in the Python Docs option on the Help pull-down menu in IDLE, or online at <a href="http://www.python.org/doc"><em class="hyperlink">http://www.python.org/doc</em></a>. You’ll also learn more about the manuals and other documentation sources (including PyDoc and the <code>help</code> function) in <a data-type="xref" href="ch15.html#the_documentation_interlude">Chapter 15</a>. If you still have time, go explore the Python website, as well as its PyPI third-party extension repository; <em><a href="http://python.org">python.org</a></em>’s About and Search, for example, may be useful when you’re getting started.</p>
+	</li>
+</ol>
+
+<aside data-type="sidebar" epub:type="sidebar"><div class="sidebar" id="debugging_python_code">
+<h1>Debugging Python Code</h1>
+
+<p>Naturally, none of this book’s readers ever have bugs in their code (insert smiley here), but for less fortunate friends of yours who may, here’s a quick review of the strategies commonly used by real-world Python programmers to debug errors in their code. The first two may be all you’ll need early in the learning process, but others may grow important when you start writing larger scripts, and all are useful to review now before you start coding in earnest in the next chapter—and making the mistakes that are inevitable in programming:</p>
+
+<ul>
+	<li>
+	<p><strong>Do nothing.</strong> This doesn’t mean that Python programmers don’t debug their code. But when you make a mistake in a Python program, you get a useful and readable error message. The message pinpoints the location of the error in your code by file and line and may even offer a suggested “Did you…?” fix as you saw earlier in this chapter. If you already know Python, and especially for your own code, this is often enough—read the error message and fix the tagged line. In many cases, this <em>is</em> debugging in Python.</p>
+	</li>
+	<li>
+	<p><strong>Insert</strong> <code><strong>print</strong></code> <strong>statements.</strong> Probably the main way that Python programmers debug their code is to insert <code>print</code> statements and run again. Because most Python code runs immediately after changes, this is usually the quickest way to get more information than error messages provide. The <code>print</code> statements don’t have to be sophisticated—a simple “I am here” beacon or display of variable values is usually enough to provide the context you need. If you write programs that don’t have a console window (e.g., some GUIs and apps), you may need to find your printed messages in an automatic logfile, or use the next point.</p>
+	</li>
+	<li>
+	<p><strong>Insert calls to the</strong> <code><strong>logging</strong></code> <strong>module.</strong> The beacon messages of the prior point may also use Python’s <code>logging</code> module instead of <code>print</code>, to make the process more formal and gain better control of the output. Because this requires some planning, it’s more common in larger programs than tactical scripts. See Python’s library manual for <code>logging</code> usage details.</p>
+	</li>
+	<li>
+	<p><strong>Use GUI debuggers.</strong> For larger systems you didn’t write, and for beginners who want to trace code in more detail, most Python development GUIs have some sort of point-and-click debugging support. IDLE has a debugger too, but it doesn’t seem to be used very often in practice—perhaps because it has no command line, or simply because adding <code>print</code> statements is often quicker than setting up a debugging session. To learn more about the debugger, see IDLE’s Help menu, or simply try it on your own; its basic interface is described earlier in this chapter. For similar debugging support in other IDEs, see their docs.</p>
+	</li>
+	<li>
+	<p><strong>Use the pdb command-line debugger.</strong> For full control, Python comes with a source code debugger named <em>pdb</em>, available as a module in Python’s standard library. With pdb, you type commands to step line by line, display variables, set and clear breakpoints, continue to a breakpoint or error, and so on. You can launch pdb by either importing it and calling <code>pdb.run('<em>code</em>')</code> or running it as a top-level script with the command <code>python3 -m pdb <em>file</em>.py</code>. You can also import and call pdb’s postmortem <code>pdb.pm()</code> after an error occurs to get more information about what went wrong. We’ll revisit pdb in <a data-type="xref" href="ch36.html#exception_odds_and_ends">Chapter 36</a>, but see Python’s library manual and pdb’s own <code>help</code> command for more usage tips.</p>
+	</li>
+	<li>
+	<p><strong>Use Python’s</strong> <code><strong>–i</strong></code> <strong>command-line argument.</strong> Short of adding prints or running debuggers, you can still see what went wrong on errors. If you run your script from a command line and pass a <code>-i</code> argument between Python and the name of your script (e.g., <code>python3 –i <em>script</em>.py</code>), Python will automatically open its interactive mode (the <code>&gt;&gt;&gt;</code> prompt) when your script exits, whether it ends successfully or runs into an error. You can then print the final values of variables to get more details about what happened in your code, or import and run pdb’s debugger or postmortem mode.</p>
+	</li>
+	<li>
+	<p><strong>Catch and handle errors in code.</strong> Ultimately, errors are a well-defined mechanism in Python known as <em>exceptions</em>, which you can catch, process, and recover from in your own code. You’ll learn how in <a data-type="xref" href="part07.html#exceptions">Part VII</a>.</p></li>
+</ul>
+
+	<p>Perhaps the best takeaway on debugging is that errors are detected and reported in Python as a norm, <a contenteditable="false" data-type="indexterm" data-primary="debugging" data-secondary="exercise" data-startref="dbgg" id="id1676"></a>rather than passing silently or crashing the system altogether. Making mistakes is never fun, of course, but especially for those who recall when debugging meant getting out a hex calculator and poring over piles of memory-dump printouts, Python’s debugging support makes errors a lot less painful than they might otherwise be.</p>
+	
+</div></aside>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>

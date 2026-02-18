@@ -1,0 +1,218 @@
+{
+  "main": {
+    "id": "40e65743ba7d70ff",
+    "type": "split",
+    "children": [
+      {
+        "id": "78729e564633780d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4988579f403ab287",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "11bd228d69493430",
+    "type": "split",
+    "children": [
+      {
+        "id": "fa06c9814bdd123b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "07c677eeaf4c344c",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "014a804b11c66a6b",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "04cfa6fc5785cac4",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 249.5
+  },
+  "right": {
+    "id": "00e0e5c34b0b7b16",
+    "type": "split",
+    "children": [
+      {
+        "id": "166ff3cb4e97f1b9",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "bde85a1f0482621f",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "General/Learning/LinkedIn_Learning/CPlusPlusProgrammingCert/EssentialTraining1/1.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for 1"
+            }
+          },
+          {
+            "id": "5cbf74b241d38355",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "General/Learning/LinkedIn_Learning/CPlusPlusProgrammingCert/EssentialTraining1/1.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from 1"
+            }
+          },
+          {
+            "id": "cc199641f41d6c96",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "be88fc31e62c6987",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "General/Learning/LinkedIn_Learning/CPlusPlusProgrammingCert/EssentialTraining1/1.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of 1"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "vscode-editor:Create Code File": false,
+      "bases:Create new base": false,
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "4988579f403ab287",
+  "lastOpenFiles": [
+    "Classes/Fall 2025/EE595_AppliedMachineLearning/Lecture/Lecture 2.md",
+    "Classes/Fall 2025/EE595_AppliedMachineLearning/Lecture/Lecture 1_2.md",
+    "Classes/Fall 2025/EE595_AppliedMachineLearning/Lecture/Lecture 1.md",
+    "Classes/Fall 2025/AAI646_Pattern Recognition and Classification/Lecture/Lecture 1.md",
+    "General/Learning/DSA/2_Arrays_Strings/Sliding Window.md",
+    "General/Learning/DSA/2_Arrays_Strings/Prefix Sum.md",
+    "General/Learning/DSA/2_Arrays_Strings/Arrays and Strings.md",
+    "General/Learning/DSA/4_LinkedLists/3. Questions.md",
+    "General/Learning/DSA/4_LinkedLists/2. Fast and Slow Pointers.md",
+    "General/Learning/DSA/4_LinkedLists/1. LinkedList.md",
+    "General/Learning/DSA/8_Graphs/1_Graphs.md",
+    "General/Learning/DSA/3_Hashing/Counting.md",
+    "General/Learning/DSA/7_BinarySearch/1_BinarySearch.md",
+    "General/Learning/DSA/6_TreesGraphs/3_Binary Trees BFS.md",
+    "General/Learning/DSA/6_TreesGraphs/2_Binary Trees DFS.md",
+    "General/Learning/DSA/6_TreesGraphs/1_Binary Trees.md",
+    "General/Learning/DSA/5_StacksQueues/2_Queues.md",
+    "General/Learning/DSA/4_LinkedLists/4_ReversingLinkedList.md",
+    "Classes/Fall 2025/General/DSA/W3Schools/3_linkedList.py",
+    "Classes/Fall 2025/General/DSA/W3Schools/2_queue.py",
+    "Classes/Fall 2025/General/DSA/Leetcode/Temp/1.png",
+    "Classes/Fall 2025/General/DSA/Roblox/Behavioral/1.md",
+    "Classes/Fall 2025/General/DSA/W3Schools/1_stack.py",
+    "Classes/Fall 2025/General/DSA/W3Schools/4_hashTable.py",
+    "General/Learning/DSA/3_Hashing/Hashing.md",
+    "Images/Pasted image 20251022124133.png",
+    "Images/Pasted image 20251022123923.png",
+    "Images/Pasted image 20251022123751.png",
+    "Images/Pasted image 20251022123624.png",
+    "Images/Pasted image 20251022123617.png",
+    "Images/Pasted image 20251022123611.png",
+    "Images/Pasted image 20251022123557.png",
+    "Classes/Fall 2025/General/DSA/Leetcode/6_Graphs.ipynb",
+    "Images/Pasted image 20251022122750.png",
+    "Images/Pasted image 20251022122645.png",
+    "General/Learning/DSA/8_Graphs",
+    "Classes/Fall 2025/AAI551_EngineeringProgrammingPython/Lecture/Lecture 7.md",
+    "Classes/Fall 2025/EE595_AppliedMachineLearning/Work/HW/HW3/Lectures/HW3-1.pdf",
+    "Classes/Fall 2025/EE595_AppliedMachineLearning/Work/HW/HW3/Lectures/Lecture4_DecisionTree.pdf",
+    "Classes/Fall 2025/EE595_AppliedMachineLearning/Work/HW/HW3/Lectures/Lecture5_EnsembleLearning.pdf",
+    "Classes/Fall 2025/EE595_AppliedMachineLearning/Work/HW/HW3/Lectures/Lecture5_BV.pdf",
+    "General/Learning/DSA/1_Introduction/Big O.md",
+    "General/Learning/DSA/6_TreesGraphs/4_Binar Search Trees.md",
+    "Classes/Fall 2025/AAI551_EngineeringProgrammingPython/Lecture/Lecture 6.md",
+    "Classes/Fall 2025/AAI551_EngineeringProgrammingPython/Lecture/Lecture 3.md",
+    "Classes/Fall 2025/AAI551_EngineeringProgrammingPython/Lecture/Lecture 4.md"
+  ]
+}

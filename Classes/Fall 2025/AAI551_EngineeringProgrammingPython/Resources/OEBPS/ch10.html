@@ -1,0 +1,570 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 10. Introducing Python Statements"><div class="chapter" id="introducing_python_statements">
+<h1><span class="label">Chapter 10. </span>Introducing Python Statements</h1>
+<p>Now that you’re familiar with Python’s built-in objects, this chapter begins our exploration of its fundamental statement forms. Much like the previous part’s approach, we’ll begin here with a general introduction to statement syntax and follow up with more details about specific statements in the next few chapters.</p>
+<p>In simple terms, <em>statements</em> are <a contenteditable="false" data-type="indexterm" data-primary="statements" id="sttmnts"></a>the code we write to tell Python what our programs should do. If, as suggested in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>, programs “do things with stuff,” then statements are the way we specify what sort of <em>things</em> a program does. Less informally, Python is a procedural, statement-based language; by combining statements, we specify a <em>procedure</em> that Python performs to satisfy a program’s goals.</p>
+<section data-type="sect1" data-pdf-bookmark="The Python Conceptual Hierarchy Revisited"><div class="sect1" id="the_python_conceptual_hierarchy_revisit">
+<h1>The Python Conceptual Hierarchy Revisited</h1>
+<p>Another way to understand the role of statements is to revisit the concept hierarchy introduced in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>, which talked about built-in objects and the expressions used to manipulate them. This chapter climbs <a contenteditable="false" data-type="indexterm" data-primary="concept hierarchy" id="id2406"></a>the hierarchy to the next level of Python program structure:</p>
+<ol>
+<li><p>Programs are composed of modules.</p></li>
+<li><p>Modules contain statements.</p></li>
+<li><p><em>Statements contain expressions</em>.</p></li>
+<li><p>Expressions create and process objects.</p></li>
+</ol>
+<p>At their base, programs written in the Python language are composed of statements and expressions. Expressions <a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="concept hierarchy" id="id2407"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="concept hierarchy" id="id2408"></a><a contenteditable="false" data-type="indexterm" data-primary="concept hierarchy" data-secondary="expressions" id="id2409"></a><a contenteditable="false" data-type="indexterm" data-primary="concept hierarchy" data-secondary="statements" id="id2410"></a>process objects and are embedded in statements. Statements code the larger <em>logic</em> of a program’s operation—they use and direct expressions to process the objects we studied in the preceding chapters. Moreover, statements are where objects spring into existence (e.g., in expressions within assignment statements), and some statements create entirely new kinds of objects (functions, classes, and so on). At the top, statements always exist in modules, which themselves are managed with <span class="keep-together">statements</span>.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Python’s Statements"><div class="sect1" id="pythonapostrophes_statements">
+<h1>Python’s Statements</h1>
+<p><a data-type="xref" href="#python_statements">Table 10-1</a> summarizes Python’s statement set. Each statement in Python has its own specific purpose and its own specific <em>syntax</em>—the rules that define its structure—though, as you’ll see, many <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="syntax" id="id2411"></a><a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="statements" id="id2412"></a>share common syntax patterns, and some statements’ roles overlap. <a data-type="xref" href="#python_statements">Table 10-1</a> also gives examples of each statement, when coded according to its syntax rules. In your programs, these units of code can perform actions, repeat tasks, make choices, build larger program structures, and so on.</p>
+<p>This part of the book deals with entries in the table from the top through <code>break</code> and <code>continue</code>. You’ve informally been introduced to a few of the statements in <a data-type="xref" href="#python_statements">Table 10-1</a> already; this part of the book will fill in details that were skipped earlier, introduce the rest of Python’s procedural statement set, and cover the overall syntax model. Statements lower in <a data-type="xref" href="#python_statements">Table 10-1</a> that have to do with larger program units—functions, classes, modules, and exceptions—lead to larger programming ideas, so they will each have a section of their own. More focused statements (like <code>del</code>, which deletes various components) are covered elsewhere in this book, as well as in Python’s standard manuals.</p>
+<table class="border" id="python_statements">
+<caption><span class="label">Table 10-1. </span>Python statements</caption>
+<thead>
+<tr>
+<th>Statement</th>
+<th>Role</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Assignment</td>
+<td>Creating references</td>
+<td><code>a, b = 'python', 3.12</code><br/>
+<code>a = (b := next()) + more</code></td>
+</tr>
+<tr>
+<td>Calls and other expressions</td>
+<td>Running functions</td>
+<td><code>log.write('app crash')</code></td>
+</tr>
+<tr>
+<td><code>print</code></td>
+<td>Printing objects</td>
+<td><code>print(hack, code, file=log)</code></td>
+</tr>
+<tr>
+<td><code>if/elif/else</code></td>
+<td>Selecting actions</td>
+<td><code>if 'python' in text:
+    read(text)</code></td>
+</tr>
+<tr>
+<td><code>match/case</code></td>
+<td>Multiway selections</td>
+<td><code>match edition:
+    case 6:
+        print(2024)</code></td>
+</tr>
+<tr>
+<td><code>for/else</code></td>
+<td>Iteration</td>
+<td><code>for x in myiterable:
+    print(x)</code></td>
+</tr>
+<tr>
+<td><code>while/else</code></td>
+<td>General loops</td>
+<td><code>while x := file.readline():
+    print(x)</code></td>
+</tr>
+<tr>
+<td><code>pass</code></td>
+<td>Empty placeholder</td>
+<td><code>if 'python' not in text:
+    pass</code></td>
+</tr>
+<tr>
+<td><code>break</code></td>
+<td>Loop exit</td>
+<td><code>while True:
+    if exittest(): break</code></td>
+</tr>
+<tr>
+<td><code>continue</code></td>
+<td>Loop continue</td>
+<td><code>while True:
+    if skiptest(): continue</code></td>
+</tr>
+<tr>
+<td><code>def</code></td>
+<td>Functions and methods</td>
+<td><code>def f(a, b, c=2, *more):
+    print(a + b + c)</code></td>
+</tr>
+<tr>
+<td><code>return</code></td>
+<td>Functions results</td>
+<td><code>def f(a, b, c=2, *more):
+    return a + b + c</code></td>
+</tr>
+<tr>
+<td><code>yield</code></td>
+<td>Generator functions</td>
+<td><code>def gen(n):
+    for i in n: yield i*2</code></td>
+</tr>
+<tr>
+<td><code>global</code></td>
+<td>Namespaces</td>
+<td><code>x = 1
+def function():
+    global x; x = 2</code></td>
+</tr>
+<tr>
+<td><code>nonlocal</code></td>
+<td>Namespaces</td>
+<td><code>def outer():
+    x = 1
+    def inner():
+        nonlocal x; x = 2</code></td>
+</tr>
+<tr>
+<td><code>async</code></td>
+<td>Coroutine designator</td>
+<td><code>async def consumer(a, b):
+    await producer()</code></td>
+</tr>
+<tr>
+<td><code>await</code></td>
+<td>Coroutine transfer</td>
+<td><code>await asyncio.sleep(1)</code></td>
+</tr>
+<tr>
+<td><code>import</code></td>
+<td>Module access</td>
+<td><code>import sys</code></td>
+</tr>
+<tr>
+<td><code>from</code></td>
+<td>Attribute access</td>
+<td><code>from sys import stdin as f</code></td>
+</tr>
+<tr>
+<td><code>class</code></td>
+<td>Building objects</td>
+<td><code>class Subclass(Superclass):
+    classAttr = []
+    def method(self): pass</code></td>
+</tr>
+<tr>
+<td><code>try/except/finally</code></td>
+<td>Catching exceptions,
+termination actions</td>
+<td><code>try:
+    action()
+except:
+    print('action error')</code></td>
+</tr>
+<tr>
+<td><code>raise</code></td>
+<td>Triggering exceptions</td>
+<td><code>raise EndSearch(location)</code></td>
+</tr>
+<tr>
+<td><code>assert</code></td>
+<td>Debugging checks</td>
+<td><code>assert X &gt; Y, 'X too small'</code></td>
+</tr>
+<tr>
+<td><code>with</code></td>
+<td>Context managers</td>
+<td><code>with open('data') as file:
+    process(file)</code></td>
+</tr>
+<tr>
+<td><code>del</code></td>
+<td>Deleting references</td>
+<td><code>del data[k]</code><br/>
+    <code>del data[i:j]</code><br/>
+    <code>del obj.attr</code><br/>
+    <code>del variable</code></td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td>Type hinting alias</td>
+<td><code>type vector = list[float]</code></td>
+</tr>
+</tbody>
+</table>
+<p>Technically, <a data-type="xref" href="#python_statements">Table 10-1</a> is sufficient as a <a contenteditable="false" data-type="indexterm" data-primary="statements" data-startref="sttmnts" id="id2413"></a>quick preview and reference, but it’s not quite complete as is. Here are a few fine points about its content:</p>
+<ul>
+<li><p>Assignment statements come <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="assignment statements" id="id2414"></a><a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="statements" id="id2415"></a>in a wide variety of syntax flavors, described in <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>: basic, sequence, augmented, and more; and named assignment (<code>:=</code>) is used as an expression, not a <span class="keep-together">statement</span>.</p></li>
+<li><p><code>print</code> is really a built-in function call, and neither a reserved word nor a statement. Because it will nearly always be run as an expression statement, though, and usually on a line by itself, it’s generally thought of as a statement type, and will be treated separately in <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>.</p></li>
+<li><p><code>yield</code> and <code>await</code> are also expressions instead of statements. Like <code>print</code>, they’re often used as expression statements and so are included in this table, but scripts may also assign or otherwise use their result, as you’ll see in <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a>. As expressions, <code>yield</code> and <code>await</code> are also reserved words, unlike <code>print</code>.</p></li>
+<li><p>Most of the words used in statements and expressions are <em>reserved</em> and cannot be used as variables in your code; this includes <code>and</code>, <code>in</code>, <code>if</code>, <code>for</code>, <code>while</code>, and others. Newer statements use “soft” reserved words that are reserved only when used in the statements to which they belong; this includes <code>match</code>, <code>case</code>, and <code>type</code> (though not <code>async</code> and <code>await</code>). We’ll formalize the full list of reserved words in <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>.</p></li>
+</ul>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="A Tale of Two ifs"><div class="sect1" id="a_tale_of_two_ifs">
+<h1>A Tale of Two ifs</h1>
+<p>Before we delve into the details of any of the <a contenteditable="false" data-type="indexterm" data-primary="if statements" id="id2416"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="if statements" id="id2417"></a>concrete statements in <a data-type="xref" href="#python_statements">Table 10-1</a>, this book wishes to begin our look at Python statement syntax by showing you what you are <em>not</em> going to type in Python code.</p>
+<p>Consider the following <code>if</code> statement, coded in a C-like language:</p>
+<pre data-type="programlisting">if (x &gt; y) {
+    x = 1;
+    y = 2;
+}</pre>
+<p>This might be a statement in C, C++, Java, JavaScript, or similar. Now, look at the equivalent statement in the Python language:</p>
+<pre data-type="programlisting">if x &gt; y:
+    x = 1
+    y = 2</pre>
+<p>The first thing that may pop out at you is that the equivalent Python statement is less cluttered—that is, there are fewer syntactic components. This is by design; as a scripting language, one of Python’s goals is to make programmers’ lives easier by requiring less typing. And less typing also means less room for mistakes.</p>
+<p>More specifically, when you compare the two syntax models, you’ll notice that Python adds one new thing to the mix but removes three things that are required in C-like languages.</p>
+<section data-type="sect2" data-pdf-bookmark="What Python Adds"><div class="sect2" id="what_python_adds">
+<h2>What Python Adds</h2>
+<p>The one new syntax component in Python <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="compound statements" id="id2418"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" id="id2419"></a><a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="compound statements" id="id2420"></a><a contenteditable="false" data-type="indexterm" data-primary="colons" data-secondary="statements" id="id2421"></a>is the colon character (<code>:</code>). All Python <em>compound</em> <span class="keep-together"><em>statements</em>—statements</span> that have other statements nested inside them—follow the same general pattern of a header line terminated in a colon, followed by a nested block of code usually indented underneath the header line, like this:</p>
+<pre data-type="programlisting"><em>Header line</em>:
+    <em>Nested statement block</em></pre>
+<p>The colon is required, and omitting it <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="nested statements" data-tertiary="blocks" id="id2422"></a><a contenteditable="false" data-type="indexterm" data-primary="nested statement blocks" id="id2423"></a><a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="statements" data-tertiary="nested statement blocks" id="id2424"></a>is probably the most common coding mistake among new Python programmers (it’s certainly one witnessed thousands of times live in Python training classes). In fact, if you are new to Python, you’ll almost certainly forget the colon character very soon, if you haven’t already. You’ll get an error message if you do, and most Python-friendly editors make this mistake easy to spot:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>if x</strong></code>
+    if x
+        ^
+SyntaxError: expected ':'</pre>
+<p>Including the colon eventually becomes an unconscious habit—so much so that you may start typing colons in your C-like language code, too (generating reams of entertaining error messages from that language’s compiler!).</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="What Python Removes"><div class="sect2" id="what_python_removes">
+<h2>What Python Removes</h2>
+<p>Although Python requires the extra colon character, there are three things programmers in C-like languages must include that you don’t generally have to code in Python.</p>
+<section data-type="sect3" data-pdf-bookmark="Parentheses are optional"><div class="sect3" id="parentheses_are_optional">
+<h3>Parentheses are optional</h3>
+<p>The first of these is the set of <em>parentheses</em> around <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="parentheses" id="id2425"></a><a contenteditable="false" data-type="indexterm" data-primary="parentheses" data-secondary="statements" id="id2426"></a><a contenteditable="false" data-type="indexterm" data-primary="syntax " data-secondary="statements" data-tertiary="parentheses" id="id2427"></a>the tests at the top of some statements:</p>
+<pre data-type="programlisting">if (x &lt; y)</pre>
+<p>The parentheses here are required by the syntax of many C-like languages. In Python, though, they are not—we simply omit the parentheses, and the statement works the same way:</p>
+<pre data-type="programlisting">if x &lt; y</pre>
+<p>Technically speaking, because every expression can be enclosed in parentheses, including them will not hurt in this Python code, and they are not treated as an error if present.</p>
+<p><em>But don’t do that</em>. You’ll be wearing out your keyboard needlessly, and broadcasting to the world that you’re a programmer of a C-like language still learning Python (it happens). The “Python way” is to simply omit the parentheses in these kinds of statements altogether.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="End-of-line is end of statement"><div class="sect3" id="end_of_line_is_end_of_statement">
+<h3>End-of-line is end of statement</h3>
+<p>The second and more significant syntax component <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="semicolons" id="id2428"></a><a contenteditable="false" data-type="indexterm" data-primary="semicolons in statements" id="id2429"></a><a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="statements" data-tertiary="semicolons" id="id2430"></a>you won’t find in Python code is the <em>semicolon</em>. You don’t need to terminate statements with semicolons in Python the way you do in C-like languages:</p>
+<pre data-type="programlisting">x = 1;</pre>
+<p>In Python, the general rule is that the end of a line automatically terminates the statement that appears on that line. In other words, you can leave off the semicolons, and it works the same way:</p>
+<pre data-type="programlisting">x = 1</pre>
+<p>There are some ways to work around this rule, as you’ll see in a moment (for instance, wrapping code in a bracketed structure allows it to span lines). But, in general, you write one statement per line for the vast majority of Python code, and no semicolon is required.</p>
+<p>Here, too, if you are pining for your C programming days (and why would you?) you can continue to use semicolons at the end of each statement—the Python language lets you get away with them if they are present, because the semicolon is also a separator when statements are combined.</p>
+<p><em>But don’t do that either (really!)</em>. Again, doing so tells the world that you’re a programmer of a C-like language who still hasn’t quite made the switch to Python coding. The Pythonic style is to leave off the semicolons altogether. Judging from students in classes, this seems a tough habit for some veteran programmers to break. But you’ll get there; semicolons are useless noise in this role in Python.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="End of indentation is end of block"><div class="sect3" id="end_of_indentation_is_end_of_block">
+<h3>End of indentation is end of block</h3>
+<p>The third and final syntax <a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="statements" data-tertiary="indentation" id="syxstt"></a><a contenteditable="false" data-type="indexterm" data-primary="indentation" data-secondary="blocks" id="idttbk"></a>component that Python removes…and the one that may seem the most unusual to soon-to-be-ex-programmers of C-like languages, until they’ve used it for 10 minutes and realize it’s actually a feature...is that you do not type <em>anything</em> explicit in your code to syntactically mark the beginning and end of a nested block of code. You don’t need to include <code>begin</code>/<code>end</code>, <code>then</code>/<code>endif</code>, or <code>{</code>/<code>}</code> around the nested block, as you do in C-like languages:</p>
+<pre data-type="programlisting">if (x &gt; y) {
+    x = 1;
+    y = 2;
+}</pre>
+<p class="pagebreak-before">Instead, in Python, we consistently indent all the statements in a given single nested block the same distance to the right, and Python uses the statements’ physical indentation to determine where the block starts and stops:</p>
+<pre data-type="programlisting">if x &gt; y:
+    x = 1
+    y = 2</pre>
+<p>This <em>indentation</em> means the <a contenteditable="false" data-type="indexterm" data-primary="whitespace" id="id2431"></a>blank whitespace all the way to the left of the two nested statements here. Python doesn’t care <em>how</em> you indent (you may use either spaces or tabs), or <em>how much</em> you indent (you may use any number of spaces or tabs). In fact, the indentation of one nested block can be totally different from that of another. The syntax rule is only that for a given single nested block, all of its statements must be indented the same distance to the right. If this is not the case, you will get a syntax error, and your code will not run until you repair its indentation to be consistent:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>if True:</strong></code>
+...     <code><strong>a = 1</strong></code>
+...   <code><strong>b = 2</strong></code>
+    b = 2
+         ^
+IndentationError: unindent does not match any outer indentation level</pre>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Why Indentation Syntax?"><div class="sect2" id="why_indentation_syntaxquestion_mark">
+<h2>Why Indentation Syntax?</h2>
+<p>The indentation rule may seem unusual at first glance to programmers accustomed to C-like languages, but it is <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="indentation" id="sttdtt"></a>an intentional feature of Python: it’s one of the main ways that Pyth<a contenteditable="false" data-type="indexterm" data-primary="columns in code" id="id2432"></a>on almost forces programmers to produce uniform, regular, and readable code. It essentially means that you must line up your code vertically, in <em>columns</em>, according to its logical structure. The net effect is to make your code more consistent and readable—unlike much of the code written in C-like languages.</p>
+<p>To put that more strongly, aligning your code according to its logical structure is a major part of making it readable, and thus reusable and maintainable, by yourself and others. In fact, even if you never use Python after reading this book, you should get into the habit of aligning your code for readability in <em>any</em> block-structured language. Python underscores the issue by making this a part of its syntax, but it’s an important thing to do in any programming language, and it has a huge impact on the usefulness of your code.</p>
+<p>Your experience may vary, but there’s a common phenomenon in large, old C++ programs that have been worked on by many programmers over the years. Almost invariably, each programmer has his or her own style for indenting code. For example, a <code>while</code> loop coded in the C++ language may have begun its tenure like this:</p>
+<pre data-type="programlisting">while (x &gt; 0) {</pre>
+<p>Before we even get into indentation, there are three or four ways that programmers can arrange the <code>{}</code> braces in a C-like language, and organizations often suffer political battles and standards docs to address the options (which seems more than a little off-topic for the problem to be solved by programming). Be that as it may, here’s the scenario often encountered in C++ code. The first person who worked on the code indented the loop four spaces:</p>
+<pre data-type="programlisting">while (x &gt; 0) {
+    --------;
+    --------;</pre>
+<p>That person eventually moved on to other projects (or, sadly, management), only to be replaced by someone who liked to indent further to the right:</p>
+<pre data-type="programlisting">while (x &gt; 0) {
+    --------;
+    --------;
+           --------;
+           --------;</pre>
+<p>That person later moved on to other opportunities (ending their reign of coding terror), and someone else picked up the code who liked to indent less:</p>
+<pre data-type="programlisting">while (x &gt; 0) {
+    --------;
+    --------;
+           --------;
+           --------;
+--------;
+--------;
+}</pre>
+<p>And so on. Eventually, the block is terminated by a closing brace (<code>}</code>), which of course makes this “block-structured code” (yes, sarcasm). No: in any block-structured language, Python or otherwise, if nested blocks are not indented consistently, they become very difficult for the reader to interpret, change, or reuse, because the code no longer visually reflects its logical meaning. <em>Readability matters</em>, and indentation is a major component of readability.</p>
+<p>Here is another example that may have burned you in the past if you’ve done much programming in a C-like language. Consider the following statement in C:</p>
+<pre data-type="programlisting">if (x)
+     if (y)
+          statement1;
+else
+     statement2;</pre>
+<p>Which <code>if</code> does the <code>else</code> here go with? Surprisingly, the <code>else</code> is paired with the nested <code>if</code> statement (<code>if (y)</code>) in C, even though it looks visually as though it is associated with the outer test (<code>if (x)</code>). This is a classic pitfall in the C language, and it can lead to the reader completely misinterpreting the code and changing it incorrectly in ways that might not be uncovered until the Mars rover crashes into a giant rock!</p>
+<p>This cannot happen in Python—because indentation is significant, the way the code looks is the way it will work. Consider an equivalent Python statement:</p>
+<pre data-type="programlisting">if x:
+     if y:
+          statement1
+else:
+     statement2</pre>
+<p>In this example, the <code>if</code> that the <code>else</code> lines up with vertically and visually is the one it is associated with logically and behaviorally (the outer <code>if x</code>). In a sense, Python is a <em>WYSIWYG</em> language—what you see is what you get—because the way code looks is the way it runs, regardless of who coded it.</p>
+<p>If this still isn’t enough to underscore the benefits of Python’s syntax, here’s another anecdote. Some <em>companies</em> that develop systems software in the C language, where consistent indentation is not required, enforce it anyhow. It’s not too uncommon for such groups to run automated tools that analyze the indentation used in code, when it is checked into source control systems at the end of the day. If the tools notice that you’ve indented your code inconsistently, you might just receive an automated email about it the next morning—and so might your manager!</p>
+<p>The point is that even when a language doesn’t require it, good programmers know that consistent use of indentation has a huge impact on code readability and quality. The fact that Python promotes this to the level of syntax is seen by most as a feature of the language.</p>
+<p>Also keep in mind that nearly every programmer-friendly <em>text editor</em> has built-in support for <a contenteditable="false" data-type="indexterm" data-primary="text editors" data-secondary="indentation" id="id2433"></a><a contenteditable="false" data-type="indexterm" data-primary="indentation" data-secondary="text editors" id="id2434"></a>Python’s syntax model. In the IDLE GUI, for example, lines of code are automatically indented when you are typing a nested block; pressing the Backspace key backs up one level of indentation, and you can customize how far to the right IDLE indents statements in a nested block. There is no requirement on this: <em>four spaces</em> is very common, but it’s up to you to decide how and how much you wish to indent (unless your company has endured politics and docs to standardize this too). Indent further to the right for further nested blocks, and less to close the prior block.</p>
+<p>As a caution, though, you probably <a contenteditable="false" data-type="indexterm" data-primary="tabs, indentation and" id="id2435"></a><a contenteditable="false" data-type="indexterm" data-primary="spaces, indentation and" id="id2436"></a>shouldn’t <em>mix</em> tabs and spaces in the same block in Python, unless you do so consistently; use tabs or spaces in a given block, but not both (in fact, Python issues an error for inconsistent use of tabs and spaces, as you’ll see in <a data-type="xref" href="ch12.html#if_and_match_selections">Chapter 12</a>). Then again, you probably shouldn’t mix tabs or spaces in indentation in <em>any</em> structured language—such code can cause major readability issues if the next programmer has her or his editor set to display tabs differently than yours. C-like languages might let coders get away with this, but they really shouldn’t: the result can be a mangled mess.</p>
+<p>Regardless of which language you code in, you should be indenting consistently for readability. In fact, if you weren’t taught to do this earlier in your career, your teachers did you a disservice. Most programmers—especially those who must read others’ code—consider it an asset that Python elevates this to the level of syntax. Moreover, generating tabs instead of braces is no more difficult in practice for tools that must <a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="statements" data-tertiary="indentation" data-startref="syxstt" id="id2437"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="indentation" data-startref="sttdtt" id="id2438"></a><a contenteditable="false" data-type="indexterm" data-primary="indentation" data-secondary="blocks" data-startref="idttbk" id="id2439"></a>output Python code, and the page breaks that can obscure code nesting in the print versions of books (including this one!) will not be present in the real world of coding.</p>
+    
+    <p>In sum, if you do what you should be doing in a C-like language anyhow, but get rid of the braces, your code will satisfy Python’s syntax rules.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="A Few Special Cases"><div class="sect2" id="a_few_special_cases">
+<h2>A Few Special Cases</h2>
+<p>As mentioned previously, in Python’s syntax model:</p>
+<ul>
+<li><p>The end of a line terminates the statement on that line (without semicolons).</p></li>
+<li><p>Nested statements are blocked and associated by their physical indentation (without braces).</p></li>
+</ul>
+<p>Those rules cover almost all Python code you’ll write or see in practice. However, Python also provides some special-purpose rules that allow for flexibility in both statements and nested statement blocks. They’re not required and should be used sparingly, but programmers have found them useful in <span class="keep-together">practice</span>.</p>
+<section data-type="sect3" data-pdf-bookmark="Statement rule special cases"><div class="sect3" id="statement_rule_special_cases">
+<h3>Statement rule special cases</h3>
+<p>There are three special rules for <a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="statements" data-tertiary="special cases rules" id="syxttp"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="special cases rules" id="sttpcs"></a>statements, two of which have already been introduced and used in this book. First of all, although statements normally appear one per line, it is possible to <em>squeeze</em> more than one statement onto a single line in Python by separating them with semicolons:</p>
+<pre data-type="programlisting">a = 1; b = 2; print(a + b)               <code><em># Three statements on one line</em></code></pre>
+<p>This is the only place in Python where semicolons are required: as statement separators. This only works, though, if the statements thus combined are not <em>themselves</em> compound statements. In other words, you can chain together only simple statements, like assignments, and calls to <code>print</code> and other functions and methods. Compound statements like <code>if</code> tests and <code>while</code> loops must still appear on lines of their own (otherwise, you could squeeze an entire program onto one line, which probably would not make you very popular among your coworkers!).</p>
+<p>The other special rule for statements is essentially the inverse: you can make a single statement <em>span</em> across multiple lines. To make this work, you simply have to enclose part of your statement in a bracketed pair—parentheses (<code>()</code>), square brackets (<code>[]</code>), or curly braces (<code>{}</code>). Any code enclosed in these constructs can cross multiple lines: your statement doesn’t end until Python reaches the line containing the closing part of the pair. For instance, to continue a list literal:</p>
+<pre data-type="programlisting">mylist = [1111,           <code><em># Continuation lines</em></code>
+          2222,           <code><em># Any code in (), [], {}</em></code> 
+          3333]</pre>
+<p>Because this code is enclosed in a square brackets pair, Python simply keeps reading on the next line until it encounters the closing bracket. The curly braces surrounding dictionaries (as well as set literals and dictionary and set comprehensions) allow them to span lines this way, too, and parentheses handle tuples, function calls, and expressions. The <em>indentation</em> of the continuation lines does not matter, though common sense dictates that the lines should be aligned somehow for readability. Any <code>#</code> <em>comments</em> are ignored as usual in continuation lines too, and <em>nested</em> brackets must all be closed before the continuation-line run ends.</p>
+<p>Parentheses are the catchall device—because <em>any</em> expression can be wrapped in them, simply inserting a left <em>parenthesis</em> allows you to drop down to the next line and continue your statement:</p>
+<pre data-type="programlisting">X = (A + B +
+     C + D)</pre>
+<p>This technique works within <em>compound</em> statements, too, by the way. Anywhere you need to code a large expression, simply wrap it in parentheses to continue it on the next line:</p>
+<pre data-type="programlisting">if (A == 1 and
+    B == 2 and
+    C == 3):
+        print('hack' * 3)</pre>
+<p>An older rule also allows for continuation lines when the prior line ends in a <em>backslash</em>:</p>
+<pre data-type="programlisting">X = A + B + \
+      C + D               <code><em># An error-prone older alternative</em></code></pre>
+<p>This alternative technique is somewhat discouraged today because it’s difficult to notice and maintain the backslashes. It’s also fairly <em>brittle</em> and <em>error-prone</em>—there can be no spaces or <em>#</em> comments after the backslash, and accidentally omitting it can have unexpected effects if the next line is mistaken to be a new statement (in this example, “C + D” is a valid statement by itself if it’s not <a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="statements" data-tertiary="special cases rules" data-startref="syxttp" id="id2440"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="special cases rules" data-startref="sttpcs" id="id2441"></a>indented and would silently be run as such). This rule is also a throwback to the C language, where it is commonly used in “#define” macros. While <code>\</code> may be occasionally useful, when in Pythonland, do as Pythoneers do: use bracketed pairs instead of <code>\</code> as a rule.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Block rule special case"><div class="sect3" id="block_rule_special_case">
+<h3>Block rule special case</h3>
+<p>As mentioned previously, statements <a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="statements" data-tertiary="block rule special cases" id="syxkrp"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="nested statements" data-tertiary="special cases" id="stntpc"></a><a contenteditable="false" data-type="indexterm" data-primary="nested statement blocks" data-secondary="special cases" id="nsttpc"></a>in a nested block of code are normally associated by being indented the same amount to the right. As one special case here, and another we met in earlier chapters, the body of a compound statement can instead appear on the same line as the header in Python, after the colon:</p>
+<pre data-type="programlisting">if x &gt; y: print(x)</pre>
+<p>This allows us to code single-line <code>if</code> statements, single-line <code>while</code> and <code>for</code> loops, and so on. Much like <code>;</code> separators, though, this will work only if the body of the compound statement itself does not <em>contain</em> any compound statements. That is, only simple statements—assignments, calls to <code>print</code> and others, and the like—are allowed after the colon. Larger statements must still appear on lines by themselves. Extra parts of compound statements (such as the <code>else</code> part of an <code>if</code>, which you’ll meet in the next section) must also be on separate lines of their own. Compound statement bodies can also consist of multiple simple statements separated by semicolons, but this tends to be frowned upon.</p>
+<p>In general, even though it’s not always required, if you keep most of your statements on individual lines and indent your nested blocks as a norm, your code will be easier to read and change in the future. Moreover, some code profiling and coverage tools may not be able to distinguish between multiple statements squeezed onto a single line, or the header and body of a one-line compound statement. It is almost always to your advantage to keep things simple in Python. You can use the special-case exceptions to write Python code that’s hard to read, but it takes a lot of work, and there are probably better ways to spend your time.</p>
+<p>To see a prime and common exception to <a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="statements" data-tertiary="block rule special cases" data-startref="syxkrp" id="id2442"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="nested statements" data-tertiary="special cases" data-startref="stntpc" id="id2443"></a><a contenteditable="false" data-type="indexterm" data-primary="nested statement blocks" data-secondary="special cases" data-startref="nsttpc" id="id2444"></a>one of these rules in action, however (the use of a single-line <code>if</code> statement to <code>break</code> out of a loop), and to introduce more of Python’s syntax, let’s move on to the next section and write some real code.</p>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="A Quick Example: Interactive Loops"><div class="sect1" id="a_quick_example_interactive_loops">
+<h1>A Quick Example: Interactive Loops</h1>
+<p>You’ll see all these syntax rules in action when we tour Python’s specific compound statements in the next few chapters, but they work the same everywhere in the Python language. To get started, let’s work through a brief but realistic example that demos the way that statement syntax and nesting come together and introduces a few statements along the way. To work along, either copy and paste this section’s examples from emedia into your REPL or run them from the file <em>interact.py</em> located in this book’s examples package using any of the launch tools we studied in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a>.</p>
+<section data-type="sect2" data-pdf-bookmark="A Simple Interactive Loop"><div class="sect2" id="a_simple_interactive_loop">
+<h2>A Simple Interactive Loop</h2>
+<p>Suppose you’re asked to write a <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="interactive" id="lpttr"></a><a contenteditable="false" data-type="indexterm" data-primary="interactive loops" id="ittlps"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="interactive loops" id="sttittlp"></a>Python program that interacts with a user in a console window. Maybe you’re accepting inputs to send to a database or reading numbers to be used in a calculation. Regardless of the purpose, you need to code a loop that reads one or more inputs from a user typing on a keyboard and prints back a result for each. In other words, you need to write a classic read/evaluate/print loop program, similar to Python’s standard REPL.</p>
+<p>In Python, typical boilerplate code for such an interactive loop might look like this:</p>
+<pre data-type="programlisting">while True:
+    reply = input('Enter text:')
+    if reply == 'stop': break
+    print(reply.upper())</pre>
+<p>This code makes use of a few new ideas and some we’ve already explored:</p>
+<ul>
+<li><p>The code leverages <a contenteditable="false" data-type="indexterm" data-primary="while loops" data-secondary="interactive loops" id="id2445"></a>the Python <code>while</code> loop, Python’s most general looping statement. We’ll study the <code>while</code> statement in more detail later, but in short, it consists of the word <code>while</code>, followed by an expression that is interpreted as a true or false result, followed by a nested block of code that is repeated while the test at the top is true. The word <code>True</code> here is considered always true, so this loop continues forever, unless somehow stopped.</p></li>
+<li><p>The <code>input</code> built-in function we met earlier in the book (to keep windows open after clicks in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a> and the <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a> coverage it referenced) is used here for general console input—it prints its optional argument string as a prompt and returns the user’s typed reply as a string.</p></li>
+<li><p>A single-line <code>if</code> statement that makes use of the special rule for nested blocks also appears here: the body of the <code>if</code> appears on the header line after the colon instead of being indented on a new line underneath it. This would work either way, but as it’s coded, we’ve saved an extra line.</p></li>
+<li><p>Finally, the Python <code>break</code> statement is <a contenteditable="false" data-type="indexterm" data-primary="break statements" data-secondary="interactive loops" id="id2446"></a>used to exit the loop immediately—it simply jumps out of the loop statement altogether, and the program continues after the loop. Without this exit statement, the <code>while</code> would loop forever, as its test is always true.</p></li>
+</ul>
+<p>In effect, this combination of statements essentially means “read a line from the user and print it in uppercase until the user enters the word ‘stop.’” There are other ways to code such a loop (e.g., see the note ahead), but the form used here is very common in Python code and serves to illustrate syntax basics.</p>
+<p>Notice that all three lines nested under the <code>while</code> header line are indented the same amount: because they line up vertically in a column this way, they are the block of code that is associated with the <code>while</code> test and repeated. Either a lesser-indented statement or the end of the source file (as here) will suffice to terminate the loop body block.</p>
+<p>When this code is run, either interactively or as a script file, here is the sort of interaction we get:</p>
+<pre data-type="programlisting">Enter text:<code><strong>python</strong></code>
+PYTHON
+Enter text:<code><strong>312</strong></code>
+312
+Enter text:<code><strong>stop</strong></code></pre>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Or crunch code with the := operator</em>: Spoiler alert—this section’s code is traditional and simple and works as a syntax demo, but it’s possible to reduce it from four lines to two with the <code>:=</code> named-assignment expression added in Python 3.8 and covered in the next chapter. This expression assigns a name to another expression’s result, but also returns the assigned value as its overall result. The net effect lets us fetch, assign, and test input on the same line—and all in the loop’s header:</p>
+<pre data-type="programlisting">while (reply := input('Enter text:')) != 'stop':
+    print(reply.upper())</pre>
+<p>While useful in narrow roles, this expression <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="interactive" data-startref="lpttr" id="id2447"></a><a contenteditable="false" data-type="indexterm" data-primary="interactive loops" data-startref="ittlps" id="id2448"></a>also requires nested parentheses in this context and is arguably more implicit than traditional forms (though ex-C programmers’ mileage may vary!).</p>
+</div>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Doing Math on User Inputs"><div class="sect2" id="doing_math_on_user_inputs">
+<h2>Doing Math on User Inputs</h2>
+<p>Our script works, but now suppose that instead of converting a text string to uppercase, we want to do some math with <a contenteditable="false" data-type="indexterm" data-primary="inputs, user" data-see="user inputs" id="id2449"></a><a contenteditable="false" data-type="indexterm" data-primary="user inputs" data-secondary="math" id="usptmth"></a><a contenteditable="false" data-type="indexterm" data-primary="mathematical operations" data-secondary="user inputs" id="mthpusp"></a><a contenteditable="false" data-type="indexterm" data-primary="interactive loops" data-secondary="math on user inputs" id="ittpmu"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="interactive" data-tertiary="math on user inputs" id="lpttmu"></a>numeric input—squaring it, for example (perhaps in some misguided effort of an age-input program to tease its users). We might try statements like these to achieve the desired effect:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>reply = '40'</strong></code>
+&gt;&gt;&gt; <code><strong>reply ** 2</strong></code>
+TypeError: unsupported operand type(s) for ** or pow(): 'str' and 'int'</pre>
+<p>This won’t quite work in our script, though: input from a user is always returned as a <em>string</em>, and as discussed in the prior part of this book, Python won’t convert object types in expressions unless they are all numeric. We cannot raise a string of digits to a power unless we convert it manually to an integer:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>int(reply) ** 2</strong></code>
+1600</pre>
+<p>Armed with this information, we can now recode our loop to perform the necessary math. Type the following in a file to run it with command line, IDLE menu options, or any other technique we met in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a> (the REPL both requires a blank line after the <code>while</code>, and runs just one statement at a time—the final <code>print</code> here wouldn’t make sense):</p>
+<pre data-type="programlisting">while True:
+    reply = input('Enter text:')
+    if reply == 'stop': break
+    print(int(reply) ** 2)
+print('Bye')</pre>
+<p>This script uses a single-line <code>if</code> statement to exit on “stop” as before, but it also converts inputs to perform the required math. This version also adds an exit message at the bottom. Because the <code>print</code> statement in the last line is not indented <em>as much</em> as the nested block of code, it is not considered part of the loop <a contenteditable="false" data-type="indexterm" data-primary="user inputs" data-secondary="math" data-startref="usptmth" id="id2450"></a><a contenteditable="false" data-type="indexterm" data-primary="mathematical operations" data-secondary="user inputs" data-startref="mthpusp" id="id2451"></a><a contenteditable="false" data-type="indexterm" data-primary="interactive loops" data-secondary="math on user inputs" data-startref="ittpmu" id="id2452"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="interactive" data-tertiary="math on user inputs" data-startref="lpttmu" id="id2453"></a>body and will run only once, after the loop is exited:</p>
+<pre data-type="programlisting">Enter text:<code><strong>2</strong></code>
+4
+Enter text:<code><strong>40</strong></code>
+1600
+Enter text:<code><strong>stop</strong></code>
+Bye</pre>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Handling Errors by Testing Inputs"><div class="sect2" id="handling_errors_by_testing_inputs">
+<h2>Handling Errors by Testing Inputs</h2>
+<p>So far so good, but notice what happens when the input is invalid:</p>
+<pre data-type="programlisting">Enter text:<code><strong>xxx</strong></code>
+ValueError: invalid literal for int() with <a contenteditable="false" data-type="indexterm" data-primary="error handling" data-secondary="testing user input" id="errhupt"></a><a contenteditable="false" data-type="indexterm" data-primary="testing" data-secondary="user input, error handling" id="ttupt"></a><a contenteditable="false" data-type="indexterm" data-primary="user inputs" data-secondary="error handling" id="usprrh"></a><a contenteditable="false" data-type="indexterm" data-primary="interactive loops" data-secondary="error handling" data-tertiary="input testing" id="ittprrp"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="interactive" data-tertiary="testing inputs" id="lpttpu"></a>base 10: 'xxx'</pre>
+<p>The built-in <code>int</code> function raises an <em>exception</em> (i.e., flags an error) here in the face of a nonnumber. If we want our script to be robust, we can check the string’s content ahead of time with the string object’s <code>isdigit</code> method:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S = '40'</strong></code>
+&gt;&gt;&gt; <code><strong>T = 'xxx'</strong></code>
+&gt;&gt;&gt; <code><strong>S.isdigit(), T.isdigit()</strong></code>
+(True, False)</pre>
+<p>This also gives us an excuse to further nest the statements in our example. The following new version of our interactive script uses a full-blown <code>if</code> statement to work around the exception on conversion errors:</p>
+<pre data-type="programlisting">while True:
+    reply = input('Enter text:')
+    if reply == 'stop':
+        break
+    elif not reply.isdigit():
+        print('Bad!' * 8)
+    else:
+        print(int(reply) ** 2)
+print('Bye')</pre>
+<p>We’ll study the <code>if</code> statement in more detail in <a data-type="xref" href="ch12.html#if_and_match_selections">Chapter 12</a>, but it’s a fairly lightweight tool for coding logic in scripts. In its full form, it consists of the word <code>if</code> followed by a test and an associated block of code; one or more optional <code>elif</code> (“else if”) tests and code blocks; and an optional <code>else</code> part with a block of code at the bottom to serve as a default. Python runs the block of code associated with the first test that is true, working from top to bottom, or the <code>else</code> part if all tests are false.</p>
+<p>The <code>if</code>, <code>elif</code>, and <code>else</code> parts in the preceding example are associated as part of the same statement because their opening words all line up vertically (i.e., share the same level of indentation). The <code>if</code> statement spans from the word <code>if</code> to just before the <code>print</code> statement on the last line of the script. In turn, the entire <code>if</code> block is part of the <code>while</code> loop because all of it is indented under the loop’s header line. Statement nesting like this is natural once you start using it.</p>
+<p>When we run our new script, its code catches errors before they occur and prints an error message before continuing (which you’ll probably want to improve before this code is handed over to the quality-assurance team), but “stop” still gets us out, and valid numbers are <a contenteditable="false" data-type="indexterm" data-primary="error handling" data-secondary="testing user input" data-startref="errhupt" id="id2454"></a><a contenteditable="false" data-type="indexterm" data-primary="testing" data-secondary="user input, error handling" data-startref="ttupt" id="id2455"></a><a contenteditable="false" data-type="indexterm" data-primary="user inputs" data-secondary="error handling" data-startref="usprrh" id="id2456"></a><a contenteditable="false" data-type="indexterm" data-primary="interactive loops" data-secondary="error handling" data-tertiary="input testing" data-startref="ittprrp" id="id2457"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="interactive" data-tertiary="testing inputs" data-startref="lpttpu" id="id2458"></a>still squared:</p>
+<pre data-type="programlisting">Enter text:<code><strong>5</strong></code>
+25
+Enter text:<code><strong>xxx</strong></code>
+Bad!Bad!Bad!Bad!Bad!Bad!Bad!Bad!
+Enter text:<code><strong>10</strong></code>
+100
+Enter text:<code><strong>stop</strong></code>
+Bye</pre>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Handling Errors with try Statements"><div class="sect2" id="handling_errors_with_try_statements">
+<h2>Handling Errors with try Statements</h2>
+<p>The preceding solution works, but as you’ll see later in the book, the most general way to handle <a contenteditable="false" data-type="indexterm" data-primary="error handling" data-secondary="try statement" id="errhdttm"></a><a contenteditable="false" data-type="indexterm" data-primary="try statement" data-secondary="error handling" id="trttrrh"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="try" id="ttmry"></a><a contenteditable="false" data-type="indexterm" data-primary="interactive loops" data-secondary="error handling" data-tertiary="try statements" id="ittptyt"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="interactive" data-tertiary="try statements" id="lptttryt"></a>errors in Python is to catch and recover from them completely using the Python <code>try</code> statement. We’ll explore this statement in depth in <a data-type="xref" href="part07.html#exceptions">Part VII</a> of this book, but as a preview, using a <code>try</code> here can lead to code that some might see as simpler than the prior version:</p>
+<pre data-type="programlisting">while True:
+    reply = input('Enter text:')
+    if reply == 'stop': break
+    try:
+        num = int(reply)
+    except:
+        print('Bad!' * 8)
+    else:
+        print(num ** 2)
+print('Bye')</pre>
+<p>This version works exactly like the previous one, but we’ve replaced the explicit error check with code that assumes the conversion will work and wraps it in an exception handler for cases when it doesn’t. In other words, rather than detecting an error, we simply respond if one occurs.</p>
+<p>This <code>try</code> statement is another compound statement and follows the same pattern as <code>if</code> and <code>while</code>. It’s composed of the word <code>try</code>, followed by the main block of code (the action we are trying to run), followed by an <code>except</code> part that gives the exception handler code and an <code>else</code> part to be run if no exception is raised in the <code>try</code> part. Python first runs the <code>try</code> part, then runs either the <code>except</code> part (if an exception occurs) or the <code>else</code> part (if no exception occurs).</p>
+<p>In terms of statement nesting, because the words <code>try</code>, <code>except</code>, and <code>else</code> are all indented to the same level, they are all considered part of the same single <code>try</code> statement. Notice that the <code>else</code> part is associated with the <code>try</code> here, not the <code>if</code>. As we’ve seen, <code>else</code> can appear in <code>if</code> statements in Python, but it can also appear in <code>try</code> statements and loops—its indentation tells you what statement it is a part of. In this case, the <code>try</code> statement spans from the word <code>try</code> through the code indented under the word <code>else</code>, because the <code>else</code> is indented the same as <code>try</code>. The <code>if</code> statement in this code is a one-liner <a contenteditable="false" data-type="indexterm" data-primary="error handling" data-secondary="try statement" data-startref="errhdttm" id="id2459"></a><a contenteditable="false" data-type="indexterm" data-primary="try statement" data-secondary="error handling" data-startref="trttrrh" id="id2460"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="try" data-startref="ttmry" id="id2461"></a><a contenteditable="false" data-type="indexterm" data-primary="interactive loops" data-secondary="error handling" data-tertiary="try statements" data-startref="ittptyt" id="id2462"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="interactive" data-tertiary="try statements" data-startref="lptttryt" id="id2463"></a>and ends after the <code>break</code>, so the <code>else</code> cannot apply to it.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Supporting Floating-Point Numbers"><div class="sect2" id="supporting_floating_point_numbers">
+<h2>Supporting Floating-Point Numbers</h2>
+<p>Again, we’ll come back to the <code>try</code> statement <a contenteditable="false" data-type="indexterm" data-primary="interactive loops" data-secondary="floating-point numbers" id="itlpfgpn"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="interactive" data-tertiary="floating-point numbers" id="pictvpnm"></a><a contenteditable="false" data-type="indexterm" data-primary="floating point numbers" data-secondary="interactive loops" id="fgpnmtvp"></a>later in this book. For now, be aware that because <code>try</code> can be used to intercept any error, it reduces the amount of error-checking code you have to write, and it’s a very general approach to dealing with unusual cases. If we’re sure that <code>print</code> won’t fail, for instance, this example could be even more concise:</p>
+<pre data-type="programlisting">while True:
+    reply = input('Enter text:')
+    if reply == 'stop': break
+    try:
+        print(int(reply) ** 2)
+    except:
+        print('Bad!' * 8)
+print('Bye')</pre>
+<p>And if we wanted to support input of floating-point numbers instead of just integers, for example, using <code>try</code> would be much easier than manual error testing—we could simply run a <code>float</code> call and catch its exceptions:</p>
+<pre data-type="programlisting">while True:
+    reply = input('Enter text:')
+    if reply == 'stop': break
+    try:
+        print(float(reply) ** 2)
+    except:
+        print('Bad!' * 8)
+print('Bye')</pre>
+<p>There is no <code>isfloat</code> method for strings today, so this exception-based approach spares us from having to accommodate all possible floating-point syntax in an up-front error check (a nontrivial task, given the many faces of floats!). When coded this way, we can enter a wider variety of numbers, but errors and exits still work as before:</p>
+<pre data-type="programlisting">Enter text:<code><strong>50</strong></code>
+2500.0
+Enter text:<code><strong>40.5</strong></code>
+1640.25
+Enter text:<code><strong>1.23E-100</strong></code>
+1.5129e-200
+Enter text:<code><strong>hack</strong></code>
+Bad!Bad!Bad!Bad!Bad!Bad!Bad!Bad!
+Enter text:<code><strong>stop</strong></code>
+Bye</pre>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Or run anything with eval and exec</em>: Python’s built-in <code>eval</code> call, which we used in Chapters <a data-xrefstyle="select:labelnumber" data-type="xref" href="ch05.html#numbers_and_expressions">5</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch09.html#tuplescomma_filescomma_and_everything_e">9</a> to convert data in strings and files, would work in place of <code>float</code> here, too, and would allow input of arbitrary expressions (“2 ** 100” would be a legal, if curious, input, especially if we’re assuming the program is processing ages!). This is a powerful concept that is open to the same security issues mentioned in the prior chapters. If you can’t trust the source of a code string, use more focused and restrictive conversion tools like <code>int</code> and <code>float</code>.</p>
+<p>Python’s <code>exec</code>, used in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a> to run code read from a file, is similar to <code>eval</code> (but assumes the string is a statement instead of an expression and has no result), and its <code>compile</code> call precompiles frequently used code strings to bytecode objects for speed. Run a <code>help</code> on any of these for <a contenteditable="false" data-type="indexterm" data-primary="interactive loops" data-secondary="floating-point numbers" data-startref="itlpfgpn" id="id2464"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="interactive" data-tertiary="floating-point numbers" data-startref="pictvpnm" id="id2465"></a><a contenteditable="false" data-type="indexterm" data-primary="floating point numbers" data-secondary="interactive loops" data-startref="fgpnmtvp" id="id2466"></a>more details. We’ll also use <code>exec</code> to import modules by name string in <a data-type="xref" href="ch25.html#module_odds_and_ends">Chapter 25</a>—an example of its more dynamic roles.</p>
+</div>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Nesting Code Three Levels Deep"><div class="sect2" id="nesting_code_three_levels_deep">
+<h2>Nesting Code Three Levels Deep</h2>
+<p>Let’s look at one last mutation of <a contenteditable="false" data-type="indexterm" data-primary="interactive loops" data-secondary="nesting code" id="id2467"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="interactive" data-tertiary="nesting code" id="id2468"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="interactive loops" id="id2469"></a>our code. Nesting can take us even further if we need it to—we could, for example, extend our prior integer-only script to branch to one of a set of alternatives based on the relative magnitude of a valid input:</p>
+<pre data-type="programlisting">while True:
+    reply = input('Enter text:')
+    if reply == 'stop':
+        break
+    elif not reply.isdigit():
+        print('Bad!' * 8)
+    else:
+        num = int(reply)
+        if num &lt; 20:
+            print('low')
+        else:
+            print(num ** 2)
+print('Bye')</pre>
+<p>This version adds an <code>if</code> statement nested in the <code>else</code> clause of another <code>if</code> statement, which is in turn nested in the <code>while</code> loop. When code is conditional or repeated like this, we simply indent it further to the right. The net effect is like that of prior versions, but we’ll now print “low” for numbers <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="interactive loops" data-startref="sttittlp" id="id2470"></a>less than 20:</p>
+<pre data-type="programlisting">Enter text:<code><strong>19</strong></code>
+low
+Enter text:<code><strong>20</strong></code>
+400
+Enter text:<code><strong>hack</strong></code>
+Bad!Bad!Bad!Bad!Bad!Bad!Bad!Bad!
+Enter text:<code><strong>stop</strong></code>
+Bye</pre>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00020">
+<h1>Chapter Summary</h1>
+<p>That concludes our first look at Python statement syntax. This chapter introduced the general rules for coding statements and blocks of code. As you’ve learned, in Python we normally code one statement per line and indent all the statements in a nested block the same amount (indentation is part of Python’s syntax). However, we also looked at a few exceptions to these rules, including continuation lines and single-line tests and loops. Finally, we put these ideas to work in an interactive script that demonstrated a handful of statements and showed statement syntax in action.</p>
+<p>In the next chapter, we’ll start to dig deeper by going over each of Python’s basic procedural statements in depth. As you’ll see, though, all statements follow the same general rules introduced here.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000142">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>What three things are required in a C-like language but omitted in Python?</p></li>
+<li><p>How is a statement normally terminated in Python?</p></li>
+<li><p>How are the statements in a nested block of code normally associated in Python?</p></li>
+<li><p>How can you make a single statement span multiple lines?</p></li>
+<li><p>How can you code a compound statement on a single line?</p></li>
+<li><p>Is there any valid reason to type a semicolon at the end of a statement in Python?</p></li>
+<li><p>What is a <code>try</code> statement for?</p></li>
+<li><p>What is the most common coding mistake among Python beginners?</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000141">
+<h1>Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>C-like languages require parentheses around the tests in some statements, semicolons at the end of each statement, and braces around a nested block of code. Python requires none of these (but adds a <code>:</code>).</p></li>
+<li><p>The end of a line terminates the statement that appears on that line. Alternatively, if more than one statement appears on the same line, they can be separated with semicolons; similarly, if a statement spans many lines, you must terminate it by closing a bracketed syntactic pair.</p></li>
+<li><p>The statements (code lines) in a nested block are all indented the same number of tabs or spaces.</p></li>
+<li><p>You can make a statement span many lines by enclosing part of it in parentheses, square brackets, or curly braces; the statement ends when Python sees a line that contains the closing part of the pair.</p></li>
+<li><p>The body of a compound statement can be moved to the header line after the colon, but only if the body consists of only noncompound statements.</p></li>
+<li><p>Only when you need to squeeze more than one statement onto a single line of code. Even then, this works only if all the statements are noncompound, and it’s discouraged because it can lead to code that is difficult to read.</p></li>
+<li><p>The <code>try</code> statement is used to catch and recover from exceptions (errors) in a Python script. It’s often an alternative to manually checking for errors in code.</p></li>
+<li><p>Forgetting to type the colon character at the end of the header line in a compound statement is the most common beginner’s mistake. If you’re new to Python and haven’t made it yet, you probably will soon!</p></li>
+</ol>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>

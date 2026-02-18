@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 1. A Python Q&amp;A Session"><div class="chapter" id="a_python_qampersanda_session">
+<h1><span class="label">Chapter 1. </span>A Python Q&amp;A Session</h1>
+
+<p>If you’re reading this book, you may already know what Python is and why it’s an important tool to learn. If you don’t, you probably won’t be sold on Python until you’ve learned the language by reading the rest of this book and have done a project or two. But before we jump into details, this first chapter will briefly introduce some of the main reasons behind Python’s popularity and begin sculpting a definition of the language. This takes the form of a question-and-answer session, which addresses some of the most common queries posed by beginners—like you.</p>
+
+<section data-type="sect1" data-pdf-bookmark="Why Do People Use Python?"><div class="sect1" id="why_do_people_use_pythonquestion_mark">
+<h1>Why Do People Use Python?</h1>
+
+<p>Because there are many programming languages to choose from, this is the usual first question of newcomers and a great place to start. Given that millions of people use Python today, there really is no way to answer this question with complete accuracy; the choice of development tools is often based on unique constraints or personal preference.</p>
+
+<p>But after teaching Python to hundreds of groups and thousands of students, some common themes have emerged. The primary factors cited by Python users seem to be these:</p>
+
+<dl>
+	<dt>Software quality</dt>
+	<dd>For many, Python’s focus on <a contenteditable="false" data-type="indexterm" data-primary="Python" data-secondary="software quality" id="id1362"></a><a contenteditable="false" data-type="indexterm" data-primary="software quality of Python" id="id1363"></a><a contenteditable="false" data-type="indexterm" data-primary="readability" id="id1364"></a><a contenteditable="false" data-type="indexterm" data-primary="software reuse" id="id1365"></a><a contenteditable="false" data-type="indexterm" data-primary="OO (object-oriented), definition" id="id1366"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" id="id1367"></a><a contenteditable="false" data-type="indexterm" data-primary="functional programming" id="id1368"></a>readability, coherence, and software quality in general sets it apart from other tools in the programing world. Python code is designed to be <em>readable</em>, and hence reusable and maintainable—much more so than traditional scripting languages. The uniformity of Python code makes it relatively easy to understand, even if you did not write it. In addition, Python has deep support for more advanced <em>software reuse</em> mechanisms, such as object-oriented (OO) and functional programming, that can further promote code quality.</dd>
+	<dt>Developer productivity</dt>
+	<dd>Python boosts developer productivity <a contenteditable="false" data-type="indexterm" data-primary="Python" data-secondary="developer productivity" id="id1369"></a><a contenteditable="false" data-type="indexterm" data-primary="developer productivity" id="id1370"></a><a contenteditable="false" data-type="indexterm" data-primary="productivity, developers" id="id1371"></a><a contenteditable="false" data-type="indexterm" data-primary="Python" data-secondary="code size" id="id1372"></a>many times beyond compiled or statically typed languages. As one measure of this, Python code is typically <em>one-third to one-fifth</em> the size of equivalent C++ or Java code. That means there is less to type, less to debug, and less to maintain after the fact. Most Python programs also run immediately, without the lengthy compile and link steps required by some other tools, further boosting programmer speed.</dd>
+	<dt>Program portability</dt>
+	<dd>Python programs generally run <a contenteditable="false" data-type="indexterm" data-primary="Python" data-secondary="portability" id="id1373"></a><a contenteditable="false" data-type="indexterm" data-primary="portability" id="id1374"></a>unchanged on <em>all major computer platforms</em>. Porting a Python program between Linux and Windows, for example, is often just a matter of copying its code between machines. Moreover, Python offers multiple options for coding portable graphical user interfaces, database access programs, web-based systems, and more. Even operating system interfaces as proprietary as program launches and directory processing are as portable in Python as they can possibly be.</dd>
+	<dt>Application support</dt>
+	<dd>Python comes with a large collection <a contenteditable="false" data-type="indexterm" data-primary="support" id="id1375"></a><a contenteditable="false" data-type="indexterm" data-primary="standard library" id="id1376"></a><a contenteditable="false" data-type="indexterm" data-primary="libraries" data-seealso="standard library" id="id1377"></a>of prebuilt and portable functionality, known as the <em>standard library</em>. This library supports an array of application-level programming tasks, from text pattern matching to network scripting. In addition, Python can be extended with both homegrown libraries and a vast collection of third-party software. As covered <a contenteditable="false" data-type="indexterm" data-primary="third-party domain" id="id1378"></a><a contenteditable="false" data-type="indexterm" data-primary="NumPy" id="id1379"></a><a contenteditable="false" data-type="indexterm" data-primary="STEM (science, technology, engineering, and math)" id="id1380"></a>ahead, Python’s <em>third-party domain</em> offers tools for website construction, numeric programming, AI, and much more. The NumPy extension, for instance, has elevated Python to a core tool in science, technology, engineering, and math (<em>STEM</em>), and Django and PyTorch have done similar for the web and AI.</dd>
+	<dt>Component integration</dt>
+	<dd>Python scripts can communicate with <a contenteditable="false" data-type="indexterm" data-primary="component integration" id="id1381"></a>other parts of an application using a variety of integration mechanisms. Such integrations allow Python to be used as a product <em>customization and extension</em> tool. For instance, Python code can invoke compiled libraries and be run by compiled programs, interact with other components over networks, and use Android and iOS toolkits on smartphones. In fact, many Python core tools, including files, ultimately use precoded interfaces to system libraries; even if your program is all Python, it’s not standalone.</dd>
+	<dt>Love of craft</dt>
+	<dd>Because of Python’s ease of use and built-in toolset, it can make the act of programming <em>more pleasure than chore</em>. Although this benefit is intangible and subjective, its effect on productivity is an important asset. People do get paid for coding Python, but many use it just for <em>fun</em>—a testimonial rare in the software field.</dd>
+</dl>
+
+<p>Of these factors, the first two—quality and productivity—are probably the most compelling benefits to most Python users; let’s take a closer look at each.</p>
+
+<section data-type="sect2" data-pdf-bookmark="Software Quality"><div class="sect2" id="software_quality">
+<h2>Software Quality</h2>
+
+<p>By design, Python has a deliberately <a contenteditable="false" data-type="indexterm" data-primary="Python" data-secondary="software quality" id="id1382"></a><a contenteditable="false" data-type="indexterm" data-primary="software quality of Python" id="id1383"></a>simple and readable syntax and a highly consistent programming model. As a slogan at an early Python conference attested, the net result is that Python seems to <em>fit your brain</em>—that is, features of the language interact in consistent and limited ways and follow naturally from a small set of core concepts. This makes the language easier to learn, understand, and remember. In practice, Python programmers do not need to constantly refer to manuals when reading or writing code; it generally just makes sense.</p>
+
+<p>By philosophy, Python <a contenteditable="false" data-type="indexterm" data-primary="minimalism of Python" id="id1384"></a>adopts a somewhat minimalist mindset. This means that although there are usually multiple ways to accomplish a coding task, there is usually just one obvious way, a few less obvious alternatives, and a small set of coherent interactions throughout. Moreover, Python usually doesn’t make arbitrary decisions for you; when interactions are ambiguous, explicit intervention is preferred over “magic.” In the Python way of thinking, explicit is better than implicit, and simple is better than complex.</p>
+
+<p class="pagebreak-before">Beyond such design themes, Python includes tools such as modules and object-oriented programming (OOP) that naturally promote code reusability in skilled hands of the sort you’re about to acquire. And because Python is focused on quality, most Python programmers naturally are too; this can be a crucial advantage when it’s time to use someone else’s Python code.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Developer Productivity"><div class="sect2" id="developer_productivity">
+<h2>Developer Productivity</h2>
+
+<p>If you’ve worked in the software <a contenteditable="false" data-type="indexterm" data-primary="Python" data-secondary="developer productivity" id="id1385"></a><a contenteditable="false" data-type="indexterm" data-primary="developer productivity" id="id1386"></a><a contenteditable="false" data-type="indexterm" data-primary="productivity, developers" id="id1387"></a>field, you know that it can be a dynamic and bumpy ride. During the great internet boom of the mid-to-late 1990s, it was difficult to find enough programmers to implement software projects; developers were asked to implement systems as fast as the internet evolved. In later eras of economic recession and layoffs, the picture shifted; programming staffs were often asked to accomplish the same tasks with even fewer people.</p>
+
+<p>In both of these scenarios, Python has shined as a tool that allows programmers to get more done with less effort. It is explicitly optimized for <em>speed of development</em>—its simple syntax, dynamic typing, lack of compile steps, and built-in toolset allow programmers to develop programs in a fraction of the time needed when using some other tools.</p>
+
+<p>The net effect is that Python typically increases developer productivity many times beyond the levels supported by traditional languages and often makes the impossible possible. That’s good news in both boom and bust times, and everywhere the software industry goes in between.</p>
+</div></section>
+</div></section>
+
+<section data-type="sect1" data-pdf-bookmark="Is Python a “Scripting Language”?"><div class="sect1" id="is_python_a_quotation_markscripting_lan">
+<h1>Is Python a “Scripting Language”?</h1>
+
+<p>Maybe. Python is often applied in <a contenteditable="false" data-type="indexterm" data-primary="scripting language" id="id1388"></a>scripting roles, but not always. It’s regularly called an <em>object-oriented scripting language</em>—a definition <a contenteditable="false" data-type="indexterm" data-primary="object-oriented language" id="id1389"></a><a contenteditable="false" data-type="indexterm" data-primary="Python" data-secondary="as scripting language" data-secondary-sortas="scripting language" id="pyspgg"></a>that blends support for OOP with an orientation toward scripting contexts, but this may be too narrow and dismissive. If pressed for a one-liner, Python is probably better known as:</p>
+
+<blockquote>
+<p>A general-purpose programming language that blends procedural, functional, and object-oriented paradigms and accelerates software development by reducing complexity.</p>
+</blockquote>
+
+<p>That may not fit on a t-shirt quite as well, but it captures both the richness and scope of today’s Python.</p>
+
+<p>Nevertheless, the term <em>scripting</em> seems to have stuck to Python like glue, perhaps as a contrast with the larger efforts required by some other tools. For example, some people use the word “script” instead of “program” to describe a Python code file, because it seems simpler and less formal to code. More usefully, others reserve “script” for a top-level file, and “program” for a more sophisticated multifile application, both of which are common in Python.</p>
+
+<p>Because the term <em>scripting language</em> has so many different meanings to different observers, though, some would prefer that it not be applied to Python at all. In fact, people tend to make three very different assumptions when they hear Python labeled as such, some of which are more useful than others:</p>
+
+<dl>
+	<dt>Shell tools</dt>
+	<dd>
+	<p>Sometimes when people hear Python <a contenteditable="false" data-type="indexterm" data-primary="shell tools" id="id1390"></a><a contenteditable="false" data-type="indexterm" data-primary="scripting language" data-secondary="shell tools and" id="id1391"></a>described as a scripting language, they think it means that Python is a tool for coding operating-system-oriented scripts. Such programs are often launched from console command lines and perform tasks such as processing text files and launching other programs.</p>
+
+	<p>As you’ll learn ahead, Python programs can and do serve such roles, but this is just one of dozens of common Python application domains. It is not just a better shell-script language.</p>
+	</dd>
+	<dt>Control language</dt>
+	<dd>
+	<p>To others, scripting refers to a “glue” layer used <a contenteditable="false" data-type="indexterm" data-primary="control language" id="id1392"></a><a contenteditable="false" data-type="indexterm" data-primary="scripting language" data-secondary="control language and" id="id1393"></a>to control and direct (i.e., script) other application components. As noted earlier, Python programs are indeed often deployed in the context of larger applications. For instance, to test hardware devices, Python programs may call out to components that give low-level access to a device or port. Similarly, programs may run bits of Python code at strategic points to support end-user product customization without the need to ship and recompile the entire system’s source code.</p>
+
+	<p>Python’s simplicity makes it a naturally flexible control tool. Technically, though, this is also just a common Python role; many (and perhaps most) Python programmers code standalone scripts without ever using or knowing about any integrated components. It is not just a control language.</p>
+	</dd>
+	<dt>Ease of use</dt>
+	<dd>
+	<p>Probably the best use of <a contenteditable="false" data-type="indexterm" data-primary="scripting language" data-secondary="ease of use and" id="id1394"></a>the term <em>scripting language</em> is to refer to a relatively simple language used for coding tasks quickly. This is especially true when the term is applied to Python, which allows much faster program development than compiled languages like C++ or larger languages like Java. Its rapid development cycle fosters an exploratory, incremental mode of programming that has to be experienced to be appreciated.</p>
+
+	<p>Don’t be fooled, though—Python is not just for simple tasks. Rather, it makes tasks simple by its ease of use and flexibility. Python has an approachable feature set, but it allows programs to scale up in sophistication as needed. Because of that, it is commonly used for both quick tactical tasks and longer-term strategic development.</p>
+	</dd>
+</dl>
+
+<p>So, is Python a scripting language or not? It depends on whom you ask (and perhaps when you ask them). In general, the term <em>scripting</em> is best reserved for the rapid and flexible mode of development that Python supports, rather than a particular application domain or limiting label.</p>
+
+<p>On a related note, people also <a contenteditable="false" data-type="indexterm" data-primary="interpreted language" id="id1395"></a>sometimes call Python an <em>interpreted language</em> to distinguish it from languages like C and C++. While this is also sometimes meant to pigeonhole, it’s also easier to dismiss: there are many implementations of Python today, spanning the spectrum from traditional interpreters to traditional compilers, so “interpreted” doesn’t apply. The clearer distinction may be that Python is <em>dynamically typed</em>, not statically typed like languages that are normally compiled. As you’ll soon learn, this accounts for much of the <a contenteditable="false" data-type="indexterm" data-primary="Python" data-secondary="as scripting language" data-secondary-sortas="scripting language" data-startref="pyspgg" id="id1396"></a>power that Python brings to development tasks.</p>
+</div></section>
+
+<section data-type="sect1" data-pdf-bookmark="OK, but What’s the Downside?"><div class="sect1" id="okcomma_but_whatapostrophes_the_downsid">
+<h1>OK, but What’s the Downside?</h1>
+
+<p>The only universally recognized downside to Python that has emerged over its more than three-decade tenure may also be an inevitable trade-off for its ease of use: Python’s <em>execution speed</em> may <a contenteditable="false" data-type="indexterm" data-primary="execution" data-secondary="speed" id="id1397"></a><a contenteditable="false" data-type="indexterm" data-primary="Python" data-secondary="execution speed" id="id1398"></a>not always be as fast as that of fully compiled and lower-level languages such as C and C++. Though relatively rare today, you may still occasionally need to get “closer to the iron” for some tasks by using languages that are more directly mapped to the underlying hardware.</p>
+
+<p>We’ll talk about implementation concepts in <a data-type="xref" href="ch02.html#how_python_runs_programs">Chapter 2</a>, but in short, the most-used versions of Python today compile (i.e., translate) source code statements to an intermediate format known as <em>bytecode</em> and then interpret the bytecode. Bytecode provides <a contenteditable="false" data-type="indexterm" data-primary="Python" data-secondary="bytecode and" id="id1399"></a><a contenteditable="false" data-type="indexterm" data-primary="bytecode" id="id1400"></a>portability, as it is a platform-independent format. However, because Python is not commonly compiled all the way down to binary <em>machine code</em> (e.g., instructions for an Intel or ARM chip in your PC or phone), some programs will run more slowly in Python than in a fully compiled language like C.</p>
+
+<p>Whether you will ever <em>care</em> about this execution speed difference depends on what kinds of programs you write. Python is regularly optimized, and Python code runs fast enough by itself in most application domains. Furthermore, whenever you do something “real” in a Python script, like processing a file or constructing a graphical user <a contenteditable="false" data-type="indexterm" data-primary="GUIs (graphical user interfaces)" id="id1401"></a>interface (<em>GUI</em>), your program will actually run at C speed, because such tasks are immediately dispatched to compiled C code inside the Python interpreter.</p>
+
+<p>And really, Python’s speed is a bit of a red herring today: in truth, Python <em>is</em> commonly used in domains that require optimal execution speeds. Numeric programming and computer games, for example, often need at least their core number-crunching components to run at C speed (or better), but are frequently coded in Python nevertheless.</p>
+
+<p>There are multiple ways to <a contenteditable="false" data-type="indexterm" data-primary="PyPy" id="id1402"></a><a contenteditable="false" data-type="indexterm" data-primary="bytecode" data-secondary="PyPy" id="id1403"></a><a contenteditable="false" data-type="indexterm" data-primary="Cython" id="id1404"></a>achieve speed in Python when it counts. For instance, systems such as <em>PyPy</em> compile bytecode further as your program runs; <em>Cython</em> allows you to code in a C-and-Python hybrid that’s compiled in full; and crucial code can be split off to <em>compiled extensions</em> linked <a contenteditable="false" data-type="indexterm" data-primary="compiled extensions" id="id1405"></a>into Python for use in scripts. As an example, the <em>NumPy</em> numeric-programming extension combines compiled and optimized libraries with the Python language, and in the process turns Python into <a contenteditable="false" data-type="indexterm" data-primary="NumPy" id="id1406"></a>a numeric programming tool that is simultaneously efficient and easy to use. Indeed, NumPy Python code regularly achieves speed parity with Fortran and C++, without their added complexities.</p>
+
+<p>More fundamentally, though, execution speed is not the only priority in most software development. Python’s <em>speed-of-development</em> gain is often far more important than any speed-of-execution loss, especially given modern computer speeds—and modern computer deadlines. Naturally, Python has other <em>potential</em> downsides, including its frequent changes and convolutions, but these are subjective calls best made after you’ve had a chance to vet them in this book.</p>
+</div></section>
+
+<section data-type="sect1" data-pdf-bookmark="Who Uses Python Today?"><div class="sect1" id="who_uses_python_todayquestion_mark">
+<h1>Who Uses Python Today?</h1>
+
+<p>Because Python is a free and open <a contenteditable="false" data-type="indexterm" data-primary="Python" data-secondary="current users" id="id1407"></a>source software (<em>FOSS</em>) tool, <a contenteditable="false" data-type="indexterm" data-primary="FOSS (free and open source software)" id="id1408"></a><a contenteditable="false" data-type="indexterm" data-primary="free and open source software (FOSS)" id="id1409"></a>an accurate count of its user base is impossible—there are no license registrations to tally. Moreover, Python has been automatically included with countless Linux distributions, Macintosh computers, and a wide range of products and hardware, further clouding the user-base picture.</p>
+
+<p>In general, though, Python enjoys a very large user base and an active developer community. It is generally considered to be among the <em>top 5</em> most widely used programming languages in the world today (and for true sports fans, often weighs in at #1). Because Python has been broadly used for <em>over three decades</em>, it’s also very stable and robust.</p>
+
+<p>Because of all this, Python is regularly applied in real revenue-generating products by real <em>companies</em>. While user lists are prone to change, a list of notable and known companies using Python today reads like a who’s who of the software field: Google, Intel, Disney, YouTube, Industrial Light &amp; Magic, Red Hat, NASA, Eve Online, Seagate, JPL, Hewlett-Packard, JP Morgan Chase, Dropbox, ESRI, Instagram, Spotify, Pinterest, Reddit, Microsoft, Netflix, and many more.</p>
+
+<p>More broadly, Python is deployed by most organizations developing software today in either strategic or tactical roles and regularly serves as the tool of choice in computer science education. It’s not just for one thing, it’s for everything.</p>
+
+<p>For a sampling of additional Python users and applications that’s hopefully more up to date than a book can ever be, try the following pages at Python’s site: <a class="orm:hideurl" href="http://www.python.org/about/success">Python Success Stories</a>, <a class="orm:hideurl" href="http://www.python.org/about/apps">Applications for Python</a>, and <a class="orm:hideurl" href="http://www.python.org/about/quotes">Quotes about Python</a>. As usual, you may also be able to uncover other Python roles of interest with a web search in your local browser or app.</p>
+</div></section>
+
+<section data-type="sect1" class="pagebreak-before" data-pdf-bookmark="What Can I Do with Python?"><div class="sect1" id="what_can_i_do_with_pythonquestion_mark">
+<h1 class="less_space">What Can I Do with Python?</h1>
+
+<p>Commercial applications may <a contenteditable="false" data-type="indexterm" data-primary="Python" data-secondary="applications" id="pytpplc"></a>be compelling, but people also use Python for all sorts of real-world, day-in/day-out tasks, whether for profit, need, hobby, or fun. In fact, as a general-purpose language, Python’s roles are virtually unlimited: you can use it for everything from gaming and website development to robotics and content management.</p>
+
+<p>That said, Python roles seem to fall into a few broad categories. The next few sections survey some of Python’s most common application domains today, as well as prominent tools used in each domain.</p>
+
+<p>Two notes up front: first, we won’t be able to explore these tools in any depth either here or in this book at large. NumPy and Django, for example, are book-length topics on their own, and our goal in this book is to learn the <em>Python</em> code you will be writing to use systems like these. Second, apologies in advance to the many other tools omitted here only for space; if you are interested in any of the following topics, please search online for more tools and resources.</p>
+
+<section data-type="sect2" data-pdf-bookmark="Systems Programming"><div class="sect2" id="systems_programming">
+<h2>Systems Programming</h2>
+
+<p>Python’s built-in interfaces to operating-system <a contenteditable="false" data-type="indexterm" data-primary="systems programming" id="id1410"></a><a contenteditable="false" data-type="indexterm" data-primary="shell tools" id="id1411"></a><a contenteditable="false" data-type="indexterm" data-primary="command line" data-secondary="tools" id="id1412"></a>services make it ideal for writing portable and maintainable system-administration utilities—sometimes called <em>shell</em> or <em><em>command-line</em></em> tools, though they may be used in numerous ways. Python programs can search files and directory trees, launch and configure other programs, do parallel processing with processes, threads, and coroutines, and more.</p>
+
+<p>Python’s standard library comes <a contenteditable="false" data-type="indexterm" data-primary="POSIX (Portable Operating System Interface)" id="id1413"></a><a contenteditable="false" data-type="indexterm" data-primary="Portable Operating System Interface (POSIX)" id="id1414"></a>with Portable Operating System Interface (<em>POSIX)</em> bindings and support for all the usual OS tools, including environment variables, files, sockets, pipes, processes, threads, regular-expression pattern matching, command-line arguments, standard-stream interfaces, shell-command launchers, filename expansion, ZIP file utilities, and XML, JSON, and CSV parsers. In addition, the bulk of Python’s system interfaces are designed to be portable; for example, a script that copies directory trees typically runs unchanged on all platforms that host Python.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="GUIs and UIs"><div class="sect2" id="guis_and_uis">
+<h2>GUIs and UIs</h2>
+
+<p>Python’s simplicity and rapid turnaround <a contenteditable="false" data-type="indexterm" data-primary="GUIs (graphical user interfaces)" id="id1415"></a><a contenteditable="false" data-type="indexterm" data-primary="UIs (user interfaces)" id="id1416"></a><a contenteditable="false" data-type="indexterm" data-primary="user interfaces (UIs)" id="id1417"></a>also make it a good match for GUI programming on devices of all kinds. For instance, Python comes with a standard object-oriented interface to the Tk GUI toolkit called <em>Tkinter</em> (and <code>tkinter</code> in code), which allows Python programs to implement portable GUIs with a native look and feel. Python/Tkinter GUIs run unchanged on Windows, macOS, and Linux, and on Android with the help of a freeware app today (see <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a>).</p>
+
+<p>In addition, third-party tools offer other <a contenteditable="false" data-type="indexterm" data-primary="Kivy" id="id1418"></a><a contenteditable="false" data-type="indexterm" data-primary="BeeWare Toga" id="id1419"></a><a contenteditable="false" data-type="indexterm" data-primary="Toga" id="id1420"></a><a contenteditable="false" data-type="indexterm" data-primary="PyQt" id="id1421"></a><a contenteditable="false" data-type="indexterm" data-primary="wxPython" id="id1422"></a><a contenteditable="false" data-type="indexterm" data-primary="Django" id="id1423"></a><a contenteditable="false" data-type="indexterm" data-primary="Flask" id="id1424"></a><a contenteditable="false" data-type="indexterm" data-primary="WebAssembly" id="id1425"></a>routes to portable UIs—including both traditional GUIs like <em>Kivy</em>, <em>BeeWare</em>’s <em>Toga</em>, <em>PyQt</em>, and <em>wxPython</em>; and web-browser based solutions like <em>Django</em>, <em>Flask</em>, and <em>WebAssembly</em>. If your app, like most, must interact with users, Python has multiple ways to write once and run everywhere.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Internet and Web Scripting"><div class="sect2" id="internet_and_web_scripting">
+<h2>Internet and Web Scripting</h2>
+
+<p>Python comes with standard internet <a contenteditable="false" data-type="indexterm" data-primary="internet modules" id="id1426"></a><a contenteditable="false" data-type="indexterm" data-primary="web scripting" id="id1427"></a><a contenteditable="false" data-type="indexterm" data-primary="scripting" data-secondary="web scripting" id="id1428"></a>modules that allow programs to perform a wide variety of networking tasks, in both client and server modes. Scripts can communicate over sockets; extract form information sent to server-side CGI web scripts; transfer files by FTP; parse and generate XML and JSON documents; compose and send, and receive and parse email; fetch web pages by URLs and parse their HTML; and more.</p>
+
+<p>In addition, a large collection of third-party tools are available on the web for doing internet programming in Python. For example, web-development frameworks, such <a contenteditable="false" data-type="indexterm" data-primary="Flask" id="id1429"></a><a contenteditable="false" data-type="indexterm" data-primary="TurboGears" id="id1430"></a><a contenteditable="false" data-type="indexterm" data-primary="Zope" id="id1431"></a><a contenteditable="false" data-type="indexterm" data-primary="object-relational mappers" id="id1432"></a><a contenteditable="false" data-type="indexterm" data-primary="server-side scripting" id="id1433"></a><a contenteditable="false" data-type="indexterm" data-primary="scripting" data-secondary="server-side scripting" id="id1434"></a><a contenteditable="false" data-type="indexterm" data-primary="templates" id="id1435"></a><a contenteditable="false" data-type="indexterm" data-primary="Ajax (Asynchronous JavaScript and XML)" id="id1436"></a><a contenteditable="false" data-type="indexterm" data-primary="Pyjamas" id="id1437"></a><a contenteditable="false" data-type="indexterm" data-primary="Beautiful Soup" id="id1438"></a><a contenteditable="false" data-type="indexterm" data-primary="WebAssembly" id="id1439"></a><a contenteditable="false" data-type="indexterm" data-primary="Pyodide" id="id1440"></a><a contenteditable="false" data-type="indexterm" data-primary="py2wasm" id="id1441"></a><a contenteditable="false" data-type="indexterm" data-primary="PyScript" id="id1442"></a>as <em>Django</em>, <em>Flask</em>, <em>TurboGears</em>, and <em>Zope</em>, support construction of full-featured and production-quality websites with Python. Many of these include tools like object-relational mappers, server-side scripting and templating, and AJAX support, to provide complete and enterprise-level web development solutions. The <em>Pyjamas</em> Python-to-JavaScript transpiler; the <em>Beautiful Soup</em> HTML content extractor; and the <em>WebAssembly</em>, <em>Pyodide</em>, <em>py2wasm</em>, and <em>PyScript</em> Python-in-the-browser enablers provide even more web possibilities.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Component Integration"><div class="sect2" id="component_integration">
+<h2>Component Integration</h2>
+
+<p>We discussed the component integration <a contenteditable="false" data-type="indexterm" data-primary="component integration" id="id1443"></a>role earlier. Python’s ability to be extended by and embedded in systems coded in C, C++, and Java makes it useful as a flexible glue language for scripting the behavior of other software components. For instance, integrating a C library into Python allows Python to test and launch the library’s tools, and embedding Python in a product enables on-site customizations to be coded without having to recompile the entire product (or ship its source code at all).</p>
+
+<p>Tools such as <em>SWIG</em>, <em>Boost.Python</em>, <em>CFFI</em>, and <em>HPy</em> automate <a contenteditable="false" data-type="indexterm" data-primary="SWIG" id="id1444"></a><a contenteditable="false" data-type="indexterm" data-primary="Boost.Python" id="id1445"></a><a contenteditable="false" data-type="indexterm" data-primary="CFFI" id="id1446"></a><a contenteditable="false" data-type="indexterm" data-primary="HPy" id="id1447"></a><a contenteditable="false" data-type="indexterm" data-primary="Cython" id="id1448"></a><a contenteditable="false" data-type="indexterm" data-primary="pyjnius" id="id1449"></a><a contenteditable="false" data-type="indexterm" data-primary="Chaquopy" id="id1450"></a><a contenteditable="false" data-type="indexterm" data-primary="Python/Java bridges" id="id1451"></a><a contenteditable="false" data-type="indexterm" data-primary="pywin32" id="id1452"></a><a contenteditable="false" data-type="indexterm" data-primary="REST" id="id1453"></a><a contenteditable="false" data-type="indexterm" data-primary="SOAP" id="id1454"></a><a contenteditable="false" data-type="indexterm" data-primary="XML-RPC" id="id1455"></a><a contenteditable="false" data-type="indexterm" data-primary="Jython" id="id1456"></a><a contenteditable="false" data-type="indexterm" data-primary="Java" id="id1457"></a><a contenteditable="false" data-type="indexterm" data-primary="IronPython" id="id1458"></a>much of the work needed to link compiled components with Python scripts, and the <em>Cython</em> system allows coders to mix Python and C-like code to create compiled extensions. Other tools provide more ways to script components—including the <em>pyjnius</em> and <em>Chaquopy</em> Python/Java bridges; <em>pywin32</em>’s support for Windows Component Object Model (COM); the <em>REST</em>, <em>SOAP</em>, and <em>XML-RPC</em> cross-network conduits; and the <em>Jython</em> Java and <em>IronPython</em> .NET implementations of Python. In short, most software components are in scope to Python code.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Database Access"><div class="sect2" id="database_access">
+<h2>Database Access</h2>
+
+<p>For traditional database demands, there are Python interfaces to all commonly used relational <a contenteditable="false" data-type="indexterm" data-primary="databases" id="id1459"></a><a contenteditable="false" data-type="indexterm" data-primary="databases" data-secondary="API" id="id1460"></a><a contenteditable="false" data-type="indexterm" data-primary="pickle objects" id="id1461"></a><a contenteditable="false" data-type="indexterm" data-primary="SQLite" id="id1462"></a>database systems—Oracle, MySQL, PostgreSQL, Informix, ODBC, SQLite, and more. The Python world has also defined a <em>portable database API</em> for accessing SQL database systems from Python scripts, which looks the same on a variety of underlying database implementations. For basic program-storage needs, Python comes with built-in support for its own <em>pickle</em> objects, language-agnostic <em>JSON</em> documents, and the in-process <em>SQLite</em> embedded SQL database engine.</p>
+
+<p>Also for Python <a contenteditable="false" data-type="indexterm" data-primary="PyYAML" id="id1463"></a><a contenteditable="false" data-type="indexterm" data-primary="ZODB" id="id1464"></a><a contenteditable="false" data-type="indexterm" data-primary="Durus" id="id1465"></a><a contenteditable="false" data-type="indexterm" data-primary="SQLObject" id="id1466"></a><a contenteditable="false" data-type="indexterm" data-primary="SQLAlchemy" id="id1467"></a><a contenteditable="false" data-type="indexterm" data-primary="ORMs (object-relational mappers)" id="id1468"></a>scripts, <em>PyYAML</em> parses and emits YAML data; <em>ZODB</em> and <em>Durus</em> provide object-oriented databases; <em>SQLObject</em> and <em>SQLAlchemy</em> implement object relational mappers (ORMs), which graft Python classes onto relational tables; and <em>PyMongo</em> interfaces to MongoDB, a high-performance JSON-style document database. Python can also access cloud storage options in Google’s <em>App Engine</em>, Microsoft’s <em>Azure</em>, and Amazon’s <em>AWS</em>.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Rapid Prototyping"><div class="sect2" id="rapid_prototyping">
+<h2>Rapid Prototyping</h2>
+
+<p>To Python programs, components <a contenteditable="false" data-type="indexterm" data-primary="prototyping" id="id1469"></a>written in Python and C look the same. Because of this, it’s possible to prototype systems in Python initially, and then move selected components to a fully compiled language such as C or C++ for delivery. Because Python doesn’t require a complete rewrite once the prototype has solidified, the parts of the system that don’t need the efficiency of a compiled language can remain coded in Python for ease of maintenance and use. But beware: given the many optimization routes you met earlier, your prototype may very well be your deliverable.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Numeric and Scientific Programming"><div class="sect2" id="numeric_and_scientific_programming">
+<h2>Numeric and Scientific Programming</h2>
+
+<p>Python is also widely used in <a contenteditable="false" data-type="indexterm" data-primary="numeric programming" id="id1470"></a><a contenteditable="false" data-type="indexterm" data-primary="scientific programming" id="id1471"></a>numeric programming—a domain that would not traditionally have been considered to be in the scope of scripting languages but has grown to become one of Python’s most compelling use cases. Prominent here, the <em>NumPy</em> high-performance <a contenteditable="false" data-type="indexterm" data-primary="NumPy" id="id1472"></a>numeric-programming extension for Python mentioned earlier includes such advanced tools as an array object, interfaces to standard mathematical libraries, and much more. By integrating Python with numeric routines coded in a <span class="keep-together">compiled</span> language for speed, NumPy turns Python into a sophisticated yet easy-to-use numeric-programming tool that can often replace code written in traditional languages like Fortran or C++.</p>
+
+<p>Additional numeric tools often use NumPy as a core component, and add support for visualization, parallel processing, statistical analysis, and more. For example, <em>SciPy</em> provides <a contenteditable="false" data-type="indexterm" data-primary="SciPy" id="id1473"></a><a contenteditable="false" data-type="indexterm" data-primary="pandas" id="id1474"></a><a contenteditable="false" data-type="indexterm" data-primary="matplotlib" id="id1475"></a><a contenteditable="false" data-type="indexterm" data-primary="Jupyter notebooks" id="id1476"></a><a contenteditable="false" data-type="indexterm" data-primary="Numba" id="id1477"></a><a contenteditable="false" data-type="indexterm" data-primary="PyThran" id="id1478"></a><a contenteditable="false" data-type="indexterm" data-primary="Cython" id="id1479"></a><a contenteditable="false" data-type="indexterm" data-primary="PyPy" id="id1480"></a>libraries of scientific programming tools; <em>pandas</em> supports data analysis; <em>matplotlib</em> adds visualization tools; <em>Jupyter</em> notebooks are geared toward math workers’ needs; <em>Numba</em> and <em>PyThran</em> offer just-in-time (JIT) and ahead-of-time (AOT) compilers for Python numeric code, respectively; and the <em>Cython</em> and <em>PyPy</em> systems noted earlier can optimize algorithmic code. For more basic needs, Python itself comes with a statistics module; complex, fixed-point, and rational math; and other tools you’ll learn about in this book.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="And More: AI, Games, Images, QA, Excel, Apps…"><div class="sect2" id="and_more_aicomma_gamescomma_imagescomma">
+<h2>And More: AI, Games, Images, QA, Excel, Apps…</h2>
+
+<p>Python is commonly applied in far more domains and with far more tools than can possibly be covered here. For example, it’s also used in:</p>
+
+<ul>
+	<li>
+	<p>Artificial <a contenteditable="false" data-type="indexterm" data-primary="AI (artificial intelligence)" id="id1481"></a><a contenteditable="false" data-type="indexterm" data-primary="artificial intelligence (AI)" id="id1482"></a>intelligence (see <em>PyTorch</em>, <em>TensorFlow</em>, and <em>Keras</em>)</p>
+	</li>
+	<li>
+	<p>Game <a contenteditable="false" data-type="indexterm" data-primary="game programming" id="id1483"></a>programming (see <em>pygame</em>, <em>Panda3D</em>, and <em>Kivy</em>)</p>
+	</li>
+	<li>
+	<p>Image and graphics <a contenteditable="false" data-type="indexterm" data-primary="image processing" id="id1484"></a><a contenteditable="false" data-type="indexterm" data-primary="graphics processing" id="id1485"></a>processing (see <em>Pillow</em>, <em>PyOpenGL</em>, and <em>OpenCV</em>)</p>
+	</li>
+	<li>
+	<p>Quality assurance and <a contenteditable="false" data-type="indexterm" data-primary="quality assurance applications" id="id1486"></a><a contenteditable="false" data-type="indexterm" data-primary="testing" id="id1487"></a>testing (see <em>PyTest</em>, <em>unittest</em>, and <em>Selenium</em>)</p>
+	</li>
+	<li>
+	<p>Excel <a contenteditable="false" data-type="indexterm" data-primary="Excel" id="id1488"></a>spreadsheets (see <em>xlwings</em>, <em>PyXLL</em>, and <em>Excel</em>)</p>
+	</li>
+	<li>
+	<p>Smartphone <a contenteditable="false" data-type="indexterm" data-primary="smartphone apps" id="id1489"></a>apps (see <em>Kivy</em>, <em>BeeWare</em>, and <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a>)</p>
+	</li>
+	<li>
+	<p>Microcontrollers and ports (see <em>MicroPython</em> and <em>PySerial</em>)</p>
+	</li>
+	<li>
+	<p>And of course, much more</p>
+	</li>
+</ul>
+
+<p>For links to resources in these and many other fields, try Wikipedia’s Python <a href="https://en.wikipedia.org/wiki/List_of_Python_software">software page</a>; the <a href="https://pypi.org/">PyPI website</a>, which hosts extension packages installed by Python’s <em>pip</em>; and the normal web searches.</p>
+
+<p>Though application domains underscore Python’s practical utility, keep in mind that many are largely just instances of Python’s component <em>integration</em> role in action again. Adding Python as a frontend to libraries of components written in a compiled language like C makes Python useful for scripting in a wide variety of roles. As a general-purpose language that supports integration, Python is broadly, if not <a contenteditable="false" data-type="indexterm" data-primary="Python" data-secondary="applications" data-startref="pytpplc" id="id1490"></a>universally, applicable.</p>
+</div></section>
+</div></section>
+
+<section data-type="sect1" data-pdf-bookmark="What Are Python’s Technical Strengths?"><div class="sect1" id="what_are_pythonapostrophes_technical_st">
+<h1>What Are Python’s Technical Strengths?</h1>
+
+<p>Naturally, this is a developer’s question. If you don’t already have a programming background, the terminology in the next few sections may be a bit baffling—don’t worry, we’ll explore all of these topics in more detail as we proceed through this book. For both current and future developers, though, here is a quick rundown of Python’s top technical features. Some have been touched on earlier, but this section fills in more of the story.</p>
+
+<section data-type="sect2" data-pdf-bookmark="It’s Object-Oriented and Functional"><div class="sect2" id="itapostrophes_object_oriented_and_funct">
+<h2>It’s Object-Oriented and Functional</h2>
+
+<p>Python is an object-oriented <a contenteditable="false" data-type="indexterm" data-primary="object-oriented language" id="id1491"></a>language, from the ground up. As you’ll find in this book, its <em>class model</em> supports advanced notions such as polymorphism, operator overloading, and multiple inheritance; yet, in the context of Python’s simple syntax and typing, OOP is remarkably easy to apply. In fact, if you don’t understand these terms, you’ll find they are much easier to learn with Python than with just about any other OOP language available.</p>
+
+<p>Of equal significance, OOP is an <em>option</em> in Python; you can go far without having to become an object guru all at once. Much like C++, Python supports both procedural and object-oriented programming modes. Its object-oriented tools can be applied if and when constraints allow. This is especially useful in tactical development modes, which often preclude the design phases that best utilize OOP’s benefits.</p>
+
+<p>In addition to its original <em>procedural</em> (statement-based) and <em>object-oriented</em> (class-based) paradigms, Python today has built-in support for <em>functional</em> programming—a set that by most measures includes generators, comprehensions, closures, maps, decorators, anonymous-function lambdas, and first-class function objects. As you’ll also learn in this book, these can serve as both complement and alternative to its OOP tools.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="It’s Free and Open"><div class="sect2" id="itapostrophes_free_and_open">
+<h2>It’s Free and Open</h2>
+
+<p>Python is completely free to use and distribute. As with other <em>open source software</em>, such as Linux and Apache, you can fetch the entire Python system’s source code for free on the internet. There are no restrictions on copying it, embedding it in your systems, or shipping it with your products.</p>
+
+<p>But don’t get the wrong idea: “free” doesn’t mean “unsupported.” On the contrary, Python users have access to numerous online resources that respond to queries and issues quicker than most commercial software. Moreover, because Python comes with complete source code, it empowers developers in ways that closed commercial software cannot. Although studying or changing a programming language’s implementation code isn’t everyone’s idea of fun, it’s comforting to know that you can. You’re not dependent on the whims of a commercial vendor, because the ultimate documentation—<em>source code</em>—is at your disposal as a last resort.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="It’s Portable"><div class="sect2" id="itapostrophes_portable">
+<h2>It’s Portable</h2>
+
+<p>We touched on portability earlier. The <a contenteditable="false" data-type="indexterm" data-primary="portability" id="id1492"></a>standard implementation of Python is written in portable ANSI C, and compiles and runs on virtually every major platform currently in use. For example, Python programs run today on everything from smartphones to supercomputers. As a partial list, Python is available on Windows and macOS PCs, Linux and Unix workstations and servers, Android and iOS smartphones and tablets, real-time systems like VxWorks, Cray supercomputers, IBM mainframes, and more. Moreover, this list expands regularly; Android and iOS, for example, are gaining official <em>python.org</em> support at this writing.</p>
+
+<p>Like the language <a contenteditable="false" data-type="indexterm" data-primary="standard library" id="id1493"></a>itself, the <em>standard-library</em> modules that ship with Python are designed to be portable across platform boundaries; their file tools, for instance, remove many or most of the proprietary aspects of storage on some hosts. Furthermore, Python programs are automatically compiled to portable <em>bytecode</em>, which runs the same on any platform with a compatible version of Python installed (more on this in the next chapter), and there are multiple ways to code portable <em>user interfaces</em> in Python with traditional GUIs and web-based options described earlier.</p>
+
+<p>This means that programs that use the Python language, its standard libraries, and portable extensions run the same on most systems that host a Python interpreter. Python also supports platform-specific extensions (e.g., <em>pywin32</em> on Windows, <em>PyObjC</em> on macOS, and <em>pyjnius</em> on Android), but Python itself works the same everywhere.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="It’s Powerful"><div class="sect2" id="itapostrophes_powerful">
+<h2>It’s Powerful</h2>
+
+<p>From a features perspective, Python is something of a hybrid. Its toolset places it between traditional scripting languages (such as Tcl, Scheme, and Perl) and systems development languages (such as C, <span class="keep-together">C++</span>, and Java). Python provides all the simplicity and ease of use of a scripting language, along with more advanced software-engineering tools typically found in compiled languages. Unlike some scripting languages, this combination makes Python useful for large-scale development projects. As a preview, here are some of the main things you’ll find in Python’s toolbox:</p>
+
+<dl>
+	<dt>Dynamic typing</dt>
+	<dd>Python keeps track of the kinds of <a contenteditable="false" data-type="indexterm" data-primary="dynamic typing" id="id1494"></a><a contenteditable="false" data-type="indexterm" data-primary="typing, dynamic" id="id1495"></a>objects your program uses when it runs, and doesn’t require complicated type and size declarations in your code. In fact, as you’ll see in <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>, there is no such thing as a type or variable declaration anywhere in Python (apart from recent “hinting,” which Python itself does not use). Because Python code does not constrain data types, it is also usually automatically applicable to a whole range of objects.</dd>
+	<dt>Automatic memory management</dt>
+	<dd>Python automatically allocates <a contenteditable="false" data-type="indexterm" data-primary="memory management" id="id1496"></a>objects and reclaims (“garbage collects”) them when they are no longer used. As you’ll learn, Python keeps track of objects in use and the memory they hold, so you don’t have to.</dd>
+	<dt>Programming-in-the-large support</dt>
+	<dd>For building larger systems, Python includes <a contenteditable="false" data-type="indexterm" data-primary="programming-in-the-large" id="id1497"></a>tools such as modules, classes, and exceptions. These tools allow you to organize systems into components, use OOP to reuse and customize code, and handle events and errors gracefully. Python’s functional programming tools, described earlier, meet some of the same goals.</dd>
+	<dt>Built-in object types</dt>
+	<dd>Python provides commonly used data <a contenteditable="false" data-type="indexterm" data-primary="object types" data-seealso="types" id="id1498"></a><a contenteditable="false" data-type="indexterm" data-primary="types" id="id1499"></a>structures such as lists, dictionaries, and strings as intrinsic parts of the language. As you’ll see, its built-in objects are both flexible and easy to use. They can grow and shrink on demand, can be arbitrarily nested to represent complex information, and are immune to common memory errors.</dd>
+	<dt>Built-in tools</dt>
+	<dd>To process all those object types, Python <a contenteditable="false" data-type="indexterm" data-primary="built-in tools" id="id1500"></a><a contenteditable="false" data-type="indexterm" data-primary="tools" data-secondary="built-in" id="id1501"></a>comes with powerful and standard operations, including concatenation (joining collections), slicing (extracting sections), sorting, mapping, and more.</dd>
+	<dt>Library utilities</dt>
+	<dd>For more specific tasks, Python also <a contenteditable="false" data-type="indexterm" data-primary="libraries" data-secondary="utilities" id="id1502"></a><a contenteditable="false" data-type="indexterm" data-primary="utilities" data-secondary="library utilities" id="id1503"></a>comes with a large collection of precoded library tools that support everything from regular expression pattern matching to network servers. Once you learn the language itself, Python’s library tools are where much of the application-level action occurs.</dd>
+	<dt>Third-party utilities</dt>
+	<dd>Because Python is open source, developers <a contenteditable="false" data-type="indexterm" data-primary="utilities" data-secondary="third-party" id="id1504"></a><a contenteditable="false" data-type="indexterm" data-primary="third-party utilities" id="id1505"></a>are encouraged to contribute precoded tools that support tasks beyond those supported by its built-ins. On the Web, you’ll find free support for image processing, numeric programming, database access, website development, formal testing, and much more (see <a data-type="xref" href="#what_can_i_do_with_pythonquestion_mark">“What Can I Do with Python?”</a>).</dd>
+</dl>
+
+<p>Despite the array of tools in Python, it retains a noticeably simple syntax and design. The result is a powerful programming tool with all the usability of a scripting language.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="It’s Mixable"><div class="sect2" id="itapostrophes_mixable">
+<h2>It’s Mixable</h2>
+
+<p>As noted earlier, Python programs can easily be “glued” to components written in other languages in a variety of ways—both locally and across networks. That means you can add functionality to the Python system as needed and use Python programs within other environments or systems.</p>
+
+<p>Mixing Python into systems coded in more demanding languages, for instance, makes it an easy-to-use frontend language for testing and customization. As also mentioned earlier, this makes Python good at rapid prototyping too—systems may be coded in Python first for development speed and later moved to extensions one piece at a time for execution speed if and when needed.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="It’s Relatively Easy to Use"><div class="sect2" id="itapostrophes_relatively_easy_to_use">
+<h2>It’s Relatively Easy to Use</h2>
+
+<p>Compared to alternatives like C++, Java, and C#, Python programming seems astonishingly simple to most <a contenteditable="false" data-type="indexterm" data-primary="ease of use" id="id1506"></a>observers. To run Python code in most contexts, you simply type it and run it. There are no intermediate compile and link steps, like those typical for languages such as C or C++. Python executes programs immediately, which makes for an interactive programming experience and <em>rapid turnaround</em> after program changes—in many cases, you can witness the effect of a program change nearly as fast as you can type it.</p>
+
+<p>Of course, development cycle turnaround is only one aspect of Python’s ease of use. It also provides a deliberately simple syntax and powerful built-in tools. In fact, some have gone so far as to call Python <em>executable pseudocode</em>. Because it eliminates much of the complexity of its contemporaries, Python programs are simpler, smaller, and more flexible than equivalent programs in other popular languages.</p>
+
+<p>Which is not to say that Python makes programming a <em>no-brainer</em>. Python also has convolutions and dark corners that we’ll tackle head-on in this book, and some of its roles are more rapid than others. Python’s flavor of OOP inheritance, for example, is much more complicated than it once was, and building standalone apps or precompiled programs of the sort you’ll meet in the next chapter can still be slow. Measured by its peers, though, Python is dramatically more coder friendly.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="It’s Relatively Easy to Learn"><div class="sect2" id="itapostrophes_relatively_easy_to_learn">
+<h2>It’s Relatively Easy to Learn</h2>
+
+<p>Finally, this brings us to the point <a contenteditable="false" data-type="indexterm" data-primary="learning curve" id="id1507"></a>of this book: especially when compared to other widely used programming languages, the core Python language is remarkably easy to learn. In fact, if you’re already an experienced programmer, you can expect to be coding small-scale Python programs in a matter of <span class="keep-together">days—though</span> you shouldn’t expect to become an expert quite that fast, despite what you may have heard from marketing departments!</p>
+
+<p>Naturally, mastering any topic as substantial as today’s Python is not trivial, and we’ll devote the rest of this book to this task. But the investment required to master Python is worthwhile: in the end, you’ll gain programming skills that apply to nearly every computer application domain. Moreover, most find Python’s learning curve to be much gentler than that of other programming tools, even if that curve is not quite as flat as some content publishers claim.</p>
+
+<p>That’s good news for both professional developers seeking to add the language to their toolbox, and end users of systems that expose a Python layer for scripting roles. Today, many systems rely on the fact that people can learn enough Python to use the system with little or no support. Moreover, Python has spawned a legion of users who program for need or fun instead of career and may never require <span class="keep-together">full-scale</span> software development skills. Although Python has advanced tools you’ll meet in this book, its core fundamentals are accessible to beginners and gurus alike.</p>
+
+<p>To see all this for yourself, let’s wrap up this overview and get started coding.</p>
+</div></section>
+</div></section>
+
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00010">
+<h1>Chapter Summary</h1>
+
+<p>And that concludes the “hype” portion of this book. In this chapter, you’ve explored some of the reasons that people pick Python for their programming tasks. You’ve also seen how it is applied and looked at a representative sample of notable users today. This book’s goal is to teach Python, though, not to sell it. The best way to judge a language is to see it in action, so the rest of this book focuses entirely on the language details glossed over here.</p>
+
+<p>The next two chapters begin your technical introduction to the language. In them, you’ll study ways to run Python programs, peek at Python’s execution model, and learn the basics of module files for saving code. The aim will be to give you just enough information to run the examples and exercises in the rest of the book. You won’t really start programming per se until <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>, but make sure you have a handle on the startup details before moving on.</p>
+</div></section>
+
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id00077">
+<h1>Test Your Knowledge: Quiz</h1>
+
+<p>In this book, we will be closing each chapter with a quick open-book quiz about the chapter’s coverage to help you review key concepts. The answers for these quizzes appear immediately after the questions, and you are encouraged to read the answers once you’ve taken a crack at the questions yourself, as they sometimes give useful summary context.</p>
+
+<p>In addition to these end-of-chapter quizzes, you’ll find lab <em>exercises</em> at the end of each <em>part</em> of the book, designed to help you start coding Python on your own, with suggested answers available in an appendix. For now, here’s your first quiz. Good luck, and be sure to refer back to this chapter’s material as needed.</p>
+
+<ol>
+	<li>
+	<p>What are the six main reasons that people choose to use Python?</p>
+	</li>
+	<li>
+	<p>Name four notable companies or organizations using Python today.</p>
+	</li>
+	<li>
+	<p>Why might you <em>not</em> want to use Python in an application?</p>
+	</li>
+	<li>
+	<p>What can you do with Python?</p>
+	</li>
+</ol>
+</div></section>
+
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id00076">
+<h1>Test Your Knowledge: Answers</h1>
+
+<p>How did you do? Here are the suggested answers, though there may be multiple solutions to some quiz questions. Again, even if you’re sure of your answers, you’re encouraged to look at the suggestions for additional context. See the chapter’s coverage for more details if any of these responses don’t make sense to you.</p>
+
+<ol>
+	<li>
+	<p>Software quality, developer productivity, program portability, support libraries, component integration, and simple enjoyment. Of these, the quality and productivity themes seem to be the main reasons that people choose to use Python, but enjoyment counts, too, in a field that can be as challenging as software.</p>
+	</li>
+	<li>
+	<p>Google, Industrial Light &amp; Magic, JPL, ESRI, Instagram, and many more. Almost every organization doing software development uses Python in some fashion, whether for long-term strategic product development or for short-term tactical tasks such as testing and system administration.</p>
+	</li>
+	<li>
+	<p>Python’s main downside is performance: in its currently most-common version, at least, it won’t run as quickly as fully compiled languages like C and C++. On the other hand, it’s quick enough for most applications, and typical Python code runs at close to C speed anyhow because it invokes linked-in C code in the interpreter. If speed is critical, compiled extensions and other tools like Cython are available to optimize the number-crunching parts of a Python application.</p>
+	</li>
+	<li>
+	<p>You can use Python for nearly anything you can do with a computer, from website development and gaming to AI and spacecraft control. Numeric programming and web development may lead the pack today, though probably because those are some of the main things for which computers are used.</p>
+	</li>
+</ol>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>

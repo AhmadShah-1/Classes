@@ -1,0 +1,1524 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 38. Managed Attributes"><div class="chapter" id="managed_attributes">
+<h1><span class="label">Chapter 38. </span>Managed Attributes</h1>
+<p>This chapter expands on the <em>attribute interception</em> techniques introduced earlier, introduces another, and employs them in a handful of larger examples. Like everything in this part of the book, this chapter is classified as an advanced topic and optional reading, because most applications programmers don’t need to care about the material discussed here—they can fetch and set attributes on objects <a contenteditable="false" data-type="indexterm" data-primary="attribute interception" id="id4658"></a>without concern for attribute implementations.</p>
+<p>Especially for tools builders, though, managing attribute access can be an important part of flexible APIs. Moreover, an understanding of the descriptor model covered here can make related tools such as slots and properties more tangible and may even be required reading if it appears in code you must use.</p>
+<section data-type="sect1" data-pdf-bookmark="Why Manage Attributes?"><div class="sect1" id="why_manage_attributesquestion_mark">
+<h1>Why Manage Attributes?</h1>
+<p>Object attributes are central to most <a contenteditable="false" data-type="indexterm" data-primary="attribute management" id="id4659"></a>Python programs—they are where we often store information about the entities our scripts process. Normally, attributes are simply names for objects; a person’s <code>name</code> attribute, for example, might be a simple string, fetched and set with basic attribute syntax:</p>
+<pre data-type="programlisting">person.name                 <code><em># Fetch attribute value</em></code>
+person.name = value         <code><em># Change attribute value</em></code></pre>
+<p>In most cases, the attribute lives in the object itself or is inherited from a class from which it derives. That basic model suffices for most programs you will write in your Python career.</p>
+<p>Sometimes, though, more flexibility is required. Suppose you’ve written a program to use a <code>name</code> attribute directly, but then your requirements change—for example, you decide that names must be validated or mutated with program logic when accessed. It’s straightforward to code methods to manage access to the attribute’s value (<code>valid</code> and <code>transform</code> are abstract and hypothetical here):</p>
+<pre class="pagebreak-before" data-type="programlisting">class Person:
+    def getName(self):
+        if not valid():
+            raise TypeError('cannot fetch name')
+        else:
+            return self.name.transform()
+
+    def setName(self, value):
+         if not valid(value):
+            raise TypeError('cannot change name')
+        else:
+            self.name = transform(value)
+
+person = Person()
+person.getName()
+person.setName('value')</pre>
+<p>The problem with this is that it also requires changing all the places where names are used in the entire program—a possibly nontrivial task. Moreover, this approach requires the program to be aware of how values are exported: as simple names or called methods. If you begin with a method-based interface to data, clients are immune to changes; if you do not, changes can become problematic.</p>
+<p>This issue can crop up more often than you might expect. The value of a cell in a spreadsheet-like program, for instance, might begin its life as a simple discrete value but later mutate into an arbitrary calculation. Since an object’s interface should be flexible enough to support such future changes without breaking existing code, switching to methods later is less than ideal.</p>
+<section data-type="sect2" data-pdf-bookmark="Inserting Code to Run on Attribute Access"><div class="sect2" id="inserting_code_to_run_on_attribute_acce">
+<h2>Inserting Code to Run on Attribute Access</h2>
+<p>A better solution would allow you to run code automatically on attribute access if needed. That’s one of the main roles of managed attributes—they provide ways to add <em>attribute accessor</em> logic after the fact. More generally, they support arbitrary attribute usage modes that go beyond simple data storage.</p>
+<p>At various points in this book, we’ve met Python tools that allow our scripts to dynamically compute attribute values when fetching them and validate or change attribute values when storing them. In this chapter, we’re going to focus more deeply on the tools already <a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="access" id="attbaccss"></a>introduced, explore other tools in this category, and study some larger use-case examples in this domain. Specifically, this chapter presents <em>four</em> accessor techniques:</p>
+<ol>
+    <li><p>The <code>property</code> built-in, for specifying methods to handle access to a specific attribute</p></li>
+    <li><p>The <code>__get__</code> and <code>__set__</code> descriptor methods, for handling access to a specific attribute and <a contenteditable="false" data-type="indexterm" data-primary="attribute accessors" data-secondary="__get__ method" data-secondary-sortas="get method" id="id4660"></a><a contenteditable="false" data-type="indexterm" data-primary="__get__ method" data-primary-sortas="get method" id="id4661"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__get__" data-secondary-sortas="get" id="id4662"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute accessors" data-secondary="__set__ method" data-secondary-sortas="set method" id="id4663"></a><a contenteditable="false" data-type="indexterm" data-primary="__set__ method" data-primary-sortas="set method" id="id4664"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__set__" data-secondary-sortas="set" id="id4665"></a>the basis for other tools such as properties and slots</p></li>
+<li><p>The <code>__getattr__</code> and <code>__setattr__</code> methods, for handling undefined attribute fetches and all attribute <a contenteditable="false" data-type="indexterm" data-primary="attribute accessors" data-secondary="__getattr__ method" data-secondary-sortas="getattr method" id="id4666"></a><a contenteditable="false" data-type="indexterm" data-primary="__getattr__ method" data-primary-sortas="getattr method" id="id4667"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__getattr__" data-secondary-sortas="getattr" id="id4668"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute accessors" data-secondary="__setattr__ method" data-secondary-sortas="setattr method" id="id4669"></a><a contenteditable="false" data-type="indexterm" data-primary="__setattr__ method" data-primary-sortas="setattr method" id="id4670"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__setattr__" data-secondary-sortas="setattr" id="id4671"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="assignments" id="id4672"></a>assignments</p></li>
+<li><p>The <code>__getattribute__</code> method, for handling all <a contenteditable="false" data-type="indexterm" data-primary="attribute accessors" data-secondary="__getattribute__ method" data-secondary-sortas="getattribute method" id="id4673"></a><a contenteditable="false" data-type="indexterm" data-primary="__getattribute__ method" data-primary-sortas="getattribute method" id="id4674"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__getattribute__" data-secondary-sortas="getattribute" id="id4675"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute fetches" data-secondary="__getattribute__ method" data-secondary-sortas="getattribute method" id="id4676"></a>attribute fetches</p></li>
+
+
+</ol>
+<p>We met these tools in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch30.html#operator_overloading-id000103">30</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch32.html#class_odds_and_ends">32</a> briefly, and in some cases, hardly at all. As you’ll see here, all four techniques share goals to some degree, and it’s usually possible to code a given problem using any one of them.</p>
+<p class="pagebreak-before">That said, they also differ in some important ways. For example, the last two techniques listed here apply to <em>specific</em> attributes, whereas the first two are generic enough to be used by delegation-based proxy classes that must route <em>arbitrary</em> attributes to wrapped objects. As you’ll find, all four schemes also differ in both complexity and aesthetics in ways you must see in action to judge for yourself.</p>
+<p>Besides studying the specifics behind these four attribute interception techniques, this chapter also presents an opportunity to explore programs larger than most we’ve seen elsewhere in this book. The <code>CardHolder</code> case study at the end, for example, should serve as a self-study example of larger classes in action. We’ll also be using some of the techniques outlined here in the next chapter to code decorators, so <a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="access" data-startref="attbaccss" id="id4677"></a>be sure you have at least a general understanding of these topics before you move on.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Properties"><div class="sect1" id="properties">
+<h1>Properties</h1>
+<p>Up first, the property protocol allows us to route a specific attribute’s get, set, and delete operations to functions or methods we provide, enabling us to insert code to be run automatically <a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="properties" id="id4678"></a><a contenteditable="false" data-type="indexterm" data-primary="properties" id="id4679"></a>on attribute accesses, intercept attribute deletions, and provide documentation for attributes if desired.</p>
+<p>As introduced in <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>, properties are created with the <code>property</code> built-in and are assigned to class attributes, just like method functions. Accordingly, they are inherited by subclasses and instances, like any other class attributes. Their access-interception functions are provided with the <code>self</code> instance argument, which grants access to state information and class attributes available on the subject instance.</p>
+<p>A property manages a single, specific attribute; although it can’t catch all attribute accesses generically, it allows us to control both fetch and assignment accesses and enables us to change an attribute from simple data to a computation freely without breaking existing code. As you’ll see, properties are strongly related to descriptors; in fact, they are essentially a restricted form of them.</p>
+<section data-type="sect2" data-pdf-bookmark="The Basics"><div class="sect2" id="the_basics-id000112">
+<h2>The Basics</h2>
+<p>A property is created by assigning the <a contenteditable="false" data-type="indexterm" data-primary="properties" data-secondary="creating" id="id4680"></a>result of a built-in function to a class attribute:</p>
+<pre data-type="programlisting">attribute = property(fget, fset, fdel, doc)</pre>
+<p>None of this built-in’s arguments are required, and all default to <code>None</code> if not passed. For the first three, this <code>None</code> means that the corresponding operation is not supported, and attempting it will raise an <code>AttributeError</code> exception automatically.</p>
+<p>When these arguments <a contenteditable="false" data-type="indexterm" data-primary="properties" data-secondary="attribute fetches" id="id4681"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute fetches" data-secondary="properties" id="id4682"></a>are used, we pass <code>fget</code> a function for intercepting attribute fetches, <code>fset</code> a function for assignments, and <code>fdel</code> a function for attribute deletions. Technically, all three of these arguments accept any callable, including a class’s method, having a first argument to receive the instance being qualified. When later invoked, the <code>fget</code> function returns the computed attribute value, <code>fset</code> and <code>fdel</code> return nothing (really, <code>None</code>), and all three may raise exceptions to reject access requests.</p>
+<p>The <code>doc</code> argument receives a documentation string for the attribute if desired. If omitted, the property copies the docstring of the <code>fget</code> function, which, as usual, defaults to <code>None</code>.</p>
+<p>This built-in <code>property</code> call returns a property object, which we assign to the name of the attribute to be managed in the class scope, where it will be inherited by every instance. As you’ll learn ahead, this assignment can be automated by <code>@</code> decorator syntax, though its distributed usage may seem awkward for set and delete methods. However assigned, later accesses to the attribute automatically invoke the property’s handlers.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="A First Example"><div class="sect2" id="a_first_example-id00002">
+<h2>A First Example</h2>
+<p>To demonstrate how this translates to working code, the class in <a data-type="xref" href="#example_threeeight_onedot_prop_persondo">Example 38-1</a> uses a property to trace access to an attribute named <code>name</code>; the actual stored data is named <code>_name</code> so it does not clash with the property.</p>
+<div data-type="example" id="example_threeeight_onedot_prop_persondo">
+<h5><span class="label">Example 38-1. </span>prop-person.py</h5>
+<pre data-type="programlisting">class Person: 
+    def __init__(self, name):
+        self._name = name
+
+    def getName(self):
+        print('fetch...')
+        return self._name
+
+    def setName(self, value):
+        print('change...')
+        self._name = value
+
+    def delName(self):
+        print('remove...')
+        del self._name
+
+    name = property(getName, setName, delName, 'name property docs')
+
+sue = Person('Sue Jones')           <code><em># sue has a managed attribute</em></code>
+print(sue.name)                     <code><em># Runs getName</em></code>
+sue.name = 'Susan Jones'            <code><em># Runs setName</em></code>
+print(sue.name)
+del sue.name                        <code><em># Runs delName</em></code>
+
+print('-'*20)
+bob = Person('Bob Smith')           <code><em># bob inherits property too</em></code>
+print(bob.name)
+print(Person.name.__doc__)          <code><em># Or help(Person.name)</em></code></pre>
+</div>
+<p>This particular property doesn’t do much—it simply intercepts and traces an attribute—but it serves to demonstrate the protocol. When this code is run, two instances inherit the property, just as they would any other attribute attached to their class. However, accesses to their <code>name</code> attribute are caught and managed by the code we provide:</p>
+<pre data-type="programlisting">$ <code><strong>python3 prop-person.py</strong></code>
+fetch...
+Sue Jones
+change...
+fetch...
+Susan Jones
+remove...
+--------------------
+fetch...
+Bob Smith
+name property docs</pre>
+<p>Like all class attributes, properties <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="properties" id="id4683"></a><a contenteditable="false" data-type="indexterm" data-primary="properties" data-secondary="inheritance" id="id4684"></a>are <em>inherited</em> by both instances and lower subclasses. If we change our example as follows, for instance:</p>
+<pre class="pagebreak-before" data-type="programlisting">class Super:
+    …<code><em>the original Person class code</em></code>…
+    name = property(getName, setName, delName, 'name property docs')
+
+class Person(Super):
+    pass                            <code><em># Properties are inherited (class attrs)</em></code>
+
+sue = Person('Sue Jones')
+…<code><em>rest unchanged</em></code>…</pre>
+<p>the output is the same—the <code>Person</code> subclass inherits the <code>name</code> property from <code>Super</code>, and the <code>sue</code> instance gets it from <code>Person</code>. In terms of inheritance, properties work the same as normal methods; because they have access to the <code>self</code> instance argument, they can access instance state information and methods irrespective of subclass depth, as the next section further demonstrates.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Computed Attributes"><div class="sect2" id="computed_attributes-id00054">
+<h2>Computed Attributes</h2>
+<p>The example in the prior section <a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="computed attributes" id="id4685"></a><a contenteditable="false" data-type="indexterm" data-primary="properties" data-secondary="attributes" data-tertiary="computing value" id="id4686"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute fetches" data-secondary="computing value" id="id4687"></a>simply traces attribute accesses. Usually, though, properties do much more—computing the value of an attribute dynamically when fetched, for instance, as <a data-type="xref" href="#example_threeeight_twodot_prop_computed">Example 38-2</a> illustrates.</p>
+<div data-type="example" id="example_threeeight_twodot_prop_computed">
+<h5><span class="label">Example 38-2. </span>prop-computed.py</h5>
+<pre data-type="programlisting">class PropSquare:
+    def __init__(self, start):
+        self.value = start
+
+    def getX(self):                         <code><em># On attr fetch</em></code>
+        return self.value ** 2
+
+    def setX(self, value):                  <code><em># On attr assign</em></code>
+        self.value = value
+
+    X = property(getX, setX)                <code><em># No delete or docs</em></code>
+
+P = PropSquare(3)       <code><em># Two instances of class with property</em></code>
+Q = PropSquare(32)      <code><em># Each has different state information</em></code>
+
+print(P.X)              <code><em># 3 ** 2</em></code>
+P.X = 4
+print(P.X)              <code><em># 4 ** 2</em></code>
+print(Q.X)              <code><em># 32 ** 2 (1024)</em></code></pre>
+</div>
+<p>This class defines an attribute <code>X</code> that is accessed as though it were simple data, but really runs code to compute its value when fetched. The net effect triggers an implicit method call. When the code is run, the value is stored in the instance as state information, but each time we fetch it via the managed attribute, its value is automatically squared:</p>
+<pre data-type="programlisting">$ <code><strong>python3 prop-computed.py</strong></code>
+9
+16
+1024</pre>
+<p>Notice that we’ve made two different instances—because property methods automatically receive a <code>self</code> argument, they have access to the state information stored in instances. In our case, this means the fetch computes the square of the subject instance’s own data.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Coding Properties with Decorators"><div class="sect2" id="coding_properties_with_decorators">
+<h2>Coding Properties with Decorators</h2>
+<p>Although we’re saving additional details <a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="properties" data-tertiary="decorators" id="atbmgdcrt"></a><a contenteditable="false" data-type="indexterm" data-primary="properties" data-secondary="decorators" id="id4688"></a><a contenteditable="false" data-type="indexterm" data-primary="decorators" data-secondary="properties" id="id4689"></a>until the next chapter, we introduced <em>function decorator</em> basics earlier, in <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>. Recall that the function decorator syntax:</p>
+<pre data-type="programlisting">@decorator
+def func(args): …</pre>
+<p>is automatically translated to this equivalent by Python to <em>rebind</em> the function name to the result of the <code>decorator</code> callable:</p>
+<pre data-type="programlisting">def func(args): …
+func = decorator(func)</pre>
+<p>Because of this mapping, the <code>property</code> built-in can automatically serve as a decorator to define a function that will run automatically when an attribute is fetched:</p>
+<pre data-type="programlisting">class Person:
+    @property
+    def name(self): ...             <code><em># Rebinds: name = property(name)</em></code></pre>
+<p>When run, the decorated method is automatically passed to the first argument of the <code>property</code> built-in. This is really just alternative syntax for creating a property and rebinding the attribute name manually, but may be seen as more explicit in this role:</p>
+<pre data-type="programlisting">class Person:
+    def name(self): …
+    name = property(name)           <code><em># Manual equivalent to @property</em></code></pre>
+<section data-type="sect3" data-pdf-bookmark="Setter and deleter decorators"><div class="sect3" id="setter_and_deleter_decorators">
+<h3>Setter and deleter decorators</h3>
+<p>The preceding works naturally for <a contenteditable="false" data-type="indexterm" data-primary="properties" data-secondary="decorators" data-tertiary="setters" id="id4690"></a><a contenteditable="false" data-type="indexterm" data-primary="decorators" data-secondary="properties" data-tertiary="setters" id="id4691"></a><a contenteditable="false" data-type="indexterm" data-primary="properties" data-secondary="decorators" data-tertiary="deleters" id="id4692"></a><a contenteditable="false" data-type="indexterm" data-primary="decorators" data-secondary="properties" data-tertiary="deleters" id="id4693"></a>property get functions, but what about other accesses? In full detail, property objects also have <code>getter</code>, <code>setter</code>, and <code>deleter</code> methods that assign the corresponding property accessor methods and return a copy of the property itself. We can use these to specify components of properties by decorating normal methods, too, though the <code>getter</code> component (along with attributes docs) is usually filled in automatically by the act of creating the property itself. <a data-type="xref" href="#example_threeeight_threedot_prop_person">Example 38-3</a> demos the basics.</p>
+<div data-type="example" id="example_threeeight_threedot_prop_person">
+<h5><span class="label">Example 38-3. </span>prop-person-deco.py</h5>
+<pre data-type="programlisting">class Person:
+    def __init__(self, name):
+        self._name = name
+
+    @property
+    def name(self):                 <code><em># name = property(name)</em></code>
+        'name property docs'
+        print('fetch...')
+        return self._name
+
+    @name.setter
+    def name(self, value):          <code><em># name = name.setter(name)</em></code>
+        print('change...')
+        self._name = value
+
+    @name.deleter
+    def name(self):                 <code><em># name = name.deleter(name)</em></code>
+        print('remove...')
+        del self._name
+
+sue = Person('Sue Jones')           <code><em># sue has a managed attribute</em></code>
+print(sue.name)                     <code><em># Runs name getter (def name 1)</em></code>
+sue.name = 'Susan Jones'            <code><em># Runs name setter (def name 2)</em></code>
+print(sue.name)
+del sue.name                        <code><em># Runs name deleter (def name 3)
+</em></code>
+print('-'*20)
+bob = Person('Bob Smith')           <code><em># bob inherits property too</em></code>
+print(bob.name)
+print(Person.name.__doc__)          <code><em># Or help(Person.name)</em></code></pre>
+</div>
+<p>In fact, this code is equivalent to the first example in this section—decoration is just an alternative way to code properties in this case. When it’s run, the results are the same:</p>
+<pre data-type="programlisting">$ <code><strong>python3 prop-person-deco.py</strong></code>
+fetch...
+Sue Jones
+change...
+fetch...
+Susan Jones
+remove...
+--------------------
+fetch...
+Bob Smith
+name property docs</pre>
+<p>Compared to manual assignment of <code>property</code> results, using decorators to properties in this example requires just three extra lines of code—a seemingly negligible difference. As is so often the case with alternative tools, though, the choice between <a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="properties" data-tertiary="decorators" data-startref="atbmgdcrt" id="id4694"></a>the two techniques is largely subjective.</p>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Descriptors"><div class="sect1" id="descriptors">
+<h1>Descriptors</h1>
+<p>Very briefly previewed in <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>, <em>descriptors</em> provide an alternative way to intercept attribute access; they are strongly <a contenteditable="false" data-type="indexterm" data-primary="descriptors" id="id4695"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="descriptors" id="id4696"></a>related to the properties discussed in the prior section. Really, a property <em>is</em> a kind of descriptor—technically speaking, the <code>property</code> built-in is just a simplified way to create a specific type of descriptor that runs method functions on attribute accesses. In fact, descriptors are the underlying implementation mechanism for a variety of class tools, including both properties and slots, and play other internal roles in Python that we can safely skip here.</p>
+<p>Functionally speaking, the descriptor protocol allows us to route a specific attribute’s get, set, and delete operations to methods of a separate class’s instance object that we provide. This allows us to insert code to be run automatically on attribute fetches and assignments, intercept attribute deletions, and provide documentation for the attributes if desired.</p>
+<p>Descriptors are created as independent <em>classes</em>, and they are assigned to class attributes just like <a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="classes" id="id4697"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="descriptors" id="id4698"></a>method functions. Like any other class attribute, they are inherited by subclasses and instances. Their access-interception methods are provided with both a <code>self</code> for the descriptor instance itself as well as the instance of the client class whose attribute references the descriptor object. Because of this, they can retain and use state information of their own, as well as state information of the subject instance. For example, a descriptor may call methods available in the client class, as well as descriptor-specific methods it defines.</p>
+<p>Like a property, a descriptor manages a single, specific attribute; although it can’t catch all attribute accesses generically, it provides control over both fetch and assignment accesses and allows us to change an attribute name freely from simple data to a computation without breaking existing code. If this sounds like properties, it’s because it is: as you shall see, properties can be coded as descriptors directly.</p>
+<p>Unlike properties, though, descriptors provide a more general tool. For instance, because they are coded as normal classes, descriptors have their own state, may participate in descriptor inheritance hierarchies, can use composition to aggregate objects, and provide a natural structure for coding internal methods and attribute documentation strings.</p>
+<section data-type="sect2" data-pdf-bookmark="The Basics"><div class="sect2" id="the_basics-id000125">
+<h2>The Basics</h2>
+<p>As mentioned, descriptors are coded as separate classes and provide specially named accessor methods for the attribute access operations they wish to intercept—get, set, and deletion methods in the descriptor class are automatically run when the attribute assigned to the descriptor class instance is accessed in the corresponding way:</p>
+<pre data-type="programlisting">class Descriptor:
+    "docstring goes here"
+    def __get__(self, instance, owner): …        <code><em># Return attr value</em></code>
+    def __set__(self, instance, value): …        <code><em># Return nothing (None)</em></code>
+    def __delete__(self, instance): …            <code><em># Return nothing (None)</em></code></pre>
+<p>Classes with any of these methods are considered descriptors, and their methods are special when one of their instances is assigned to another class’s attribute—when the attribute is accessed, these methods are automatically invoked.</p>
+<p>If any of these methods are absent, it generally <a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="hiding" id="id4699"></a>means that the corresponding type of access is not supported. Unlike properties, however, omitting a <code>__set__</code> allows the descriptor attribute’s name to be assigned and thus redefined in an instance, thereby <em>hiding</em> the descriptor—to make an attribute <em>read-only</em>, you must define <code>__set__</code> to catch assignments and raise an exception.</p>
+<p>Descriptors with <code>__set__</code> methods <a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="__set__ method" data-secondary-sortas="set method" id="id4700"></a><a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="inheritance and" id="id4701"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="descriptors" id="id4702"></a>also have some special-case implications for inheritance that we’ll largely defer until <a data-type="xref" href="ch40.html#metaclasses_and_inheritance">Chapter 40</a>’s coverage of metaclasses and the complete inheritance specification. In short, a descriptor with a <code>__set__</code> is known <a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="data descriptors" id="id4703"></a><a contenteditable="false" data-type="indexterm" data-primary="data descriptors" id="id4704"></a>formally as a <em>data descriptor</em> and is given precedence over other names located by normal inheritance rules. The inherited descriptor for attribute <code>__class__</code>, for example, overrides the same name in an instance’s namespace dictionary. This also works to ensure that data descriptors you code in your own classes take precedence over others.</p>
+<section data-type="sect3" data-pdf-bookmark="Descriptor method arguments"><div class="sect3" id="descriptor_method_arguments">
+<h3>Descriptor method arguments</h3>
+<p>Before we code anything realistic, let’s <a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="arguments" id="dscargu"></a><a contenteditable="false" data-type="indexterm" data-primary="arguments" data-secondary="descriptors" id="agrdsp"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="descriptors" data-tertiary="method arguments" id="amdrmrg"></a>take a brief look at some fundamentals. All three descriptor methods outlined in the prior section are passed both the descriptor class instance (<code>self</code>) and the instance of the client class to which the descriptor instance is attached (<code>instance</code>).</p>
+<p>The <code>__get__</code> access method additionally receives an <code>owner</code> argument, specifying the class to which the descriptor instance is attached. Its <code>instance</code> argument is either the instance through which the attribute was accessed (for <code><em>instance</em>.attr</code>), or <code>None</code> when the attribute is accessed through the owner class directly (for <code><em>class</em>.attr</code>). The former of these generally computes a value for instance access, and the latter usually returns <code>self</code> if descriptor object access is supported.</p>
+<p>For example, in the following REPL session, when <code>X.attr</code> is fetched, Python automatically runs the <code>__get__</code> method of the <code>Descriptor</code> class instance to which the <code>Subject.attr</code> class attribute is assigned:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>class Descriptor:</strong></code>                  
+        <code><strong>def __get__(self, instance, owner):
+            print(self, instance, owner, sep='\n')
+
+</strong></code>&gt;&gt;&gt; <code><strong>class Subject:</strong></code>                           
+        <code><strong>attr = Descriptor()</strong></code>            <code><em># Descriptor instance is class attr</em></code>
+
+&gt;&gt;&gt; <code><strong>X = Subject()
+</strong></code>&gt;&gt;&gt; <code><strong>X.attr</strong></code>
+&lt;__main__.Descriptor object at 0x104bc9b20&gt;
+&lt;__main__.Subject object at 0x104b8a570&gt;
+&lt;class '__main__.Subject'&gt; 
+
+&gt;&gt;&gt; <code><strong>Subject.attr</strong></code>
+&lt;__main__.Descriptor object at 0x104bc9b20&gt;
+None
+&lt;class '__main__.Subject'&gt;</pre>
+<p>Notice the arguments automatically passed in to the <code>__get__</code> method in the first attribute fetch—when <code>X.attr</code> is fetched, it’s as though the following translation occurs (though the <code>Subject.attr</code> here doesn’t invoke <code>__get__</code> again as it normally would):</p>
+<pre data-type="programlisting">X.attr  =&gt;  Descriptor.__get__(Subject.attr, X, Subject)</pre>
+<p>The descriptor knows it is being accessed directly <a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="arguments" data-startref="dscargu" id="id4705"></a><a contenteditable="false" data-type="indexterm" data-primary="arguments" data-secondary="descriptors" data-startref="agrdsp" id="id4706"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="descriptors" data-tertiary="method arguments" data-startref="amdrmrg" id="id4707"></a>when its instance argument is <code>None</code>.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Read-only descriptors"><div class="sect3" id="read_only_descriptors">
+<h3>Read-only descriptors</h3>
+<p>As mentioned earlier, unlike properties, simply <a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="read-only" id="dscprdo"></a><a contenteditable="false" data-type="indexterm" data-primary="read-only descriptors" id="rdolydpt"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="descriptors" data-tertiary="read-only" id="agsdrrdy"></a>omitting the <code>__set__</code> method in a descriptor isn’t enough to make an attribute read-only because the descriptor name can be assigned in an instance. In the following, the attribute assignment to <code>X.a</code> stores <code>a</code> in the instance object <code>X</code>, thereby hiding the descriptor stored in class <code>C</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class D:
+        def __get__(*args): print('get')
+
+</strong></code>&gt;&gt;&gt; <code><strong>class C:</strong></code>
+        <code><strong>a = D()</strong></code>                     <code><em># Attribute "a" is a descriptor instance</em></code>
+
+&gt;&gt;&gt; <code><strong>X = C()
+</strong></code>&gt;&gt;&gt; <code><strong>X.a</strong></code>                             <code><em># Runs inherited descriptor __get__</em></code>
+get
+&gt;&gt;&gt; <code><strong>C.a</strong></code>
+get
+&gt;&gt;&gt; <code><strong>X.a = 99</strong> </code>                       <code><em># Stored on X, hiding C.a!
+</em></code>&gt;&gt;&gt; <code><strong>X.a</strong></code>
+99
+&gt;&gt;&gt; <code><strong>list(X.__dict__.keys())</strong></code>
+['a']
+&gt;&gt;&gt; <code><strong>Y = C()
+</strong></code>&gt;&gt;&gt; <code><strong>Y.a</strong></code>                             <code><em># Y still inherits descriptor</em></code>
+get
+&gt;&gt;&gt; <code><strong>C.a</strong></code>
+get</pre>
+<p>This is the way all instance attribute assignments work in Python, and it allows classes to selectively override class-level defaults in their instances. To make a descriptor-based attribute read-only, catch the assignment in the descriptor class and raise an exception to prevent attribute assignment—when assigning an attribute that is a descriptor, Python effectively bypasses the normal instance-level assignment behavior and routes the operation to the descriptor object:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class D:
+        def __get__(*args): print('get')
+        def __set__(*args): raise AttributeError('cannot set')
+
+</strong></code>&gt;&gt;&gt; <code><strong>class C:</strong></code>
+        <code><strong>a = D()</strong></code>
+
+&gt;&gt;&gt; <code><strong>X = C()
+</strong></code>&gt;&gt;&gt; <code><strong>X.a</strong> </code>                                <code><em># Routed to C.a.__get__</em></code>
+get
+&gt;&gt;&gt; <code><strong>X.a = 99</strong></code>                            <code><em># Routed to C.a.__set__</em></code>
+AttributeError: cannot set</pre>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>The deletion trio</em>: Be careful not to confuse the descriptor <code>__delete__</code> method with the general <code>__del__</code> method. The former is called on attempts to delete the managed attribute name on an instance of the owner class; the latter is the general instance destructor method, run when an instance of any kind of class is about to be garbage-collected. Descriptor <code>__delete__</code> is more closely related to the <code>__delattr__</code> generic attribute deletion <a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="read-only" data-startref="dscprdo" id="id4708"></a><a contenteditable="false" data-type="indexterm" data-primary="read-only descriptors" data-startref="rdolydpt" id="id4709"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="descriptors" data-tertiary="read-only" data-startref="agsdrrdy" id="id4710"></a>method we’ll study later in this chapter. See <a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a> for more on operator-overloading methods like <code>__del__</code>.</p>
+</div>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="A First Example"><div class="sect2" id="a_first_example-id00003">
+<h2>A First Example</h2>
+<p>To see how this all comes together in more realistic code, let’s get started with the same first example we wrote for properties. <a data-type="xref" href="#example_threeeight_fourdot_desc_persond">Example 38-4</a> defines a descriptor that intercepts access to an attribute named <code>name</code> in its clients. Its methods use their <code>instance</code> argument to access state information in the subject instance, where the name string is actually stored.</p>
+<div data-type="example" id="example_threeeight_fourdot_desc_persond">
+<h5><span class="label">Example 38-4. </span>desc-person.py</h5>
+<pre data-type="programlisting">class Name:
+    'name descriptor docs'
+
+    def __get__(self, instance, owner):
+        print('fetch...')
+        return instance._name
+
+    def __set__(self, instance, value):
+        print('change...')
+        instance._name = value
+
+    def __delete__(self, instance):
+        print('remove...')
+        del instance._name
+
+class Person:
+    def __init__(self, name):
+        self._name = name
+
+    name = Name()                       <code><em># Assign descriptor to attr</em></code>
+
+sue = Person('Sue Jones')               <code><em># sue has a managed attribute
+</em></code>print(sue.name)                         <code><em># Runs Name.__get__</em></code>
+sue.name = 'Susan Jones'                <code><em># Runs Name.__set__</em></code>
+print(sue.name)
+del sue.name                            <code><em># Runs Name.__delete__</em></code>
+
+print('-'*20)
+bob = Person('Bob Smith')               <code><em># bob inherits descriptor too
+</em></code>print(bob.name)
+print(Name.__doc__)                     <code><em># Or help(Name)</em></code></pre>
+</div>
+<p>Notice in this code how we <a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="class attributes" id="id4711"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="attributes" data-tertiary="descriptors" id="id4712"></a>assign an instance of our descriptor class to a <em>class attribute</em> in the client class; because of this, it is inherited by all instances of the class, just like a class’s methods. Really, we <em>must</em> assign the descriptor to a class attribute like this—it won’t work if assigned to a <code>self</code> instance attribute instead. When the descriptor’s <code>__get__</code> method is run, it is passed three objects to define its context:</p>
+<ul>
+<li><p><code>self</code> is the <code>Name</code> class instance.</p></li>
+<li><p><code>instance</code> is the <code>Person</code> class instance.</p></li>
+<li><p><code>owner</code> is the <code>Person</code> class.</p></li>
+</ul>
+<p>When this code is run, the descriptor’s methods intercept accesses to the attribute, much like the property version. In fact, the output is the same again:</p>
+<pre data-type="programlisting">$ <code><strong>python3 desc-person.py</strong></code>
+fetch...
+Sue Jones
+change...
+fetch...
+Susan Jones
+remove...
+--------------------
+fetch...
+Bob Smith
+name descriptor docs</pre>
+<p>Also like in the property example, our <a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="inheritance" id="id4713"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="descriptors" id="id4714"></a>descriptor class instance is a class attribute and thus is <em>inherited</em> by all instances of the client class and any subclasses. If we change the <code>Person</code> class in our example to the following, for instance, the output of our script is the same:</p>
+<pre data-type="programlisting">…
+class Super:
+    def __init__(self, name):
+        self._name = name
+
+    name = Name()
+
+class Person(Super):                     <code><em># Descriptors are inherited (class attrs)</em></code>
+   pass
+…</pre>
+<p>Also, note that when a descriptor class <a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="nested classes" id="id4715"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="descriptors" id="id4716"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="nested" data-tertiary="descriptors" id="id4717"></a>is not useful outside the client class, it’s perfectly reasonable to embed the descriptor’s definition inside its client syntactically. Here’s what our example looks like if we use a <em>nested class</em>:</p>
+<pre class="pagebreak-before" data-type="programlisting">class Person:
+    def __init__(self, name):
+        self._name = name
+
+    class Name:                                 <code><em># Using a nested class</em></code>
+        'name descriptor docs'
+
+        def __get__(self, instance, owner):
+            …<code><em>same</em></code>…
+
+        def __set__(self, instance, value):
+            …<code><em>same</em></code>…
+
+        def __delete__(self, instance):
+            …<code><em>same</em></code>…
+
+    name = Name()</pre>
+<p>When coded this way, <code>Name</code> becomes a local variable in the scope of the <code>Person</code> class statement, such that it won’t clash with any names outside the class. This version works the same as the original—we’ve simply moved the descriptor class definition into the client class’s scope—but the last line of the testing code must change to fetch the docstring from its new location (per unlisted file <em>desc-person-nested.py</em> in the example’s package):</p>
+<pre data-type="programlisting">…
+print(Person.Name.__doc__)     <code><em># Differs: not Name.__doc__ outside class</em></code></pre>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Computed Attributes"><div class="sect2" id="computed_attributes-id00088">
+<h2>Computed Attributes</h2>
+<p>As was the case when using <a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="attributes, computed" id="id4718"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="descriptors" id="id4719"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="descriptors" data-tertiary="computed attributes" id="id4720"></a>properties, our first descriptor example of the prior section didn’t do much—it simply printed trace messages for attribute accesses as a demo. In practice, descriptors can also be used to compute attribute values each time they are fetched. <a data-type="xref" href="#example_threeeight_fivedot_desc_compute">Example 38-5</a> illustrates—it’s a rehash of the same example we coded for properties but uses a descriptor to automatically square an attribute’s value each time it is fetched.</p>
+<div data-type="example" id="example_threeeight_fivedot_desc_compute">
+<h5><span class="label">Example 38-5. </span>desc-computed.py</h5>
+<pre data-type="programlisting">class DescSquare:
+    def __init__(self, start):                  <code><em># Each desc has own state
+</em></code>        self.value = start
+
+    def __get__(self, instance, owner):         <code><em># On attr fetch</em></code>
+        return self.value ** 2
+
+    def __set__(self, instance, value):         <code><em># On attr assign
+</em></code>        self.value = value                      <code><em># No delete or docs</em></code>
+
+class Client1:
+    X = DescSquare(3)          <code><em># Assign descriptor instance to class attr</em></code>
+
+class Client2:
+    X = DescSquare(32)         <code><em># Another instance in another client class
+</em></code>                               <code><em># Could also code two instances in same class</em></code>
+c1 = Client1()
+c2 = Client2()
+
+print(c1.X)                    <code><em># 3 ** 2
+</em></code>c1.X = 4
+print(c1.X)                    <code><em># 4 ** 2</em></code>
+print(c2.X)                    <code><em># 32 ** 2 (1024)</em></code></pre>
+</div>
+<p>When run, the output of this example is the same as that of the original property-based version, but here a descriptor class object is intercepting the attribute accesses instead of a property:</p>
+<pre data-type="programlisting">$ <code><strong>python3 desc-computed.py</strong></code>
+9
+16
+1024</pre>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Using State Information in Descriptors"><div class="sect2" id="using_state_information_in_descriptors">
+<h2>Using State Information in Descriptors</h2>
+<p>If you closely study the two <a contenteditable="false" data-type="indexterm" data-primary="state" data-secondary="descriptors" id="sttdcrpt"></a><a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="state" id="desptt"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="descriptors" data-tertiary="state information" id="gmnsfr"></a>descriptor examples we’ve written so far, you might notice that they get their information from different places—the first (the <code>name</code> attribute example) uses data stored on the client <em>instance</em>, and the second (the attribute squaring example) uses data attached to the <em>descriptor</em> object itself (a.k.a. <code>self</code>). In fact, descriptors can use <em>both</em> instance state and descriptor state, or any combination thereof:</p>
+<ul>
+<li><p><em>Descriptor state</em> is used to manage either data internal to the workings of the descriptor or data that spans all instances. It can vary per attribute appearance (often per client class).</p></li>
+<li><p><em>Instance state</em> records information <a contenteditable="false" data-type="indexterm" data-primary="instances" data-secondary="state" id="id4721"></a><a contenteditable="false" data-type="indexterm" data-primary="state" data-secondary="instances" id="id4722"></a>related to and possibly created by the client class. It can vary per client-class instance (that is, per application object).</p></li>
+</ul>
+<p>In other words, descriptor state is per-descriptor data, and instance state is per-client-instance data. As usual in OOP, you must choose state carefully. For example, you would not normally use <em>descriptor</em> state to record employee names since each client instance requires its own value—if stored in the descriptor, each client class instance will effectively share the same single copy. On the other hand, you would not usually use <em>instance</em> state to record data pertaining to descriptor implementation internals—if stored in each instance, there would be multiple varying copies.</p>
+<p>Descriptor methods may use either state form, but descriptor state sometimes makes it unnecessary to use special naming conventions to avoid name collisions in the instance for data that is not instance specific. For example, the descriptor in <a data-type="xref" href="#example_threeeight_sixdot_desc_state_de">Example 38-6</a> attaches information to its own instance, so it doesn’t clash with that on the client class’s instance—but also shares that information between two client instances.</p>
+<div data-type="example" id="example_threeeight_sixdot_desc_state_de">
+<h5><span class="label">Example 38-6. </span>desc-state-desc.py</h5>
+<pre data-type="programlisting">class DescState:                           <code><em># Use descriptor state</em></code>
+    def __init__(self, value):
+        self.value = value
+
+    def __get__(self, instance, owner):    <code><em># On attr fetch</em></code>
+        print('DescState get')
+        return self.value * 10
+
+    def __set__(self, instance, value):    <code><em># On attr assign</em></code>
+        print('DescState set')
+        self.value = value
+
+<code><em># Client class</em></code>
+class CalcAttrs:
+    X = DescState(2)                       <code><em># Descriptor class attr</em></code>
+    Y = 3                                  <code><em># Class attr</em></code>
+    def __init__(self):
+        self.Z = 4                         <code><em># Instance attr</em></code>
+
+obj = CalcAttrs()
+print(obj.X, obj.Y, obj.Z)                 <code><em># X is computed, others are not</em></code>
+obj.X = 5                                  <code><em># X assignment is intercepted</em></code>
+CalcAttrs.Y = 6                            <code><em># Y reassigned in class</em></code>
+obj.Z = 7                                  <code><em># Z assigned in instance</em></code>
+print(obj.X, obj.Y, obj.Z)
+
+obj2 = CalcAttrs()                         <code><em># But X uses shared data, like Y!
+</em></code>print(obj2.X, obj2.Y, obj2.Z)</pre>
+</div>
+<p>This code’s internal <code>value</code> information lives only in the <em>descriptor</em>, so there won’t be a collision if the same name is used in the client’s instance. Notice that only the descriptor attribute is managed here—get and set accesses to <code>X</code> are intercepted, but accesses to <code>Y</code> and <code>Z</code> are not (<code>Y</code> is attached to the client class and <code>Z</code> to the instance). When this code is run, <code>X</code> is computed when fetched, but its value is also the same for all client instances because it uses descriptor-level state:</p>
+<pre data-type="programlisting">$ <code><strong>python3 desc-state-desc.py</strong></code>
+DescState get
+20 3 4
+DescState set
+DescState get
+50 6 7
+DescState get
+50 6 4</pre>
+<p>It’s also feasible for a descriptor to store or use an attribute attached to the client class’s <em>instance</em> instead of itself. Crucially, unlike data stored in the descriptor itself, this allows for data that can vary per client class instance. The descriptor in <a data-type="xref" href="#example_threeeight_sevendot_desc_state">Example 38-7</a> assumes the instance has an attribute <code>_X</code> attached by the client class and uses it to compute the value of the attribute it represents.</p>
+<div data-type="example" id="example_threeeight_sevendot_desc_state">
+<h5><span class="label">Example 38-7. </span>desc-state-inst.py</h5>
+<pre data-type="programlisting">class InstState:                           <code><em># Using instance state</em></code>
+    def __get__(self, instance, owner):
+        print('InstState get')             <code><em># Assume set by client class</em></code>
+        return instance._X * 10
+
+    def __set__(self, instance, value):
+        print('InstState set')
+        instance._X = value
+
+<code><em># Client class
+</em></code>class CalcAttrs:
+    X = InstState()                        <code><em># Descriptor class attr</em></code>
+    Y = 3                                  <code><em># Class attr</em></code>
+    def __init__(self):
+        self._X = 2                        <code><em># Instance attr</em></code>
+        self.Z  = 4                        <code><em># Instance attr</em></code>
+
+obj = CalcAttrs()
+print(obj.X, obj.Y, obj.Z)                 <code><em># X is computed, others are not</em></code>
+obj.X = 5                                  <code><em># X assignment is intercepted
+</em></code>CalcAttrs.Y = 6                            <code><em># Y reassigned in class</em></code>
+obj.Z = 7                                  <code><em># Z assigned in instance
+</em></code>print(obj.X, obj.Y, obj.Z)
+
+obj2 = CalcAttrs()                         <code><em># But X differs now, like Z!</em></code>
+print(obj2.X, obj2.Y, obj2.Z)</pre>
+</div>
+<p>Here, <code>X</code> is assigned to a descriptor as before that manages accesses. The new descriptor here, though, has no information itself, but it uses an attribute assumed to exist in the instance—that attribute is named <code>_X</code>, to avoid collisions with the name of the descriptor itself. When this version is run, the results are similar, but the value of the descriptor attribute can vary per client instance due to the differing state policy:</p>
+<pre data-type="programlisting">$ <code><strong>python3 desc-state-inst.py</strong></code>
+InstState get
+20 3 4
+InstState set
+InstState get
+50 6 7
+InstState get
+20 6 4</pre>
+<p>Both descriptor and instance state have roles. In fact, this is a general advantage that descriptors have over properties—because they have state of their own, they can easily retain data internally without adding it to the namespace of the client instance object. As a summary, the following uses <em>both</em> state sources—its <code>self.data</code> retains per-attribute information, while its <code>instance.data</code> can vary per client instance:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class DescBoth:
+        def __init__(self, data):
+            self.data = data
+        def __get__(self, instance, owner):
+            return f'{self.data}, {instance.data}'
+        def __set__(self, instance, value):
+            instance.data = value
+
+</strong></code>&gt;&gt;&gt; <code><strong>class Client:</strong></code>
+        <code><strong>def __init__(self, data):
+            self.data = data
+        managed = DescBoth('hack')
+
+</strong></code>&gt;&gt;&gt; <code><strong>I = Client('code')
+</strong></code>&gt;&gt;&gt; <code><strong>I.managed</strong></code>                      <code><em># Show both data sources</em></code>
+'hack, code' 
+&gt;&gt;&gt; <code><strong>I.managed = 'HACK'</strong></code>             <code><em># Change instance data</em></code>
+&gt;&gt;&gt; <code><strong>I.managed</strong></code>
+'hack, HACK'</pre>
+<p>We’ll revisit the implications of this choice in a case study later in this chapter. Before we move on, recall from <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>’s coverage of <em>slots</em> that we can access “virtual” attributes like properties and descriptors with tools like <code>dir</code> and <code>getattr</code>, even though they don’t exist in the instance’s namespace dictionary. Whether you <em>should</em> access these this way probably varies per program—properties and descriptors may run arbitrary computation and may be less obviously instance “data” than slots:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>I.__dict__</strong></code>
+{'data': 'HACK'}
+&gt;&gt;&gt; <code><strong>[x for x in dir(I) if not x.startswith('__')]</strong></code>
+['data', 'managed'] 
+
+&gt;&gt;&gt; <code><strong>getattr(I, 'data')</strong></code>
+'HACK'
+&gt;&gt;&gt; <code><strong>getattr(I, 'managed')</strong></code>
+'hack, HACK'
+
+&gt;&gt;&gt; <code><strong>for attr in (x for x in dir(I) if not x.startswith('__')):
+        print(f'{attr} =&gt; {getattr(I, attr)}')</strong></code>
+
+data =&gt; HACK
+managed =&gt; hack, HACK</pre>
+<p>The more generic <code>__getattr__</code> and <code>__getattribute__</code> tools we’ll explore soon are not designed to support this functionality: because they have no class-level attributes, their “virtual” attribute names do not appear in <code>dir</code> results (per <a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a>, a <code>__dir__</code> can provide a <code>dir</code> result, but it’s optional and uncommon). In exchange, they are also not limited to specific attribute names coded as properties or descriptors—tools that share <a contenteditable="false" data-type="indexterm" data-primary="state" data-secondary="descriptors" data-startref="sttdcrpt" id="id4723"></a><a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="state" data-startref="desptt" id="id4724"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="descriptors" data-tertiary="state information" data-startref="gmnsfr" id="id4725"></a>even more than this behavior, as the next section explains.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="How Properties and Descriptors Relate"><div class="sect2" id="how_properties_and_descriptors_relate">
+<h2>How Properties and Descriptors Relate</h2>
+<p>As mentioned earlier, properties and <a contenteditable="false" data-type="indexterm" data-primary="properties" data-secondary="descriptors and" id="prodcrp"></a><a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="properties and" id="decpprp"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="descriptors" data-tertiary="properties and" id="gmnprpa"></a>descriptors are strongly related—the <code>property</code> built-in is just a convenient way to create a descriptor. Now that you know how both work, you should also be able to see that it’s possible to simulate the <code>property</code> built-in with a descriptor class, as demoed by <a data-type="xref" href="#example_threeeight_eightdot_prop_desc_e">Example 38-8</a>.</p>
+<div data-type="example" id="example_threeeight_eightdot_prop_desc_e">
+<h5><span class="label">Example 38-8. </span>prop-desc-equiv.py</h5>
+<pre data-type="programlisting">class Property:
+    def __init__(self, fget=None, fset=None, fdel=None, doc=None):
+        self.fget = fget
+        self.fset = fset
+        self.fdel = fdel                                  <code><em># Save unbound methods
+</em></code>        self.__doc__ = doc                                <code><em># or other callables
+</em></code>
+    def __get__(self, instance, instancetype=None):
+        if instance is None:
+            return self
+        if self.fget is None:
+            raise AttributeError("can't get attribute")
+        return self.fget(instance)                        <code><em># Pass instance to self</em></code>
+                                                          <code><em># in property accessors</em></code>
+    def __set__(self, instance, value):
+        if self.fset is None:
+            raise AttributeError("can't set attribute")
+        self.fset(instance, value)
+
+    def __delete__(self, instance):
+        if self.fdel is None:
+            raise AttributeError("can't delete attribute")
+        self.fdel(instance)
+
+class Person:
+    def getName(self): 
+        print('getName...')
+    def setName(self, value): 
+        print('setName...')
+    name = Property(getName, setName)                     <code><em># Use like property()</em></code>
+
+x = Person()
+x.name
+x.name = 'Pat'
+del x.name</pre>
+</div>
+<p>This <code>Property</code> class catches attribute accesses with the descriptor protocol and routes requests to functions or methods passed in and saved in descriptor state when the class’s instance is created. Attribute fetches, for example, are routed from the <code>Person</code> class, to the <code>Property</code> class’s <code>__get__</code> method, and back to the <code>Person</code> class’s <code>getName</code>. With descriptors, this “just works”:</p>
+<pre data-type="programlisting">$ <code><strong>python3 prop-desc-equiv.py</strong></code>
+getName...
+setName...
+AttributeError: can't delete attribute</pre>
+<p>Note that this descriptor class equivalent only handles basic property usage, though; to use <code>@</code> <em>decorator syntax</em> to also specify set and delete operations, we’d have to extend our <code>Property</code> class with <code>setter</code> and <code>deleter</code> methods, which would save the decorated accessor function and return the property object (<code>self</code> should suffice). Since the <code>property</code> built-in already does this, we’ll omit a formal coding of this extension here.</p>
+<section data-type="sect3" data-pdf-bookmark="Descriptors and slots and more"><div class="sect3" id="descriptors_and_slots_and_more">
+<h3>Descriptors and slots and more</h3>
+<p>You can also probably now, at least in part, imagine <a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="slots" id="id4726"></a><a contenteditable="false" data-type="indexterm" data-primary="slots" data-secondary="descriptors" id="id4727"></a>how descriptors are used to implement Python’s <em>slots</em> extension: instance attribute dictionaries are avoided by creating class-level descriptors that intercept slot name access and map those names to sequential storage space in the instance. Unlike the explicit <code>property</code> call, though, much of the magic behind slots is orchestrated at class creation time both automatically and implicitly when a <code>__slots__</code> attribute is present in a class.</p>
+<p>See <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a> for more on slots—and why they’re not recommended except in pathological use cases. Descriptors are also used for other class tools, but we’ll omit further internals details here; see Python’s manuals and its open source code for more details.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Descriptor cliff-hangers</em>: In <a data-type="xref" href="ch39.html#decorators">Chapter 39</a>, we’ll also make use of descriptors to implement function <em>decorators</em> that apply to both functions and methods. As you’ll see there, because descriptors receive both descriptor and subject class instances they work well in this role, though nested functions are often a conceptually simpler solution. In addition, <a data-type="xref" href="ch39.html#decorators">Chapter 39</a> deploys descriptors as one way to intercept <em>built-in operation</em> method fetches, and <a data-type="xref" href="ch40.html#metaclasses_and_inheritance">Chapter 40</a> formalizes data descriptors’ precedence in the full <em>inheritance</em> model <a contenteditable="false" data-type="indexterm" data-primary="properties" data-secondary="descriptors and" data-startref="prodcrp" id="id4728"></a><a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="properties and" data-startref="decpprp" id="id4729"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="descriptors" data-tertiary="properties and" data-startref="gmnprpa" id="id4730"></a>noted earlier: with a <code>__set__</code>, descriptors override other names and are thus fairly binding—they cannot be hidden by names in instance dictionaries.</p>
+</div>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="__getattr__ and __getattribute__"><div class="sect1" id="getattr_and_getattribute">
+<h1>__getattr__ and __getattribute__</h1>
+<p>So far, we’ve studied properties and descriptors—tools for managing specific attributes. The <span class="keep-together"><code>__getattr__</code></span> and <code>__getattribute__</code> operator-overloading <a contenteditable="false" data-type="indexterm" data-primary="attribute fetches" data-secondary="__getattr__ method" data-secondary-sortas="getattr method" id="attfetg"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute fetches" data-secondary="__getattribute__ method" data-secondary-sortas="getattribute method" id="attfetget"></a><a contenteditable="false" data-type="indexterm" data-primary="__getattribute__ method" data-primary-sortas="getattribute method" id="gttgtt"></a><a contenteditable="false" data-type="indexterm" data-primary="__getattr__ method" data-primary-sortas="getattr method" id="metgettr"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="__getattr__ method" data-secondary-sortas="getattr method" id="abmggrr"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="__getattribute__ method" data-secondary-sortas="getattribute method" id="agbmgbth"></a>methods provide still other ways to intercept attribute fetches for class instances. Like properties and descriptors, they allow us to insert code to be run automatically when attributes are accessed. As shown here, though, these two methods can also be used in more general ways. Because they intercept arbitrary names, they can apply in broader roles, but may also incur extra calls in some contexts, and are too dynamic to register in <code>dir</code> results without help.</p>
+<p>This form of attribute-fetch interception comes in two flavors, coded with two different methods:</p>
+<ul>
+<li><p><code>__getattr__</code> is run for <em>undefined</em> attributes—because it is run only for attributes not stored on an instance or inherited from one of its classes, its use is straightforward.</p></li>
+<li><p><code>__getattribute__</code> is run for <em>every</em> attribute—because it is all-inclusive, you must be cautious when using this method to avoid recursive loops by passing attribute accesses to a superclass.</p></li>
+</ul>
+<p>We met the first of these in <a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a>. These two methods are representatives of a set of attribute interception methods that also includes <code>__setattr__</code> and <code>__delattr__</code>. Because these methods have similar roles, though, we will generally treat them all as a single topic here.</p>
+<p>Unlike properties and descriptors, these methods are usually considered part of Python’s <em>operator-overloading</em> protocol—specially named methods of a class, inherited by subclasses, and <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="__getattr__ method" data-secondary-sortas="getattr method" id="id4731"></a><a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="__getattribute__ method" data-secondary-sortas="getattribute method" id="id4732"></a>run automatically when instances are used in the associated built-in operation (here, attribute fetch). Like all normal methods of a class, they each receive a first <code>self</code> argument when called, giving access to both instance state information and other methods of their hosting class.</p>
+<p>The <code>__getattr__</code> and <code>__getattribute__</code> methods are also more <em>generic</em> than properties and descriptors—they can be used to intercept access to any (or even all) instance attribute fetches, not just a single specific name. Because of this, these two methods are well suited to general <em>delegation</em> coding patterns—they can implement wrapper (a.k.a. <em>proxy</em>) objects that manage all attribute accesses for an embedded object. By contrast, we must define one property or descriptor for every attribute we wish to intercept. As covered ahead, this delegation role is limited somewhat for built-in operations but still applies to all named methods in a wrapped object’s interface.</p>
+<p>Finally, these two methods are more <em>narrowly focused</em> than the alternatives we considered earlier: they intercept attribute fetches only, not assignments. To also catch attribute changes by assignment, we must code a <code>__setattr__</code> method—an operator-overloading method run for every attribute assignment, which must take care to avoid recursive loops by routing attribute assignments through the instance namespace dictionary or a superclass method. Although less common, we can also code a <code>__delattr__</code> overloading method (which must avoid looping in the same way) to intercept attribute deletions. By contrast, properties and descriptors catch get, set, and delete operations by design.</p>
+<p><code>__getattr__</code> and <code>__setattr__</code> were introduced in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch30.html#operator_overloading-id000103">30</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch32.html#class_odds_and_ends">32</a>, and <code>__getattribute__</code> was mentioned briefly in <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>. Here, we’ll expand on their usage and study their roles in larger <span class="keep-together">contexts</span>.</p>
+<section data-type="sect2" data-pdf-bookmark="The Basics"><div class="sect2" id="the_basics-id000128">
+<h2>The Basics</h2>
+<p>In short, if a class defines or inherits the following methods, they will be run automatically when an instance is used in the operation described by the comments to the right:</p>
+<pre data-type="programlisting">def __getattr__(self, name):         <code><em># On undefined attribute fetch [obj.name]</em></code>
+def __getattribute__(self, name):    <code><em># On all attribute fetch [obj.name]</em></code>
+def __setattr__(self, name, value):  <code><em># On all attribute assignment [obj.name=value]</em></code>
+def __delattr__(self, name):         <code><em># On all attribute deletion [del obj.name]</em></code></pre>
+<p>In these, <code>self</code> is the subject instance object as usual, <code>name</code> is the string name of the attribute being accessed, and <code>value</code> is the object being assigned to the attribute. The two get methods normally return an attribute’s value, and the other two return nothing (<code>None</code>). All can raise exceptions to signal prohibited access.</p>
+<p>For example, to catch every attribute fetch, we can use either of the first two previous methods, and to catch every attribute assignment we can use the third. The following uses <code>__getattr__</code> for fetches:</p>
+<pre data-type="programlisting">class Catcher:
+    def __getattr__(self, name):
+        print('Get:', name)
+    def __setattr__(self, name, value):
+        print('Set:', name, value)
+
+X = Catcher()
+X.job                               <code><em># Prints "Get: job"
+</em></code>X.pay                               <code><em># Prints "Get: pay"</em></code>
+X.pay = 'bread'                     <code><em># Prints "Set: pay bread"</em></code></pre>
+<p>Using <code>__getattribute__</code> works exactly the same in this specific case but has subtle looping potential which we’ll take up in the next section:</p>
+<pre data-type="programlisting">class Catcher:                               <code><em># On all attribute fetches
+</em></code>    def __getattribute__(self, name):        <code><em># Works same as getattr here</em></code>
+        print('Get:', name)                  <code><em># But prone to loops in general</em></code>
+    …<code><em>rest unchanged</em></code>…</pre>
+<p>Such a coding structure can be used to implement the <em>delegation</em> design pattern we met earlier in <a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a>. Because all attributes are routed to interception methods generically, we can validate and pass them along to embedded, managed objects. As a refresher, the following class, borrowed from <a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a>, traces <em>every</em> attribute fetch made to another object passed to the wrapper (proxy) class:</p>
+<pre data-type="programlisting">class Wrapper:
+    def __init__(self, object):
+        self.wrapped = object                    <code><em># Save object</em></code>
+    def __getattr__(self, attrname):
+        print('Trace:', attrname)                <code><em># Trace fetch</em></code>
+        return getattr(self.wrapped, attrname)   <code><em># Delegate fetch</em></code>
+
+X = Wrapper([1, 2, 3])
+X.append(4)                         <code><em># Prints "Trace: append"
+</em></code>print(X.wrapped)                    <code><em># Prints "[1, 2, 3, 4]"</em></code></pre>
+<p>There is no such analog for properties and descriptors, short of coding accessors for <em>every</em> attribute present in <em>every</em> wrapped object. On the other hand, when such generality is not required, generic accessor methods may incur additional calls for assignments in some contexts—a trade-off described in <a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a> and mentioned in the context of the case study example we’ll explore at the end of this <span class="keep-together">chapter</span>.</p>
+<section data-type="sect3" data-pdf-bookmark="Avoiding loops in attribute interception methods"><div class="sect3" id="avoiding_loops_in_attribute_interceptio">
+<h3>Avoiding loops in attribute interception methods</h3>
+<p>These methods are generally <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="attribute interception methods" id="id4733"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute fetches" data-secondary="loop avoidance" id="id4734"></a>straightforward to use. Their most complex aspect is the potential for <em>looping</em> (a.k.a. recursing). Because <code>__getattr__</code> is called for undefined attributes only, it can freely fetch other attributes within its own code. However, because <code>__getattribute__</code> and <code>__setattr__</code> are run for <em>all</em> attributes, their code must be careful when accessing other attributes to avoid calling themselves again and triggering a recursive loop.</p>
+<p>For example, another attribute fetch run inside a <code>__getattribute__</code> method’s code like the following will trigger <code>__getattribute__</code> again—and the code will usually loop until memory is exhausted:</p>
+<pre data-type="programlisting">    def __getattribute__(self, name):
+        x = self.other                                <code><em># LOOPS!</em></code></pre>
+<p>Technically, this method is even more loop-prone than this may imply—a <code>self</code> attribute reference run <em>anywhere</em> in a class that defines this method will trigger <code>__getattribute__</code> and also has the potential to loop, depending on the class’s logic. This is normally desired behavior—intercepting every attribute fetch is this method’s purpose, after all—but you should be aware that this method catches <em>all</em> attribute fetches wherever they are coded. When coded within <code>__getattribute__</code> itself, this almost always causes a loop.</p>
+<p>To avoid this loop, route the fetch through a higher superclass instead to skip this level’s version—because the <code>object</code> class is always a superclass to every class, it serves well in this role:</p>
+<pre data-type="programlisting">    def __getattribute__(self, name):
+        x = object.__getattribute__(self, 'other')    <code><em># Force higher to avoid me</em></code></pre>
+<p>For <code>__setattr__</code>, the situation is similar, as summarized in <a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a>—assigning <em>any</em> attribute inside this method triggers <code>__setattr__</code> again and may create a similar loop:</p>
+<pre data-type="programlisting">    def __setattr__(self, name, value):
+        self.other = value                            <code><em># Recurs (and might LOOP!)</em></code></pre>
+<p>Here too, <code>self</code> attribute assignments <em>anywhere</em> in a class defining this method trigger <code>__setattr__</code> as well, though the potential for looping is much stronger when they show up in <code>__setattr__</code> itself. To work around this problem, you can assign the attribute as a key in the instance’s <code>__dict__</code> namespace dictionary instead. This avoids direct attribute assignment:</p>
+<pre data-type="programlisting">    def __setattr__(self, name, value):
+        self.__dict__['other'] = value                <code><em># Use attr dict to avoid me</em></code></pre>
+<p>Alternatively, <code>__setattr__</code> can also pass its own attribute assignments to a higher superclass to avoid looping, just like <code>__getattribute__</code>. In fact, this scheme is sometimes preferred when wrapped classes use <em>slots</em>, <em>properties</em>, or other “virtual” attributes that live on classes instead of instances—and in the case of slots, may preclude <code>__dict__</code>:</p>
+<pre data-type="programlisting">    def __setattr__(self, name, value):
+        object.__setattr__(self, 'other', value)      <code><em># Force higher to avoid me</em></code></pre>
+<p>This book’s <code>__setattr__</code> examples often use <code>__dict__</code> for smaller demos anyhow, just because their parameters are known. By contrast, though, we <em>cannot</em> use the <code>__dict__</code> trick to avoid loops in <span class="keep-together"><code>__getattribute__</code></span>:</p>
+<pre data-type="programlisting">    def __getattribute__(self, name):
+        x = self.__dict__['other']                    <code><em># Loops!</em></code></pre>
+<p>If this is coded, fetching the <code>__dict__</code> attribute itself triggers <code>__getattribute__</code> again—causing a recursive loop and an immediate fail. Strange but true!</p>
+<p>The <code>__delattr__</code> method is less commonly used in practice, but when it is, it is called for <em>every</em> attribute deletion, just as <code>__setattr__</code> is called for every attribute assignment. When using this method, you must avoid loops when deleting attributes by the same techniques: namespace dictionaries operations or superclass method calls.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="A First Example"><div class="sect2" id="a_first_example-id00004">
+<h2>A First Example</h2>
+<p>Generic attribute management is not nearly as complicated as the prior section may have implied. To see how to put these ideas to work, <a data-type="xref" href="#example_threeeight_ninedot_getattr_pers">Example 38-9</a> is the same first example we used for properties and descriptors in action again, this time implemented with attribute operator-overloading methods. Because these methods are so generic, we test attribute names here to know when a managed attribute is being accessed; others are allowed to pass normally.</p>
+<div data-type="example" id="example_threeeight_ninedot_getattr_pers">
+<h5><span class="label">Example 38-9. </span>getattr-person.py</h5>
+<pre data-type="programlisting">class Person:
+    def __init__(self, name):               <code><em># On [Person()]</em></code>
+        self._name = name                   <code><em># Triggers __setattr__!</em></code>
+
+    def __getattr__(self, attr):            <code><em># On [obj.undefined]</em></code>
+        print('get: ' + attr)
+        if attr == 'name':                  <code><em># Intercept name: not stored
+</em></code>            return self._name               <code><em># Does not loop: real attr</em></code>
+        else:                               <code><em># Others are errors</em></code>
+            raise AttributeError(attr)
+
+    def __setattr__(self, attr, value):     <code><em># On [obj.any = value]
+</em></code>        print('set: ' + attr)
+        if attr == 'name':
+            attr = '_name'                  <code><em># Set internal name</em></code>
+        self.__dict__[attr] = value         <code><em># Avoid looping here</em></code>
+
+    def __delattr__(self, attr):            <code><em># On [del obj.any]</em></code>
+        print('del: ' + attr)
+        if attr == 'name':
+            attr = '_name'                  <code><em># Avoid looping here too</em></code>
+        del self.__dict__[attr]             <code><em># but much less common</em></code>
+
+sue = Person('Sue Jones')           <code><em># sue has a managed attribute
+</em></code>print(sue.name)                     <code><em># Runs __getattr__</em></code>
+sue.name = 'Susan Jones'            <code><em># Runs __setattr__</em></code>
+print(sue.name)
+del sue.name                        <code><em># Runs __delattr__</em></code>
+
+print('-'*20)
+bob = Person('Bob Smith')           <code><em># bob's attrs work like sue's</em></code>
+print(bob.name)
+#print(Person.name.__doc__)         <code><em># No direct equivalent here!</em></code></pre>
+</div>
+<p>When this code is run, the same sort of output is produced, but this time it reflects our generic attribute-interception methods responding to Python’s normal operator-overloading mechanism:</p>
+<pre data-type="programlisting">$ <code><strong>python3 getattr-person.py</strong></code>
+set: _name
+get: name
+Sue Jones
+set: name
+get: name
+Susan Jones
+del: name
+--------------------
+set: _name
+get: name
+Bob Smith</pre>
+<p>Notice how the attribute assignment in the <code>__init__</code> constructor triggers <code>__setattr__</code> too—this method catches <em>every</em> instance-attribute assignment, even those anywhere within the class itself, and those to underlying attributes like <code>_name</code>. Also note that, unlike with properties and descriptors, there’s no direct notion of specifying <em>documentation</em> for our attribute here; managed attributes exist within the code of our interception methods, not as distinct objects.</p>
+<section data-type="sect3" data-pdf-bookmark="Using __getattribute__"><div class="sect3" id="using_getattribute-id00083">
+<h3>Using __getattribute__</h3>
+<p>To achieve exactly the same results with <code>__getattribute__</code>, replace <code>__getattr__</code> in <a data-type="xref" href="#example_threeeight_ninedot_getattr_pers">Example 38-9</a> with the differing code in <a data-type="xref" href="#example_threeeight_onezerodot_getattrib">Example 38-10</a>. Because it catches <em>all</em> attribute fetches, this version must be careful to avoid looping by passing new fetches to a superclass, and it can’t generally assume unknown names are errors.</p>
+<div data-type="example" id="example_threeeight_onezerodot_getattrib">
+<h5><span class="label">Example 38-10. </span>getattribute-person.py (differing part)</h5>
+<pre data-type="programlisting"><code> <em>   # Replace just __getattr__ with this
+</em></code>
+    def __getattribute__(self, attr):                 <code><em># On [obj.any]
+</em></code>        print('get: ' + attr)
+        if attr == 'name':                            <code><em># Intercept all names</em></code>
+            attr = '_name'                            <code><em># Map to internal name</em></code>
+        return object.__getattribute__(self, attr)    <code><em># Avoid looping here</em></code></pre>
+</div>
+<p>When run with this change, the output is similar, but we get an extra <code>__getattribute__</code> call for the fetch of <code>__dict__</code> in <code>__setattr__</code> (the first time originating in <code>__init__</code>):</p>
+<pre data-type="programlisting">$ <code><strong>python3 getattribute-person.py</strong></code>
+set: _name
+get: __dict__
+get: name
+Sue Jones
+set: name
+get: __dict__
+get: name
+Susan Jones
+del: name
+get: __dict__
+--------------------
+set: _name
+get: __dict__
+get: name
+Bob Smith</pre>
+<p>This example is equivalent to that coded for properties and descriptors, but it’s a bit artificial, and it doesn’t really highlight these tools’ assets. Because they are generic, <code>__getattr__</code> and <span class="keep-together"><code>__getattribute__</code></span> are probably more commonly used in delegation-base code (as sketched earlier), where attribute access is validated and routed to an embedded object. Where just a <em>single</em> attribute must <a contenteditable="false" data-type="indexterm" data-primary="attribute fetches" data-secondary="__getattr__ method" data-secondary-sortas="getattr method" data-startref="attfetg" id="id4735"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute fetches" data-secondary="__getattribute__ method" data-secondary-sortas="getattribute method" data-startref="attfetget" id="id4736"></a><a contenteditable="false" data-type="indexterm" data-primary="__getattribute__ method" data-primary-sortas="getattribute method" data-startref="gttgtt" id="id4737"></a><a contenteditable="false" data-type="indexterm" data-primary="__getattr__ method" data-primary-sortas="getattr method" data-startref="metgettr" id="id4738"></a>be managed, properties and descriptors might do as well or better, and avoid extra calls for unmanaged attributes.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Computed Attributes"><div class="sect2" id="computed_attributes-id000120">
+<h2>Computed Attributes</h2>
+<p>As before, our prior example doesn’t really do <a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="computing" id="attcoput"></a>anything but trace attribute fetches; it’s not much more work to compute an attribute’s value when fetched. As for properties and descriptors, <a data-type="xref" href="#example_threeeight_oneonedot_getattr_co">Example 38-11</a> creates a virtual attribute <code>X</code> that runs a calculation when fetched.</p>
+<div data-type="example" class="pagebreak-before" id="example_threeeight_oneonedot_getattr_co">
+<h5 class="less_space"><span class="label">Example 38-11. </span>getattr-computed.py</h5>
+<pre data-type="programlisting">class AttrSquare:
+    def __init__(self, start):
+        self.value = start                            <code><em># Triggers __setattr__!</em></code>
+
+    def __getattr__(self, attr):                      <code><em># On undefined attr fetch</em></code>
+        if attr == 'X':
+            return self.value ** 2                    <code><em># value is not undefined</em></code>
+        else:
+            raise AttributeError(attr)
+
+    def __setattr__(self, attr, value):               <code><em># On all attr assignments
+</em></code>        if attr == 'X':
+            attr = 'value'
+        self.__dict__[attr] = value
+
+A = AttrSquare(3)       <code><em># 2 instances of class with overloading
+</em></code>B = AttrSquare(32)      <code><em># Each has different state information</em></code>
+
+print(A.X)              <code><em># 3 ** 2</em></code>
+A.X = 4
+print(A.X)              <code><em># 4 ** 2</em></code>
+print(B.X)              <code><em># 32 ** 2 (1024)</em></code></pre>
+</div>
+<p>Running this code results in the same output that we got earlier when using properties and descriptors, but this script’s mechanics are based on generic attribute interception methods:</p>
+<pre data-type="programlisting">$ <code><strong>python3 getattr-computed.py</strong></code>
+9
+16
+1024</pre>
+<section data-type="sect3" data-pdf-bookmark="Using __getattribute__"><div class="sect3" id="using_getattribute-id000117">
+<h3>Using __getattribute__</h3>
+<p>As before, we can achieve the same effect with <code>__getattribute__</code> instead of <code>__getattr__</code>. <a data-type="xref" href="#example_threeeight_onetwodot_getattribu">Example 38-12</a> replaces the fetch method with a <code>__getattribute__</code> and changes the <code>__setattr__</code> assignment method to avoid looping by using direct <code>object</code> superclass method calls instead of <code>__dict__</code> keys.</p>
+<div data-type="example" id="example_threeeight_onetwodot_getattribu">
+<h5><span class="label">Example 38-12. </span>getattribute-computed.py</h5>
+<pre data-type="programlisting">class AttrSquare:
+    def __init__(self, start):
+        self.value = start                  <code><em># Triggers __setattr__!
+</em></code>
+    def __getattribute__(self, attr):       <code><em># On all attr fetches</em></code>
+        if attr == 'X':
+            return self.value ** 2          <code><em># Triggers __getattribute__ again!
+</em></code>        else:
+            return object.__getattribute__(self, attr)
+
+    def __setattr__(self, attr, value):     <code><em># On all attr assignments</em></code>
+        if attr == 'X':
+            attr = 'value'
+        object.__setattr__(self, attr, value)
+
+…<code><em>self-test code same as Example 38-11</em></code>…</pre>
+</div>
+<p>When this version is run, the results are the same again so we won’t relist them here. Notice, though, the implicit and subtle routing going on inside this class’s methods:</p>
+<ul>
+<li><p><code>self.value=start</code> inside the constructor triggers <code>__setattr__</code>.</p></li>
+<li><p><code>self.value</code> inside <code>__getattribute__</code> triggers <code>__getattribute__</code> again.</p></li>
+</ul>
+<p>In fact, <code>__getattribute__</code> is run <em>twice</em> each time we fetch attribute <code>X</code>. This doesn’t happen in the <span class="keep-together"><code>__getattr__</code></span> version because the <code>value</code> attribute is not undefined (and hence skips the method). If you care about speed and want to avoid this, change <code>__getattribute__</code> to use the superclass to fetch <code>value</code> as well:</p>
+<pre data-type="programlisting">    def __getattribute__(self, attr):
+        if attr == 'X':
+            return object.__getattribute__(self, 'value') ** 2</pre>
+<p>Of course, this still incurs a call to the superclass method but not an additional recursive call before we get there. If that’s confusing, add <code>print</code> calls to these methods to <a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="computing" data-startref="attcoput" id="id4739"></a>trace how and when they run.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="__getattr__ and __getattribute__ Compared"><div class="sect2" id="getattr_and_getattribute_compar">
+<h2>__getattr__ and __getattribute__ Compared</h2>
+<p>To summarize the coding differences between <code>__getattr__</code> and <code>__getattribute__</code>, <a data-type="xref" href="#example_threeeight_onethreedot_getattr">Example 38-13</a> uses both to implement three attributes—<code>attr1</code> is a class attribute, <code>attr2</code> is an <a contenteditable="false" data-type="indexterm" data-primary="__getattr__ method" data-secondary="versus __getattribute__ method" data-primary-sortas="getattr method" data-secondary-sortas="getattribute method" id="gttrmvr"></a><a contenteditable="false" data-type="indexterm" data-primary="__getattribute__ method" data-secondary="versus __getattr__ method" data-primary-sortas="getattribute method" data-secondary-sortas="getattr method" id="gbtgdome"></a>instance attribute, and <code>attr3</code> is a virtual managed attribute computed when fetched.</p>
+<div data-type="example" id="example_threeeight_onethreedot_getattr">
+<h5><span class="label">Example 38-13. </span>getattr-v-getattribute.py</h5>
+<pre data-type="programlisting">class GetAttr:
+    attr1 = 1
+    def __init__(self):
+        self.attr2 = 2
+    def __getattr__(self, attr):            <code><em># On undefined attrs only</em></code>
+        print('get:', attr)                 <code><em># Not on attr1: inherited from class</em></code>
+        if attr == 'attr3':                 <code><em># Not on attr2: stored on instance</em></code>
+            return 3
+        else:
+            raise AttributeError(attr)
+
+X = GetAttr()
+print(X.attr1)
+print(X.attr2)
+print(X.attr3)
+print('-'*20)
+
+class GetAttribute:
+    attr1 = 1
+    def __init__(self):
+        self.attr2 = 2
+    def __getattribute__(self, attr):       <code><em># On all attr fetches</em></code>
+        print('get:',  attr)                <code><em># Use superclass to avoid looping here
+</em></code>        if attr == 'attr3':
+            return 3
+        else:
+            return object.__getattribute__(self, attr)
+
+X = GetAttribute()
+print(X.attr1)
+print(X.attr2)
+print(X.attr3)</pre>
+</div>
+<p>When run, the <code>__getattr__</code> version intercepts only <code>attr3</code> accesses because it is undefined. The <span class="keep-together"><code>__getattribute__</code></span> version, on the other hand, intercepts all attribute fetches and must route those it does not manage to the superclass fetcher to avoid loops:</p>
+<pre data-type="programlisting">$ <code><strong>python3 getattr-v-getattribute.py</strong></code>
+1
+2
+get: attr3
+3
+--------------------
+get: attr1
+1
+get: attr2
+2
+get: attr3
+3</pre>
+<p>Although <code>__getattribute__</code> can catch more attribute fetches than <code>__getattr__</code>, in practice they are often just variations on a theme—if attributes are not physically stored, the two have <a contenteditable="false" data-type="indexterm" data-primary="__getattr__ method" data-secondary="versus __getattribute__ method" data-primary-sortas="getattr method" data-secondary-sortas="getattribute method" data-startref="gttrmvr" id="id4740"></a><a contenteditable="false" data-type="indexterm" data-primary="__getattribute__ method" data-secondary="versus __getattr__ method" data-primary-sortas="getattribute method" data-secondary-sortas="getattr method" data-startref="gbtgdome" id="id4741"></a>the same effect.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Management Techniques Compared"><div class="sect2" id="management_techniques_compared">
+<h2>Management Techniques Compared</h2>
+<p>To summarize the coding differences in all four attribute-management schemes we’ve just explored, let’s quickly step <a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="properties" id="id4742"></a><a contenteditable="false" data-type="indexterm" data-primary="properties" id="id4743"></a>through a somewhat more comprehensive computed-attribute example using each technique. The first version, <a data-type="xref" href="#example_threeeight_onefourdot_all_four">Example 38-14</a>, uses <em>properties</em> to intercept and calculate attributes named <code>square</code> and <code>cube</code>. Notice how their base values are stored in names that begin with an underscore so they don’t clash with the names of the properties themselves.</p>
+<div data-type="example" id="example_threeeight_onefourdot_all_four">
+<h5><span class="label">Example 38-14. </span>all_four_props.py</h5>
+<pre data-type="programlisting">"Two dynamically computed attributes with properties"
+
+class Powers:
+    def __init__(self, square, cube):
+        self._square = square                      <code><em># _square is the base value</em></code>
+        self._cube   = cube                        <code><em># square is the property name</em></code>
+
+    def getSquare(self):
+        return self._square ** 2
+    def setSquare(self, value):
+        self._square = value
+    square = property(getSquare, setSquare)        <code><em># Or @property decorator</em></code>
+
+    def getCube(self):
+        return self._cube ** 3 
+    cube = property(getCube)                       <code><em># Likewise</em></code></pre>
+</div>
+<p>To do the same with <em>descriptors</em>, <a data-type="xref" href="#example_threeeight_onefivedot_all_four">Example 38-15</a> defines the attributes with complete <a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="descriptors" id="id4744"></a><a contenteditable="false" data-type="indexterm" data-primary="descriptors" id="id4745"></a>classes. Note that these descriptors store base values as instance state, so they must use leading underscores again so as not to clash with the names of descriptors; as called out by the final example of this chapter, we could avoid this renaming requirement by storing base values as descriptor state instead, but that doesn’t as directly address data that must vary per client-class instance.</p>
+<div data-type="example" id="example_threeeight_onefivedot_all_four">
+<h5><span class="label">Example 38-15. </span>all_four_desc.py</h5>
+<pre data-type="programlisting">"Same, but with descriptors (per-instance state)"
+
+class DescSquare:
+    def __get__(self, instance, owner):
+        return instance._square ** 2
+    def __set__(self, instance, value):
+        instance._square = value
+
+class DescCube:
+    def __get__(self, instance, owner):
+        return instance._cube ** 3
+
+class Powers:
+    square = DescSquare()
+    cube   = DescCube()
+    def __init__(self, square, cube):
+        self._square = square                  <code><em># "self.square = square" works too,</em></code>
+        self._cube   = cube                    <code><em># because it triggers desc __set__!</em></code></pre>
+</div>
+<p>To achieve the same result with <code>__getattr__</code> fetch <a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="__getattr__ method" data-secondary-sortas="getattr method" data-startref="abmggrr" id="id4746"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="__getattribute__ method" data-secondary-sortas="getattribute method" data-startref="agbmgbth" id="id4747"></a>interception, <a data-type="xref" href="#example_threeeight_onesixdot_all_four_g">Example 38-16</a> again stores base values with underscore-prefixed names so that accesses to managed names are undefined and thus invoke its method; it also needs to code a <code>__setattr__</code> to intercept assignments and take care to avoid its potential for looping.</p>
+<div data-type="example" id="example_threeeight_onesixdot_all_four_g">
+<h5><span class="label">Example 38-16. </span>all_four_getattr.py</h5>
+<pre data-type="programlisting">"Same, but with generic __getattr__ undefined-attribute interception"
+
+class Powers:
+    def __init__(self, square, cube):
+        self._square = square
+        self._cube   = cube
+
+    def __getattr__(self, name):
+        if name == 'square':
+            return self._square ** 2
+        elif name == 'cube':
+            return self._cube ** 3
+        else:
+            raise TypeError('unknown attr:' + name)
+
+    def __setattr__(self, name, value):
+        if name == 'square':
+            self.__dict__['_square'] = value             <code><em># Or use object</em></code>
+        else:
+            self.__dict__[name] = value</pre>
+</div>
+<p>The final option in <a data-type="xref" href="#example_threeeight_onesevendot_all_four">Example 38-17</a>, coding with <code>__getattribute__</code>, is similar to the <a contenteditable="false" data-type="indexterm" data-primary="__getattribute__ method" data-primary-sortas="getattribute method" id="id4748"></a>prior version. Because it catches every attribute now, though, it must also route base value fetches to a superclass to avoid looping or extra calls—fetching <code>self._square</code> directly works too, but runs a second <span class="keep-together"><code>__getattribute__</code></span> call.</p>
+<div data-type="example" id="example_threeeight_onesevendot_all_four">
+<h5><span class="label">Example 38-17. </span>all_four_getattribute.py</h5>
+<pre data-type="programlisting">"Same, but with generic __getattribute__ all-attribute interception"
+
+class Powers:
+    def __init__(self, square, cube):
+        self._square = square
+        self._cube   = cube
+
+    def __getattribute__(self, name):
+        if name == 'square':
+            return object.__getattribute__(self, '_square') ** 2
+        elif name == 'cube':
+            return object.__getattribute__(self, '_cube') ** 3
+        else:
+            return object.__getattribute__(self, name)
+
+    def __setattr__(self, name, value):
+        if name == 'square':
+            object.__setattr__(self, '_square', value)   <code><em># Or use __dict__
+</em></code>        else:
+            object.__setattr__(self, name , value)</pre>
+</div>
+<p>To test, the following REPL session loops through a list of all four modules’ name strings and imports and fetches classes along the way. Each technique takes a different form in code, but all four produce the same result when run:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from importlib import import_module</strong></code>
+&gt;&gt;&gt; <code><strong>mods = [f'all_four_{M}' for M in ('props', 'desc', 'getattr', 'getattribute')]</strong></code>
+&gt;&gt;&gt; <code><strong>for modname in mods:</strong></code>
+        <code><strong>module = import_module(modname)</strong></code>    <code><em># Import by name string</em></code>
+        <code><strong>X = module.Powers(3, 4)</strong></code>            <code><em># This module's class (print to see)</em></code>
+        <code><strong>print(X.square)</strong></code>                    <code><em># 3 ** 2 = 9</em></code>
+        <code><strong>print(X.cube)</strong></code>                      <code><em># 4 ** 3 = 64
+</em></code>        <code><strong>X.square = 5
+</strong></code>        <code><strong>print(X.square)</strong></code>                    <code><em># 5 ** 2 = 25</em></code>
+         
+9
+64
+25
+…<code><em>repeated four times</em></code>…</pre>
+<p>For more on how these alternatives compare, and other coding options, stay tuned for a more realistic application of them in the attribute-validation example ahead. First, though, we need to take a short side trip to study a pitfall associated with two of these tools—the generic attribute interceptors.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Intercepting Built-in Operation Attributes"><div class="sect2" id="intercepting_built_in_operation_attribu">
+<h2>Intercepting Built-in Operation Attributes</h2>
+<p>If you’ve been reading this book linearly, some <a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="built-in attributes, intercepting" id="aggmltc"></a>of this section is elaboration on earlier notes, especially the sidebar <a data-type="xref" href="ch28.html#delegating_built_insem_dashor_not">“Delegating Built-ins—or Not”</a>. When <code>__getattr__</code> and <code>__getattribute__</code> were introduced here, it was stated that they intercept undefined- and all-attribute fetches, respectively, which makes them ideal for delegation-based coding patterns.</p>
+<p>While this is true for both <em>normally named</em> and <em>explicitly fetched</em> attributes, their behavior needs some additional clarification. Specifically, the implicit method-name fetches of <em>built-in operations</em> will never automatically be routed to either of these two attribute-interceptor methods. This means that operator-overloading method calls cannot be delegated to wrapped objects unless wrapper classes somehow redefine these methods themselves.</p>
+<p>For example, attribute fetches for the <code>__str__</code>, <code>__add__</code>, and <code>__getitem__</code> methods run <em>implicitly</em> by printing, <code>+</code> expressions, and indexing, respectively, are not routed to either <code>__getattr__</code> or <span class="keep-together"><code>__getattribute__</code></span>. Instead, such methods are looked up in classes, and skip the instance and its attribute interceptors. Hence, there is no direct way to generically catch and delegate built-in operations like these.</p>
+<p>This was a Python 3.X bifurcation, whose purported rationale involved metaclasses and optimization of built-in operations. Whatever its basis, all attributes—both <code>__<em>X</em>__</code> and other—are still dispatched through the instance’s interceptor methods when accessed <em>explicitly</em> by name, so this qualifies as a glaring inconsistency: <code><em>X</em>.__add__</code> runs <code>__getattr__</code>, but <em><code>X</code></em><code>+<em>Y</em></code>, which uses <code><em>X</em>.__add__</code>, does not. The net effect complicates delegation-based code.</p>
+<p>The good news is that wrapper classes can work around this constraint by redefining operator-overloading methods in the wrapper itself, in order to catch and delegate calls. These extra methods can be added either manually, with tools, or by definition in, and inheritance from, common superclasses. It’s more work for delegation classes when operator-overloading methods are part of a wrapped object’s interface, but it’s not a showstopper.</p>
+<p>As a demo of the issue, consider the code in <a data-type="xref" href="#example_threeeight_oneeightdot_getattr">Example 38-18</a>, which tests various attribute types and built-in operations on instances of classes containing <code>__getattr__</code> and <code>__getattribute__</code> methods.</p>
+<div data-type="example" id="example_threeeight_oneeightdot_getattr">
+<h5><span class="label">Example 38-18. </span>getattr-builtins.py</h5>
+<pre data-type="programlisting">class GetAttr:
+    cattr = 88                       <code><em># Attrs stored on class and instance</em></code>
+    def __init__(self):              <code><em># These skip getattr, but not getattribute</em></code>
+       self.iattr = 77
+
+    def __len__(self):               <code><em># Redefine for len(): doesn't run getattr</em></code>
+        print('__len__: 66')
+        return 66
+
+    def __getattr__(self, attr):     <code><em># Provide __str__ if asked, else dummy func
+</em></code>        print('getattr:', attr)      <code><em># Never run for __str__: inherited from object</em></code>
+        if attr == '__str__':
+            return lambda *args: '[Getattr str]'
+        else:
+            return lambda *args: None
+
+class GetAttribute:
+    cattr = 88                       <code><em># Similar, but catch all attributes</em></code>
+    def __init__(self):              <code><em># Except implicit fetches for built-in ops</em></code>
+        self.iattr = 77               
+
+    def __len__(self):               <code><em># Redefine for len(): doesn't run getattribute</em></code>
+        print('__len__: 66')         <code><em># But explicit fetches of inherited __str__ do
+</em></code>        return 66
+
+    def __getattribute__(self, attr):
+        print('getattribute:', attr)
+        if attr == '__str__':
+            return lambda *args: '[GetAttribute str]'
+        else:
+            return lambda *args: None
+
+for Class in GetAttr, GetAttribute:
+    print('\n' + Class.__name__.ljust(50, '='))
+    X = Class()
+
+<code> <em>   # Defined attributes trigger getattribute but not getattr</em></code>
+
+    X.cattr                   <code><em># Class attr    (defined – skips getattr)</em></code>
+    X.iattr                   <code><em># Instance attr (defined – skips getattr)</em></code>
+    X.other                   <code><em># Missing attr
+</em></code>    len(X)                    <code><em># __len__ defined explicitly: moot</em></code>
+
+<code> <em>   # Built-in ops do not invoke either getattr or getattribute</em></code>
+<code> <em>   # No defaults are inherited for these from object superclass</em></code>
+
+    try:    X[0]              <code><em># Tries to invoke __getitem__</em></code>
+    except: print('fail []')
+    try:    X + 99            <code><em># Ditto, __add__</em></code>
+    except: print('fail +')
+    try:    X()               <code><em># Ditto, __call__
+</em></code>    except: print('fail ()')
+
+<code> <em>   # But explicit calls invoke both catchers</em></code>
+
+    X.__getitem__(0)
+    X.__add__(99)
+    X.__call__()
+
+<code> <em>   # The implied object superclass defines a __str__ that precludes getattr</em></code>
+<code> <em>   # But the absolute getattribute is not called for implicit fetches either</em></code>
+ 
+    print(X.__str__())        <code><em># __str__: explicit call =&gt; only __getattr__ skipped</em></code>
+    print(X)                  <code><em># __str__: implicit via built-in =&gt; both skipped</em></code></pre>
+</div>
+<p>This file runs the same set of tests on each of its classes in turn. Match its following output with its tests and comments to see how it works. In short, neither <code>__getattr__</code> nor <code>__getattribute__</code> are run for any of the operator-overloading names invoked by built-in operations because such names are looked up in classes only:</p>
+<pre data-type="programlisting">$ <code><strong>python3 getattr-builtins.py</strong></code>
+
+GetAttr===========================================
+getattr: other
+__len__: 66
+fail []
+fail +
+fail ()
+getattr: __getitem__
+getattr: __add__
+getattr: __call__
+&lt;__main__.GetAttr object at 0x10f76f020&gt;
+&lt;__main__.GetAttr object at 0x10f76f020&gt;
+
+GetAttribute======================================
+getattribute: cattr
+getattribute: iattr
+getattribute: other
+__len__: 66
+fail []
+fail +
+fail ()
+getattribute: __getitem__
+getattribute: __add__
+getattribute: __call__
+getattribute: __str__
+[GetAttribute str]
+&lt;__main__.GetAttribute object at 0x10f74c440&gt;</pre>
+<p>More generally, all <em>explicit</em> method-name attribute fetches are always routed to both attribute-interception methods, but none of the <em>implicit</em> operator-overloading methods trigger either attribute-interception method when their attributes are fetched by built-in operations. Salient points in this demo worth calling out:</p>
+<ul>
+<li><p><code>__str__</code> access fails to be caught twice by <code>__getattr__</code>: once for the built-in <code>print</code>, and once for explicit fetches because a default is inherited from the built-in <code>object</code> implied above every topmost class.</p></li>
+<li><p><code>__str__</code> fails to be caught only once by the <code>__getattribute__</code> catchall—during the built-in <code>print</code> operation. Explicit fetches bypass the inherited <code>__str__</code> and run <code>__getattribute__</code>.</p></li>
+<li><p><code>__call__</code> fails to be caught in both schemes for built-in call expressions, but it is intercepted by both when fetched explicitly; unlike <code>__str__</code>, there is no inherited <code>__call__</code> default in <code>object</code> to defeat <code>__getattr__</code> in explicit fetches. The same goes for the <code>__add__</code> of <code>+</code> operations.</p></li>
+<li><p><code>__len__</code> is handled by both classes because it is an explicitly defined method in the classes themselves—though its name is not routed to either <code>__getattr__</code> or <code>__getattribute__</code> if we delete the classes’ <code>__len__</code> methods because the <code>len</code> built-in skips them as usual.</p></li>
+</ul>
+<p>Again, the net effect is that operator-overloading methods implicitly run by built-in operations are never routed through either attribute interception method. Python begins the search for such attributes in <em>classes</em> and skips instance lookup mechanisms entirely. Normally, named attributes and explicit fetches start with the instance instead.</p>
+<p>For a more realistic example of this phenomenon’s impact on delegation classes, stay tuned for <a data-type="xref" href="ch39.html#decorators">Chapter 39</a>’s <code>Private</code> decorator—along with its coverage of multiple reusable <em>workarounds</em>.</p>
+<section data-type="sect3" data-pdf-bookmark="Revisiting Chapter 28’s delegation example "><div class="sect3" id="revisiting_chapter_twoeightapostrophes">
+<h3>Revisiting Chapter 28’s delegation example </h3>
+<p>As a coda, you should also now be able to work out why the <code>Manager</code> class coded in <a data-type="xref" href="ch28.html#example_twoeight_oneonedot_person_compo">Example 28-11</a> of <a data-type="xref" href="ch28.html#a_more_realistic_example">Chapter 28</a> had to code a <code>__repr__</code> to route printing requests to its wrapped object. Just like <code>__str__</code> in our demo, <code>object</code> provides a default <code>__repr__</code>, which would prevent <code>print</code> operations from invoking a <code>__getattr__</code>. Technically speaking, <code>object</code> defines both <code>__str__</code> and <code>__repr__</code>, but its <code>__str__</code> simply calls <code>__repr__</code>.</p>
+<p>That said, <code>object</code>’s defaults are largely a moot point: like all built-in operations, <code>print</code> bypasses both <code>__getattr__</code> and <code>__getattribute__</code>, as it did for <code>__getattribute__</code> in our demo. Hence, a <code>__repr__</code> is required by <em>both</em> the <code>object</code> default and the built-in’s behavior.</p>
+<p>Again, fixes for delegating built-ins <a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="built-in attributes, intercepting" data-startref="aggmltc" id="id4749"></a>are in <a data-type="xref" href="ch39.html#decorators">Chapter 39</a> (unless we run out of underscores before that!).</p>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Example: Attribute Validations"><div class="sect1" id="example_attribute_validations">
+<h1>Example: Attribute Validations</h1>
+<p>To close out this chapter, let’s turn to a more realistic example, coded in all four of our attribute management schemes. The example we will use defines a <code>CardHolder</code> object with four attributes, three of which are managed. The managed attributes validate or transform values when fetched or stored. All four versions produce the same results for the same test code, but they implement their attributes in very different ways. The examples are largely for self-study; although we won’t go through their code in detail, they all use concepts we’ve already explored in this chapter.</p>
+<section data-type="sect2" data-pdf-bookmark="Using Properties to Validate"><div class="sect2" id="using_properties_to_validate">
+<h2>Using Properties to Validate</h2>
+<p>Our first coding in <a data-type="xref" href="#example_threeeight_oneninedot_validate">Example 38-19</a> uses properties to manage three attributes. As usual, we could <a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="validation" data-tertiary="properties and" id="atmvlpp"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="properties" data-tertiary="validation and" id="amgppvl"></a>use simple methods instead of managed attributes, but properties help if we have already been using attributes in existing code. Properties run code automatically on attribute access but are focused on a specific set of attributes; they cannot be used to intercept all attributes generically.</p>
+<p>To understand this code, it’s crucial to notice that the attribute assignments inside the <code>__init__</code> constructor method trigger property setter methods too. When this method assigns to <code>self.name</code>, for example, it automatically invokes the <code>setName</code> method, which transforms the value and assigns it to an instance attribute called <code>__name</code> so it won’t clash with the property’s name.</p>
+<p>This renaming, sometimes called <em>name mangling</em>, is important because properties use common instance state and have none of their own. Data is stored in an attribute called <code>__name</code>, and the attribute called <code>name</code> is always a property, not data. As we saw in <a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a>, names like <code>__name</code> are known as <em>pseudoprivate</em> attributes and are changed by Python to include the enclosing class’s name when stored in the instance’s namespace; here, this helps keep the implementation-specific attributes distinct from others, including that of the property that manages them.</p>
+<p>In the end, this class manages attributes called <code>name</code>, <code>age</code>, and <code>acct</code>; allows the attribute <code>addr</code> to be accessed directly; and provides a read-only attribute called <code>remain</code> that is entirely virtual and computed on demand. For comparison purposes, this property-based coding weighs in at 39 lines of code (including blank lines).</p>
+<div data-type="example" id="example_threeeight_oneninedot_validate">
+<h5><span class="label">Example 38-19. </span>validate_properties.py</h5>
+<pre data-type="programlisting">class CardHolder:
+    acctlen = 8                                <code><em># Class data</em></code>
+    retireage = 62.5
+
+    def __init__(self, acct, name, age, addr):
+        self.acct = acct                       <code><em># Instance data
+</em></code>        self.name = name                       <code><em># These trigger prop setters too!</em></code>
+        self.age  = age                        <code><em># __X mangled to have class name</em></code>
+        self.addr = addr                       <code><em># addr is not managed
+</em></code>                                               <code><em># remain has no data</em></code>
+    def getName(self):
+        return self.__name
+    def setName(self, value):
+        value = value.lower().replace(' ', '_')
+        self.__name = value
+    name = property(getName, setName)          <code><em># Or @ decorators for both</em></code>
+
+    def getAge(self):
+        return self.__age
+    def setAge(self, value):
+        if value &lt; 0 or value &gt; 150:
+            raise ValueError('invalid age')
+        else:
+            self.__age = value
+    age = property(getAge, setAge)
+
+    def getAcct(self):
+        return self.__acct[:-3] + '***'
+    def setAcct(self, value):
+        value = value.replace('-', '')
+        if len(value) != self.acctlen:
+            raise TypeError('invalid acct number')
+        else:
+            self.__acct = value
+    acct = property(getAcct, setAcct)
+
+    def remainGet(self):                       <code><em># Could be a method, not attr</em></code>
+        return self.retireage - self.age       <code><em># Unless already using as attr</em></code>
+    remain = property(remainGet)</pre>
+</div>
+<section data-type="sect3" data-pdf-bookmark="Testing code"><div class="sect3" id="testing_code">
+<h3>Testing code</h3>
+<p>To test our class, run the script in <a data-type="xref" href="#example_threeeight_twozerodot_validate">Example 38-20</a> in a console with the name of the class’s module (sans “.py”) as a single command-line argument (you could also import the class in a REPL, but we’re trying to avoid repeating code here). We’ll use this same test script for all four versions of this example so their output will be the same. When it runs, it makes two instances of our managed-attribute class and fetches and changes their various attributes. Operations expected to fail are wrapped in <code>try</code> statements.</p>
+<div data-type="example" id="example_threeeight_twozerodot_validate">
+<h5><span class="label">Example 38-20. </span>validate_tester.py</h5>
+<pre data-type="programlisting">def loadclass():
+    import sys, importlib
+    modulename = sys.argv[1]                          <code><em># Module name in command line
+</em></code>    module = importlib.import_module(modulename)      <code><em># Import module by name string
+</em></code>    print(f'[Using: {module.CardHolder}]')            <code><em># No need for getattr() here</em></code>
+    return module.CardHolder
+
+def printholder(who):
+    print(who.acct, who.name, who.age, who.remain, who.addr, sep=' / ')
+
+if __name__ == '__main__':
+    CardHolder = loadclass()
+    bob = CardHolder('1234-5678', 'Bob Smith', 40, '123 main st')
+    printholder(bob)
+    bob.name = 'Bob Q. Smith'
+    bob.age  = 50
+    bob.acct = '23-45-67-89'
+    printholder(bob)
+
+    sue = CardHolder('5678-12-34', 'Sue Jones', 35, '124 main st')
+    printholder(sue)
+    try:
+        sue.age = 200
+    except: print('Bad age for Sue')
+
+    try:
+        sue.remain = 5
+    except: print("Can't set sue.remain")
+
+    try:
+        sue.acct = '1234567'
+    except: print('Bad acct for Sue')</pre>
+</div>
+<p>Following is the output of our test script’s code; again, this is the same for the other versions of this example ahead, except for the tested class’s name. Trace through this code to see how the class’s <span class="keep-together">methods</span> are invoked. Accounts are displayed with some digits hidden, names are converted to a standard format, and time remaining until <a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="validation" data-tertiary="properties and" data-startref="atmvlpp" id="id4750"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="properties" data-tertiary="validation and" data-startref="amgppvl" id="id4751"></a>retirement (hypothetically speaking) is computed when fetched using a class-attribute cutoff:</p>
+<pre data-type="programlisting">$ <code><strong>python3 validate_tester.py validate_properties</strong></code>
+[Using: &lt;class 'validate_properties.CardHolder'&gt;]
+12345*** / bob_smith / 40 / 22.5 / 123 main st
+23456*** / bob_q._smith / 50 / 12.5 / 123 main st
+56781*** / sue_jones / 35 / 27.5 / 124 main st
+Bad age for Sue
+Can't set sue.remain
+Bad acct for Sue</pre>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Using Descriptors to Validate"><div class="sect2" id="using_descriptors_to_validate">
+<h2>Using Descriptors to Validate</h2>
+<p>Now, let’s recode our example using <em>descriptors</em> instead of properties. As we’ve seen, descriptors are very <a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="validation" data-tertiary="descriptors and" id="atmvldsc"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="descriptors" data-tertiary="validation and" id="amgdsrvl"></a>similar to properties in terms of functionality and roles; in fact, properties are basically a focused form of descriptor. Like properties, descriptors are designed to handle specific attributes, not generic attribute access. Unlike properties, descriptors can also have their own state, and so are perhaps a more general scheme.</p>
+<section data-type="sect3" data-pdf-bookmark="Option 1: Validating with shared descriptor-instance state (badly!)"><div class="sect3" id="option_one_validating_with_shared_descr">
+<h3>Option 1: Validating with shared descriptor-instance state (badly!)</h3>
+<p>To understand the code in <a data-type="xref" href="#example_threeeight_twoonedot_validate_d">Example 38-21</a>, it’s again important to notice that the attribute assignments inside the <code>__init__</code> constructor method trigger descriptor <code>__set__</code> methods. When the constructor method assigns to <code>self.name</code>, for example, it automatically invokes the <code>Name.__set__()</code> method, which transforms the value and assigns it to a descriptor attribute called <code>name</code>.</p>
+<p>In the end, this class implements the same attributes as the prior version: it manages attributes called <code>name</code>, <code>age</code>, and <code>acct</code>; allows the attribute <code>addr</code> to be accessed directly; and provides a read-only attribute called <code>remain</code> that is entirely virtual and computed on demand. Notice how we must catch assignments to the <code>remain</code> name in its descriptor and raise an exception; as we learned earlier, if we did not do this, assigning to this attribute of an instance would silently create an instance attribute that hides the class-attribute descriptor.</p>
+<p>For comparison purposes, this descriptor-based coding takes 45 lines of code.</p>
+<div data-type="example" id="example_threeeight_twoonedot_validate_d">
+<h5><span class="label">Example 38-21. </span>validate_descriptors1.py</h5>
+<pre data-type="programlisting">class CardHolder:                                <code><em># Using shared descriptor state</em></code>
+    acctlen = 8                                  <code><em># Class data</em></code>
+    retireage = 62.5
+
+    def __init__(self, acct, name, age, addr):
+        self.acct = acct                         <code><em># Instance data
+</em></code>        self.name = name                         <code><em># These trigger __set__ calls too!</em></code>
+        self.age  = age                          <code><em># __X not needed: in descriptor</em></code>
+        self.addr = addr                         <code><em># addr is not managed</em></code>
+                                                 <code><em># remain has no data</em></code>
+    class Name:
+        def __get__(self, instance, owner):      <code><em># Class names: CardHolder locals
+</em></code>            return self.name
+        def __set__(self, instance, value):
+            value = value.lower().replace(' ', '_')
+            self.name = value
+    name = Name()
+
+    class Age:
+        def __get__(self, instance, owner):
+            return self.age                             <code><em># Use descriptor data</em></code>
+        def __set__(self, instance, value):
+            if value &lt; 0 or value &gt; 150:
+                raise ValueError('invalid age')
+            else:
+                self.age = value
+    age = Age()
+
+    class Acct:
+        def __get__(self, instance, owner):
+            return self.acct[:-3] + '***'
+        def __set__(self, instance, value):
+            value = value.replace('-', '')
+            if len(value) != instance.acctlen:          <code><em># Use instance class data</em></code>
+                raise TypeError('invalid acct number')
+            else:
+                self.acct = value
+    acct = Acct()
+
+    class Remain:
+        def __get__(self, instance, owner):
+            return instance.retireage - instance.age    <code><em># Triggers Age.__get__</em></code>
+        def __set__(self, instance, value):
+            raise TypeError('cannot set remain')        <code><em># Else set allowed here</em></code>
+    remain = Remain()</pre>
+</div>
+<p>When run with the prior testing script, all examples in this section produce the same output as shown for properties earlier, except that the name of the class in the first line varies:</p>
+<pre data-type="programlisting">$ <code><strong>python3 validate_tester.py validate_descriptors1</strong></code>
+[Using: &lt;class 'validate_descriptors1.CardHolder'&gt;]
+…<code><em>rest is same output as properties</em></code>…</pre>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Option 2: Validating with per-client-instance state (correctly)"><div class="sect3" id="option_two_validating_with_per_client_i">
+<h3>Option 2: Validating with per-client-instance state (correctly)</h3>
+<p>Unlike in the prior property-based variant, though, in <a data-type="xref" href="#example_threeeight_twoonedot_validate_d">Example 38-21</a>, the actual <code>name</code> value is attached to the <em>descriptor</em> object, not the client class instance. Although we could store this value in either instance or descriptor state, the latter avoids the need to mangle names with underscores to avoid collisions. In the <code>CardHolder</code> client class, the attribute called <code>name</code> is always a descriptor object, not data.</p>
+<p>Importantly, the downside of this scheme is that state stored inside a descriptor itself is class-level data that is effectively <em>shared</em> by all client-class instances and so cannot vary between them. That is, storing state in the <em>descriptor</em> instance instead of the <em>owner</em> (client) class instance means that the state will be the same in all owner-class instances. Descriptor state can vary only per attribute appearance.</p>
+<p>To see this at work, try printing attributes of the <code>bob</code> instance after creating the second instance, <code>sue</code>, with the new test script in <a data-type="xref" href="#example_threeeight_twotwodot_validate_t">Example 38-22</a>. The values of <code>sue</code>’s managed attributes (<code>name</code>, <code>age</code>, and <code>acct</code>) <em>overwrite</em> those of the earlier object <code>bob</code>, because both share the same, single descriptor instance attached to their class.</p>
+<div data-type="example" class="pagebreak-before" id="example_threeeight_twotwodot_validate_t">
+<h5 class="less_space"><span class="label">Example 38-22. </span>validate_tester_plus.py</h5>
+<pre data-type="programlisting">from validate_tester import loadclass
+CardHolder = loadclass()
+
+bob = CardHolder('1234-5678',  'Bob Smith', 40, '123 main st')
+print('bob:', bob.name, bob.acct, bob.age, bob.addr)
+
+sue = CardHolder('5678-12-34', 'Sue Jones', 35, '124 main st')
+print('sue:', sue.name, sue.acct, sue.age, sue.addr)    <code><em># addr differs: client data</em></code>
+print('bob:', bob.name, bob.acct, bob.age, bob.addr)    <code><em># name,acct,age overwritten?</em></code></pre>
+</div>
+<p>When this script is run with the descriptor-state <code>CardHolder</code> of <a data-type="xref" href="#example_threeeight_twoonedot_validate_d">Example 38-21</a>, the results confirm the suspicion—in terms of managed attributes, <code>bob</code> has morphed into <code>sue</code>!</p>
+<pre data-type="programlisting">$ <code><strong>python3 validate_tester_plus.py validate_descriptors1</strong></code>
+[Using: &lt;class 'validate_descriptors1.CardHolder'&gt;]
+bob: bob_smith 12345*** 40 123 main st
+sue: sue_jones 56781*** 35 124 main st
+bob: sue_jones 56781*** 35 123 main st</pre>
+<p>This isn’t an issue for properties because they have no state of their own, and there are valid uses for descriptor state. Such state might be used, for example, to manage descriptor implementation and data that spans all instances, and this example was coded this way on purpose to illustrate the technique. Moreover, the state scope implications of class versus instance attributes should be more or less a given at this point in the book.</p>
+<p>However, in this particular use case, attributes of <code>CardHolder</code> objects are probably better stored as <em>per-instance</em> data instead of descriptor-instance data, perhaps using the same <code>__<em>X</em></code> naming convention as the property-based equivalent to avoid name clashes in the instance—a more important factor this time, as the client is a different class with its own state attributes. <a data-type="xref" href="#example_threeeight_twothreedot_validate">Example 38-23</a> has the required changes; it doesn’t change line counts (we’re still at 45).</p>
+<div data-type="example" id="example_threeeight_twothreedot_validate">
+<h5><span class="label">Example 38-23. </span>validate_descriptors2.py</h5>
+<pre data-type="programlisting">class CardHolder:                                <code><em># Using per-client-instance state</em></code>
+    acctlen = 8                                  <code><em># Class data</em></code>
+    retireage = 62.5
+
+    def __init__(self, acct, name, age, addr):
+        self.acct = acct                         <code><em># Client instance data</em></code>
+        self.name = name                         <code><em># These trigger __set__ calls too!</em></code>
+        self.age  = age                          <code><em># __X needed: in client instance
+</em></code>        self.addr = addr                         <code><em># addr is not managed</em></code>
+                                                 <code><em># remain managed but has no data</em></code>
+    class Name:
+        def __get__(self, instance, owner):      <code><em># Class names: CardHolder locals</em></code>
+            return instance.__name
+        def __set__(self, instance, value):
+            value = value.lower().replace(' ', '_')
+            instance.__name = value
+    name = Name()                                       <code><em># class.name vs mangled attr</em></code>
+
+    class Age:
+        def __get__(self, instance, owner):
+            return instance.__age                       <code><em># Use *instance* data</em></code>
+        def __set__(self, instance, value):
+            if value &lt; 0 or value &gt; 150:
+                raise ValueError('invalid age')
+            else:
+                instance.__age = value
+    age = Age()                                         <code><em># class.age vs mangled attr</em></code>
+
+    class Acct:
+        def __get__(self, instance, owner):
+            return instance.__acct[:-3] + '***'
+        def __set__(self, instance, value):
+            value = value.replace('-', '')
+            if len(value) != instance.acctlen:          <code><em># Use instance class data</em></code>
+                raise TypeError('invalid acct number')
+            else:
+                instance.__acct = value
+    acct = Acct()                                       <code><em># class.acct vs mangled name</em></code>
+
+    class Remain:
+        def __get__(self, instance, owner):
+            return instance.retireage - instance.age    <code><em># Triggers Age.__get__</em></code>
+        def __set__(self, instance, value):
+            raise TypeError('cannot set remain')        <code><em># Else set allowed here</em></code>
+    remain = Remain()</pre>
+</div>
+<p>This supports per-instance data for the <code>name</code>, <code>age</code>, and <code>acct</code> managed fields as expected (<code>bob</code> remains <code>bob</code>), and other tests work as before:</p>
+<pre data-type="programlisting">$ <code><strong>python3 validate_tester_plus.py validate_descriptors2</strong></code>
+[Using: &lt;class 'validate_descriptors2.CardHolder'&gt;]
+bob: bob_smith 12345*** 40 123 main st
+sue: sue_jones 56781*** 35 124 main st
+bob: bob_smith 12345*** 40 123 main st 
+
+$ <code><strong>python3 validate_tester.py validate_descriptors2</strong></code>
+…<code><em>same output as properties, except class name</em></code>…</pre>
+<p>One small caveat here: as coded, this version doesn’t support <em>through-class</em> descriptor access because such access passes a <code>None</code> to the instance argument (also notice the attribute <code>__<em>X</em></code> name mangling to <code>_Name__name</code> in the error message when the fetch attempt is made):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from validate_descriptors1 import CardHolder
+</strong></code>&gt;&gt;&gt; <code><strong>pat = CardHolder('1234-5678', 'Pat Smith', 40, '123 main st')
+</strong></code>&gt;&gt;&gt; <code><strong>pat.name</strong></code>
+'pat_smith'
+&gt;&gt;&gt; <code><strong>CardHolder.name</strong></code>
+'pat_smith'
+
+&gt;&gt;&gt; <code><strong>from validate_descriptors2 import CardHolder
+</strong></code>&gt;&gt;&gt; <code><strong>pat = CardHolder('1234-5678', 'Pat Smith', 40, '123 main st')
+</strong></code>&gt;&gt;&gt; <code><strong>pat.name</strong></code>
+'pat_smith'
+&gt;&gt;&gt; <code><strong>CardHolder.name</strong></code>
+AttributeError: 'NoneType' object has no attribute '_Name__name'</pre>
+<p>We could detect this with a minor amount of additional code to trigger the error more explicitly, but there’s probably no point—because this version stores data in the <em>client instance</em>, there’s no meaning to its descriptors unless they’re accompanied by a client instance (much like a normal nonbound instance method). In fact, that’s really the entire point of this version’s change!</p>
+<p>Because they are classes, descriptors are a useful and powerful tool, but they present choices that can deeply impact a program’s behavior. As always in OOP, choose your state retention <a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="validation" data-tertiary="descriptors and" data-startref="atmvldsc" id="id4752"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="descriptors" data-tertiary="validation and" data-startref="amgdsrvl" id="id4753"></a>policies carefully.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Using __getattr__ to Validate"><div class="sect2" id="using_getattr_to_validate">
+<h2>Using __getattr__ to Validate</h2>
+<p>As we’ve seen, the <code>__getattr__</code> method intercepts all undefined attributes, so it can be more generic than <a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="__getattr__ method" data-tertiary="validation" data-secondary-sortas="getattr method" id="agmgmtvl"></a>using properties or descriptors. For our example, we simply test the attribute name to know when a managed attribute is being fetched; others are stored physically on the instance and so never reach <code>__getattr__</code>. Although this approach is more general than using properties or descriptors, extra work may be required to imitate the specific attribute focus of other tools. We need to check names at runtime—a multiple-choice that’s a prime role for the <code>match</code> statement—and we must code a <code>__setattr__</code> in order to intercept and validate attribute assignments.</p>
+<p><a data-type="xref" href="#example_threeeight_twofourdot_validate">Example 38-24</a> hosts the <code>__getattr__</code> version of our validations code. In the end, this class, like the prior two, manages attributes called <code>name</code>, <code>age</code>, and <code>acct</code>; allows the attribute <code>addr</code> to be accessed directly; and provides a read-only attribute called <code>remain</code> that is entirely virtual and is computed on demand.</p>
+<p>As for the property and descriptor versions of this example, it’s critical to notice that the attribute assignments inside the <code>__init__</code> constructor method trigger the class’s <code>__setattr__</code> method too. When this method assigns to <code>self.name</code>, for example, it automatically invokes the <code>__setattr__</code> method, which transforms the value and assigns it to an instance attribute called <code>name</code>. By storing <code>name</code> on the instance, it ensures that future accesses will not trigger <code>__getattr__</code>. In contrast, <code>acct</code> is stored as <code>_acct</code> so that later accesses to <code>acct</code> do invoke <code>__getattr__</code>.</p>
+<p>For comparison purposes, this alternative comes in at 34 lines of code—5 fewer than the property-based version and 11 fewer than the version using descriptors (though replacing <code>if</code> with <code>match</code> here added two lines, along with extra indentation). Clarity matters more than code size, of course, but extra code can imply extra development and maintenance work. Probably more important here are <em>roles</em>: generic tools like <code>__getattr__</code> are better suited to generic delegation, while properties and descriptors are designed to manage specific attributes.</p>
+<p>Also note again that the code here incurs <em>extra calls</em> when setting unmanaged attributes (e.g., <code>addr</code>), although no extra calls are incurred for fetching unmanaged attributes since they are defined. Though this will likely result in negligible overhead for most programs, the more narrowly focused properties and descriptors incur an extra call only when managed attributes are accessed, and also appear in <code>dir</code> results automatically when needed by generic tools.</p>
+<div data-type="example" id="example_threeeight_twofourdot_validate">
+<h5><span class="label">Example 38-24. </span>validate_getattr.py</h5>
+<pre data-type="programlisting">class CardHolder:
+    acctlen = 8                                  <code><em># Class data</em></code>
+    retireage = 62.5
+
+    def __init__(self, acct, name, age, addr):
+        self.acct = acct                         <code><em># Instance data</em></code>
+        self.name = name                         <code><em># These trigger __setattr__ too</em></code>
+        self.age  = age                          <code><em># _acct not mangled: name tested</em></code>
+        self.addr = addr                         <code><em># addr is not managed
+</em></code>                                                 <code><em># remain has no data</em></code>
+    def __getattr__(self, name):
+        match name:
+            case 'acct':                               <code><em># On undefined attr fetches
+</em></code>                return self._acct[:-3] + '***'         <code><em># name, age, addr are defined</em></code>
+            case 'remain':
+                return self.retireage - self.age       <code><em># Doesn't trigger __getattr__</em></code>
+            case _:
+                raise AttributeError(name)
+
+    def __setattr__(self, name, value):
+        match name:
+            case 'name':                                 <code><em># On all attr assignments</em></code>
+                value = value.lower().replace(' ', '_')  <code><em># addr stored directly</em></code>
+            case 'age':                                  <code><em># acct mangled to _acct</em></code>
+                if value &lt; 0 or value &gt; 150:
+                    raise ValueError('invalid age')
+            case 'acct':
+                name  = '_acct'
+                value = value.replace('-', '')
+                if len(value) != self.acctlen:
+                    raise TypeError('invalid acct number')
+            case 'remain':
+                raise TypeError('cannot set remain')
+        self.__dict__[name] = value                      <code><em># Avoid looping (or object)</em></code></pre>
+</div>
+<p>When this code is run with either test script, it produces the same output (with a different class name):</p>
+<pre data-type="programlisting">$<code> <strong>python3 validate_tester.py validate_getattr</strong></code>
+…<code><em>same output as properties, <a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="__getattr__ method" data-tertiary="validation" data-secondary-sortas="getattr method" data-startref="agmgmtvl" id="id4754"></a>except class name</em></code>…
+
+$ <code><strong>python3 validate_tester_plus.py validate_getattr</strong></code>
+…<code><em>same output as instance-state descriptors, except class name</em></code>…</pre>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Using __getattribute__ to Validate"><div class="sect2" id="using_getattribute_to_validate">
+<h2>Using __getattribute__ to Validate</h2>
+<p>Our final variant uses the <code>__getattribute__</code> catchall to intercept <a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="__getattribute__ method" data-tertiary="validation" data-secondary-sortas="getattribute method" id="agttttvl"></a>attribute fetches and manage them as needed. Every attribute fetch is caught here, so we test the attribute names to detect managed attributes and route all others to the superclass for normal fetch processing. This version uses the same <code>__setattr__</code> to catch assignments as the prior version (there is no corresponding “<code>__setattribute__</code>” in Python—so far?).</p>
+<p><a data-type="xref" href="#example_threeeight_twofivedot_validate">Example 38-25</a> codes this last mod. It works very much like the <code>__getattr__</code> version, so we won’t repeat the full description here. Note, though, that because <em>every</em> attribute fetch is routed to <span class="keep-together"><code>__getattribute__</code></span>, we don’t need to mangle names to intercept them here (<code>acct</code> is stored as <code>acct</code>). On the other hand, this code must take care to route nonmanaged attribute fetches to a superclass to avoid looping or extra calls.</p>
+<p>Also, notice that this version incurs extra calls for both setting and fetching unmanaged attributes (e.g., <code>addr</code>); if speed is paramount, this alternative may be the slowest of the bunch. For comparison purposes, this version amounts to 34 lines of code, just like the prior version (and again including 2 lines added by <code>match</code>).</p>
+<div data-type="example" id="example_threeeight_twofivedot_validate">
+<h5><span class="label">Example 38-25. </span>validate_getattribute.py</h5>
+<pre data-type="programlisting">class CardHolder:
+    acctlen = 8                                  <code><em># Class data</em></code>
+    retireage = 62.5
+
+    def __init__(self, acct, name, age, addr):
+        self.acct = acct                         <code><em># Instance data</em></code>
+        self.name = name                         <code><em># These trigger __setattr__ too</em></code>
+        self.age  = age                          <code><em># acct not mangled: name tested</em></code>
+        self.addr = addr                         <code><em># addr is not managed</em></code>
+                                                 <code><em># remain has no data</em></code>
+    def __getattribute__(self, name):
+        superget = object.__getattribute__                 <code><em># Don't loop: level up</em></code>
+        match name:
+            case 'acct':                                   <code><em># On all attr fetches</em></code>
+                return superget(self, 'acct')[:-3] + '***'
+            case 'remain':
+                return superget(self, 'retireage') - superget(self, 'age')
+            case _:
+                return superget(self, name)                <code><em># name, age, addr: stored</em></code>
+
+    def __setattr__(self, name, value):
+        match name:
+            case 'name':                                   <code><em># On all attr assignments</em></code>
+                value = value.lower().replace(' ', '_')    <code><em># addr stored directly</em></code>
+            case 'age':
+                if value &lt; 0 or value &gt; 150:
+                    raise ValueError('invalid age')
+            case 'acct':
+                value = value.replace('-', '')
+                if len(value) != self.acctlen:
+                    raise TypeError('invalid acct number')
+            case 'remain':
+                raise TypeError('cannot set remain')
+        self.__dict__[name] = value                         <code><em># Avoid loop, orig names</em></code></pre>
+</div>
+<p>Both the <code>__getattr__</code> and <code>__getattribute__</code> scripts work the same as the property and per-client-instance descriptor versions when run by both tester scripts—<em>four ways to achieve the same goal in Python</em>, though they vary in structure and are perhaps less redundant in some other roles:</p>
+<pre data-type="programlisting">$<code> <strong>python3 validate_tester.py validate_getattribute</strong></code>
+…<code><em>same output as properties, except class name</em></code>…
+
+$ <code><strong>python3 validate_tester_plus.py validate_getattribute</strong></code>
+…<code><em>same output as instance-state descriptors, except class name</em></code>…</pre>
+<p>Be sure to study and run this section’s code on <a contenteditable="false" data-type="indexterm" data-primary="attribute management" data-secondary="__getattribute__ method" data-tertiary="validation" data-secondary-sortas="getattribute method" data-startref="agttttvl" id="id4755"></a>your own for more pointers on managed-attribute coding techniques.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00049">
+<h1>Chapter Summary</h1>
+<p>This chapter covered the various techniques for managing access to attributes in Python, including the <code>__getattr__</code> and <code>__getattribute__</code> operator-overloading methods, and class properties and descriptors. Along the way, it compared and contrasted these tools and presented a handful of use cases to demonstrate their behavior.</p>
+<p><a data-type="xref" href="ch39.html#decorators">Chapter 39</a> continues our tool-building focus with a survey of <em>decorators</em>—code run automatically at function and class creation time rather than on attribute access. Before we continue, though, let’s work through a set of questions to review what we’ve covered here.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000197">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>How do <code>__getattr__</code> and <code>__getattribute__</code> differ?</p></li>
+<li><p>How do properties and descriptors differ?</p></li>
+<li><p>How are properties and decorators related?</p></li>
+<li><p>What are the main functional differences between <code>__getattr__</code> and <code>__getattribute__</code> and properties and descriptors?</p></li>
+</ol>
+<section data-type="sect2" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect2" id="test_your_knowledge_answers-id000196">
+<h2>Test Your Knowledge: Answers</h2>
+<ol>
+<li><p>The <code>__getattr__</code> method is run for explicit fetches of <em>undefined</em> attributes only (i.e., those not present on an instance and not inherited from any of its classes). By contrast, the <span class="keep-together"><code>__getattribute__</code></span> method is called for <em>every</em> explicit attribute fetch, whether the attribute is defined or not. Because of this, code inside a <code>__getattr__</code> can freely fetch other attributes if they are defined, whereas <code>__getattribute__</code> must use special code for all such attribute fetches to avoid looping or extra calls (it must route fetches to a superclass to skip itself). Neither method is run for <em>implicit</em> fetches of built-in operations (sans the next chapter’s heroics).</p></li>
+<li><p>Properties serve a specific role, whereas descriptors are more general. Properties define get, set, and delete functions for a specific attribute; descriptors provide a class with methods for these actions, too, but they provide extra flexibility to support more arbitrary actions. In fact, properties are really a simple way to create a specific kind of descriptor—one that runs functions on attribute accesses. Coding differs too: a property is created with a built-in function, and a descriptor is coded with a class; thus, descriptors can leverage all the usual OOP features of classes, such as inheritance. Moreover, in addition to the instance’s state information, descriptors have local state of their own, which can sometimes avoid name collisions in the instance.</p></li>
+<li><p>Properties can be coded with decorator syntax. Because the <code>property</code> built-in accepts a single function argument and returns a function, it can be used directly as a function decorator to define a fetch-access property. Due to the name rebinding behavior of decorators, the name of the decorated function is assigned to a property whose get accessor is set to the original function decorated (<code>name=property(name)</code>). Property <code>setter</code> and <code>deleter</code> attributes allow us to further add set and delete accessors with decoration syntax—they set the accessor to the decorated function and return the augmented property. Some may find this a bit clumsy, but this is subjective.</p></li>
+<li><p>The <code>__getattr__</code> and <code>__getattribute__</code> methods are more generic: they can be used to catch arbitrarily many attributes. In contrast, each property or descriptor provides access interception for only one <em>specific</em> attribute—we can’t catch every attribute fetch with a single property or descriptor. On the other hand, properties and descriptors handle both attribute fetch and <em>assignment</em> by design: <code>__getattr__</code> and <code>__getattribute__</code> handle fetches only; to intercept assignments as well, <code>__setattr__</code> must also be coded. The implementation is also different: <code>__getattr__</code> and <code>__getattribute__</code> are operator-overloading methods, whereas properties and descriptors are objects manually assigned to class attributes. Unlike the others, properties and descriptors can also sometimes avoid extra calls on assignment to unmanaged names and show up in <code>dir</code> results automatically, but are also narrower in scope—they can’t address generic delegation goals. In Python evolution, new features tend to offer alternatives but often do not fully subsume what came before.</p></li>
+</ol>
+</div></section>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>

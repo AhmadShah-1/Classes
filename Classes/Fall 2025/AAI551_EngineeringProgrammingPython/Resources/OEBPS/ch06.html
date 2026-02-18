@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 6. The Dynamic Typing Interlude"><div class="chapter" id="the_dynamic_typing_interlude">
+<h1><span class="label">Chapter 6. </span>The Dynamic Typing Interlude</h1>
+<p>In the prior chapter, we began exploring Python’s core object types in depth by studying Python numbers and their operations. We’ll resume our object type tour in the next chapter, but before we move on, it’s important that you get a handle on what may be the most fundamental idea in Python programming and is certainly the basis of much of both the conciseness and flexibility of the Python language: dynamic typing, and the polymorphism it implies.</p>
+<p>As you’ll see here and throughout this book, in Python, we do not need to declare the specific types of the objects our scripts use. In fact, most programs should not care about specific types—<em>on purpose</em>. By avoiding constraints this way, code naturally works in many contexts and often more than expected. Because dynamic typing is the root of this flexibility, and is also a potential stumbling block for newcomers, let’s take a brief side trip to explore the model here. At the end of the trip, we’ll also make a short stop at the paradox of type hinting, to learn why you should avoid it.</p>
+<section data-type="sect1" data-pdf-bookmark="The Case of the Missing Declaration Statements"><div class="sect1" id="the_case_of_the_missing_declaration_sta">
+<h1>The Case of the Missing Declaration Statements</h1>
+<p>If you have a background in statically typed languages like C, C++, or Java, you might find yourself a bit <a contenteditable="false" data-type="indexterm" data-primary="dynamic typing" data-secondary="declaration statements" id="id1870"></a><a contenteditable="false" data-type="indexterm" data-primary="declaration statements" id="id1871"></a>perplexed at this point in the book. So far, we’ve been using variables without declaring their existence or their types, and it somehow works. When we type <code>a = 3</code> in an interactive session or program file, for instance, how does Python know that <code>a</code> should stand for an integer? For that matter, how does Python know what <code>a</code> is at all?</p>
+<p>Once you start asking such questions, you’ve crossed over into the domain of Python’s <em>dynamic typing</em> model. In Python, types are determined automatically at runtime (“dynamically”), not in response to declarations added to code ahead of time (“statically”). This means that you never need to declare variables—a concept that may be simpler to grasp if you keep in mind that it all boils down to variables, objects, and the links between them, as the next section explains.</p>
+<section data-type="sect2" class="pagebreak-before" data-pdf-bookmark="Variables, Objects, and References"><div class="sect2" id="variablescomma_objectscomma_and_referen">
+<h2 class="less_space">Variables, Objects, and References</h2>
+<p>As you’ve seen in many of the examples used so far in this book, when you run an assignment statement such as <code>a = 3</code> in Python, it works even if you’ve never told Python <a contenteditable="false" data-type="indexterm" data-primary="dynamic typing " data-secondary="variables" id="dyypvrb"></a>to use the name <code>a</code> as a variable, or that <code>a</code> should stand for an integer-type object. In the Python language, this all pans out in a very natural way, as follows:</p>
+<dl>
+<dt>Variable creation</dt>
+<dd>A variable (also known in Python as a name), like <code>a</code>, is created when your <a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="creating" id="id1872"></a>code first assigns it a value. Future assignments change the value of the already created name. Technically, Python detects some names before your code runs (e.g., locals in functions), but you can think of it as though initial assignments make variables.</dd>
+<dt>Variable types</dt>
+<dd>A variable itself never has any type information or constraints associated with it. In Python, the notion <a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="types" id="id1873"></a>of type lives with objects, not names. Variables are generic in nature; they always simply refer to a particular object at a particular point in time.</dd>
+<dt>Variable use</dt>
+<dd>When a variable appears in an expression, it is immediately replaced with the object that it currently <a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="use" id="id1874"></a>refers to, whatever that may be. Further, all variables must be explicitly assigned before they can be used; referencing unassigned variables results in errors.</dd>
+</dl>
+<p>In sum, variables are created when assigned, can reference any type of object, and must be assigned before they are referenced. This means that you never need to declare names used by your script, but you must initialize names before you can update them; counters, for example, must be initialized to zero before you can add to them.</p>
+<p>This dynamic typing model is strikingly different from the typing model of traditional languages. When you are first starting out, the model is usually easier to understand if you keep clear the distinction between names and objects. For example, when we say this to assign a variable a value in a Python REPL or script:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a = 3</strong></code>                <code><em># Assign a name to an object</em></code></pre>
+<p>at least conceptually, Python will perform three distinct steps to carry out the request. These steps reflect the operation of all assignments in the Python language:</p>
+<ol>
+<li><p>Create an object to represent the value <code>3</code>.</p></li>
+<li><p>Create the variable <code>a</code>, if it does not yet exist.</p></li>
+<li><p>Link the variable <code>a</code> to the new object <code>3</code>.</p></li>
+</ol>
+<p>The net result will be a structure inside Python that resembles <a data-type="xref" href="#names_left_parenthesisadotkdotadot_vari">Figure 6-1</a>. As sketched, variables and objects are stored in different parts of memory and are associated by links (the link is shown as a pointer in the figure). Variables always link to objects and never to other variables, but larger objects may link to other objects (for instance, a list object has links to the objects it contains).</p>
+<figure><div id="names_left_parenthesisadotkdotadot_vari" class="figure">
+<img src="assets/lpy6_0601.png" alt="" width="726" height="313"/>
+<h6><span class="label">Figure 6-1. </span>Names (a.k.a. variables) and objects after running the assignment <code><em>a = 3</em></code> </h6>
+</div></figure>
+<p>These links from variables <a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="references" id="id1875"></a><a contenteditable="false" data-type="indexterm" data-primary="references" data-secondary="variables" id="id1876"></a>to objects are called <em>references</em> in Python—a kind of association, implemented as an object’s address in memory. Whenever variables are later used (i.e., referenced), Python automatically follows the variable-to-object links. This is all simpler than the terminology may imply. In concrete terms:</p>
+<ul>
+<li><p><em>Variables</em> are named entries in a system table, with spaces for links to objects.</p></li>
+<li><p><em>Objects</em> are pieces of <a contenteditable="false" data-type="indexterm" data-primary="objects" id="id1877"></a>allocated memory, with enough space to represent the values for which they stand.</p></li>
+<li><p><em>References</em> are automatically followed pointers from variables to objects.</p></li>
+</ul>
+<p>At least conceptually, each time you generate a new value in your script by running an expression, Python creates a new <em>object</em> (i.e., a chunk of memory) to represent that value. As <a contenteditable="false" data-type="indexterm" data-primary="dynamic typing" data-secondary="objects" id="id1878"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="dynamic typing" id="id1879"></a>an optimization, Python internally caches and reuses certain kinds of unchangeable objects, such as small integers and strings (each <code>0</code> is not really a new piece of memory—more on this caching behavior later). But from a logical perspective, it works as though each expression’s result value is a distinct object and each object is a distinct piece of memory.</p>
+<p>Technically speaking, objects have more structure than just enough space to represent their values. Each object also has two standard header fields: a <em>type designator</em> used to mark the type of the object, and a <em>reference counter</em> used to determine when it’s OK to reclaim the object. To understand how these two header fields factor into the model, we need to move on.</p>
+<aside data-type="sidebar" epub:type="sidebar"><div class="sidebar" id="python_references_for_c_programmers">
+<h1>Python References for C Programmers</h1>
+<p>Readers with a background in C may find Python references similar to C <em>pointers</em> (i.e., memory addresses). In fact, references are implemented as pointers by CPython internally, and <a contenteditable="false" data-type="indexterm" data-primary="pointers" id="id1880"></a>they often serve the same roles, especially with objects that can be changed in place (more on this later).</p>
+<p>Because references are always automatically dereferenced when used, though, you can never actually <em>do</em> anything useful with a reference itself. As noted ahead, the referenced object’s address may be returned by the <code>id</code> built-in as a unique ID, but even this isn’t guaranteed: see Python’s <span class="keep-together">manuals</span>.</p>
+<p>This lack of pointers avoids an entire category of notorious C bugs. But you can think of Python references as C “void*” pointers that are automatically followed when used, without <a contenteditable="false" data-type="indexterm" data-primary="dynamic typing " data-secondary="variables" data-startref="dyypvrb" id="id1881"></a>going too far off base.</p>
+</div></aside>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Types Live with Objects, Not Variables"><div class="sect2" id="types_live_with_objectscomma_not_variab">
+<h2>Types Live with Objects, Not Variables</h2>
+<p>To see how object types come <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="types" id="id1882"></a><a contenteditable="false" data-type="indexterm" data-primary="types" data-secondary="object types" id="id1883"></a>into play, watch what happens if we assign a variable multiple times:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a = 3</strong> <em>             # It's an integer</em></code>
+&gt;&gt;&gt; <code><strong>a = 'hack'</strong></code>         <code><em># Now it's a string
+</em></code>&gt;&gt;&gt; <code><strong>a = 1.23</strong> <em>          # Now it's a floating point</em></code></pre>
+<p>This isn’t typical Python code, but it does work—<code>a</code> starts out as an integer, then becomes a string, and finally becomes a floating-point number. This example tends to look especially odd to ex-C programmers, as it appears as though the <em>type</em> of <code>a</code> changes from integer to string when we say <code>a = 'hack'</code>.</p>
+<p>However, that’s not really what’s happening. In Python, things work more simply. <em>Names</em> have no types; as stated earlier, types live with objects, not names. In the preceding listing, we’ve simply changed <code>a</code> to reference different objects. Because variables have no type, we haven’t actually changed the type of the variable <code>a</code>; we’ve simply made the variable reference a different type of object. In fact, again, all we can ever say about a variable in Python is that it references a particular object at a particular point in time.</p>
+<p><em>Objects</em>, on the other hand, know what type they are—each object contains a header field that tags the object with its type. The integer object <code>3</code>, for example, will contain the value <code>3</code>, plus a designator that tells Python that the object is an integer (strictly speaking, a pointer to an object called <code>int</code>, the name of the integer type). The type designator of the <code>'hack'</code> string object points to the string type (called <code>str</code>) instead, and 1.23 points to <code>float</code>. Because objects know their types, variables don’t have to.</p>
+<p>To recap, types are associated with objects in Python, not with variables. In typical code, a given variable usually will reference just one kind of object. Because this isn’t a requirement, though, you’ll find that Python code tends to be much more flexible than you may be accustomed to—if you use Python well, your code might work on many types automatically.</p>
+<p>As mentioned, objects have two header fields, a type designator and a reference counter. To understand the latter of these, we need to move on and take a brief look at what happens at the end of an object’s life.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Objects Are Garbage-Collected"><div class="sect2" id="objects_are_garbage_collected">
+<h2>Objects Are Garbage-Collected</h2>
+<p>In the prior section’s listings, we assigned <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="garbage collection and" id="objggc"></a><a contenteditable="false" data-type="indexterm" data-primary="garbage collection" data-secondary="objects" id="bfbcgj"></a>the variable <code>a</code> to different types of objects in each assignment. But when we reassign a variable, what happens to the value it was previously referencing? For example, after the following statements, what happens to the object <code>3</code>?</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a = 3</strong></code>
+&gt;&gt;&gt; <code><strong>a = 'text'</strong></code></pre>
+<p>The answer is that in Python, whenever a name is assigned to a new object, the space held by the prior object is reclaimed if it is not referenced by any other name or object. This automatic reclamation of objects’ space is known as <em>garbage collection</em> and makes life much simpler for programmers of languages like Python that support it.</p>
+<p>To illustrate, consider the following example, which sets the name <code>x</code> to a different object on each <span class="keep-together">assignment</span>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x = 99</strong></code>
+&gt;&gt;&gt; <code><strong>x = 'Python'</strong></code>               <code><em># Reclaim 99 now (unless referenced elsewhere)</em></code>
+&gt;&gt;&gt; <code><strong>x = 3.1415</strong></code>                 <code><em># Reclaim 'Python' now (ditto)</em></code>
+&gt;&gt;&gt; <code><strong>x = [1, 2, 3]</strong> <em>             # Reclaim 3.1415 now (ditto)</em></code></pre>
+<p>First, notice that <code>x</code> is set to a different type of object each time. Again, the effect is as though the type of <code>x</code> is changing over time, but this is not really the case. Remember, in Python types live with objects, not names. Because names are just generic references to objects, this sort of code works naturally.</p>
+<p>Second, notice that references to objects are discarded along the way. Each time <code>x</code> is assigned to a new object, Python reclaims the prior object’s space. For instance, when it is assigned the string <code>'Python'</code>, the object <code>99</code> is immediately reclaimed (assuming it is not referenced anywhere else)—that is, the object’s space is automatically thrown back into the free space pool, to be reused for a future object.</p>
+<p>Internally, Python accomplishes this feat by keeping a counter in every object that keeps track of the number of references currently pointing to that object. As soon as—and exactly when—this counter drops to zero, the object’s memory space is automatically reclaimed. In the preceding listing, we’re assuming that each time <code>x</code> is assigned to a new object, the prior object’s reference counter drops to zero, causing it to be reclaimed.</p>
+<p>The most immediately tangible benefit of garbage collection is that it means you can use objects liberally without ever needing to allocate or free up space in your script. Python will make objects clean up their unused space for you as your program runs. In practice, this eliminates <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="garbage collection and" data-startref="objggc" id="id1884"></a><a contenteditable="false" data-type="indexterm" data-primary="garbage collection" data-secondary="objects" data-startref="bfbcgj" id="id1885"></a>a substantial amount of bookkeeping code required in lower-level languages such as C and C++.</p>
+<aside data-type="sidebar" epub:type="sidebar"><div class="sidebar" id="more_on_python_garbage_collection">
+<h1>More on Python Garbage Collection</h1>
+<p>Technically speaking, Python’s garbage collection is based mainly upon reference counters, as described here, but it also has a component that detects and reclaims objects with <em>cyclic references</em> in time. This component can be disabled if you’re sure that your code doesn’t create cycles, but it is enabled by default. Both references and this optional component do garbage collection, but the latter may be what users of some other languages lacking reference counts think of as “garbage <span class="keep-together">collection</span>.”</p>
+<p>Circular references are a classic <a contenteditable="false" data-type="indexterm" data-primary="garbage collection" data-secondary="circular references" id="id1886"></a><a contenteditable="false" data-type="indexterm" data-primary="circular references, garbage collection" id="id1887"></a>issue in reference-count garbage collectors. Because references are implemented as pointers, it’s possible for an object to reference itself, or reference another object that does. For example, exercise 6 in <a data-type="xref" href="ch03.html#test_your_knowledge_part_i_exercises">“Test Your Knowledge: Part I Exercises”</a> and its solution in <a data-type="xref" href="app02.html#appendix_b_solutions_to_end_of_part_exe">Appendix B</a> show how to create a cycle easily by embedding a reference to a list within itself (e.g., <code>L.append(L)</code>). The same phenomenon can occur for assignments to attributes of objects created from user-defined classes. Though relatively rare, because the reference counts for such objects never drop to zero, they must be treated specially.</p>
+<p>For more details on Python’s cycle detector and collector, see the documentation for the <code>gc</code> module in Python’s library manual. The best takeaway here is that garbage-collection-based memory management is implemented for you in Python, by people highly skilled at the task; it works well, even for cycles.</p>
+<p>Also note that this chapter’s description of Python’s garbage collector is not part of the language’s definition and applies to the standard implementation of Python (a.k.a. <em>CPython</em>) only. <a data-type="xref" href="ch02.html#how_python_runs_programs">Chapter 2</a>’s alternative implementations such as <em>Jython</em>, <em>IronPython</em>, and <em>PyPy</em> may use different schemes, though the net effect in all is similar—unused space is reclaimed for you automatically, if not always as immediately.</p>
+</div></aside>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Shared References"><div class="sect1" id="shared_references">
+<h1>Shared References</h1>
+<p>So far, we’ve explored what happens as a single variable is assigned references to objects. Now let’s introduce <a contenteditable="false" data-type="indexterm" data-primary="shared references" id="id1888"></a><a contenteditable="false" data-type="indexterm" data-primary="references" data-secondary="shared" id="id1889"></a>another variable into our interaction and watch what happens to its names and objects:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a = 3</strong></code>
+&gt;&gt;&gt; <code><strong>b = a</strong></code></pre>
+<p>Typing these two statements generates the scene captured in <a data-type="xref" href="#names_and_objects_after_next_running_th">Figure 6-2</a>. The second command causes Python to create the variable <code>b</code>; the variable <code>a</code> is being used and not assigned here, so it is replaced with the object it references (<code>3</code>), and <code>b</code> is made to reference that object. The net effect is that the variables <code>a</code> and <code>b</code> wind up referencing the <em>same object</em>—that is, pointing to the same chunk of memory.</p>
+<figure><div id="names_and_objects_after_next_running_th" class="figure">
+<img src="assets/lpy6_0602.png" alt="" width="970" height="526"/>
+<h6><span class="label">Figure 6-2. </span>Names and objects after next running the assignment <code>b = a</code></h6>
+</div></figure>
+<p>This scenario in Python—with multiple names referencing the same object—is usually called a <em>shared reference</em> (and sometimes and perhaps more accurately, <em>shared object</em>). Note <a contenteditable="false" data-type="indexterm" data-primary="shared objects" id="id1890"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="shared objects" id="id1891"></a>that the names <code>a</code> and <code>b</code> are not linked to each other directly when this happens; in fact, there is no way to ever link a variable to another variable in Python. Rather, both variables point to the same object via their references.</p>
+<p>Next, suppose we extend the session with one more statement:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a = 3</strong></code>
+&gt;&gt;&gt; <code><strong>b = a</strong></code>
+&gt;&gt;&gt; <code><strong>a = 'hack'</strong></code></pre>
+<p>As with all Python assignments, this statement simply makes a new object to represent the string value <code>'hack'</code> and sets <code>a</code> to reference this new object. It does not, however, change the value of <code>b</code>; <code>b</code> still references the original object, the integer <code>3</code>. The resulting reference structure is shown in <a data-type="xref" href="#names_and_objects_after_finally_running">Figure 6-3</a>.</p>
+<figure><div id="names_and_objects_after_finally_running" class="figure">
+<img src="assets/lpy6_0603.png" alt="" width="968" height="524"/>
+<h6><span class="label">Figure 6-3. </span>Names and objects after finally running the assignment <code>a = 'hack'</code></h6>
+</div></figure>
+<p>The same sort of thing would happen if we changed <code>b</code> to <code>'hack'</code> instead—the assignment would change only <code>b</code>, not <code>a</code>. This behavior also occurs if there are no type differences at all. For example, consider these three statements:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a = 3</strong></code>
+&gt;&gt;&gt; <code><strong>b = a</strong></code>
+&gt;&gt;&gt; <code><strong>a = a + 2</strong></code></pre>
+<p>In this sequence, the same events transpire. Python makes the variable <code>a</code> reference the object <code>3</code> and makes <code>b</code> reference the same object as <code>a</code>, as in <a data-type="xref" href="#names_and_objects_after_next_running_th">Figure 6-2</a>; as before, the last assignment then sets <code>a</code> to a completely different object (in this case, the integer <code>5</code>, which is the result of the <code>+</code> expression). It does not change <code>b</code> as a side effect. In fact, there is no way to <em>ever</em> overwrite the value of the object <code>3</code>—as introduced in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>, integers are <em>immutable</em> and thus can never be changed in place (see why this stuff matters?). All we can ever do is make a new integer object.</p>
+<p>One way to think of this is that, unlike in some languages, variables in Python are always pointers to objects, not labels of changeable memory areas: setting a variable to a new value does not alter the original object, but rather causes the variable to reference an entirely different object. The net effect is that assignment to a variable itself can impact only the single variable being assigned. When mutable objects and in-place changes enter the equation, though, the picture changes somewhat; to see how, let’s <span class="keep-together">move on</span>.</p>
+<section data-type="sect2" data-pdf-bookmark="Shared References and In-Place Changes"><div class="sect2" id="shared_references_and_in_place_changes">
+<h2>Shared References and In-Place Changes</h2>
+<p>As you’ll learn more in this part’s upcoming <a contenteditable="false" data-type="indexterm" data-primary="shared references" data-secondary="in-place changes" id="srfplc"></a><a contenteditable="false" data-type="indexterm" data-primary="in-place changes" id="iplchg"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="in-place changes" id="ojbplc"></a><a contenteditable="false" data-type="indexterm" data-primary="references" data-secondary="shared" data-tertiary="in-place changes" id="rfsrfpc"></a>chapters, some operations do change objects <em>in place</em>, but they’re only supported by Python’s <em>mutable</em> types—including lists, dictionaries, and sets. For instance, an assignment to an offset in a list actually changes the list object itself in place, rather than generating a brand-new list object.</p>
+<p>Though you must take it somewhat on faith at this point in the book, this distinction can matter much in your programs. For objects that support such in-place changes, you need to be more aware of shared references, since a change from one name may impact others. Otherwise, your objects may seem to change for no apparent reason. Given that all assignments are based on references (including function argument passing), it’s a pervasive phenomenon.</p>
+<p>To illustrate, let’s take another look at the list objects introduced in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>. Recall that lists, which do support in-place assignments to positions, are simply collections of other objects, coded in square brackets:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L1 = [2, 3, 4]</strong></code>
+&gt;&gt;&gt; <code><strong>L2 = L1</strong></code></pre>
+<p><code>L1</code> here is a list containing the objects <code>2</code>, <code>3</code>, and <code>4</code>. Items inside a list are accessed by their positional offsets, so <code>L1[0]</code> refers to object <code>2</code>, the first item in the list <code>L1</code>. Of course, lists are also objects in their own right, just like integers and strings. After running the two prior assignments, <code>L1</code> and <code>L2</code> reference the same shared object, just like <code>a</code> and <code>b</code> in the prior example (see <a data-type="xref" href="#names_and_objects_after_next_running_th">Figure 6-2</a>). Now imagine that, as before, we extend this interaction to say the following:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L1 = 24</strong></code></pre>
+<p>This assignment simply sets <code>L1</code> to a different object; <code>L2</code> still references the original list much as in the preceding section. If we change this statement’s syntax slightly, however, it changes its effect radically:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L1 = [2, 3, 4]</strong></code>         <code><em># A mutable object</em></code>
+&gt;&gt;&gt; <code><strong>L2 = L1</strong></code>                <code><em># Make a reference to the same object</em></code>
+&gt;&gt;&gt; <code><strong>L1[0] = 24</strong>   </code>          <code><em># An in-place change</em></code>
+
+&gt;&gt;&gt; <code><strong>L1</strong> </code>                    <code><em># L1 is different</em></code>
+[24, 3, 4]
+&gt;&gt;&gt; <code><strong>L2</strong> </code>                    <code><em># But so is L2!</em></code>
+[24, 3, 4]</pre>
+<p>Really, we haven’t changed <code>L1</code> itself at line three here; we’ve changed a component of the <em>object</em> that <code>L1</code> references. This sort of change overwrites part of the list object’s value in place. Because the list object is shared by (referenced from) other variables, though, an in-place change like this doesn’t affect only <code>L1</code>—that is, you must be aware that when you make such changes, they can impact other parts of your program. In this example, the effect shows up in <code>L2</code> as well because it references the same object as <code>L1</code>. Again, we haven’t actually changed <code>L2</code>, either, but its value will appear different because it refers to an object that has been overwritten in place.</p>
+<p>This behavior <a contenteditable="false" data-type="indexterm" data-primary="mutability" data-secondary="in-place changes" id="id1892"></a>occurs only for mutable objects that support in-place changes and is usually what you want, but you should be aware of how it works so that it’s expected. It’s also just the default: if you don’t want such behavior, you can request that Python <em>copy</em> objects instead <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="copying" id="id1893"></a>of making references. There are a variety of ways to copy a list, including using the built-in <code>list</code> function, the list <code>copy</code> method, and the standard-library <code>copy</code> module. Perhaps the most common way is to slice from start to finish (see Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch04.html#introducing_python_objects">4</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch07.html#string_fundamentals">7</a> for more on slicing):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L1 = [2, 3, 4]</strong></code>
+&gt;&gt;&gt; <code><strong>L2 = L1[:]</strong></code>             <code><em># Make a copy of L1 (or list(L1), L1.copy(), etc.)</em></code>
+&gt;&gt;&gt; <code><strong>L1[0] = 24</strong></code>
+
+&gt;&gt;&gt; <code><strong>L1</strong></code>
+[24, 3, 4]
+&gt;&gt;&gt; <code><strong>L2</strong></code>                     <code><em># L2 is not changed this time: different objects</em></code>
+[2, 3, 4]</pre>
+<p>Here, the change made through <code>L1</code> is not reflected in <code>L2</code> because <code>L2</code> references a copy of the object <code>L1</code> references, not the original; that is, the two variables point to different objects and different pieces of memory.</p>
+<p>Note that this slicing technique won’t work on the other major mutable core types, dictionaries and sets, because they are not sequences—to copy a dictionary or set, instead use their <code><em>X</em>.copy()</code> method call (lists have one too), or pass the original object to their type names, <code>dict</code> and <code>set</code>. Also, note that the standard-library <code>copy</code> module has a call for copying any object type generically, as well as a call for copying nested object structures—a dictionary with nested lists, for example:</p>
+<pre data-type="programlisting">import copy
+X = copy.copy(Y)          <code><em># Make top-level "shallow" copy of any object Y
+</em></code>X = copy.deepcopy(Y)      <code><em># Make deep copy of any object Y: copy all nested parts</em></code></pre>
+<p>We’ll explore lists and dictionaries in more depth, and revisit the concept of shared references and copies, in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch08.html#lists_and_dictionaries">8</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch09.html#tuplescomma_filescomma_and_everything_e">9</a>. For now, keep in mind that objects that can be changed in place—that is, mutable objects—are always open to these kinds of effects in any code they pass through. In Python, this includes lists, dictionaries, sets, and some objects defined with <code>class</code> statements. If <a contenteditable="false" data-type="indexterm" data-primary="shared references" data-secondary="in-place changes" data-startref="srfplc" id="id1894"></a><a contenteditable="false" data-type="indexterm" data-primary="in-place changes" data-startref="iplchg" id="id1895"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="in-place changes" data-startref="ojbplc" id="id1896"></a><a contenteditable="false" data-type="indexterm" data-primary="references" data-secondary="shared" data-tertiary="in-place changes" data-startref="rfsrfpc" id="id1897"></a>this is not desired behavior, simply copy your objects as needed.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Shared References and Equality"><div class="sect2" id="shared_references_and_equality">
+<h2>Shared References and Equality</h2>
+<p>In the interest of full disclosure, it’s worth <a contenteditable="false" data-type="indexterm" data-primary="shared references" data-secondary="equality" id="shrfrql"></a><a contenteditable="false" data-type="indexterm" data-primary="references" data-secondary="shared" data-tertiary="equality" id="rfsrfql"></a>pointing out that the garbage-collection behavior described earlier in this chapter may be more conceptual than literal for certain types. Consider these statements:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x = 99</strong></code>
+&gt;&gt;&gt; <code><strong>x = 'Python'</strong></code>          <code><em># Reclaim 99 now?</em></code></pre>
+<p>Because Python caches and reuses small integers and small strings, as mentioned earlier, the object <code>99</code> here is probably not literally reclaimed; instead, it will likely remain in a system table to be reused the next time you generate a <code>99</code> in your code. Most kinds of objects, though, are reclaimed immediately when they are no longer referenced; for those that are not, the caching mechanism is irrelevant to your code—unless you use atypical tools.</p>
+<p>For instance, because of Python’s reference model, there are two different ways to check for <em>equality</em> in a Python program. Let’s create a shared reference to demonstrate:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2, 3]</strong></code>
+&gt;&gt;&gt; <code><strong>M = L</strong></code>                 <code><em># Make M and L reference the same object
+</em></code>&gt;&gt;&gt; <code><strong>L == M</strong></code>                <code><em># Same values
+</em></code>True
+&gt;&gt;&gt; <code><strong>L is M</strong></code>                <code><em># Same objects
+</em></code>True</pre>
+<p>The first technique here, the <code>==</code> operator, tests whether the two referenced objects have the same <em>values</em>; this is the method almost always used for equality checks in Python. The second method, the <code>is</code> operator, instead tests for object <em>identity</em>—it returns <code>True</code> only if both names point to the exact same object, so it is a much stronger form of equality testing and is rarely applied in most programs (except for single-instance objects like <code>None</code>, <code>True</code>, and <code>False</code>, as in the prior chapter).</p>
+<p>Really, <code>is</code> simply compares the pointers that implement references, and it serves as a way to detect shared references in your code if needed. It returns <code>False</code> if the names point to equivalent but different objects, as is the case when we run two different literal expressions:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2, 3]</strong></code>
+&gt;&gt;&gt; <code><strong>M = [1, 2, 3]</strong></code>         <code><em># Make M and L reference different objects</em></code>
+&gt;&gt;&gt; <code><strong>L == M</strong> </code>               <code><em># Same values</em></code>
+True
+&gt;&gt;&gt; <code><strong>L is M</strong> </code>               <code><em># Different objects</em></code>
+False</pre>
+<p>But now watch what happens when we perform the same operations on an immutable object like an integer:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>X = 99</strong></code>
+&gt;&gt;&gt; <code><strong>Y = 99</strong></code>                <code><em># Should be two different objects</em></code>
+&gt;&gt;&gt; <code><strong>X == Y</strong></code>
+True
+&gt;&gt;&gt; <code><strong>X is Y</strong></code>                <code><em># Same object anyhow: caching at work!
+</em></code>True</pre>
+<p>In this interaction, <code>X</code> and <code>Y</code> should be <code>==</code> (same value), but not <code>is</code> (same object) because we ran two different literal expressions (<code>99</code>). Because some integers and strings are cached and reused, though, <code>is</code> tells us they reference the same single object.</p>
+<p>If you really want to look under the hood, the <code>id</code> built-in is another way to check object identities (and may or may not return an object’s address in memory); and the <code>getrefcount</code> function in the standard <code>sys</code> module returns the passed object’s reference count. As of Python 3.12, however, the latter is not as interesting as it once was, because it returns a very high count for objects considered to be immortal—which in Python just means cached for reuse:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import sys</strong></code>
+&gt;&gt;&gt; <code><strong>sys.getrefcount(99)</strong></code>            <code><em># 99 is immortal (cached)</em></code>
+4294967295
+&gt;&gt;&gt; <code><strong>sys.getrefcount(2 ** 1000)</strong></code>     <code><em># But this is not</em></code>
+1
+&gt;&gt;&gt; <code><strong>id(99) == id(99)</strong></code>               <code><em># Same ID/same object (address?)</em></code>
+True</pre>
+<p>This object caching and reuse is irrelevant to your code (unless you run the <code>is</code> check!). Because you cannot change <em>immutable</em> numbers or strings in place, it doesn’t matter how many references there are to the same object—every reference will always see the same, unchanging value even if they all reference the same cached object. Still, this behavior reflects one of the many ways Python optimizes <a contenteditable="false" data-type="indexterm" data-primary="shared references" data-secondary="equality" data-startref="shrfrql" id="id1898"></a><a contenteditable="false" data-type="indexterm" data-primary="references" data-secondary="shared" data-tertiary="equality" data-startref="rfsrfql" id="id1899"></a>its model for execution speed.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Dynamic Typing Is Everywhere"><div class="sect1" id="dynamic_typing_is_everywhere">
+<h1>Dynamic Typing Is Everywhere</h1>
+<p>Of course, you don’t really need to draw name/object diagrams with circles and arrows to use Python. When you’re starting out, though, it sometimes helps you understand unusual cases if you can trace their reference structures as we’ve done here. If a mutable object changes out from under you when passed around your program, for example, chances are you are witnessing some of this chapter’s subject matter firsthand.</p>
+<p>Moreover, even if dynamic typing seems a little abstract at this point, you probably will care about it eventually. Because <em>everything</em> seems to work by assignment and references in Python, a basic understanding of this model is useful in many different contexts. As you’ll see, it works the same in assignment statements, function arguments, <code>for</code> loop variables, module imports, class attributes, and more. The good news is that there is just <em>one</em> assignment model in Python; once you get a handle on dynamic typing, you’ll find that it works the same everywhere in the language.</p>
+<p>At the most practical level, dynamic typing means there is less code for you to write. Just as importantly, though, dynamic <a contenteditable="false" data-type="indexterm" data-primary="dynamic typing" data-secondary="polymorphism and" id="id1900"></a><a contenteditable="false" data-type="indexterm" data-primary="polymorphism" data-secondary="dynamic typing" id="id1901"></a>typing is also the root of Python’s <em>polymorphism</em>, a concept introduced in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a> that we’ll revisit again later in this book. Because we do not constrain types in Python code, it is both concise and highly flexible. As you’ll see, when used well, dynamic typing—and the polymorphism it implies—produces code that automatically adapts to new requirements as your systems evolve.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Type Hinting: Optional, Unused, and Why?"><div class="sect1" id="type_hinting_optionalcomma_unusedcomma">
+<h1>Type Hinting: Optional, Unused, and Why?</h1>
+<p>Finally, an implausible plot twist. If you’ve read Python code written in recent years, you may have stumbled across <a contenteditable="false" data-type="indexterm" data-primary="type hinting" id="typhintg"></a>some type declarations for variable names that look like the following—and seem curious and out of place for a dynamically typed language like Python, and at first glance contradictory to some of this chapter’s claims:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a: int</strong></code>
+&gt;&gt;&gt; <code><strong>b: int = 0</strong></code>
+&gt;&gt;&gt; <code><strong>c: list[int] = [1, 2, 3]</strong></code></pre>
+<p>As previewed in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>, this is known as <em>type hinting</em>. Syntactically, it takes the form of a colon and object type, between a variable and an optional assignment. The object type can be a name or an expression to denote collections (<code>list[int]</code> means a list of integers) and can use names predefined in the standard-library <code>typing</code> module (e.g., <code>Iterable</code>, <code>Union</code>, and <code>Any</code>) to express richer types per elaborate theory. As of Python 3.12, a new <code>type</code> statement can even define type aliases to use in hints, though simple assignments that predated it can too:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>type Data = list[float]</strong></code>
+&gt;&gt;&gt; <code><strong>Data = list[float]</strong></code></pre>
+<p>As also noted in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>, though, type hints are optional, unused, and largely <em>academic</em>. Python does not require them and does not use them in any way and has no intentions of ever doing so. They are meant solely for use in third-party <em>tools</em> like type checkers, and as a form of <em>documentation</em> that’s an alternative to code comments. You can say the same things more simply in both <code>#</code> comments and documentation strings you’ll meet later.</p>
+<p>Even when used, type hints do not constrain your code’s types in any way. The preceding type hint for <code>a</code>, for instance, does not create name <code>a</code> (only assignment does), and <code>b</code>’s and <code>c</code>’s hints are not enforced in the least:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a</strong></code>
+NameError: name 'a' is not defined
+&gt;&gt;&gt; <code><strong>b = 'hack'</strong></code>
+&gt;&gt;&gt; <code><strong>c = 'code'</strong></code>
+&gt;&gt;&gt; <code><strong>b, c</strong></code>
+('hack', 'code')</pre>
+<p>Type hints can also appear in definitions <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="type hints" id="id1902"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="annotations" id="id1903"></a>of functions (and class methods) to document types of parameters and results, commandeering an earlier feature known as function <em>annotations</em>. We haven’t covered these yet, but as a preview, the following function hints that it accepts an integer and list of strings and returns a float—extraneous info that shows up in <code>__annotations__</code> dictionaries of hosting objects:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def func(a: int, b: list[str]) -&gt; float:</strong></code>
+        <code><strong>return 'anything' + a + b</strong></code></pre>
+<p>Yet as for simple variables, these hints are fully unused, and anything goes when this function is actually run. Strings, for example, work fine for both inputs and outputs, despite the seemingly rigid hints:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>func('You', 'Want')</strong></code>
+'anythingYouWant'</pre>
+<p>That is, type hinting is a conceptually heavy tool adopted by Python but <em>completely unused by Python</em>. It’s at best just another form of documentation in Python itself, albeit one that comes with complex rules. External tools might use type hints to check for type mismatches (e.g., <em>mypy</em>) or boost performance, but such tools are also optional, uncommon, and wholly separate from the Python language. Furthermore, programs require runtime testing in any language, and optimized Pythons introduced in <a data-type="xref" href="ch02.html#how_python_runs_programs">Chapter 2</a> do not use type hints today, and in some cases cannot (see <em>PyPy</em>).</p>
+<p>More to the point, though, type hinting is also <em>completely at odds</em> with Python’s core notion of dynamic typing. Type declarations in a dynamically typed language are a pointless paradox that negates much of Python’s value proposition. Teaching this bizarre extension to Python learners would be a disservice to both Python and learners.</p>
+<p>Hence, this book recommends that beginners avoid type hinting at least until they are comfortable with Python’s dynamic-typing paradigm. This book also won’t be covering it further, because it’s far too much extra heft sans benefit for newcomers struggling to master Python’s already sizable fundamentals. If and when you opt to delve into this inane yet convoluted corner of Python, consult its docs for more information.</p>
+<p>In the end—and despite what you may see in Python code written by programmers coming from other languages—type hinting does not mean that Python is statically typed. Python still uses only dynamic typing, and hopefully always will. After all, this is the root of most of its advantages over other tools. Let’s hope that Python developers of <a contenteditable="false" data-type="indexterm" data-primary="type hinting" data-startref="typhintg" id="id1904"></a>the future learn this well before bloating or breaking a tool used and beloved by millions.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00016">
+<h1>Chapter Summary</h1>
+<p>This chapter took a deeper look at Python’s dynamic typing model—that is, the way that Python keeps track of object types for us automatically, rather than requiring us to code declaration statements in our scripts.</p>
+<p>Along the way, we learned how variables and objects are associated by references in Python that enable type flexibility. We also explored the topic of garbage collection, learned how shared references to mutable objects can affect multiple variables, and saw how references impact the notion of equality in Python. Lastly, we briefly glimpsed type hinting—a subdomain that weirdly adds unused type declarations to a dynamically typed language.</p>
+<p>Because there is just one assignment model in Python, and because assignment pops up everywhere in the language, it’s important that you have a handle on the model before moving on. The following quiz should help you review some of this chapter’s ideas. After that, we’ll resume our core object tour in the next chapter, with strings.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000134">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>Consider the following three statements. Do they change the value printed for <code>A</code>?</p>
+<pre data-type="programlisting">A = 'code'
+B = A
+B = 'Python'</pre></li>
+<li><p>Consider these three statements. Do they change the printed value of <code>A</code>?</p>
+<pre data-type="programlisting">A = ['code']
+B = A
+B[0] = 'Python'</pre></li>
+<li class="pagebreak-before"><p>How about these—is <code>A</code> changed now?</p>
+<pre data-type="programlisting">A = ['code']
+B = A[:]
+B[0] = 'Python'</pre></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000133">
+<h1>Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>No: <code>A</code> still prints as <code>'code'</code>. When <code>B</code> is assigned to the string <code>'Python'</code>, all that happens is that the variable <code>B</code> is reset to point to the new string object. <code>A</code> and <code>B</code> initially share (i.e., reference/point to) the same single string object <code>'code'</code>, but two names are never linked together in Python. Thus, setting <code>B</code> to a different object has no effect on <code>A</code>. The same would be true if the last statement here were <code>B = B + 'coding'</code>, by the way—the concatenation would make a new object for its result, which would then be assigned to <code>B</code> only. We can never overwrite a string (or number, or tuple) in place, because strings are immutable.</p></li>
+<li><p>Yes: <code>A</code> now prints as <code>['Python']</code>. Technically, we haven’t really changed either <code>A</code> or <code>B</code>; instead, we’ve changed part of the object they both reference (point to) by overwriting that object in place through the variable <code>B</code>. Because <code>A</code> references the same object as <code>B</code>, the update is reflected in <code>A</code>, too.</p></li>
+<li><p>No: <code>A</code> still prints as <code>['code']</code>. The in-place assignment through <code>B</code> has no effect this time because the slice expression made a copy of the list object before it was assigned to <code>B</code>. After the second assignment statement, there are two different list objects that have the same value—in Python, we say they are <code>==</code>, but not <code>is</code>. The third statement changes the value of the list object pointed to by <code>B</code>, but not that pointed to by <code>A</code>.</p></li>
+</ol>
+<aside data-type="sidebar" epub:type="sidebar"><div class="sidebar" id="when_references_are_quotation_markweakq">
+<h1>When References Are “Weak”</h1>
+<p>You may occasionally see the term “weak reference” in the Python world. No, this term isn’t a judgment about inferiority. It refers to a somewhat obscure and advanced tool, which is related to the reference model we’ve explored here, and like the <code>is</code> operator, can’t really be understood without it.</p>
+<p>In short, a <em>weak reference</em>, implemented by the <code>weakref</code> standard-library module, is a reference to an object that does not by itself prevent the referenced object from being garbage-collected. If the last remaining references to an object are all weak references, the object can be reclaimed. When this happens, the weak references to it will be notified that the object no longer exists and can respond as needed.</p>
+<p>As an example of its utility, this can be useful in nonessential <em>caches</em> of large objects primarily used elsewhere. If such a cache uses normal references, the cache’s references alone would keep the objects in memory indefinitely. By using weak references, the object’s space may be reclaimed when it’s no longer needed for its primary role, and the cache will be notified of its demise, either on next fetch or by callback.</p>
+<p>Not all object types can be weakly referenced, though support can be added for some with OOP techniques we won’t explore till later in this book. Still, this is really just a special-case extension to the reference model we met here. For more details on weak references, see Python’s library-manual coverage of <code>weakref</code>, a useful—if unhappily named—tool.</p>
+</div></aside>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>

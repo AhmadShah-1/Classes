@@ -1,0 +1,767 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 13. while and for Loops"><div class="chapter" id="while_and_for_loops">
+<h1><span class="label">Chapter 13. </span>while and for Loops</h1>
+<p>This chapter concludes our tour of Python procedural statements by presenting the language’s two main <em>looping</em> constructs—statements that repeat an action over and over:</p>
+<dl>
+<dt><code>while</code>/<code>else</code></dt>
+<dd> The most general looping statement, which can handle repetitive tasks of all kinds</dd>
+<dt><code>for</code>/<code>else</code></dt>
+<dd>A specialized loop designed for stepping through the items in any “iterable” object easily</dd>
+</dl>
+<p>We’ve met and used both of these informally already, but we’ll fill in additional usage details here. While we’re at it, we’ll also study a few less prominent statements used within loops, such as <code>break</code> and <code>continue</code>, the loop <code>else</code>, and cover some built-ins commonly used with loops, such as <code>range</code>, <code>zip</code>, and <code>enumerate</code>.</p>
+<p>Although the <code>while</code> and <code>for</code> statements covered here are the primary syntax provided for coding repeated actions, there are additional looping operations and concepts in Python. Because of that, the iteration story is continued in the next chapter, where we’ll explore the related ideas of Python’s <em>iteration protocol</em> (used by the <code>for</code> loop) and <em>list comprehensions</em> (a close cousin to the <code>for</code> loop). Later chapters explore even more exotic iteration tools such as <em>generators</em> and functional tools like <code>map</code>, <code>filter</code>, and <code>reduce</code>. For now, though, let’s keep things simple.</p>
+<section data-type="sect1" data-pdf-bookmark="while Loops"><div class="sect1" id="while_loops">
+<h1>while Loops</h1>
+<p>Python’s <code>while</code> statement is the most general iteration construct in the language. In simple terms, it repeatedly executes an associated block of statements as long as a test at the top keeps evaluating to a true value. It is called a “loop” because <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="while loops" id="lpwhlp"></a><a contenteditable="false" data-type="indexterm" data-primary="while loops" id="whlpoos"></a>control keeps looping back to the start of the statement until the test becomes false. When the test does become false, control passes to the statement that follows the <code>while</code> block. The net effect is that the loop’s body is executed repeatedly while the test at the top is true. If the test is false to begin with, the body never runs and the <code>while</code> statement is skipped.</p>
+<section data-type="sect2" data-pdf-bookmark="General Format"><div class="sect2" id="general_format-id00098">
+<h2>General Format</h2>
+<p>In its most complex form, the <code>while</code> statement consists of a header line <a contenteditable="false" data-type="indexterm" data-primary="while loops" data-secondary="else" id="id2639"></a>with a test expression, a body of one or more normally indented statements, and an optional <code>else</code> part that is executed if control exits the loop without a <code>break</code> statement being encountered. Python keeps evaluating the test at the top and executing the statements nested in the loop body until the test returns a false value:</p>
+<pre data-type="programlisting">while <code><em>test</em></code>:                  <code><em># Loop test
+</em></code>    <code><em>statements</em></code>               <code><em>#     Repeated loop body</em></code>
+else:                        <code><em># Optional else</em></code>
+    <code><em>statements</em></code>               <code><em>#     Run if didn't exit loop body with break</em></code></pre>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Examples"><div class="sect2" id="examples-id00059">
+<h2>Examples</h2>
+<p>To illustrate, let’s look at a few simple <code>while</code> loops in action. The first, which consists of a <code>print</code> statement nested in a <code>while</code> loop, just prints a message forever. Recall that <code>True</code> is just a custom version of the integer <code>1</code> and always stands for a Boolean true value; because the test is always true, Python keeps executing the body forever or until you stop its execution. This sort of <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="infinite" id="id2640"></a><a contenteditable="false" data-type="indexterm" data-primary="infinite loops" id="id2641"></a>behavior is usually called an <em>infinite loop</em>—it’s not really immortal, but you may need a Ctrl+C key combination to forcibly terminate it:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>while True:</strong></code>
+...    <code><strong>print('Type Ctrl+C to stop me!')</strong></code></pre>
+<p>The next example keeps <em>slicing</em> off the first character of a string until the string is empty and hence false (and begins omitting the REPL’s <code>...</code> prompts for easier emedia copy and paste where possible). It’s typical to test an object directly like this instead of using the more verbose equivalent (<code>while x != '':</code>), though later in this chapter you’ll see other ways to step through the items in a string more easily with a <code>for</code> loop:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x = 'code'</strong></code>
+&gt;&gt;&gt; <code><strong>while x:</strong></code>                  <code><em># While x is not empty</em></code>
+        <code><strong>print(x, end=' ')</strong> <em>    # Print next character</em></code>
+        <code><strong>x = x[1:]</strong></code>             <code><em># Strip first character off x</em></code>
+   
+code ode de e</pre>
+<p>Note the <code>end=' '</code> keyword argument used here to place all outputs on the same line separated by a space; see <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a> if you’ve forgotten why this works as it does. This will probably leave your REPL’s input prompt at the end of the output’s line; type Enter (or your keyboard’s or app’s equivalent) to reset if desired.</p>
+<p>The following code <em>counts</em> from the value of <code>a</code> up to, but not including, <code>b</code>. Loops like <a contenteditable="false" data-type="indexterm" data-primary="object indexes, loops" id="id2642"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="object indexes" id="id2643"></a>this are often used to generate object indexes. You’ll also see an easier way to do this with a Python <code>for</code> loop and the built-in <code>range</code> function later:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a=0; b=10</strong></code>
+&gt;&gt;&gt; <code><strong>while a &lt; b:</strong></code>              <code><em># One way to code counter loops</em></code>
+        <code><strong>print(a, end=' ')</strong></code>
+        <code><strong>a += 1</strong></code>                <code><em># Or, a = a + 1</em></code>
+   
+0 1 2 3 4 5 6 7 8 9</pre>
+<p>Finally, notice that Python doesn’t have <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="while loops" data-tertiary="do until" id="id2644"></a><a contenteditable="false" data-type="indexterm" data-primary="while loops" data-secondary="do until" id="id2645"></a><a contenteditable="false" data-type="indexterm" data-primary="do until loop" id="id2646"></a>what some languages call a “do until” loop statement. However, we can simulate one with a test and <code>break</code> at the bottom of the loop body, so that <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="while loops" data-startref="lpwhlp" id="id2647"></a><a contenteditable="false" data-type="indexterm" data-primary="while loops" data-startref="whlpoos" id="id2648"></a>the loop’s body is always run at least once:</p>
+<pre data-type="programlisting">while True:
+    …<code><em>loop body</em></code>…               <code><em># Always run loop body at least once</em></code>
+    if <code><em>test</em></code>: break            <code><em># Test for loop exit at the bottom</em></code></pre>
+<p>To fully understand how this structure works, we need to move on to the next section’s coverage of <code>break</code>.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="break, continue, pass, and the Loop else"><div class="sect1" id="breakcomma_continuecomma_passcomma_and">
+<h1>break, continue, pass, and the Loop else</h1>
+<p>Now that we’ve seen a few Python loops in action, it’s time to take a look at two simple statements that have a purpose only when nested inside loops—the <code>break</code> and <code>continue</code> statements. While we’re looking at oddballs, we will also study the loop <code>else</code> clause here because it is intertwined with <code>break</code>, as well as Python’s empty placeholder statement <code>pass</code>, which is not tied to loops but falls into the category of simple one-word statements. In Python:</p>
+<dl>
+<dt><code>break</code></dt>
+<dd>Jumps out of the closest enclosing <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="while loops" data-tertiary="break statement" id="id2649"></a><a contenteditable="false" data-type="indexterm" data-primary="while loops" data-secondary="break statements" id="id2650"></a><a contenteditable="false" data-type="indexterm" data-primary="break statements" id="id2651"></a>loop (past the entire loop statement)</dd>
+<dt><code>continue</code></dt>
+<dd>Jumps to the top of the closest enclosing <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="while loops" data-tertiary="continue statement" id="lpswhctns"></a><a contenteditable="false" data-type="indexterm" data-primary="continue statements" id="id2652"></a>loop (to the loop’s header line)</dd>
+<dt><code>pass</code></dt>
+<dd>Does nothing at all: it’s an empty <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="while loops" data-tertiary="pass statement" id="lpswhpss"></a><a contenteditable="false" data-type="indexterm" data-primary="pass statements" id="id2653"></a>statement placeholder</dd>
+<dt>Loop <code>else</code> block</dt>
+<dd>Runs if and only if the loop <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="while loops" data-tertiary="else statement" id="id2654"></a><a contenteditable="false" data-type="indexterm" data-primary="else statements" id="id2655"></a>is exited normally (i.e., without hitting a <code>break</code>)</dd>
+</dl>
+<section data-type="sect2" data-pdf-bookmark="General Loop Format"><div class="sect2" id="general_loop_format">
+<h2>General Loop Format</h2>
+<p>Factoring in <code>break</code> and <code>continue</code> statements, the general format of the <code>while</code> loop looks like this:</p>
+<pre data-type="programlisting">while <code><em>test</em></code>:
+    <code><em>statements</em></code>
+    if <code><em>test</em></code>: break              <code><em># Exit loop now, skip else if present</em></code>
+    if <code><em>test</em></code>: continue           <code><em># Go to test at top of loop now</em></code>
+else:
+    <code><em>statements</em></code>                  <code><em># Run on exit if didn't hit a 'break'</em></code></pre>
+<p><code>break</code> and <code>continue</code> statements can appear anywhere inside the <code>while</code> (or per ahead, <code>for</code>) loop’s body, but they are usually coded further nested in an <code>if</code> test to take action in response to some condition.</p>
+<p>Let’s turn to a few simple examples to see how these statements come together in practice.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="pass"><div class="sect2" id="pass">
+<h2>pass</h2>
+<p>Simple things first: the <code>pass</code> statement is a no-operation placeholder that is coded when the <a contenteditable="false" data-type="indexterm" data-primary="while loops" data-secondary="pass statement" id="whpstt"></a>syntax requires a statement, but you have nothing useful to say. It is often used to code an empty body for a compound statement. For instance, if you want to code an infinite loop that does nothing each time through, do it with a <code>pass</code>:</p>
+<pre data-type="programlisting">while True: pass                   <code><em># Type Ctrl+C to stop me!</em></code></pre>
+<p>Because the body is just an empty statement, Python gets stuck in this loop. <code>pass</code> is roughly to statements as <code>None</code> is to objects—an explicit nothing. Notice that here the <code>while</code> loop’s body is on the same line as the header, after the colon; as with <code>if</code> statements, this works only if the body isn’t a compound statement (and doesn’t contain one).</p>
+<p>This example does nothing forever. It probably isn’t the most useful Python program ever written (unless you want to warm up your laptop or phone on a cold winter’s day), but it’s tough to come up with a better <code>pass</code> example at this point in the book; it’s not a commonly used tool.</p>
+<p>You’ll see other places where <code>pass</code> makes a bit more sense later—for instance, to ignore exceptions caught by <code>try</code> statements and to define empty <code>class</code> objects with attributes that behave like “structs” and “records” in other languages. Though partly a preview, a <code>pass</code> is also sometime coded to mean “to be filled in later,” to stub out the bodies of functions temporarily:</p>
+<pre data-type="programlisting">def func1():
+    pass                 <code><em># Add real code here later</em></code>
+
+def func2():
+    pass</pre>
+<p>We can’t leave the body empty without getting a syntax error, so we say <code>pass</code> instead.</p>
+<section data-type="sect3" data-pdf-bookmark="The ellipsis-literal alternative"><div class="sect3" id="the_ellipsis_literal_alternative">
+<h3>The ellipsis-literal alternative</h3>
+<p>Despite the limited roles, there’s a similar, if more <a contenteditable="false" data-type="indexterm" data-primary="while loops" data-secondary="pass statement" data-tertiary="ellipsis" id="id2656"></a>obscure, way to achieve the same effect as <code>pass</code>. Python allows an <em>ellipsis</em>, coded as <code>...</code> (literally, three consecutive dots, not the Unicode character), to appear any place an expression can. Because ellipses do nothing by themselves, they can serve as an alternative to the <code>pass</code> statement, especially for code to be filled in later—a sort of Python TBD:</p>
+<pre data-type="programlisting">def func1():
+    ...                   <code><em># Alternative to pass
+</em></code>
+func1()                   <code><em># Does nothing if called</em></code></pre>
+<p>This works because any expression can appear as a statement (as we learned in <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>), and the <code>...</code> literal qualifies as an expression. Ellipses can also appear on a statement header by itself, and may be used to initialize variable names if no specific type is required—which also makes it an alternative to <code>None</code>:</p>
+<pre data-type="programlisting">def func1(): ...          <code><em># Works on same line too</em></code>
+
+&gt;&gt;&gt; <code><strong>tbd = ...</strong></code>             <code><em># Alternative to both pass and None</em></code>
+&gt;&gt;&gt; <code><strong>tbd</strong></code>                   <code><em># Ellipsis is a real (if oddball!) thing
+</em></code>Ellipsis</pre>
+<p>This goes well beyond the original intent of <code>...</code> in slicing extensions (which, like the <code>@</code> operator and type hinting, is unused by Python itself), so time will tell if it rises to challenge <code>pass</code> and <code>None</code> in these <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="while loops" data-tertiary="pass statement" data-startref="lpswhpss" id="id2657"></a><a contenteditable="false" data-type="indexterm" data-primary="while loops" data-secondary="pass statement" data-startref="whpstt" id="id2658"></a>inane and vacuous roles.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="continue"><div class="sect2" id="continue">
+<h2>continue</h2>
+<p>The <code>continue</code> statement <a contenteditable="false" data-type="indexterm" data-primary="while loops" data-secondary="continue statement" id="whpscstm"></a>causes an immediate jump to the top of a loop. It’s often used to avoid statement nesting, as in the next example that uses <code>continue</code> to skip odd numbers. This code prints all even numbers less than 10 and greater than or equal to 0. Recall that 0 means false and <code>%</code> is the remainder-of-division (modulus) operator, so this loop counts down to 0, skipping numbers that aren’t multiples of <span class="keep-together">2—and</span> prints <code>8 6 4 2 0</code>:</p>
+<pre data-type="programlisting">x = 10
+while x:
+    x -= 1                         <code><em># Or, x = x - 1</em></code>
+    if x % 2 != 0: continue        <code><em># Odd? -- skip print</em></code>
+    print(x, end=' ')</pre>
+<p>Because <code>continue</code> jumps to the top of the loop, you don’t need to nest the <code>print</code> statement here inside an <code>if</code> test; the <code>print</code> is only reached if the <code>continue</code> is not run.</p>
+<section data-type="sect3" data-pdf-bookmark="The nested-code alternative"><div class="sect3" id="the_nested_code_alternative">
+<h3>The nested-code alternative</h3>
+<p>If all this sounds similar to a “go to” in <a contenteditable="false" data-type="indexterm" data-primary="while loops" data-secondary="continue statement" data-tertiary="nested code" id="id2659"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="while loops" id="id2660"></a>other languages, it should. Python has no “go to” statement, but because <code>continue</code> lets you jump about in a program, many of the warnings about readability and maintainability you may have heard about “go to” apply. <code>continue</code> should probably be used sparingly, especially when you’re first getting started with coding. For instance, the last example might be clearer if the <code>print</code> were nested under the <code>if</code>:</p>
+<pre data-type="programlisting">x = 10
+while x:
+    x -= 1
+    if x % 2 == 0:                 <code><em># Even? -- print</em></code>
+        print(x, end=' ')</pre>
+<p>Later in this book, you’ll also learn that raised and caught exceptions can also emulate “go to” statements in limited and structured ways; stay tuned for more on this technique in <a data-type="xref" href="ch36.html#exception_odds_and_ends">Chapter 36</a> where you will learn how to use it to break out of multiple nested loops, a <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="while loops" data-tertiary="continue statement" data-startref="lpswhctns" id="id2661"></a><a contenteditable="false" data-type="indexterm" data-primary="while loops" data-secondary="continue statement" data-startref="whpscstm" id="id2662"></a>feat not possible with the next section’s topic alone.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="break"><div class="sect2" id="break">
+<h2>break</h2>
+<p>The <code>break</code> statement causes <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="while loops" data-tertiary="break statement" id="lpwpbk"></a><a contenteditable="false" data-type="indexterm" data-primary="while loops" data-secondary="break statement" id="whbkstt"></a>an immediate exit from a loop—technically, from the closest enclosing loop, when loops are nested. Because the code that follows it in the loop is not executed if the <code>break</code> is reached, it can sometimes avoid nesting much like <code>continue</code>. For example, here is a simple interactive loop (a takeoff on code we studied in <a data-type="xref" href="ch10.html#introducing_python_statements">Chapter 10</a>) that inputs data with <code>input</code> and exits when the user enters a “stop” line:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>num = 1</strong></code>
+&gt;&gt;&gt; <code><strong>while True:</strong></code>
+        <code><strong>tool = input(f'{num}) What\'s your favorite language? ')</strong></code>
+        <code><strong>if tool == 'stop': break</strong></code>
+        <code><strong>print('Bravo!' if tool == 'Python' else 'Try again...')</strong></code>
+<code> <strong>       num += 1</strong></code>
+ 
+1) What's your favorite language? <code><strong>Java</strong></code>
+Try again...
+2) What's your favorite language? <code><strong>Python</strong></code>
+Bravo!
+3) What's your favorite language? <code><strong>stop</strong></code></pre>
+<p>Because the <code>break</code> in this terminates the <code>while</code> immediately, there’s no reason to nest code below it in an <code>else</code>.</p>
+<section data-type="sect3" data-pdf-bookmark="The named-assignment alternative"><div class="sect3" id="the_named_assignment_alternative">
+<h3>The named-assignment alternative</h3>
+<p>That said, it’s also possible to use the <a contenteditable="false" data-type="indexterm" data-primary="while loops" data-secondary="break statement" data-tertiary="named assignment" id="id2663"></a>newer <code>:=</code> expression we met in <a data-type="xref" href="ch11.html#named_assignment_expressions">“Named Assignment Expressions”</a> to crunch this example—albeit, at the expense of its role as a <code>break</code> demo. While you should judge for yourself, the net effect is concise but may at least flirt with unreadability:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>num = 1</strong></code>
+&gt;&gt;&gt; <code><strong>while (tool := input(f'{num}) What\'s your favorite language? ')) != 'stop':</strong></code>
+        <code><strong>print('Bravo!' if tool == 'Python' else 'Try again...')</strong></code>
+<code> <strong>       num += 1</strong></code>
+    
+1) What's your favorite language? <code><strong>Python</strong></code>
+Bravo!</pre>
+<p>Nesting <code>:=</code> within <code>:=</code> as in the following, however, could easily incite pitchforks and torches (in fact, the full one-liner here is too wide for this book!). Unless you can defend this in a court of your code-reuse peers, just say no:</p>
+<pre data-type="programlisting">num = 0
+while (tool := input(f'{(num := num + 1)}) What\'s your favorite language? ')) != 'stop':</pre>
+<p>Preview: in <a data-type="xref" href="ch36.html#exception_odds_and_ends">Chapter 36</a>, you’ll see that <code>input</code> also raises an exception at end-of-file (e.g., if the user enters Ctrl+Z on Windows or Ctrl+D on Unix); wrapping <code>input</code> in <code>try</code> statements <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="while loops" data-tertiary="break statement" data-startref="lpwpbk" id="id2664"></a><a contenteditable="false" data-type="indexterm" data-primary="while loops" data-secondary="break statement" data-startref="whbkstt" id="id2665"></a>allows users to respond this way too.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Loop else"><div class="sect2" id="loop_else">
+<h2>Loop else</h2>
+<p>When combined with the loop <code>else</code> clause, the <code>break</code> statement can often eliminate <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="else clause" id="lpstt"></a><a contenteditable="false" data-type="indexterm" data-primary="while loops" data-secondary="else clause" id="whpst"></a><a contenteditable="false" data-type="indexterm" data-primary="else clause" id="elsttmn"></a>the need for the search status flags used in other languages. In abstract terms the <code>break</code> in the following skips the <code>else</code> on the way out of the loop:</p>
+<pre data-type="programlisting">while <code><em>continuing</em></code>:
+    if <code><em>found</em></code>: 
+        <code><em>found code</em></code>
+        break
+    else <code><em>advance</em></code>
+else:
+    <code><em>not-found code</em></code></pre>
+<p>As a more concrete example, the following piece of code determines whether a positive integer <code>num</code> is prime—has no factors other than 1 and itself—by searching for factors greater than 1 (to run live, assign <code>num</code> before pasting):</p>
+<pre data-type="programlisting">x = num // 2                              <code><em># For some num &gt; 1, start at half</em></code>
+while x &gt; 1:
+    if num % x == 0:                      <code><em># Remainder 0? Factor found</em></code>
+        print(num, 'has factor', x)
+        break                             <code><em># Exit now and skip else</em></code>
+    x -= 1
+else:                                     <code><em># Normal exit, when x reaches 1</em></code>
+    print(num, 'is prime')</pre>
+<p>Rather than setting a flag to be tested when the loop is exited, it inserts a <code>break</code> where a factor is found. This way, the loop <code>else</code> clause can assume that it will be executed only if no factor is found; if this code never hits the <code>break</code>, the number is prime. Trace through this code to see how this works.</p>
+<p>The loop <code>else</code> clause is also run if the body of the loop is <em>never</em> executed, as you don’t run a <code>break</code> in that event either; in a <code>while</code> loop, this happens if the test in the header is false to begin with. Thus, in the preceding example you still get the “is prime” message if <code>x</code> is initially less than or equal to 1 (for instance, if <code>num</code> is 2).</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Subprime code</em>: This example determines primes, but only informally so. Numbers less than 2 are not considered <a contenteditable="false" data-type="indexterm" data-primary="subprime code" id="id2666"></a>prime by the strict mathematical definition, but 1 and 0 are classified as such here. To be really picky, this code also fails for negative numbers and succeeds for floating-point numbers with all-zero decimal digits. Also note that its code must use <code>//</code> instead of <code>/</code> because we need the initial division to truncate remainders, not retain them. If you want to experiment with this code further, watch for its associated exercise at the end of <a data-type="xref" href="part04.html#functions_and_generators">Part IV</a>, which wraps it in a function for reuse.</p>
+</div>
+<section data-type="sect3" data-pdf-bookmark="Why the loop else?"><div class="sect3" id="why_the_loop_elsequestion_mark">
+<h3>Why the loop else?</h3>
+<p>Because the loop <code>else</code> clause is unique to Python, it tends to perplex some newcomers (and even some veterans; in fact, a few either pointlessly code the loop <code>else</code> without a <code>break</code> or don’t know that the loop <code>else</code> exists at all!). In general terms, the loop <code>else</code> simply provides explicit syntax for a common coding scenario—it is a coding structure that lets us catch the “other” way out of a loop, without setting and checking flags or conditions.</p>
+<p>Suppose, for instance, that we are writing a loop to search a list for a value and need to know whether the value was found after you exit the loop. We might code such a task this way (this code is intentionally abstract and incomplete; <code>x</code> is a sequence and <code>match</code> is a tester function to be defined):</p>
+<pre data-type="programlisting">found = False
+while x and not found:
+    if match(x[0]):                  <code><em># Value at front?</em></code>
+        print('Found')
+        found = True
+    else:
+        x = x[1:]                    <code><em># Slice off front and repeat
+</em></code>if not found:
+    print('Not found')</pre>
+<p>Here, we initialize, set, and later test a <code>found</code> flag to determine whether the search succeeded or not. This is valid Python code, and it does work; however, this is exactly the sort of structure that the loop <code>else</code> clause is meant to handle. Here’s an <code>else</code> equivalent:</p>
+<pre data-type="programlisting">while x:                             <code><em># Exit when x empty</em></code>
+    if match(x[0]):
+        print('Found')
+        break                        <code><em># Exit, go around else</em></code>
+    x = x[1:]
+else:
+    print('Not found')               <code><em># Only here if exhausted x</em></code></pre>
+<p>This version is more concise. The flag is gone, and we’ve replaced the <code>if</code> test at the loop end with an <code>else</code> (lined up vertically with the word <code>while</code>). Because the <code>break</code> inside the main part of the <code>while</code> exits the loop and goes around the <code>else</code>, this serves as a more structured way to catch the search-failure case.</p>
+<p>Some readers might have noticed that the prior example’s <code>else</code> clause could be replaced with a test for an empty <code>x</code> after the loop (e.g., <code>if not x:</code>). Although that’s true in this example, the <code>else</code> provides explicit syntax for this coding pattern (it’s more obviously a search-failure clause here), and such an explicit empty test may not apply in some cases. The loop <code>else</code> becomes even more useful when used in conjunction with the <code>for</code> loop—the topic of the next section—because sequence <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="else clause" data-startref="lpstt" id="id2667"></a><a contenteditable="false" data-type="indexterm" data-primary="while loops" data-secondary="else statement" data-startref="whpst" id="id2668"></a><a contenteditable="false" data-type="indexterm" data-primary="else clause" data-startref="elsttmn" id="id2669"></a>iteration is not under your control.</p>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="for Loops"><div class="sect1" id="for_loops">
+<h1>for Loops</h1>
+<p>The <code>for</code> loop is a generic iterator in Python: it can step through the items in any ordered sequence or other iterable object. All told, the <code>for</code> statement works <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="for loops" id="id2670"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" id="id2671"></a>on strings, lists, tuples, sets, dictionaries, and all other built-in iterables, as well as new user-defined objects that you’ll learn how to create later with classes. We met <code>for</code> briefly in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a> and have used it in conjunction with sequence object types; let’s expand on its usage more formally here.</p>
+<section data-type="sect2" data-pdf-bookmark="General Format"><div class="sect2" id="general_format-id000121">
+<h2>General Format</h2>
+<p>The Python <code>for</code> loop begins with a header line that specifies an assignment target (or targets), along with the object you want to step through. The header is followed by a block of (normally indented) statements that you want to repeat:</p>
+<pre data-type="programlisting">for <code><em>target</em></code> in <code><em>object</em></code>:           <code><em># Assign object items to target</em></code>
+    <code><em>statements</em></code>                  <code><em>#     Repeated loop body: use target
+</em></code>else:                           <code><em># Optional else</em></code>
+    <code><em>statements</em></code>                  <code><em>#     Run if didn't exit loop body with break</em></code></pre>
+<p>When Python runs a <code>for</code> loop, it assigns the items in the iterable <code><em>object</em></code> to the <code><em>target</em></code> one by one and executes the loop body for each. The loop body typically uses the assignment target to refer to the current item in the sequence as though it were a cursor stepping through the sequence.</p>
+<p>While <code><em>target</em></code> can be any assignment target we met in <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>, it’s often just a simple name. This name is a possibly new variable that lives in the <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="for loops" data-tertiary="targets" id="id2672"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="targets" id="id2673"></a>scope where the <code>for</code> statement itself is coded. There’s not much unique about this name; it can even be changed inside the loop’s body, but it will automatically be set to the next item in <code><em>object</em></code> when control returns to the top of the loop again. After the loop this variable normally still refers to the last item visited, which is the last item in the sequence unless the loop exits early with a <code>break</code> statement.</p>
+<p>The <code>for</code> statement also supports an optional <code>else</code> block, which works exactly as it does in a <code>while</code> <span class="keep-together">loop—it’s</span> executed if the loop exits without running into a <code>break</code> statement (i.e., if all items in the sequence have been visited). The <code>break</code> and <code>continue</code> statements introduced earlier also work the same in a <code>for</code> loop as they do in a <code>while</code>. Given all that, the <code>for</code> loop’s complete format can be described this way:</p>
+<pre data-type="programlisting">for <code><em>target</em></code> in <code><em>object</em></code>:           <code><em># Assign object items to target</em></code>
+    <code><em>statements</em></code>
+    if <code><em>test</em></code>: break              <code><em># Exit loop now, skip else</em></code>
+    if <code><em>test</em></code>: continue           <code><em># Go to top of loop now</em></code>
+else:
+    <code><em>statements</em></code>                  <code><em># Run on exit if didn't hit a 'break'</em></code></pre>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Examples"><div class="sect2" id="examples-id00093">
+<h2>Examples</h2>
+<p>Let’s type a few <code>for</code> loops interactively now, so you can see how they are used in practice.</p>
+<section data-type="sect3" data-pdf-bookmark="Basic usage"><div class="sect3" id="basic_usage">
+<h3>Basic usage</h3>
+<p>As mentioned earlier, a <code>for</code> loop can step across any kind of sequence object. In our first example, for instance, we’ll assign the name <code>x</code> to each of the three items in a list in turn, from left to right, and the <code>print</code> statement will be executed for each. Inside the <code>print</code> statement (the loop body), the name <code>x</code> refers to the current item in the list:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for x in ['app', 'script', 'program']:</strong></code>
+        <code><strong>print(x, end=' ')</strong></code>
+ 
+app script program</pre>
+<p>The next two examples compute the sum and product of all the items in a list. Later in this chapter and later in this <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="for loops" data-tertiary="data types" id="id2674"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="data types" id="id2675"></a>book you’ll meet tools that apply operations such as <code>+</code> and <code>*</code> to items in a list automatically, but it’s often just as easy to use a <code>for</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>sum = 0</strong></code>
+&gt;&gt;&gt; <code><strong>for x in [1, 2, 3, 4]:</strong></code>
+        <code><strong>sum = sum + x</strong></code>
+   
+&gt;&gt;&gt; <code><strong>sum</strong></code>
+10
+&gt;&gt;&gt; <code><strong>prod = 1</strong></code>
+&gt;&gt;&gt; <code><strong>for item in [1, 2, 3, 4]: prod *= item</strong></code>
+   
+&gt;&gt;&gt; <code><strong>prod</strong></code>
+24</pre>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Other data types"><div class="sect3" id="other_data_types">
+<h3>Other data types</h3>
+<p>Any sequence works in a <code>for</code>, as it’s a generic tool. For example, <code>for</code> loops also work on strings and tuples:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S = 'Python'</strong></code>
+&gt;&gt;&gt; <code><strong>T = ('web', 'num', 'app')</strong></code>
+
+&gt;&gt;&gt; <code><strong>for x in S: print(x, end=' ')</strong></code>      <code><em># Iterate over a string</em></code>
+   
+P y t h o n
+
+&gt;&gt;&gt; <code><strong>for x in T: print(x, end=' ')</strong></code>      <code><em># Iterate over a tuple</em></code>
+   
+web num app</pre>
+<p>In fact, as we’ll explore in the next chapter when we formalize the notion of iterables, <code>for</code> loops can even work on some objects that are not sequences—including files.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Tuple (sequence) assignment in for loops"><div class="sect3" id="tuple_left_parenthesissequenceright_par">
+<h3>Tuple (sequence) assignment in for loops</h3>
+<p>If you’re iterating through a sequence <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="for loops" data-tertiary="tuple assignment" id="lspfpp"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="tuple assignment" id="flppsg"></a><a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="for loops" id="tplflps"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="for loops" data-tertiary="sequence assignment" id="lspfsqs"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="sequence assignment" id="flppsqu"></a><a contenteditable="false" data-type="indexterm" data-primary="sequences" data-secondary="for loops" id="sqcflps"></a>of tuples, the loop target itself can actually be a <em>tuple</em> of targets. This is just another case of the tuple-unpacking assignment we studied in <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a> at work. Remember, the <code>for</code> loop <em>assigns</em> items in the sequence object to the target, and assignment works the same everywhere:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>T = [(1, 2), (3, 4), (5, 6)]</strong></code>
+&gt;&gt;&gt; <code><strong>for (a, b) in T:</strong></code>                   <code><em># Tuple assignment at work</em></code>
+        <code><strong>print(a, b)</strong></code>
+   
+1 2
+3 4
+5 6</pre>
+<p class="pagebreak-before">Here, the first time through the loop is like running <code>(a,b) = (1,2)</code>, the second time is like <code>(a,b) = (3,4)</code>, and so on. The net effect is to automatically <em>unpack</em> the current tuple on each iteration. List syntax works as a <code>for</code> target too because tuple and list assignment are both <em>sequence</em> assignment, and tuple parentheses are optional:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for [a, b] in T:</strong></code>                   <code><em># List assignment: same effect</em></code>
+&gt;&gt;&gt; <code><strong>for a, b in T:</strong> <em>                    # Tuple sans parentheses: same effect</em></code></pre>
+<p>This list-of-tuples data format is commonly used in conjunction with the <code>zip</code> call you’ll meet later in this chapter, to implement parallel traversals. It also crops up in conjunction with SQL databases in Python, where query result tables are returned as sequences of sequences like the list used here—the outer list is the database table, the nested tuples are the rows within the table, and tuple (i.e., sequence) assignment extracts columns.</p>
+<p>As we’ve seen in earlier chapters, tuples in <code>for</code> loops also come in handy to iterate through <em>both</em> keys and values in dictionaries using the <code>items</code> method, rather than looping through the keys and indexing to fetch the values manually:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = {'a': 1, 'b': 2}</strong></code>
+&gt;&gt;&gt; <code><strong>for key in D:</strong></code>
+       <code><strong>print(key, '=&gt;', D[key])</strong></code>        <code><em># Use dict keys iterator and index
+</em></code>   
+a =&gt; 1
+b =&gt; 2
+
+&gt;&gt;&gt; <code><strong>list(D.items())</strong></code>
+[('a', 1), ('b', 2)] 
+
+&gt;&gt;&gt; <code><strong>for (key, value) in D.items():</strong></code>
+       <code><strong>print(key, '=&gt;', value)</strong></code>         <code><em># Iterate over both keys and values</em></code>
+   
+a =&gt; 1
+b =&gt; 2</pre>
+<p>It’s important to note that tuple assignment in <code>for</code> loops isn’t a special case; <em>any</em> assignment target works syntactically after the word <code>for</code>. For example, we can always assign manually within the loop to unpack:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>T</strong></code>
+[(1, 2), (3, 4), (5, 6)]
+
+&gt;&gt;&gt; <code><strong>for both in T:</strong></code>
+        <code><strong>a, b = both</strong></code>                    <code><em># Manual assignment equivalent</em></code>
+        <code><strong>print(a, b)</strong></code>
+   
+1 2
+3 4
+5 6</pre>
+<p>But tuples in the loop header save us an extra step when iterating through sequences of sequences. As suggested in <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>, even <em>nested</em> structures may be automatically unpacked this way in a <code>for</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>((a, b), c) = ((1, 2), 3)</strong></code>          <code><em># Nested sequences work too</em></code>
+&gt;&gt;&gt; <code><strong>a, b, c</strong></code>
+(1, 2, 3)
+
+&gt;&gt;&gt; <code><strong>for ((a, b), c) in [((1, 2), 3), ((4, 5), 6)]: print(a, b, c)</strong></code>
+   
+1 2 3
+4 5 6</pre>
+<p class="pagebreak-before">Even this is not a special case, though—the <code>for</code> loop simply runs the sort of assignment we ran just before it, on <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="for loops" data-tertiary="tuple assignment" data-startref="lspfpp" id="id2676"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="tuple assignment" data-startref="flppsg" id="id2677"></a><a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="for loops" data-startref="tplflps" id="id2678"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="for loops" data-tertiary="sequence assignment" data-startref="lspfsqs" id="id2679"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="sequence assignment" data-startref="flppsqu" id="id2680"></a><a contenteditable="false" data-type="indexterm" data-primary="sequences" data-secondary="for loops" data-startref="sqcflps" id="id2681"></a>each iteration. Any nested sequence structure may be unpacked this way, simply because <em>sequence assignment</em> is so generic:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for ((a, b), c) in [([1, 2], 3), ['XY', 6]]: print(a, b, c)</strong></code>
+   
+1 2 3
+X Y 6</pre>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Extended-unpacking assignment in for loops"><div class="sect3" id="extended_unpacking_assignment_in_for_lo">
+<h3>Extended-unpacking assignment in for loops</h3>
+<p>In fact, because the loop variable <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="for loops" data-tertiary="extended-unpacking assignments" id="lspfxupk"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="extended-unpacking assignments" id="flppxpk"></a><a contenteditable="false" data-type="indexterm" data-primary="extended-unpacking assignments" data-secondary="for loops" id="sqcflps2"></a>in a <code>for</code> loop can be <em>any</em> assignment target, we can also use the starred names and other targets of extended-unpacking assignment here to extract both items and sections of sequences within sequences. Because this works in assignment statements, it automatically works in <code>for</code> loops too.</p>
+<p>This topic was introduced in <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>, but here’s a quick refresher to reinforce the technique. Consider the tuple assignment form introduced in the prior section. A tuple of values is assigned to a tuple of names on each iteration, exactly like a simple assignment statement:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a, b, c = (1, 2, 3)</strong></code>                               <code><em># Tuple assignment</em></code>
+&gt;&gt;&gt; <code><strong>a, b, c</strong></code>
+(1, 2, 3)
+
+&gt;&gt;&gt; <code><strong>for (a, b, c) in [(1, 2, 3), (4, 5, 6)]:</strong></code>          <code><em># Used in for loop</em></code>
+        <code><strong>print(a, b, c)</strong></code>
+   
+1 2 3
+4 5 6</pre>
+<p>Because sequence assignment supports a more general set of names with a starred target to collect multiple items, we can use the same syntax to extract parts of nested sequences in the <code>for</code> loop:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a, *b, c = (1, 2, 3, 4)</strong></code>                           <code><em># Extended-unpacking assignment</em></code>
+&gt;&gt;&gt; <code><strong>a, b, c</strong></code>
+(1, [2, 3], 4)
+
+&gt;&gt;&gt; <code><strong>for (a, *b, c) in [(1, 2, 3, 4), (5, 6, 7, 8)]:</strong></code>
+        <code><strong>print(a, b, c)</strong></code>
+   
+1 [2, 3] 4
+5 [6, 7] 8</pre>
+<p>In practice, this approach might be used to pick out multiple columns from rows of data represented as nested sequences. As usual in Python, you can achieve similar effects with more basic tools—in this case by slicing. The only difference is that slicing returns a type-specific result, whereas starred targets always receive lists:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for all in [(1, 2, 3, 4), (5, 6, 7, 8)]:</strong></code>          <code><em># Manual slicing version</em></code>
+        <code><strong>a, b, c = all[0], all[1:-1], all[-1]</strong></code>
+        <code><strong>print(a, b, c)</strong></code>
+   
+1 (2, 3) 4
+5 (6, 7) 8</pre>
+<p>Finally, all the starred-target forms work in <code>for</code> as in <code>=</code> assignment statements, including nested sequences, indexes, and slices (though practical roles for code like the following are probably much more rare than common!):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L, M = [1, 2], [3, 4]</strong></code>
+&gt;&gt;&gt; <code><strong>pairs = [[(5, 6), (7, 8), (9, 10)]] * 2</strong></code>
+ 
+&gt;&gt;&gt; <code><strong>for [(a, *X), (b, *L[0]), (c, *M[:0])] in pairs:</strong></code>
+        <code><strong>print(f'&lt;{a=} {X=}&gt;  &lt;{b=} {L=}&gt;  &lt;{c=} {M=}&gt;')</strong></code>
+ 
+&lt;a=5 X=[6]&gt;  &lt;b=7 L=[[8], 2]&gt;  &lt;c=9 M=[10, 3, 4]&gt;
+&lt;a=5 X=[6]&gt;  &lt;b=7 L=[[8], 2]&gt;  &lt;c=9 M=[10, 10, 3, 4]&gt;</pre>
+<p>See <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a> for more on <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="for loops" data-tertiary="extended-unpacking assignments" data-startref="lspfxupk" id="id2682"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="extended-unpacking assignments" data-startref="flppxpk" id="id2683"></a><a contenteditable="false" data-type="indexterm" data-primary="extended-unpacking assignments" data-secondary="for loops" data-startref="sqcflps2" id="id2684"></a>the extended-unpacking form of assignment.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Nested for loops"><div class="sect3" id="nested_for_loops">
+<h3>Nested for loops</h3>
+<p>Now let’s look at some <code>for</code> loops that <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="for loops" data-tertiary="nested" id="lflpns"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="nested" id="flpnst"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="for loops" id="nstfpl"></a>are a bit more sophisticated than those demoed so far. The first shows what happens when <code>for</code> loops are nested—the inner loop is run for every iteration of the outer loop, and the <code>+</code> within the inner loop combines their items by using each loop’s variable:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for x in 'abc':</strong></code>                         <code><em># For each item in one string</em></code>
+        <code><strong>for y in '123':</strong></code>                     <code><em># And for each item in another string</em></code>
+            <code><strong>print(x + y, end=' ')</strong></code>           <code><em># Concatenate current items from both</em></code>
+ 
+a1 a2 a3 b1 b2 b3 c1 c2 c3</pre>
+<p>The next example kicks the nesting up a notch, illustrating both three-level statement nesting and the loop <code>else</code> clause in a <code>for</code>. Given a list of objects (<code>items</code>) and a list of keys (<code>tests</code>), this code searches for each key in the objects list and reports on the search’s outcome:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>items = ['aaa', 111, (4, 5), 2.01]</strong></code>      <code><em># A list of objects</em></code>
+&gt;&gt;&gt; <code><strong>tests = [(4, 5), 3.14]</strong></code>                  <code><em># Keys to search for</em></code>
+&gt;&gt;&gt;
+&gt;&gt;&gt; <code><strong>for key in tests:</strong></code>                       <code><em># For all keys</em></code>
+        <code><strong>for item in items:</strong></code>                  <code><em># For all items</em></code>
+            <code><strong>if item == key:</strong></code>                 <code><em># Check for match</em></code>
+                <code><strong>print(key, 'was found')</strong></code>
+                <code><strong>break</strong></code>
+        <code><strong>else:</strong></code>
+            <code><strong>print(key, 'not found!')</strong></code>
+   
+(4, 5) was found
+3.14 not found!</pre>
+<p>Because the nested <code>if</code> runs a <code>break</code> when a match is found, the inner loop’s <code>else</code> clause can assume that if it is reached, the search has failed. Notice the nesting here. When this code runs, there are two loops going at the same time: the outer loop scans the keys list, and the inner loop scans the items list for each key. The nesting of the loop <code>else</code> clause is critical; it’s indented to the same level as the header line of the inner <code>for</code> loop, so it’s associated with the inner loop, not the <code>if</code> or the outer <code>for</code>.</p>
+<p>The preceding example is illustrative, but it may be easier to code if we employ the <code>in</code> operator to test membership. Because <code>in</code> implicitly scans an object looking for a match (at least logically), it replaces the inner loop:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for key in tests:</strong></code>                       <code><em># For all keys</em></code>
+        <code><strong>if key in items:</strong></code>                    <code><em># Let Python check for a match</em></code>
+            <code><strong>print(key, 'was found')</strong></code>
+       <code> <strong>else:</strong></code>
+            <code><strong>print(key, 'not found!')</strong></code>
+   
+(4, 5) was found
+3.14 not found!</pre>
+<p>In general, it’s a good idea to let Python do as much of the work as possible (as in this solution) for the sake of both brevity and performance.</p>
+<p>Our final example is similar, but builds a list as it goes for later use instead of printing. It performs a typical data-structure task with a <code>for</code>—collecting common items in two sequences (it’s nearly <em>intersection</em>, unless there are duplicate values). After the loop runs, <code>res</code> refers to a list that contains all the items found in <code>seq1</code> and <code>seq2</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>seq1 = 'trippy'</strong></code>
+&gt;&gt;&gt; <code><strong>seq2 = 'python'</strong></code>
+&gt;&gt;&gt;
+&gt;&gt;&gt; <code><strong>res = []</strong></code>                                <code><em># Start empty</em></code>
+&gt;&gt;&gt; <code><strong>for x in seq1:</strong></code>                          <code><em># Scan first sequence</em></code>
+        <code><strong>if x in seq2:</strong></code>                       <code><em># Common item?</em></code>
+            <code><strong>res.append(x)</strong></code>                   <code><em># Add to result end</em></code>
+   
+&gt;&gt;&gt; <code><strong>res</strong></code>
+['t', 'p', 'p', 'y']</pre>
+<p>Unfortunately, this code is equipped to work only on two specific variables: <code>seq1</code> and <code>seq2</code>. It would be nice if this loop could somehow be generalized into a tool you could use more than once. As you’ll see, that simple idea leads us to <em>functions</em>, the topic of the next part of the book.</p>
+<p>Of course, if you read <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a> or <a data-type="xref" href="ch05.html#numbers_and_expressions">Chapter 5</a>, you know that Python has sets that provide true intersection with the <code>&amp;</code> operator—but the result’s order is scrambled, duplicates are dropped, and multiple conversions are required to match:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(set(seq1) &amp; set(seq2))</strong>   </code>          <code><em># Real intersection with sets</em></code>
+['p', 'y', 't']</pre>
+<p>More usefully, this code also exhibits the classic <em>list comprehension</em> pattern—collecting a results list with an iteration and optional filter test—and could be coded much more concisely with this tool:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>[x for x in seq1 if x in seq2]</strong></code>          <code><em># Let Python collect results</em></code>
+['t', 'p', 'p', 'y']</pre>
+<p>But you’ll have to read on to the <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="for loops" data-tertiary="nested" data-startref="lflpns" id="id2685"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="nested" data-startref="flpnst" id="id2686"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="for loops" data-startref="nstfpl" id="id2687"></a>next chapter for the rest of this story.</p>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Loop Coding Techniques"><div class="sect1" id="loop_coding_techniques">
+<h1>Loop Coding Techniques</h1>
+<p>The <code>for</code> loop we just studied subsumes most counter-style loops. It’s generally simpler to code and often quicker to run than a <code>while</code>, so it’s the first tool you should reach for whenever you need to step through a sequence or other iterable. In fact, as a general rule, you should <em>resist the temptation to count things in Python</em>—its iteration tools automate much of the work you do to loop over collections in lower-level languages like C.</p>
+<p>Still, there are situations where you will need to iterate in more specialized ways. For example, what if you need to visit every second or third item in a list, or change the list along the way? How about traversing more than one sequence in parallel, in the same <code>for</code> loop? What if you need indexes too?</p>
+<p>You can always code such unique iterations with a <code>while</code> loop and manual indexing, but Python provides a set of built-ins that allow you to specialize the iteration in a <code>for</code>:</p>
+<ul>
+<li><p>The built-in <code>range</code> function produces a series of successively higher integers, which can be used as indexes in a <code>for</code>.</p></li>
+<li><p>The built-in <code>zip</code> function returns a series of parallel-item tuples, which can be used to traverse multiple sequences in a <code>for</code>.</p></li>
+<li><p>The built-in <code>enumerate</code> function generates both the values and indexes of items in an iterable, so we don’t need to count manually.</p></li>
+</ul>
+<p>Because <code>for</code> loops may run quicker than <code>while</code>-based counter loops, it’s to your advantage to use tools like these that allow you to use <code>for</code> whenever possible. Let’s look at each of these built-ins in turn, in the context of common roles. As you’ll see, some loop-coding alternatives are more valid than others.</p>
+<section data-type="sect2" data-pdf-bookmark="Counter Loops: range"><div class="sect2" id="counter_loops_range">
+<h2>Counter Loops: range</h2>
+<p>Our first loop-related function, <code>range</code>, is a general tool that can be used in a variety of contexts. We met it <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="counters, range object" id="lpctrga"></a><a contenteditable="false" data-type="indexterm" data-primary="counter loops, range object" id="cntrprg"></a><a contenteditable="false" data-type="indexterm" data-primary="range object" data-secondary="counter loops" id="rglpsou"></a>briefly in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a> and have used it occasionally along the way. Although it’s used often to generate indexes in a loop, you can call it anywhere you need a series of integers (see <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>’s enumerated-names trick for a prime example).</p>
+<p>As we’ve seen, <code>range</code> is an <em>iterable</em> that generates items on demand, so we need to wrap it in a <code>list</code> call to display all its results at once in a REPL. Surprisingly, <code>range</code>’s results support <em>some</em> sequence operations, but not all; per <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a>, it was reclassified in Python’s docs as a sort of sequence object type, though one with less functionality than lists and tuples—and much less basis in reality:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(range(5)), list(range(2, 5)), list(range(0, 10, 2))</strong></code>
+([0, 1, 2, 3, 4], [2, 3, 4], [0, 2, 4, 6, 8])
+
+&gt;&gt;&gt; <code><strong>range(5)[2], range(5)[1:3], list(range(5)) + [6, 7]</strong></code>
+(2, range(1, 3), [0, 1, 2, 3, 4, 6, 7])
+
+&gt;&gt;&gt; <code><strong>range(5) + [6, 7]</strong></code>
+TypeError: unsupported operand type(s) for +: 'range' and 'list'</pre>
+<p>Categorization aside, <code>range</code> usage is straightforward, With one argument, <code>range</code> generates a series of integers from zero up to <em>but not including</em> the argument’s value. If you pass in two arguments, the first is taken as the <em>lower</em> bound. And an optional third argument can give a <em>step</em>; if it is used, Python adds the step to each successive integer in the result (the step defaults to +1). Ranges can also be nonpositive and nonascending, if you need them to be:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(range(-5, 5))</strong></code>
+[-5, -4, -3, -2, -1, 0, 1, 2, 3, 4]
+
+&gt;&gt;&gt; <code><strong>list(range(5, -5, -1))</strong></code>
+[5, 4, 3, 2, 1, 0, -1, -2, -3, -4]</pre>
+<p>We’ll take a deeper look at iterables in <a data-type="xref" href="ch14.html#iterations_and_comprehensions">Chapter 14</a>. In this case, Python 2.X had an optimized built-in named <code>xrange</code>, which was like its <code>range</code> but didn’t build a result list in memory all at once; which was later superseded in 3.X by the generator behavior of its <code>range</code>; which was later rebranded a sequence by 3.X docs (confusingly!). The upshot of this long walk is that today’s <code>range</code> doesn’t consume much space, because it produces numbers only on demand.</p>
+<p>Although the preceding <code>range</code> results may be useful all by themselves, they tend to come in most handy within <code>for</code> loops. For one thing, they provide a simple way to repeat an action a specific number of times. To print three lines, for example, use a <code>range</code> to generate the appropriate number of integers:</p>
+<pre data-type="programlisting" class="pagebreak-before">&gt;&gt;&gt; <code><strong>for i in range(3):</strong></code>
+        <code><strong>print(i, 'Pythons')</strong></code>
+   
+0 Pythons
+1 Pythons
+2 Pythons</pre>
+<p>Note that <code>for</code> loops force results from <code>range</code> automatically, so we don’t need <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="counters, range object" data-startref="lpctrga" id="id2688"></a><a contenteditable="false" data-type="indexterm" data-primary="counter loops, range object" data-startref="cntrprg" id="id2689"></a><a contenteditable="false" data-type="indexterm" data-primary="range object" data-secondary="counter loops" data-startref="rglpsou" id="id2690"></a>to use a <code>list</code> wrapper here. In fact, we <em>shouldn’t</em>: letting <code>range</code> produce its results one at a time uses much less memory than forcing them all at once.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Sequence Scans: while, range, and for"><div class="sect2" id="sequence_scans_whilecomma_rangecomma_an">
+<h2>Sequence Scans: while, range, and for</h2>
+<p>The <code>range</code> call is also sometimes used <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="sequence scans" id="qscpl"></a><a contenteditable="false" data-type="indexterm" data-primary="sequence scans" data-secondary="while loop" id="sqwpl"></a><a contenteditable="false" data-type="indexterm" data-primary="sequence scans" data-secondary="range object" id="sqscrg"></a><a contenteditable="false" data-type="indexterm" data-primary="sequence scans" data-secondary="for loop" id="sqsfl"></a><a contenteditable="false" data-type="indexterm" data-primary="while loops" data-secondary="sequence scans" id="whlpsqsc"></a><a contenteditable="false" data-type="indexterm" data-primary="range object" data-secondary="sequence scans" id="rngsqsc"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="sequence scans" id="frplpsqsc"></a>to iterate over a sequence indirectly, though it’s often not the best approach in this role. The easiest and fastest way to step through a sequence exhaustively is almost always with a simple <code>for</code>, because Python handles most of the details for you in quick, internal code:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>X = 'hack'</strong></code>
+&gt;&gt;&gt; <code><strong>for item in X: print(item, end=' ')</strong></code>           <code><em># Automatic iteration with for</em></code>
+   
+h a c k</pre>
+<p>Internally, the <code>for</code> loop handles the details of the iteration automatically when used this way. If you really need to take over the indexing logic explicitly (and sometimes you may), you can do it with a <code>while</code> loop:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>i = 0</strong></code>
+&gt;&gt;&gt; <code><strong>while i &lt; len(X):</strong></code>                             <code><em># Manual iteration with while
+</em></code>        <code><strong>print(X[i], end=' ')</strong></code>
+        <code><strong>i += 1</strong></code>
+   
+h a c k
+&gt;&gt;&gt; <code><strong>i = -1</strong></code>
+&gt;&gt;&gt; <code><strong>while (i := i + 1) &lt; len(X):</strong>  </code>                <code><em># Manual, but with := operator</em></code>
+        <code><strong>print(X[i], end=' ')</strong></code>
+
+h a c k</pre>
+<p>You can also do manual indexing with a <code>for</code>, though, if you use <code>range</code> to generate indexes to iterate through. It’s a multistep process—you must ask for the <code>range</code> of the subject’s <code>len</code>—but it’s sufficient to generate offsets, rather than the items at those offsets:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>X</strong></code>
+'hack'
+&gt;&gt;&gt; <code><strong>len(X)</strong></code>                                        <code><em># Length of string</em></code>
+4
+&gt;&gt;&gt; <code><strong>list(range(len(X)))</strong></code>                           <code><em># All legal offsets into X
+</em></code>[0, 1, 2, 3]
+&gt;&gt;&gt;
+&gt;&gt;&gt; <code><strong>for i in range(len(X)): print(X[i], end=' ')</strong></code>  <code><em># Manual range/len iteration</em></code>
+   
+h a c k</pre>
+<p>Importantly, because this example is stepping over a list of <em>offsets</em> into <code>X</code>, not the actual <em>items</em> of <code>X</code>, we need to index back into <code>X</code> within the loop to fetch each item. If this seems like overkill, though, it’s because it is: there’s really no reason to work this hard in this example.</p>
+<p>Although the <code>range</code>/<code>len</code> combination is useful in some roles, it’s probably not the best option in most. It may run slower, and it’s also more code than we need to write. Unless you have a special indexing requirement, you’re better off using the simple <code>for</code> loop form in Python:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for item in X: print(item, end=' ')</strong></code>           <code><em># Use auto iteration if you can</em></code></pre>
+<p>As guidelines, use <code>for</code> instead of <code>while</code> whenever possible, and don’t use <code>range</code> calls in <code>for</code> loops except as a last resort. This simpler solution is almost always better. Like every good guideline, though, there are plenty of <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="sequence scans" data-startref="qscpl" id="id2691"></a><a contenteditable="false" data-type="indexterm" data-primary="sequence scans" data-secondary="while loop" data-startref="sqwpl" id="id2692"></a><a contenteditable="false" data-type="indexterm" data-primary="sequence scans" data-secondary="range object" data-startref="sqscrg" id="id2693"></a><a contenteditable="false" data-type="indexterm" data-primary="sequence scans" data-secondary="for loop" data-startref="sqsfl" id="id2694"></a><a contenteditable="false" data-type="indexterm" data-primary="while loops" data-secondary="sequence scans" data-startref="whlpsqsc" id="id2695"></a><a contenteditable="false" data-type="indexterm" data-primary="range object" data-secondary="sequence scans" data-startref="rngsqsc" id="id2696"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="sequence scans" data-startref="frplpsqsc" id="id2697"></a>exceptions—as the next section demonstrates.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Sequence Shufflers: range and len"><div class="sect2" id="sequencdata-startrefshufflers_range_and_len">
+<h2>Sequence Shufflers: range and len</h2>
+<p>Though not ideal for simple <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="sequence reordering" id="id2698"></a><a contenteditable="false" data-type="indexterm" data-primary="sequences" data-secondary="reordering" id="id2699"></a><a contenteditable="false" data-type="indexterm" data-primary="range object" data-secondary="sequence reordering" id="id2700"></a><a contenteditable="false" data-type="indexterm" data-primary="len function" data-secondary="sequence reordering" id="id2701"></a>sequence scans, the <code>range</code>/<code>len</code> coding pattern used in the prior example does allow us to do more specialized sorts of traversals when required. For example, some algorithms can make use of sequence <em>reordering</em>—to generate alternatives in searches, to test the effect of different value orderings, and so on. Such cases may require offsets in order to pull sequences apart and put them back together, as in the following; its <code>range</code>’s integers provide a repeat count in the first, and a position for slicing in the second:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S = 'hack'</strong></code>
+&gt;&gt;&gt; <code><strong>for i in range(len(S)):</strong></code>       <code><em># For repeat counts 0..3
+</em></code>        <code><strong>S = S[1:] + S[:1]</strong></code>         <code><em># Move front item to end</em></code>
+        <code><strong>print(S, end=' ')</strong></code>
+   
+ackh ckha khac hack
+
+&gt;&gt;&gt; <code><strong>S</strong></code>
+'hack'
+&gt;&gt;&gt; <code><strong>for i in range(len(S)):</strong></code>       <code><em># For positions 0..3</em></code>
+        <code><strong>X = S[i:] + S[:i]</strong></code>         <code><em># Rear part + front part</em></code>
+        <code><strong>print(X, end=' ')</strong></code>
+   
+hack ackh ckha khac</pre>
+<p>Trace through these one iteration at a time if they seem confusing. The second creates the same results as the first, though in a different order, and doesn’t change the original variable as it goes. Because both slice to obtain parts to concatenate, they also work on any type of sequence, and return sequences of the same type as that being shuffled—if you shuffle a list, you create reordered lists:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2, 3, 4]</strong></code>
+&gt;&gt;&gt; <code><strong>for i in range(len(L)):</strong></code>
+        <code><strong>X = L[i:] + L[:i]</strong></code>         <code><em># Works on any sequence type</em></code>
+        <code><strong>print(X, end=' ')</strong></code>
+ 
+[1, 2, 3, 4] [2, 3, 4, 1] [3, 4, 1, 2] [4, 1, 2, 3]</pre>
+<p>The results of <code>range</code> itself, however, don’t make the grade in either coding (they’re not true sequences!):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = range(4)</strong></code>
+&gt;&gt;&gt; …<code><em>same code as prior example</em></code>…
+TypeError: unsupported operand type(s) for +: 'range' and 'range'</pre>
+<p>We’ll make use of code like this to test functions with different argument orderings in <a data-type="xref" href="ch18.html#arguments">Chapter 18</a>, and will extend it to functions, generators, and more complete permutations in <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a>—it’s a widely useful tool.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Skipping Items: range and Slices"><div class="sect2" id="skipping_items_range_and_slices">
+<h2>Skipping Items: range and Slices</h2>
+<p>The prior section showed one <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="skipping items" id="id2702"></a><a contenteditable="false" data-type="indexterm" data-primary="range object" data-secondary="skipping items" id="id2703"></a><a contenteditable="false" data-type="indexterm" data-primary="slices" data-secondary="skipping items" id="id2704"></a>valid applications for the <code>range</code>/<code>len</code> combination. We might also use this technique to <em>skip</em> items as we go:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S = 'abcdefghijk'</strong></code>
+&gt;&gt;&gt; <code><strong>list(range(0, len(S), 2))</strong></code>
+[0, 2, 4, 6, 8, 10]
+
+&gt;&gt;&gt; <code><strong>for i in range(0, len(S), 2): print(S[i], end=' ')</strong></code>
+   
+a c e g i k</pre>
+<p>Here, we visit every <em>second</em> item in the string <code>S</code> by stepping over the generated <code>range</code> list. To visit every <em>third</em> item, change the third <code>range</code> argument to be <code>3</code>, and so on. In effect, using <code>range</code> this way lets you skip items in loops while still retaining the simplicity of the <code>for</code> statement.</p>
+<p>In many or most cases, though, this is also probably not the “best practice” technique in Python today. If you really mean to skip items in a sequence, the extended three-limit form of the <em>slice expression</em>, presented in <a data-type="xref" href="ch07.html#string_fundamentals">Chapter 7</a>, provides a simpler route to the same goal. To visit every second character in <code>S</code>, for example, slice with a stride of 2:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S = 'abcdefghijk'</strong></code>
+&gt;&gt;&gt; <code><strong>for c in S[::2]: print(c, end=' ')</strong></code>
+   
+a c e g i k</pre>
+<p>The result is the same, but substantially easier for you to write and for others to read. The potential advantage to using <code>range</code> here instead is space: slicing makes a copy of the string, while <code>range</code> does <span class="keep-together">not—and</span> hence may save significant memory for very large strings. Naturally, whether your program needs to care depends on what it does.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Changing Lists: range and Comprehensions"><div class="sect2" id="changing_lists_range_and_comprehensions">
+<h2>Changing Lists: range and Comprehensions</h2>
+<p>Another common place where you may <a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="lists" id="frlplst"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="comprehensions" id="frlpcprh"></a><a contenteditable="false" data-type="indexterm" data-primary="comprehensions" data-secondary="for loops" id="cphnsflp"></a><a contenteditable="false" data-type="indexterm" data-primary="range object" data-secondary="lists" id="rglsts"></a>use the <code>range</code>/<code>len</code> combination with <code>for</code> is in loops that <em>change</em> a list as it is being traversed. Suppose, for example, that you need to add 1 to every item in a list (maybe you’re updating ages at year end). You can try this with a simple <code>for</code> loop, but the result may not be what you want or expect:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [10, 20, 30, 40, 50]</strong></code>
+
+&gt;&gt;&gt; <code><strong>for x in L:</strong></code>
+        <code><strong>x += 1</strong></code>                       <code><em># Changes x, not L!</em></code>
+   
+&gt;&gt;&gt; <code><strong>L     </strong>  </code>                         <code><em># L's objects unchanged</em></code>
+[10, 20, 30, 40, 50] 
+&gt;&gt;&gt; <code><strong>x     </strong>  </code>                         <code><em># x is not a cursor into L</em></code>
+51</pre>
+<p>This doesn’t quite work—it changes the loop variable <code>x</code>, not the list <code>L</code>. The reason is somewhat subtle. Each time through the loop, <code>x</code> refers to the next integer already pulled out of the list. In the first iteration, for example, <code>x</code> is integer <code>10</code>, taken from <code>L</code>, When we then add to <code>x</code> in the loop body with <code>+=</code>, it sets <code>x</code> to a different object, integer <code>11</code>, but it does not update the list where <code>10</code> originally came from; the new <code>11</code> is a piece of memory separate from the list.</p>
+<p class="pagebreak-before">To really change the list as we march across it, we need to use indexes so we can assign an updated value to each position as we go. The <code>range</code>/<code>len</code> combination can produce the required indexes for us:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [10, 20, 30, 40, 50]</strong></code>
+
+&gt;&gt;&gt; <code><strong>for i in range(len(L)):</strong></code>          <code><em># Add one to each item in L</em></code>
+        <code><strong>L[i] += 1</strong></code>                    <code><em># Or L[i] = L[i] + 1</em></code>
+   
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[11, 21, 31, 41, 51]</pre>
+<p>When coded this way, the list is changed as we proceed through the loop. There is no way to do the same with a simple <code>for x in L</code>, because such a loop iterates through actual <em>items</em>, not their positions. But what about the equivalent <code>while</code> loop? Such a loop requires a bit more work on our part, and might run more slowly depending on your Python, your host device, and perhaps the alignment of planets (you’ll see how to check such claims in <a data-type="xref" href="ch21.html#the_benchmarking_interlude">Chapter 21</a>):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>i = 0</strong></code>
+&gt;&gt;&gt; <code><strong>while i &lt; len(L):</strong> </code>               <code><em># And similar with := assignment</em></code>
+        <code><strong>L[i] += 1</strong></code>
+        <code><strong>i += 1</strong></code>
+   
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[12, 22, 32, 42, 52]</pre>
+<p>Here again, though, the <code>range</code> solution may not be ideal either. A list <em>comprehension</em> expression of the form:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>[x + 1 for x in L]</strong></code>
+[13, 23, 33, 43, 53]</pre>
+<p>likely runs faster today and would do similar work, albeit without changing the original list in place (we could assign the expression’s new list object result back to <code>L</code>, but this would not update any other references to the original list). Because this is such <a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="lists" data-startref="frlplst" id="id2705"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="comprehensions" data-startref="frlpcprh" id="id2706"></a><a contenteditable="false" data-type="indexterm" data-primary="comprehensions" data-secondary="for loops" data-startref="cphnsflp" id="id2707"></a><a contenteditable="false" data-type="indexterm" data-primary="range object" data-secondary="lists" data-startref="rglsts" id="id2708"></a>a central looping concept, we’ll save a complete exploration of list comprehensions for the next chapter, and tell the rest of the statements story of loops there.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Parallel Traversals: zip"><div class="sect2" id="parallel_traversals_zip">
+<h2>Parallel Traversals: zip</h2>
+<p>Our next loop coding technique adds to its bag of tricks. As we’ve seen, the <code>range</code> built-in allows us to <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="zip object" id="lpszpbj"></a><a contenteditable="false" data-type="indexterm" data-primary="zip object" id="zpbjt"></a><a contenteditable="false" data-type="indexterm" data-primary="sequences" data-secondary="zip object" id="sqczbj"></a>traverse sequences with <code>for</code> in a nonexhaustive fashion. In a similar spirit, the built-in <code>zip</code> function allows us to use <code>for</code> loops to visit multiple sequences <em>in parallel</em>—not overlapping in time, but during the same loop. In basic operation, <code>zip</code> takes one or more arguments (sequences or other iterables) and returns a series of tuples that pair up parallel items taken from those arguments. For example, suppose we’re working with two lists of data paired by position:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L1 = [1, 2, 3, 4]</strong></code>
+&gt;&gt;&gt; <code><strong>L2 = [5, 6, 7, 8]</strong></code></pre>
+<p>To combine the items in these lists, we can use <code>zip</code> to create a list of tuple pairs. Like <code>range</code>, <code>zip</code> is an <em>iterable</em> object, so we must wrap it in a <code>list</code> call to collect and display all its results at once (again, the next chapter will be more formal about iterables like this):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>zip(L1, L2)  </strong>  </code>                         <code><em># An iterable that generates pairs</em></code>
+&lt;zip object at 0x026523C8&gt;
+&gt;&gt;&gt; <code><strong>list(zip(L1, L2))</strong></code>                       <code><em># list() required to see all results</em></code>
+[(1, 5), (2, 6), (3, 7), (4, 8)]</pre>
+<p>Such a result may be useful in other contexts as well, but when wedded with the <code>for</code> loop, it supports parallel iterations:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for (x, y) in zip(L1, L2):</strong></code>
+<code> <strong>       print(f'{x} + {y} =&gt; {x + y}')</strong></code>
+    
+1 + 5 =&gt; 6
+2 + 6 =&gt; 8
+3 + 7 =&gt; 10
+4 + 8 =&gt; 12</pre>
+<p>Here, we step over the result of the <code>zip</code> call—that is, the pairs of items pulled from the two lists. Notice that this <code>for</code> loop again uses the tuple (a.k.a. sequence) assignment form we met earlier to unpack each tuple in the <code>zip</code> result. The first time through, it’s as though we ran the assignment statement <code>(x, y) = (1, 5)</code> ; and so on.</p>
+<p>The net effect is that we scan both <code>L1</code> <em>and</em> <code>L2</code> in our loop. To be sure, we could achieve a similar effect with a <code>while</code> loop that handles indexing manually—like the following that produces the same output as the preceding:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>i = -1</strong></code>
+&gt;&gt;&gt; <code><strong>while (i := i + 1) &lt; len(L1):</strong></code>
+       <code><strong>print(f'{L1[i]} + {L2[i]} =&gt; {L1[i] + L2[i]}')</strong></code></pre>
+<p>But this requires noticeably more code, and hence would likely run slower than the <code>for</code>/<code>zip</code> approach. Moreover, it’s no better on space: being an iterable, <code>zip</code> makes just one pair per loop, and so does not consume memory needlessly. The clincher, though, is that this is not really equivalent to <code>zip</code>—for reasons disclosed in the next section.</p>
+<section data-type="sect3" data-pdf-bookmark="More on zip: size and truncation"><div class="sect3" id="more_on_zip_size_and_truncation">
+<h3>More on zip: size and truncation</h3>
+<p>For the record, the <code>zip</code> function is more general than the prior example suggests. For instance, it both <em>is</em> an iterable and <em>accepts</em> any type of iterable object, including <code>range</code> results, input files, and more:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(zip(range(4), 'hack'))</strong></code>
+[(0, 'h'), (1, 'a'), (2, 'c'), (3, 'k')]</pre>
+<p>In addition, <code>zip</code> is not just for two-item pairs: it accepts any number of <em>arguments</em>, of any <em>size</em>. The following, for example, builds a list of three-item tuples for three arguments, with items from each sequence—essentially projecting by columns:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>T1, T2, T3 = (1, 2, 3), (4, 5, 6), (7, 8, 9)</strong></code>
+&gt;&gt;&gt; <code><strong>T3</strong></code>
+(7, 8, 9)
+&gt;&gt;&gt; <code><strong>list(zip(T1, T2, T3))</strong></code>                   <code><em># 3 args of 3 vals =&gt; 3 3-item tuples
+</em></code>[(1, 4, 7), (2, 5, 8), (3, 6, 9)]</pre>
+<p>And formally speaking, for <em>N</em> arguments that contain <em>M</em> items, <code>zip</code> gives us an <em>M</em>-long series of <em>N</em>-ary tuples:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(zip(T1, T2))</strong>   </code>                    <code><em># 2 args of 3 vals =&gt; 3 2-item tuples</em></code>
+[(1, 4), (2, 5), (3, 6)]</pre>
+<p>When argument lengths differ, <code>zip</code> <em>truncates</em> the series of result tuples at the length of the shortest sequence. To demo, the following zips two strings to pick out characters in parallel, but the result has only as many tuples as the length of the shortest sequence (formally again, <em>M</em> in the prior definition is really the minimum of arguments’ lengths):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S1 = 'abc'</strong></code>
+&gt;&gt;&gt; <code><strong>S2 = 'xyz123'</strong></code>
+&gt;&gt;&gt;
+&gt;&gt;&gt; <code><strong>list(zip(S1, S2))</strong></code>                       <code><em># Truncates at len(shortest)</em></code>
+[('a', 'x'), ('b', 'y'), ('c', 'z')]</pre>
+<p>To pad instead of truncating, you can write loop code to pad results yourself—as we will in <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a>, after we’ve had a chance to study some additional iteration concepts that make it a fair fight.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="More zip roles: dictionaries"><div class="sect3" id="more_zip_roles_dictionaries">
+<h3>More zip roles: dictionaries</h3>
+<p>Fine points aside, parallel traversals <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="zip object" id="id2709"></a>with <code>zip</code> are also useful in <em>dictionary</em> construction. We met this technique in <a data-type="xref" href="ch08.html#lists_and_dictionaries">Chapter 8</a>, but here’s a quick refresher in the context of looping statements. As we learned earlier, you can always create a dictionary by calling <code>dict</code>, assigning to keys over time, or coding a dictionary literal like the following:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D1 = {'app': 1, 'script': 3, 'program':5}</strong></code>          <code><em># Or dict(key=value,…)</em></code>
+&gt;&gt;&gt; <code><strong>D1</strong></code>
+{'app': 1, 'script': 3, 'program': 5}</pre>
+<p>What to do, though, if your program obtains dictionary keys and values at runtime, after you’ve coded your script? For example, the following may be collected from a user, a file, or any other dynamic source:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>keys = ['app', 'script', 'program']</strong></code>
+&gt;&gt;&gt; <code><strong>vals = [1, 3, 5]</strong></code></pre>
+<p>One way to turn these into a dictionary is to <code>zip</code> the lists and step through them in parallel with a <code>for</code> loop:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(zip(keys, vals))</strong></code>
+[('app', 1), ('script', 3), ('program', 5)] 
+
+&gt;&gt;&gt; <code><strong>D2 = {}</strong></code>
+&gt;&gt;&gt; <code><strong>for (k, v) in zip(keys, vals): D2[k] = v</strong></code>
+   
+&gt;&gt;&gt; <code><strong>D2</strong></code>
+{'app': 1, 'script': 3, 'program': 5}</pre>
+<p>As suggested earlier in this book, though, you can skip the <code>for</code> loop altogether in this context, and simply pass the zipped keys/values lists to the built-in <code>dict</code> constructor call:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D3 = dict(zip(keys, vals))</strong></code>
+&gt;&gt;&gt; <code><strong>D3</strong></code>
+{'app': 1, 'script': 3, 'program': 5}</pre>
+<p>The built-in name <code>dict</code> is really a <em>type</em> name (you’ll learn about type names, and subclassing them, in <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>). Calls to it are object construction requests, but also perform a to-dictionary conversion here. In the next chapter, you’ll also learn more about related but richer concepts—list comprehensions, which build lists in expressions, and their dictionary comprehensions kin, which are an <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="zip object" data-startref="lpszpbj" id="id2710"></a><a contenteditable="false" data-type="indexterm" data-primary="zip object" data-startref="zpbjt" id="id2711"></a><a contenteditable="false" data-type="indexterm" data-primary="sequences" data-secondary="zip object" data-startref="sqczbj" id="id2712"></a>alternative to both <code>for</code> statements and <code>dict</code> for zipped key/value pairs:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>{k: v for (k, v) in zip(keys, vals)}</strong></code>
+{'app': 1, 'script': 3, 'program': 5}</pre>
+</div></section>
+</div></section>
+<section data-type="sect2" class="pagebreak-before" data-pdf-bookmark="Offsets and Items: enumerate"><div class="sect2" id="offsets_and_items_enumerate">
+<h2 class="less_space">Offsets and Items: enumerate</h2>
+<p>Our final loop-helper function is designed to <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="enumerate function" id="lpsenmfc"></a><a contenteditable="false" data-type="indexterm" data-primary="enumerate function, loops" id="enmfclps"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="offsets" id="lpsffst"></a><a contenteditable="false" data-type="indexterm" data-primary="offsets" id="ffsetoo"></a>support dual usage modes. Earlier, we discussed using <code>range</code> to generate the offsets of items in a string, rather than the items at those offsets. In some programs, though, we need <em>both</em>: the item to use, plus an offset as we go. This might be coded with a <code>for</code> loop that also keeps a counter of the current offset:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S = 'hack'</strong></code>
+&gt;&gt;&gt; <code><strong>offset = 0</strong></code>
+&gt;&gt;&gt; <code><strong>for item in S:</strong></code>
+        <code><strong>print(item, 'appears at offset', offset)</strong></code>
+        <code><strong>offset += 1</strong></code>
+   
+h appears at offset 0
+a appears at offset 1
+c appears at offset 2
+k appears at offset 3</pre>
+<p>This works, but Python has a built-in function named <code>enumerate</code> that does the job for us—its net effect is to give loops a counter “for free,” without sacrificing the simplicity of automatic iteration:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S = 'hack'</strong></code>
+&gt;&gt;&gt; <code><strong>for (offset, item) in enumerate(S):</strong></code>
+        <code><strong>print(item, 'appears at offset', offset)</strong></code>
+
+h appears at offset 0
+a appears at offset 1
+c appears at offset 2
+k appears at offset 3</pre>
+<p>As for <code>range</code> and <code>zip</code>, the <code>enumerate</code> function’s result is an <em>iterable</em>—a kind of object that supports the iteration protocol that we will dive into in the next chapter. In short, it has a method called by the <code>next</code> built-in function, which returns an <code>(<em>index</em>, <em>value</em>)</code> tuple each time through the loop. The <code>for</code> steps through these tuples automatically, which allows us to unpack their values with tuple assignment, much as we did for <code>zip</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>E = enumerate(S)</strong></code>
+&gt;&gt;&gt; <code><strong>E</strong></code>
+&lt;enumerate object at 0x10ebd7880&gt;
+&gt;&gt;&gt; <code><strong>next(E)</strong></code>
+(0, 'h')
+&gt;&gt;&gt; <code><strong>next(E)</strong></code>
+(1, 'a')
+&gt;&gt;&gt; <code><strong>next(E)</strong></code>
+(2, 'c')</pre>
+<p>We don’t normally see this machinery because all iteration contexts—including list comprehensions, the main subject of <a data-type="xref" href="ch14.html#iterations_and_comprehensions">Chapter 14</a>—run the iteration protocol automatically:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>[c * i for (i, c) in enumerate(S)]</strong></code>
+['', 'a', 'cc', 'kkk']
+
+&gt;&gt;&gt; <code><strong>for (ix, line) in enumerate(open('data.txt')):</strong></code>
+        <code><strong>print(f'{ix}) {line.rstrip()}')</strong></code>
+   
+0) Testing file IO
+1) Learning Python, 6E
+2) Python 3.12</pre>
+<p>To fully understand iteration concepts like <code>enumerate</code> and list comprehensions, though, we need to move on to the <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="enumerate function" data-startref="lpsenmfc" id="id2713"></a><a contenteditable="false" data-type="indexterm" data-primary="enumerate function, loops" data-startref="enmfclps" id="id2714"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="offsets" data-startref="lpsffst" id="id2715"></a><a contenteditable="false" data-type="indexterm" data-primary="offsets" data-startref="ffsetoo" id="id2716"></a>next chapter for a deeper dissection.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00023">
+<h1>Chapter Summary</h1>
+<p>In this chapter, we explored Python’s looping statements and their related tools. We looked at the <code>while</code> and <code>for</code> loop statements in depth, and we learned about their associated <code>else</code> clauses. We also studied the <code>break</code> and <code>continue</code> statements, which have meaning only inside loops, and met several built-ins commonly used in <code>for</code> loops, including <code>range</code>, <code>zip</code>, and <code>enumerate</code>, although some of the details regarding their roles as iterables were intentionally cut short.</p>
+<p>In the next chapter, we continue the iteration story by discussing list comprehensions and the iteration protocol in Python—concepts strongly related to <code>for</code> loops. There, we’ll also fill in the rest of the picture behind the iterable tools we met here, such as <code>range</code> and <code>zip</code>, and study some of the subtleties of their operation. As always, though, before moving on let’s exercise the knowledge you’ve picked up here with a quiz.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000147">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>What are the main functional differences between <code>while</code> and <code>for</code> loops?</p></li>
+<li><p>What’s the difference between <code>break</code> and <code>continue</code>?</p></li>
+<li><p>When is a loop’s <code>else</code> clause executed?</p></li>
+<li><p>How can you code a counter-based loop in Python?</p></li>
+<li><p>What can a <code>range</code> be used for in a <code>for</code> loop?</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000146">
+<h1>Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>The <code>while</code> loop is a general looping statement, but the <code>for</code> is designed to automatically iterate across items in a sequence or other iterable. Although the <code>while</code> can imitate the <code>for</code> with counter loops, it takes more code and might run slower.</p></li>
+<li><p>The <code>break</code> statement exits a loop immediately (control flow winds up below the entire <code>while</code> or <code>for</code> loop statement), and <code>continue</code> jumps back to the top of the loop (control flow winds up positioned just before the test in <code>while</code> or the next item fetch in <code>for</code>).</p></li>
+<li><p>The <code>else</code> clause in a <code>while</code> or <code>for</code> loop will be run once as the loop is exiting, if and only if the loop exits normally (i.e., by a false test in <code>while</code> or an empty object in <code>for</code>), without running into a <code>break</code> statement. A <code>break</code> exits the loop immediately, skipping the <code>else</code> part on the way out (if there is one).</p></li>
+<li><p>Counter loops can be coded with a <code>while</code> statement that keeps track of the index manually, or with a <code>for</code> loop that uses the <code>range</code> built-in function to generate successive integer offsets. Neither is the preferred way to code in Python, if you need to simply step across all the items in a sequence. Instead, use a simple <code>for</code> loop without <code>range</code> or counters, whenever possible; it will be easier to code and usually quicker to run.</p></li>
+<li class="pagebreak-before"><p>The <code>range</code> built-in can be used in a <code>for</code> loop to implement a fixed number of repetitions, to scan by offsets instead of items at offsets, to skip successive items as you go, and to change a list while stepping across it. None of these roles requires <code>range</code>, and most have alternatives—scanning actual items, three-limit slices, and list comprehensions are often better solutions today (despite the natural inclinations of ex–C programmers to want to count things!).</p></li>
+</ol>
+<aside data-type="sidebar" epub:type="sidebar"><div class="sidebar" id="why_you_will_care_file_scanners">
+<h1>Why You Will Care: File Scanners</h1>
+<p>Loops come in handy anywhere you need to repeat an operation or process something more than once. Because <em>text files</em> contain multiple characters and lines, they are a typical role for loops. Assuming a file’s contents can fit in memory, you can load it all at once with the file object’s <code>read</code> method of <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a>:</p>
+<pre data-type="programlisting">file = open('data.txt')          <code><em># Read contents into a string all at once
+</em></code>print(file.read())</pre>
+<p>For more granular access, you can scan by <em>characters</em> instead with either of the following—the second of which doesn’t load the whole file and has grown terser with the <code>:=</code> named assignment of <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>:</p>
+<pre data-type="programlisting">for char in open('data.txt').read():
+    print(char, end='')
+
+file = open('data.txt')
+while char := file.read(1):      <code><em># Read by character, empty means end-of-file</em></code>
+    print(char, end='')          <code><em># Don't add a \n after each character</em></code></pre>
+<p>To read by <em>lines</em> or <em>blocks</em> instead, you can use <code>while</code> loops like the following; binary data is often read by blocks using binary file mode <code>'rb'</code>, but text should use text mode to avoid splitting character bytes:</p>
+<pre data-type="programlisting">file = open('data.txt')
+while line := file.readline():   <code><em># Read line by line</em></code>
+    print(line.rstrip())         <code><em># Line already has a \n newline
+</em></code>
+file = open('data.txt')
+while chunk := file.read(10):    <code><em># Read block by block: up to 10 characters</em></code>
+    print(chunk, end='')         <code><em># Keep but don't add newlines</em></code></pre>
+<p>To read text files by <em>lines</em>, though, the <code>for</code> loop tends to be easiest to code and may be quickest to run:</p>
+<pre data-type="programlisting">for line in open('data.txt').readlines():
+    print(line.rstrip())
+
+for line in open('data.txt'):   <code><em># Use iterators: best for text input (maybe)</em></code>
+    print(line.rstrip())</pre>
+<p>The first version here uses the file <code>readlines</code> method to load a file all at once into a line-string list, but the second example relies on file <em>iterators</em> to automatically read one line on each loop iteration.</p>
+<p>The second example is also generally best for text files—besides its simplicity, it works for arbitrarily large files because it doesn’t load the entire file into memory all at once. The iterator version may also be the quickest, though speed can vary per Python release (we’ll study ways to time code later in this book).</p>
+<p>File <code>readlines</code> calls can still be useful, though—to <em>reverse</em> a file’s lines, for example, assuming its content can fit in memory. The <code>reversed</code> built-in works on sequences, but does not accept iterables that generate values; <code>sorted</code>, by contrast, does, so it can order all the lines in a file without loading it in full:</p>
+<pre data-type="programlisting">for line in reversed(open('data.txt').readlines()): 
+    print(line.rstrip())
+
+for line in sorted(open('data.txt')): 
+    print(line.rstrip())</pre>
+<p>See Python’s documentation for more on the file-object calls used here—as well as its coverage of tools like <code>os.popen</code> that returns a file object connected to a <em>shell command</em>’s output (by default), and hence supports the same sort of loops. There’s also an <code>os.popen</code> example in <a data-type="xref" href="ch21.html#the_benchmarking_interlude">Chapter 21</a>, and more on the distinctions of text and binary files in <a data-type="xref" href="ch37.html#unicode_and_byte_strings">Chapter 37</a> when we dive into Unicode more deeply.</p>
+</div></aside>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>

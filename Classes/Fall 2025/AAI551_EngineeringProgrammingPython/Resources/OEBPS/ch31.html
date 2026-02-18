@@ -1,0 +1,1229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 31. Designing with Classes"><div class="chapter" id="designing_with_classes">
+<h1><span class="label">Chapter 31. </span>Designing with Classes</h1>
+<p>So far in this part of the book, we’ve concentrated on using Python’s OOP tool, the <em>class</em>. But OOP is also about <em>design</em>—that is, how to use classes to model useful objects. Toward this end, this chapter codes common OOP design patterns in Python, such as inheritance, composition, delegation, and factories. Along the way, we’ll also investigate some design-focused class concepts, such as pseudoprivate attributes, multiple inheritance, and bound methods. Because multiple inheritance is dependent on the MRO search order, we’ll finally explore that here too.</p>
+<p>One note up front: some of the design terms mentioned here require more coverage than this book can provide. If this material sparks your curiosity, you may want to consider exploring a text on OOP design or design patterns as a next step. As you’ll see, the good news is that Python makes many traditional design patterns almost trivial.</p>
+<section data-type="sect1" data-pdf-bookmark="Python and OOP"><div class="sect1" id="python_and_oop">
+<h1>Python and OOP</h1>
+<p>Let’s begin with a review—Python’s implementation of OOP can be summarized by three ideas:</p>
+<dl>
+<dt>Inheritance</dt>
+<dd>Inheritance is based on attribute lookup <a contenteditable="false" data-type="indexterm" data-primary="inheritance" id="id4077"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="inheritance" id="opoheri"></a>in Python (in <code>X.name</code> expressions).</dd>
+<dt>Polymorphism</dt>
+<dd>In <code>X.method</code>, the <a contenteditable="false" data-type="indexterm" data-primary="polymorphism" id="id4078"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="polymorphism" id="id4079"></a>meaning of <code>method</code> depends on the type (class) of subject object <code>X</code>.</dd>
+<dt>Encapsulation</dt>
+<dd>Methods and operators implement behavior, though <a contenteditable="false" data-type="indexterm" data-primary="encapsulation" id="id4080"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="encapsulation" id="id4081"></a>data hiding is a convention by default.</dd>
+</dl>
+<p>By now, you should have a good feel for what basic <em>inheritance</em> is all about in Python, so we’ll take it as a given here. As you’ve learned, it’s the mechanism behind flexible code customization.</p>
+<p>We’ve also talked about Python’s <em>polymorphism</em> a few times already. It flows from Python’s lack of type declarations (per <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>, the optional, unused, and paradoxical “type hinting” doesn’t qualify). Because attributes are always resolved at runtime, objects that implement the same interfaces are automatically interchangeable; clients don’t need to know what sorts of objects are implementing the methods they call.</p>
+<p>Newer here, <em>encapsulation</em> in Python <a contenteditable="false" data-type="indexterm" data-primary="encapsulation" data-secondary="packaging" id="id4082"></a><a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="encapsulation" id="id4083"></a>means <em>packaging</em>—that is, hiding implementation details behind an object’s interface. It does not mean enforced privacy, though that can be partly implemented with code, as you’ll see in <a data-type="xref" href="ch39.html#decorators">Chapter 39</a>. Encapsulation is available and useful in Python nonetheless: it allows the implementation of an object’s interface to be changed without impacting the users of that object.</p>
+<section data-type="sect2" data-pdf-bookmark="Polymorphism Means Interfaces, Not Call Signatures"><div class="sect2" id="polymorphism_means_interfacescomma_not">
+<h2>Polymorphism Means Interfaces, Not Call Signatures</h2>
+<p>Some OOP languages also <a contenteditable="false" data-type="indexterm" data-primary="polymorphism" data-secondary="interfaces and" id="id4084"></a>define polymorphism to mean overloading functions based on the type signatures of their <em>arguments</em>—the number passed and/or their types. Because there are no real type declarations in Python, this concept doesn’t apply; as we’ve seen, polymorphism in Python is based on object <em>interfaces</em>, not types.</p>
+<p>If you’re pining for your C++ days, you can try to overload methods by their argument lists, like this:</p>
+<pre data-type="programlisting">class C:
+    def meth(self, x):
+        …
+    def meth(self, x, y, z):
+        …</pre>
+<p>Such code will run without error, but because the <code>def</code> simply assigns an object to a name in the class’s scope, the <em>last</em> definition of the method function is the only one that will be retained. Put another way, it’s just as if you say <code>X = 1</code> and then <code>X = 2</code>; at the end, <code>X</code> will be <code>2</code>. Hence, there can be only one definition of a method name. Per <a data-type="xref" href="ch29.html#class_coding_details">Chapter 29</a>, this includes <code>__init__</code> constructors, which are only special because of when they are run.</p>
+<p>If call-signature dispatch is truly required, you can always code type-based selections using the type-testing ideas we met in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch04.html#introducing_python_objects">4</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch09.html#tuplescomma_filescomma_and_everything_e">9</a>, or the argument-list tools introduced in <a data-type="xref" href="ch18.html#arguments">Chapter 18</a>:</p>
+<pre data-type="programlisting">class C:
+    def meth(self, *args):
+        if len(args) == 1:              <code><em># Branch on number arguments</em></code>
+            …
+        elif type(arg[0]) == int:       <code><em># Branch on argument types (or isinstance())</em></code>
+            …</pre>
+<p>You normally shouldn’t do this, though—it’s not the “Python way.” As explained in <a data-type="xref" href="ch16.html#function_basics">Chapter 16</a>, you should write your code to expect only an object <em>interface</em>, not a specific object <em>type</em>. That way, it will be useful for a broader category of types and applications, both now and in the future:</p>
+<pre data-type="programlisting">class C:
+    def meth(self, x):
+        x.operation()                   <code><em># Assume x does the right thing</em></code></pre>
+<p>It’s also generally considered better to use distinct method <em>names</em> for distinct operations rather than relying on call signatures (no matter what language you code in).</p>
+<p>But enough review. Although Python’s object model is straightforward, much of the art in OOP is in the way we combine classes to achieve a program’s goals. The next section begins a tour of some of the ways larger programs use classes to their advantage.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="OOP and Inheritance: “Is-a” Relationships"><div class="sect1" id="oop_and_inheritance_quotation_markis_aq">
+<h1>OOP and Inheritance: “Is-a” Relationships</h1>
+<p>We’ve explored the mechanics of <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="OOP" id="ihtncpoo"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="is-a relationships" id="hrisarl"></a><a contenteditable="false" data-type="indexterm" data-primary="is-a relationships, inheritance" id="isrlpht"></a>inheritance in depth already; let’s turn to an example of how it can be used to model real-world relationships. From a <em>programmer’s</em> point of view, inheritance is kicked off by attribute qualifications, which trigger searches for names in instances, their classes, and then any superclasses. From a <em>designer’s</em> point of view, inheritance is a way to specify set membership: a class defines a set of properties that may be inherited and customized by more specific sets (i.e., subclasses).</p>
+<p>To illustrate, let’s put that pizza-making robot we talked about at the start of this part of the book to work. Suppose we’ve decided to explore alternative career paths and open a pizza restaurant (not bad, as career paths go). One of the first things we’ll need to do is hire employees to serve customers, prepare the food, and so on. Being engineers at heart, we’ve decided to build a robot to make the pizzas, but being politically and cybernetically correct, we’ve also decided to make our robot a full-fledged employee with a salary.</p>
+<p>Our pizza shop team can be simulated by the four classes in <a data-type="xref" href="#example_threeone_onedot_employeesdotpy">Example 31-1</a>, <em>employees.py</em>. The most general class, <code>Employee</code>, is a takeoff on <a data-type="xref" href="ch28.html#a_more_realistic_example">Chapter 28</a>’s demo. It provides common behavior such as bumping up salaries (<code>giveRaise</code>) and printing (<code>__repr__</code>). There are two kinds of employees, and so there are two subclasses of <code>Employee</code>—<code>Chef</code> and <code>Server</code>. Both override the inherited <code>work</code> method to print more specific messages. Finally, our pizza robot is modeled by an even more specific class—<code>PizzaRobot</code> is a kind of <code>Chef</code>, which is a kind of <code>Employee</code>. In OOP terms, we call these relationships “<em>is-a</em>” links: a robot is a chef, which is an employee.</p>
+<div data-type="example" id="example_threeone_onedot_employeesdotpy">
+<h5><span class="label">Example 31-1. </span>employees.py</h5>
+<pre data-type="programlisting">class Employee:
+    def __init__(self, name, salary=0):
+        self.name   = name
+        self.salary = salary
+    def giveRaise(self, percent):
+        self.salary += self.salary * percent
+    def work(self):
+        print(self.name, 'does stuff')
+    def __repr__(self):
+        return (f'&lt;{self.__class__.__name__}: '
+                f'name="{self.name}", salary={self.salary:,.2f}&gt;')
+
+class Chef(Employee):
+    def __init__(self, name):
+        Employee.__init__(self, name, 50000)
+    def work(self):
+        print(self.name, 'makes food')
+
+class Server(Employee):
+    def __init__(self, name):
+        Employee.__init__(self, name, 40000)
+    def work(self):
+        print(self.name, 'interfaces with customer')
+
+class PizzaRobot(Chef):
+    def __init__(self, name):
+        Chef.__init__(self, name)
+    def work(self):
+        print(self.name, 'makes pizza')
+
+if __name__ == '__main__':
+    pat = PizzaRobot('pat')       <code><em># Make a robot named pat</em></code>
+    print(pat)                    <code><em># Run inherited __repr__</em></code>
+    pat.work()                    <code><em># Run type-specific action</em></code>
+    pat.giveRaise(0.20)           <code><em># Give pat a 20% raise</em></code>
+    print(pat); print()
+
+    for klass in Employee, Chef, Server, PizzaRobot:
+        object = klass(klass.__name__)
+        object.work()</pre>
+</div>
+<p>When we run the self-test code included in this module, we create a pizza-making robot named <code>pat</code>, which inherits names from three classes: <code>PizzaRobot</code>, <code>Chef</code>, and <code>Employee</code>. For instance, printing and giving a raise to <code>pat</code> runs the <code>Employee</code> class’s<code> __repr__</code> and <code>giveRaise</code> methods two levels up, respectively, simply because that’s where the inheritance search finds these methods:</p>
+<pre data-type="programlisting">$ <code><strong>python3 employees.py</strong></code>
+&lt;PizzaRobot: name="pat", salary=50,000.00&gt;
+pat makes pizza
+&lt;PizzaRobot: name="pat", salary=60,000.00&gt;
+
+Employee does stuff
+Chef makes food
+Server interfaces with customer
+PizzaRobot makes pizza</pre>
+<p>In a class hierarchy like this, you can usually make instances of any of the classes, not just the ones at the bottom. For instance, the <code>for</code> loop in this module’s self-test code creates instances of all four classes; each responds differently when asked to work because the <code>work</code> method is different in each. <code>pat</code> the robot, for example, gets <code>work</code> from the most specific (i.e., lowest) <code>PizzaRobot</code> class.</p>
+<p>Of course, these classes just <em>simulate</em> real-world objects; <code>work</code> prints a message for the time being, but it could be expanded to do real work later (see Python’s interfaces to devices such as serial ports, Arduino boards, and the Raspberry Pi if you’re taking this section much too literally!).</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>The super re-reminder</em>: Notice how <a data-type="xref" href="#example_threeone_onedot_employeesdotpy">Example 31-1</a> uses explicit class calls to run superclass constructors; this is how <code>PizzaRobot</code> salaries are set. Per the sidebar <a data-type="xref" href="ch28.html#the_super_alternative">“The super Alternative”</a>, these could also use the <code>super().__init__(…)</code> form explored in the next chapter. As you’ll find, this call avoids having to pass <code>self</code> along in single-inheritance trees like those here, but it’s much more complex in the multiple-inheritance contexts you’ll meet ahead. If you’re anxious to see what this looks <a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="inheritance" data-startref="opoheri" id="id4085"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="OOP" data-startref="ihtncpoo" id="id4086"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="is-a relationships" data-startref="hrisarl" id="id4087"></a><a contenteditable="false" data-type="indexterm" data-primary="is-a relationships, inheritance" data-startref="isrlpht" id="id4088"></a>like now, see the alternative <em>employees-super.py</em> in the examples package.</p>
+</div>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="OOP and Composition: “Has-a” Relationships"><div class="sect1" id="oop_and_composition_quotation_markhas_a">
+<h1>OOP and Composition: “Has-a” Relationships</h1>
+<p>The notion of composition was introduced in <a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="composition" id="oobpcpo"></a><a contenteditable="false" data-type="indexterm" data-primary="composition" data-secondary="OOP" id="copopoop"></a><a contenteditable="false" data-type="indexterm" data-primary="composition" data-secondary="has-a relationships" id="cphsrel"></a><a contenteditable="false" data-type="indexterm" data-primary="has-a relationships, composition" id="hascposr"></a>Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch26.html#oop_the_big_picture">26</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch28.html#a_more_realistic_example">28</a>. From a <em>programmer’s</em> perspective, composition involves embedding other objects in a container object and activating them to implement container methods. To a <em>designer</em>, composition is another way to represent relationships in a problem domain. But, rather than set membership, composition has to do with components—parts of a whole.</p>
+<p>Composition also reflects the relationships between parts, called “<em>has-a</em>” relationships. Some OOP design texts refer to composition as <em>aggregation</em> or distinguish <a contenteditable="false" data-type="indexterm" data-primary="aggregation" data-secondary="composition" id="id4089"></a><a contenteditable="false" data-type="indexterm" data-primary="composition" data-secondary="aggregation" id="id4090"></a>between the two terms by using aggregation to describe a weaker dependency between container and contained. In this text, a “composition” simply refers to a collection of embedded objects. The composite class generally provides an interface all its own and implements it by directing the embedded objects.</p>
+<p>Now that we’ve implemented our employees, let’s put them in the pizza shop and let them get busy. Our pizza shop is a composite object: it has an oven, and it has employees like servers and chefs. When a customer enters and places an order, the components of the shop spring into action—the server takes the order, the chef makes the pizza, and so on. <a data-type="xref" href="#example_threeone_twodot_pizzashopdotpy">Example 31-2</a>—file <em>pizzashop.py</em>—simulates all the objects and relationships in this scenario.</p>
+<div data-type="example" id="example_threeone_twodot_pizzashopdotpy">
+<h5><span class="label">Example 31-2. </span>pizzashop.py</h5>
+<pre data-type="programlisting">from employees import PizzaRobot, Server    <code><em># From Example 31-1</em></code>
+
+class Customer:
+    def __init__(self, name):
+        self.name = name
+    def order(self, server):
+        print(self.name, 'orders from', server)
+    def pay(self, server):
+        print(self.name, 'pays for item to', server)
+
+class Oven:
+    def bake(self):
+        print('oven bakes')
+
+class PizzaShop:
+    def __init__(self):
+        self.server = Server('Jan')         <code><em># Embed other objects</em></code>
+        self.chef   = PizzaRobot('Pat')     <code><em># A robot named Pat</em></code>
+        self.oven   = Oven()
+
+    def order(self, name):
+        customer = Customer(name)           <code><em># Activate other objects</em></code>
+        customer.order(self.server)         <code><em># Customer orders from server</em></code>
+        self.chef.work()
+        self.oven.bake()
+        customer.pay(self.server)
+
+if __name__ == '__main__':
+    scene = PizzaShop()                     <code><em># Make the composite</em></code>
+    scene.order('Sue')                      <code><em># Simulate Sue's order</em></code>
+    print('...')
+    scene.order('Bob')                      <code><em># Simulate Bob's order</em></code></pre>
+</div>
+<p>The <code>PizzaShop</code> class is a container and controller; its constructor makes and embeds instances of the employee classes we wrote in the prior section, as well as an <code>Oven</code> class defined here. When this module’s self-test code calls the <code>PizzaShop</code>’s <code>order</code> method, the embedded objects are asked to carry out their actions in turn.</p>
+<p>Notice that we make a new <code>Customer</code> object for each order, and we pass on the embedded <code>Server</code> object to <code>Customer</code> methods; customers come and go, but the server is part of the pizza shop composite. Also notice that employees are still involved in an inheritance relationship; composition and inheritance are complementary tools.</p>
+<p>When we run this module, our pizza shop handles two orders—one from Sue and then one from Bob (overlapping orders with the <code>async</code> coroutines of <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a> is explicitly out of scope here):</p>
+<pre data-type="programlisting">$ <code><strong>python3 pizzashop.py</strong></code>
+Sue orders from &lt;Server: name="Jan", salary=40,000.00&gt;
+Pat makes pizza
+oven bakes
+Sue pays for item to &lt;Server: name="Jan", salary=40,000.00&gt;
+...
+Bob orders from &lt;Server: name="Jan", salary=40,000.00&gt;
+Pat makes pizza
+oven bakes
+Bob pays for item to &lt;Server: name="Jan", salary=40,000.00&gt;</pre>
+<p>Again, this is mostly just a toy simulation, but the objects and interactions are representative of composites at work. As a rule of thumb, classes can represent just about any objects and relationships you can express in a sentence; just replace <em>nouns</em> with classes (e.g., <code>Oven</code>) and <em>verbs</em> with methods (e.g., <code>bake</code>), and you’ll have a first cut at a design.</p>
+<section data-type="sect2" data-pdf-bookmark="Stream Processors Revisited"><div class="sect2" id="stream_processors_revisited">
+<h2>Stream Processors Revisited</h2>
+<p>For a composition example that may <a contenteditable="false" data-type="indexterm" data-primary="composition" data-secondary="stream processors" id="id4091"></a><a contenteditable="false" data-type="indexterm" data-primary="stream processors, composition" id="id4092"></a>be a bit more tangible than pizza-making robots, recall the generic data-stream processor function we partially coded in the introduction to OOP in <a data-type="xref" href="ch26.html#oop_the_big_picture">Chapter 26</a>, repeated here for ease:</p>
+<pre data-type="programlisting">def processor(reader, converter, writer):
+    while True:
+        data = reader.read()
+        if not data: break
+        data = converter(data)
+        writer.write(data)</pre>
+<p>Rather than using a simple function here, we might code this as a class that uses composition to do its work in order to provide more structure and support inheritance. <a data-type="xref" href="#example_threeone_threedot_streamsdotpy">Example 31-3</a>, file <em>streams.py</em>, demonstrates one way to code the class (it also mutates one method name, <code>readline</code>, because we’re actually going to run this code here).</p>
+<div data-type="example" id="example_threeone_threedot_streamsdotpy">
+<h5><span class="label">Example 31-3. </span>streams.py</h5>
+<pre data-type="programlisting">class Processor:
+    def __init__(self, reader, writer):
+        self.reader = reader
+        self.writer = writer
+
+    def process(self):
+        while True:
+            data = self.reader.readline()
+            if not data: break
+            data = self.converter(data)
+            self.writer.write(data)
+
+    def converter(self, data):
+        assert False, 'converter must be defined'       <code><em># Or raise exception</em></code></pre>
+</div>
+<p>This class defines a <code>converter</code> method that it expects subclasses to fill in; it’s an example of the <em>abstract superclass</em> model we outlined in <a data-type="xref" href="ch29.html#class_coding_details">Chapter 29</a> (again, more on <code>assert</code> in <a data-type="xref" href="part07.html#exceptions">Part VII</a>—it simply raises an exception if its test is false). Coded this way, <code>reader</code> and <code>writer</code> objects are embedded within the class <a contenteditable="false" data-type="indexterm" data-primary="abstract superclasses" id="id4093"></a><a contenteditable="false" data-type="indexterm" data-primary="superclasses" data-secondary="abstract" id="id4094"></a><a contenteditable="false" data-type="indexterm" data-primary="composition" data-secondary="abstract superclasses" id="id4095"></a>instance (<em>composition</em>), and we supply the conversion logic in a subclass rather than passing in a converter function (<em>inheritance</em>). The file in <a data-type="xref" href="#example_threeone_fourdot_convertersdotp">Example 31-4</a>, <em>converters.py</em>, shows how.</p>
+<div data-type="example" id="example_threeone_fourdot_convertersdotp">
+<h5><span class="label">Example 31-4. </span>converters.py</h5>
+<pre data-type="programlisting">from streams import Processor
+
+class Uppercase(Processor):
+    def converter(self, data):
+        return data.upper()
+
+if __name__ == '__main__':
+    import sys
+    obj = Uppercase(open('trihack.txt'), sys.stdout)
+    obj.process()</pre>
+</div>
+<p>Here, the <code>Uppercase</code> class inherits the stream-processing loop logic of <code>process</code> (and anything else that may be coded in its superclasses). It needs to define only what is unique about it—the data conversion logic. When this file is run, it makes and runs an instance that reads from the file <em>trihack.txt</em> in the current directory and writes the uppercase equivalent of that file to the <code>stdout</code> stream (which usually means the window you’re working in):</p>
+<pre data-type="programlisting">$ <code><strong>cat trihack.txt</strong>   </code>     <code><em># Use "type" on Windows</em></code>
+hack
+Hack
+HACK!
+
+$ <code><strong>python3 converters.py</strong></code>
+HACK
+HACK
+HACK!</pre>
+<p>To process different sorts of streams, pass in different sorts of objects to the class construction call. Here, we use an output file instead of a stream:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>import converters</strong></code>
+&gt;&gt;&gt; <code><strong>scan = converters.Uppercase(open('trihack.txt'), open('trihackup.txt', 'w'))</strong></code>
+&gt;&gt;&gt; <code><strong>scan.process()</strong></code>
+
+$ <code><strong>cat trihackup.txt</strong></code>
+HACK
+HACK
+HACK!</pre>
+<p>But, as suggested earlier, we could also pass in arbitrary objects coded as classes that define the required input and output method interfaces. Here’s a simple example that passes in a writer class that wraps up the text inside HTML tags—lines are read from a file, run through uppercase conversion, and then printed with HTML tags:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>from converters import Uppercase</strong></code>
+&gt;&gt;&gt; <code><strong>class HTMLize:</strong></code>
+<code> <strong>        def write(self, line):</strong></code>
+<code> <strong>           print(f'&lt;PRE&gt;{line.rstrip()}&lt;/PRE&gt;')</strong></code>
+
+&gt;&gt;&gt; <code><strong>Uppercase(open('trihack.txt'), HTMLize()).process()</strong></code>
+&lt;PRE&gt;HACK&lt;/PRE&gt;
+&lt;PRE&gt;HACK&lt;/PRE&gt;
+&lt;PRE&gt;HACK!&lt;/PRE&gt;</pre>
+<p>If you trace through this example’s control flow, you’ll see that we get <em>both</em> uppercase conversion (by inheritance) and HTML formatting (by composition), even though the core processing logic in the original <code>Processor</code> superclass knows nothing about either step. The processing code only cares that writers have a <code>write</code> method and that a method named <code>converter</code> is defined; it doesn’t care what those methods do when they are called. Such polymorphism and encapsulation of logic are behind much of the power of classes in Python.</p>
+<p>As is, the <code>Processor</code> superclass only provides a file-scanning loop. In more realistic work, we might extend it to support additional programming tools for its subclasses and, in the process, turn it into a full-blown application <em>framework</em>. Coding such a tool once in a superclass enables you to reuse it in all your programs. Even in this simple example, because so much is packaged and inherited with classes, all we had to code was the HTML formatting step; the rest was free.</p>
+<p>For another example of composition at work, see exercise 9 in <a data-type="xref" href="ch32.html#test_your_knowledge_part_vi_exercises">“Test Your Knowledge: Part VI Exercises”</a> and its solution in <a data-type="xref" href="app02.html#appendix_b_solutions_to_end_of_part_exe">Appendix B</a>; it’s similar to the pizza shop example. We’ve focused on inheritance in this book because that is the main tool that the Python language itself provides for OOP. But, in practice, composition may be used as much as inheritance as a way to structure classes, especially in larger systems. As we’ve seen, inheritance and composition are often <a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="composition" data-startref="oobpcpo" id="id4096"></a><a contenteditable="false" data-type="indexterm" data-primary="composition" data-secondary="OOP" data-startref="copopoop" id="id4097"></a><a contenteditable="false" data-type="indexterm" data-primary="composition" data-secondary="has-a relationships" data-startref="cphsrel" id="id4098"></a><a contenteditable="false" data-type="indexterm" data-primary="has-a relationships, composition" data-startref="hascposr" id="id4099"></a>complementary (and sometimes alternative) techniques. Because composition is a design issue outside the scope of the Python language and this book, though, we’ll defer to other resources for more on this topic.</p>
+<aside data-type="sidebar" epub:type="sidebar"><div class="sidebar" id="why_you_will_care_classes_and_persisten">
+<h1>Why You Will Care: Classes and Persistence</h1>
+<p>We’ve explored Python’s <code>pickle</code> and <code>shelve</code> object persistence earlier in this part of the <a contenteditable="false" data-type="indexterm" data-primary="persistence" id="id4100"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="persistence" id="id4101"></a><a contenteditable="false" data-type="indexterm" data-primary="pickle objects" id="id4102"></a><a contenteditable="false" data-type="indexterm" data-primary="shelves" id="id4103"></a>book because it works especially well with class instances. In fact, these tools are often compelling enough to motivate the use of classes in general—by pickling or shelving a class instance, we store both data and logic.</p>
+<p>For example, besides allowing us to simulate real-world interactions, the pizza shop classes developed in this chapter could also be used as the basis of a restaurant database. Pickling instances of such classes to a file makes them persistent across Python program executions:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from pizzashop import PizzaShop</strong></code>
+&gt;&gt;&gt; <code><strong>shop = PizzaShop()</strong></code>
+&gt;&gt;&gt; <code><strong>shop.chef</strong></code>
+&lt;PizzaRobot: name="Pat", salary=50,000.00&gt;
+&gt;&gt;&gt; <code><strong>import pickle</strong></code>
+&gt;&gt;&gt; <code><strong>pickle.dump(shop, open('shopfile.pkl', 'wb'))</strong></code></pre>
+<p>This stores an entire composite <code>shop</code> object in a file all at once. To bring it back later in another session or program, a single step suffices as well. Objects restored this way retain both state and behavior:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import pickle</strong></code>
+&gt;&gt;&gt; <code><strong>shop = pickle.load(open('shopfile.pkl', 'rb'))</strong></code>
+&gt;&gt;&gt; <code><strong>shop.chef</strong></code>
+&lt;PizzaRobot: name="Pat", salary=50,000.00&gt;
+&gt;&gt;&gt; <code><strong>shop.order('sue')</strong></code>
+sue orders from &lt;Server: name="Jan", salary=40,000.00&gt;
+Pat makes pizza
+oven bakes
+sue pays for item to &lt;Server: name="Jan", salary=40,000.00&gt;</pre>
+<p>This is just a prototype as is, but we might extend the shop to keep track of inventory, revenue, and so on—saving it to its file after changes would retain its updated state. See the standard-library manual and related coverage in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch09.html#tuplescomma_filescomma_and_everything_e">9</a>, <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch28.html#a_more_realistic_example">28</a>, and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch37.html#unicode_and_byte_strings">37</a> for more on pickles and shelves.</p>
+</div></aside>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="OOP and Delegation: “Like-a” Relationships"><div class="sect1" id="oop_and_delegation_quotation_marklike_a">
+<h1>OOP and Delegation: “Like-a” Relationships</h1>
+<p>Besides inheritance and composition, object-oriented programmers often speak of <em>delegation</em>, which <a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="delegation" id="bjorgdlg"></a><a contenteditable="false" data-type="indexterm" data-primary="delegation" data-secondary="OOP" id="dlgppo"></a><a contenteditable="false" data-type="indexterm" data-primary="delegation" data-secondary="like-a relationships" id="dlgkrlsh"></a><a contenteditable="false" data-type="indexterm" data-primary="like-a relationships" id="krltnsh"></a>usually implies controller objects that embed other objects to which they pass off operation requests. The controllers can take care of administrative activities, such as logging or validating accesses, adding extra steps to interface components, or monitoring active instances.</p>
+<p>In a sense, delegation is a special form of composition, with a single embedded object managed by a <em>proxy</em> (sometimes called a <em>wrapper</em>) class that retains most or all of the embedded object’s interface. The notion of proxies sometimes applies <a contenteditable="false" data-type="indexterm" data-primary="wrappers" id="id4104"></a>to other mechanisms, too, such as function calls; in delegation, we’re concerned with proxies for <em>all</em> of an object’s behavior, including method calls and other <span class="keep-together">operations</span>.</p>
+<p>This concept was introduced by example in <a data-type="xref" href="ch28.html#a_more_realistic_example">Chapter 28</a>, and in Python is often implemented with the <code>__getattr__</code> method hook we studied in <a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a>. Because this operator-overloading method intercepts accesses to nonexistent attributes, a wrapper class can use <code>__getattr__</code> to route arbitrary accesses to a wrapped object. Because this method allows attribute requests to be routed generically, the wrapper class retains the interface of the wrapped object and may add additional operations of its own.</p>
+<p>By way of review, consider the file <em>trace.py</em> in <a data-type="xref" href="#example_threeone_fivedot_tracedotpy">Example 31-5</a>.</p>
+<div data-type="example" id="example_threeone_fivedot_tracedotpy">
+<h5><span class="label">Example 31-5. </span>trace.py</h5>
+<pre data-type="programlisting">class Wrapper:
+    def __init__(self, object):
+        self.wrapped = object                    <code><em># Save object</em></code>
+    def __getattr__(self, attrname):
+        print('Trace: ' + attrname)              <code><em># Trace fetch</em></code>
+        return getattr(self.wrapped, attrname)   <code><em># Delegate fetch</em></code></pre>
+</div>
+<p>Recall from <a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a> that <code>__getattr__</code> gets the attribute name as a string. This code makes use of the <code>getattr</code> built-in function to fetch an attribute from the wrapped object by name string—<code>getattr(<em>X</em>,<em>N</em>)</code> is like <code><em>X</em>.<em>N</em></code>, except that <code><em>N</em></code> is an <em>expression</em> that evaluates to a string at runtime, not a variable. In fact, <code>getattr(<em>X</em>,<em>N</em>)</code> is similar to <code><em>X</em>.__dict__[<em>N</em>]</code>, but the former also performs an inheritance search, like <code><em>X</em>.<em>N</em></code>, while the latter does not (see Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch23.html#module_coding_basics">23</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch29.html#class_coding_details">29</a> for more on the <code>__dict__</code> attribute).</p>
+<p>You can use the approach of this module’s wrapper class to manage access to any object with attributes—lists, dictionaries, and even classes and instances. Here, the <code>Wrapper</code> class simply prints a trace message on each attribute access and delegates the attribute request to the embedded <code>wrapped</code> object:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from trace import Wrapper</strong></code>
+&gt;&gt;&gt; <code><strong>x = Wrapper([1, 2, 3])</strong></code>                       <code><em># Wrap a list</em></code>
+&gt;&gt;&gt; <code><strong>x.append(4)</strong></code>                                  <code><em># Delegate to list method</em></code>
+Trace: append
+&gt;&gt;&gt; <code><strong>x.wrapped</strong></code>                                    <code><em># Print my member</em></code>
+[1, 2, 3, 4]
+
+&gt;&gt;&gt; <code><strong>x = Wrapper({'a': 1, 'b': 2})</strong></code>                <code><em># Wrap a dictionary</em></code>
+&gt;&gt;&gt; <code><strong>list(x.keys())</strong></code>                               <code><em># Delegate to dictionary method</em></code>
+Trace: keys
+['a', 'b']</pre>
+<p>The net effect is to augment the entire interface of the <code>wrapped</code> object with additional code in the <span class="keep-together"><code>Wrapper</code></span> class. We can use this to log our method calls, route method calls to extra or custom logic, adapt a class to a new interface, and so on.</p>
+<p>In the next chapter, we’ll revive the notions of wrapped objects and delegated operations as one way to extend built-in types. If you are interested in the delegation design pattern, also watch for the discussions in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch32.html#class_odds_and_ends">32</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch39.html#decorators">39</a> of <em>function decorators</em>, a strongly related concept designed to augment a specific function or method call rather than the entire interface of an object, as well as <em>class decorators</em>, which serve as a way to automatically add such delegation-based wrappers to all instances of a class.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Delegation reminder</em>: As noted in the sidebar <a data-type="xref" href="ch28.html#delegating_built_insem_dashor_not">“Delegating Built-ins—or Not”</a>, general proxies like the <code>Wrapper</code> example here cannot directly intercept and delegate calls to operator-overloading methods run by <em>built-in</em> operations. The list’s <code>__add__</code>, for instance, is not caught and fails:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>[1, 2, 3] + [4, 5]</strong></code>
+[1, 2, 3, 4, 5]
+&gt;&gt;&gt; <code><strong>[1, 2, 3].__add__([4, 5])</strong></code>
+[1, 2, 3, 4, 5]
+&gt;&gt;&gt; <code><strong>Wrapper([1, 2, 3]) + [4, 5]</strong></code>
+TypeError: unsupported operand type(s) for +: 'Wrapper' and 'list'</pre>
+<p>Explicit-name attribute fetches are routed to <code>__getattr__</code>, but built-in operations differ in ways that impact some delegation-based tools. We’ll return to this issue and see it live in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch38.html#managed_attributes">38</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch39.html#decorators">39</a>, in the context of managed attributes and decorators. For now, keep in mind that <a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="delegation" data-startref="bjorgdlg" id="id4105"></a><a contenteditable="false" data-type="indexterm" data-primary="delegation" data-secondary="OOP" data-startref="dlgppo" id="id4106"></a><a contenteditable="false" data-type="indexterm" data-primary="delegation" data-secondary="like-a relationships" data-startref="dlgkrlsh" id="id4107"></a><a contenteditable="false" data-type="indexterm" data-primary="like-a relationships" data-startref="krltnsh" id="id4108"></a>delegation proxies may need to redefine operator-overloading methods by code, tools, or superclasses if those methods are used by embedded objects and should be routed to them.</p>
+</div>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Pseudoprivate Class Attributes"><div class="sect1" id="pseudoprivate_class_attributes">
+<h1>Pseudoprivate Class Attributes</h1>
+<p>Besides larger structuring goals, class designs often must address name usage too. In <a data-type="xref" href="ch28.html#a_more_realistic_example">Chapter 28</a>’s case study, for <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="attributes" data-tertiary="pseudoprivate" id="clabpsd"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="pseudoprivate" id="ttbeudpv"></a><a contenteditable="false" data-type="indexterm" data-primary="pseudoprivate attributes" id="psprvttb"></a><a contenteditable="false" data-type="indexterm" data-primary="__X pseudoprivate name mangling" data-primary-sortas="X pseudoprivate name mangling" id="id4109"></a>example, we noted that methods defined within a general tool class might be modified by subclasses if exposed, and noted the trade-offs of this policy—while it supports method customization and direct calls, it’s also open to accidental replacements.</p>
+<p>In <a data-type="xref" href="part05.html#modules_and_packages">Part V</a>, we learned that every name assigned at the top level of a module file is exported. By default, the <a contenteditable="false" data-type="indexterm" data-primary="data hiding" id="id4110"></a>same holds for classes—<em>data hiding</em> is a convention, and clients may fetch or change attributes in any class or instance to which they have a reference. All attributes are all “public” and “virtual,” in C++ terms: they’re accessible everywhere and are looked up dynamically at runtime. In fact, it’s even possible to change or delete a class’s method at runtime, though this is rarely done in practical programs. As a scripting language, Python is about enabling, not restricting.</p>
+<p>All that being said, Python today <a contenteditable="false" data-type="indexterm" data-primary="name mangling" id="id4111"></a><a contenteditable="false" data-type="indexterm" data-primary="mangled names" id="id4112"></a>does support the notion of name “mangling” (i.e., expansion) to associate some names with their classes. Mangled names are sometimes misleadingly called “private attributes,” but really this is just a way to <em>localize</em> a name to the class that created it—name mangling does not prevent access by code outside the class. This feature is mostly intended to avoid namespace <em>collisions</em> in instances, not to restrict access to names in general; mangled names are therefore better called “pseudoprivate” than “private.”</p>
+<p>Pseudoprivate names are an advanced and entirely optional feature, and you probably won’t find them very useful until you start writing general tools or larger class hierarchies for use in multiprogrammer projects. In fact, they are not always used even when they probably <em>should</em> be—more commonly, Python programmers code internal names with a single underscore (e.g., <code>_X</code>), which is just an informal convention to let you know that a name shouldn’t generally be changed, but this means nothing to Python itself.</p>
+<p>Because you may see this feature in other people’s code, though, you need to be somewhat aware of it, even if you don’t use it yourself. And once you learn its advantages and contexts of use, you may find this feature to be more useful in your own code than some programmers realize.</p>
+<section data-type="sect2" data-pdf-bookmark="Name Mangling Overview"><div class="sect2" id="name_mangling_overview">
+<h2>Name Mangling Overview</h2>
+<p>Here’s how name mangling works: within a <code>class</code> statement only, any names that <em>start</em> with two underscores but do not <em>end</em> with two underscores are automatically expanded to include the name of the enclosing class at their front. For instance, a name like <code>__X</code> within a class named <code>Hack</code> is changed to <code>_Hack__X</code> automatically: the original name is prefixed with a single underscore and the enclosing class’s name. Because the modified name contains the name of the enclosing class, it’s generally unique; it won’t clash with similar names created by other classes in a hierarchy.</p>
+<p>Name mangling happens only for names that appear inside a <code>class</code> statement’s code and then only for names that begin with two leading underscores. It works for <em>every</em> name preceded with double underscores, though—both class attributes (including method names) and instance attribute names assigned to <code>self</code>. For example, in a class named <code>Hack</code>, a method named <code>__meth</code> is mangled to <code>_Hack__meth</code>, and an instance attribute reference <code>self.__X</code> is transformed to <code>self._Hack__X</code>.</p>
+<p>Despite the mangling, as long as the class uses the double-underscore version everywhere it refers to the name, all its references will still work. Because more than one class may add attributes to an instance, though, this mangling helps avoid clashes—but we need to move on to an example to see how.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Why Use Pseudoprivate Attributes?"><div class="sect2" id="why_use_pseudoprivate_attributesquestio">
+<h2>Why Use Pseudoprivate Attributes?</h2>
+<p>One of the main issues that the pseudoprivate attribute feature is meant to alleviate has to do with the way instance attributes are stored. In Python, instance attributes normally wind up in the <em>single</em> instance object at the bottom of the class tree and are shared by class-level method functions the instance is passed into. This is different from the C++ model, where each class gets its own space for data members it defines.</p>
+<p>Within a class’s method in Python, whenever a method assigns to a <code>self</code> attribute (e.g., <code>self.<em>attr</em> = <em>value</em></code>), it changes or creates an attribute <a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="__self__" data-secondary-sortas="self" id="id4113"></a><a contenteditable="false" data-type="indexterm" data-primary="__self__ attribute" data-primary-sortas="self" id="id4114"></a>in the instance (recall that inheritance searches happen only on reference, not on assignment). Because this is true even if multiple classes in a hierarchy assign to the same attribute, collisions are possible.</p>
+<p>For example, suppose that when a programmer codes a class, it is assumed that the class owns the attribute name <code>X</code> in the instance. In this class’s methods, the name is set and later fetched:</p>
+<pre data-type="programlisting">class C1:
+    def meth1(self): self.X = 88         <code><em># I assume X is mine</em></code>
+    def meth2(self): print(self.X)</pre>
+<p>Suppose further that another programmer, working in isolation, makes the same assumption in another class:</p>
+<pre data-type="programlisting">class C2:
+    def metha(self): self.X = 99         <code><em># Me too</em></code>
+    def methb(self): print(self.X)</pre>
+<p>Both of these classes work by themselves. The problem arises if the two classes are ever mixed together in the same class tree, using the multiple inheritance we’ll expand on ahead:</p>
+<pre data-type="programlisting">class C3(C1, C2): ...
+I = C3()                                 <code><em># But only 1 X in I!</em></code></pre>
+<p>Now, the value that each class gets back when it says <code>self.X</code> will depend on which class assigned it <em>last</em>. Because all assignments to <code>self.X</code> refer to the same single instance, there is only one <code>X</code> attribute—<code>I.X</code>—no matter how many classes use that attribute name.</p>
+<p>This isn’t a problem if it’s expected, and indeed, this is how classes normally <em>communicate</em>—the instance is shared memory. To guarantee that an attribute belongs to the class that uses it, though, prefix the name with double underscores everywhere it is used in the class, as in <a data-type="xref" href="#example_threeone_sixdot_pseudoprivatedo">Example 31-6</a>, <em>pseudoprivate.py</em>.</p>
+<div data-type="example" id="example_threeone_sixdot_pseudoprivatedo">
+<h5><span class="label">Example 31-6. </span>pseudoprivate.py</h5>
+<pre data-type="programlisting">class C1:
+    def meth1(self): self.__X = 88       <code><em># Now X is mine</em></code>
+    def meth2(self): print(self.__X)     <code><em># Becomes _C1__X in I</em></code>
+class C2:
+    def metha(self): self.__X = 99      <code> <em># Me too</em></code>
+    def methb(self): print(self.__X)     <code><em># Becomes _C2__X in I</em></code>
+
+class C3(C1, C2): pass
+I = C3()                                 <code><em># Two X names in I</em></code>
+
+I.meth1(); I.metha()                     <code><em># Set names</em></code>
+print(I.__dict__)                        <code><em># Actual storage</em></code>
+I.meth2(); I.methb()                     <code><em># Fetch names</em></code></pre>
+</div>
+<p>When thus prefixed, the <code>X</code> attributes will be expanded to include the names of their classes before being added to the instance. If you run a <code>dir</code> call on <code>I</code> or inspect its namespace dictionary after the attributes have been assigned, you’ll see the expanded names, <code>_C1__X</code> and <code>_C2__X</code>, but not <code>X</code>. Because the expansion makes the names more unique within the instance, the classes’ coders can be fairly safe in assuming that they truly own any names that they prefix with two underscores:</p>
+<pre data-type="programlisting">$ <code><strong>python3 pseudoprivate.py</strong></code>
+{'_C1__X': 88, '_C2__X': 99}
+88
+99</pre>
+<p>This trick can avoid potential name collisions in the instance, but note that it does not amount to true privacy. If you know the name of the enclosing class, you can still access either of these attributes anywhere you have a reference to the instance by using the fully expanded name (e.g., <code>I._C1__X = 77</code>). Moreover, names could still collide if unknowing programmers use the expanded naming pattern explicitly (unlikely, but not impossible). On the other hand, this feature makes it much less likely that you will <em>accidentally</em> step on a class’s names.</p>
+<p>Pseudoprivate attributes are also useful in larger frameworks or tools, both to avoid introducing new method names that might accidentally hide definitions elsewhere in the class tree and to reduce the chance of internal methods being replaced by names defined lower in the tree. If a method is intended for use only within a class that may be mixed into other classes, the double underscore prefix virtually ensures that the method won’t interfere with other names in the tree, especially in multiple-inheritance scenarios:</p>
+<pre data-type="programlisting">class Super:
+    def method(self): …                    <code><em># A real application method</em></code>
+
+class Tool:
+    def __method(self): …                  <code><em># Becomes _Tool__method</em></code>
+    def other(self): self.__method()       <code><em># Use my internal method</em></code>
+
+class Sub1(Tool, Super): …
+    def actions(self): self.method()       <code><em># Runs Super.method as expected</em></code>
+
+class Sub2(Tool):
+    def __init__(self): self.method = 99   <code><em># Doesn't break Tool.__method</em></code>
+    def method(self): …                    <code><em># Ditto</em></code></pre>
+<p>We met multiple inheritance briefly in <a data-type="xref" href="ch26.html#oop_the_big_picture">Chapter 26</a> and will explore it in more detail later in this chapter. Recall that superclasses are searched according to their left-to-right order in <code>class</code> header lines. Here, this means <code>Sub1</code> prefers <code>Tool</code> attributes to those in <code>Super</code>. Although in this example we could force Python to pick the application class’s methods first by switching the order of the superclasses listed in the <code>Sub1</code> class header, pseudoprivate attributes resolve the issue altogether. Pseudoprivate names also prevent subclasses from accidentally redefining the internal method’s names, as in <code>Sub2</code>.</p>
+<p>Again, this feature tends to be of use primarily for larger multiprogrammer projects and then only for selected names. Don’t be tempted to clutter your code unnecessarily; only use this feature for names that truly need to be controlled by a single class. Although useful in some general class-based tools, for simpler programs, it’s probably overkill.</p>
+<p>For more examples that make use of the <code>__X</code> naming feature, see the <em>lister.py</em> mix-in classes introduced later in this chapter’s multiple inheritance section, as well as the later class decorators mentioned in the following note.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Private matters</em>: If you’re interested in more binding forms of privacy, you may want to review the emulation of private instance attributes coded in <a data-type="xref" href="ch30.html#attribute_access_getattr_and_seta">“Attribute Access: __getattr__ and __setattr__”</a> in <a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a> and watch for the broader <code>Private</code> class decorator we’ll build with delegation in <a data-type="xref" href="ch39.html#decorators">Chapter 39</a>. Although it’s possible to <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="attributes" data-tertiary="pseudoprivate" data-startref="clabpsd" id="id4115"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="pseudoprivate" data-startref="ttbeudpv" id="id4116"></a><a contenteditable="false" data-type="indexterm" data-primary="pseudoprivate attributes" data-startref="psprvttb" id="id4117"></a>add name-access controls in Python classes, this is rarely done in practice—even for large systems that solve real-world problems. Go figure?</p>
+</div>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Method Objects: Bound or Not"><div class="sect1" id="method_objects_bound_or_not">
+<h1>Method Objects: Bound or Not</h1>
+<p>Methods in general, and bound methods in particular, simplify the implementation of many design goals in Python. We <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="method objects" id="clssmthbj"></a><a contenteditable="false" data-type="indexterm" data-primary="method objects" id="mobjst"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="method objects" id="bjmbjs"></a>met bound methods briefly while studying <code>__call__</code> in <a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a>. The full story, which we’ll flesh out here, turns out to be more general and flexible than you might expect.</p>
+<p>In <a data-type="xref" href="ch19.html#function_odds_and_ends">Chapter 19</a>, we learned how functions can be processed as normal objects. Methods are a kind of object too, and can be used generically in much the same way as other objects—they can be assigned to names, passed to functions, stored in data structures, and so on—and like simple functions, modules, and classes, qualify as <em>first-class objects</em>. Because a class’s methods can be accessed from an instance or a class, though, they come in two flavors:</p>
+<dl>
+<dt>Bound methods: when a method is referenced <a contenteditable="false" data-type="indexterm" data-primary="method objects" data-secondary="bound methods" id="id4118"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="method objects" data-tertiary="bound methods" id="id4119"></a><a contenteditable="false" data-type="indexterm" data-primary="bound methods" id="id4120"></a>through an instance</dt>
+<dd>Accessing a function attribute of a class by qualifying an <em>instance</em> returns a bound method object. This object automatically packages the instance with the function as a pair. When a bound method is later called, the instance is automatically passed to the function’s <code>self</code> argument.</dd>
+<dt>Plain functions: when a method is referenced through a class</dt>
+<dd>Accessing a function attribute <a contenteditable="false" data-type="indexterm" data-primary="method objects" data-secondary="plain functions" id="id4121"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="method objects" data-tertiary="plain functions" id="id4122"></a><a contenteditable="false" data-type="indexterm" data-primary="plain functions" id="id4123"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="plain functions" id="id4124"></a>of a class by qualifying a <em>class</em> returns a plain function object. To call this function later, you must provide an instance object explicitly to the <code>self</code> argument—if the function expects one.</dd>
+</dl>
+<p>Both kinds of methods are full-fledged objects; they can be transferred around a program at will, just like strings and numbers. Bound methods simply remember an instance, but plain functions do not. This is why we’ve had to pass in an instance explicitly when calling superclass methods from subclass methods in previous examples (including this chapter’s <em>employees.py</em> in <a data-type="xref" href="#example_threeone_onedot_employeesdotpy">Example 31-1</a>); technically, such calls produce plain functions along the way.</p>
+<p>When calling a <em>bound</em> method object, though, Python provides the instance argument for us—the instance that was used to create the bound method object. This means that bound method objects are usually interchangeable with simple function objects and makes them especially useful for interfaces originally written for functions.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Blast from the past</em>: Python once required all methods in a class to have an instance argument and termed methods fetched directly from a class <em>unbound methods</em>—implying that they required an instance argument when later called. Today, method functions in a class are really just plain functions; their only special quality is that they are bound to an instance when fetched through the instance. Unbound methods, however, are dead; long live plain functions!</p>
+</div>
+<section data-type="sect2" data-pdf-bookmark="Bound Methods in Action"><div class="sect2" id="bound_methods_in_action">
+<h2>Bound Methods in Action</h2>
+<p>To illustrate in simple terms, suppose we define the following class in the REPL of our choosing:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Hack:</strong></code>
+<code> <strong>       def doit(self, message):</strong></code>
+<code> <strong>           print(message)</strong></code></pre>
+<p>Now, in normal operation, we make an instance and call its method in a single step to print the passed-in argument:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>inst = Hack()</strong></code>
+&gt;&gt;&gt; <code><strong>inst.doit('hello')</strong></code>     <code><em># Typical method calls</em></code>
+hello</pre>
+<p>Really, though, a <em>bound</em> method object is generated along the way—just before the method call’s parentheses. In fact, we can fetch a bound method without actually calling it. An <code><em>object</em>.<em>name</em></code> expression evaluates to an object as all expressions do. In the following, it returns a bound method object that packages the instance (<code>inst</code>) with the method function (<code>Hack.doit</code>). The net effect is that we can assign this bound method pair to another name and then call it as though it were a simple self-less function:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>inst = Hack()</strong></code>
+&gt;&gt;&gt; <code><strong>meth = inst.doit</strong> </code>      <code><em># Bound method object: instance+function</em></code>
+&gt;&gt;&gt; <code><strong>meth('hola')</strong></code>           <code><em># Same effect as inst.doit('...')</em></code>
+hola</pre>
+<p>In fact, if you know where to look, you can see the instance/function pair that the bound method <span class="keep-together">packages</span>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>meth</strong></code>
+&lt;bound method Hack.doit of &lt;__main__.Hack object at 0x108f2e8a0&gt;&gt;
+&gt;&gt;&gt; <code><strong>meth.__self__</strong></code>
+&lt;__main__.Hack object at 0x108f2e8a0&gt;
+&gt;&gt;&gt; <code><strong>meth.__func__</strong></code>
+&lt;function Hack.doit at 0x108f37ce0&gt;</pre>
+<p>On the other hand, if we qualify the <em>class</em> to get to <code>doit</code>, we get back a plain function object with no associated instance. To call this type of method, we usually must pass in an instance as the leftmost argument—there isn’t one in the expression otherwise, and the method in this demo expects it:</p>
+<pre data-type="programlisting" class="pagebreak-before">&gt;&gt;&gt; <code><strong>inst = Hack()</strong></code>
+&gt;&gt;&gt; <code><strong>meth = Hack.doit</strong></code>       <code><em># Plain function: requires self</em></code>
+&gt;&gt;&gt; <code><strong>meth(inst, 'ciao')</strong></code>     <code><em># Pass in instance (if the method expects one)</em></code>
+ciao</pre>
+<p>This time, though, the method is substantially more mundane because it’s a plain function:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>meth</strong></code>
+&lt;function Hack.doit at 0x108f37ce0&gt;</pre>
+<p>By extension, the same rules apply within a class’s method if we reference <code>self</code> attributes that name functions in a class. A <code>self.<em>method</em></code> expression is a bound method object because <code>self</code> <em>is</em> an instance object, though a <code><em>class</em>.<em>method</em></code> is a simple function that may require a <code>self</code> when run:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Hack2(Hack):</strong></code>
+        <code><strong>def doit2(self):</strong></code>
+            <code><strong>meth = self.doit</strong></code>        <code><em># Bound method object: instance+function</em></code>
+            <code><strong>meth('bonjour')</strong></code>         <code><em># Looks like a simple function</em></code>
+            <code><strong>meth = Hack.doit</strong></code>
+            <code><strong>meth(self, 'privit')</strong></code>    <code><em># Plain function: requires self</em></code>
+ 
+&gt;&gt;&gt; <code><strong>Hack2().doit2()</strong></code>
+bonjour
+privit</pre>
+<p>Most of the time, you call methods immediately after fetching them with attribute qualification, so you don’t notice the method objects generated along the way. But if you start writing code that calls objects generically, you need to be careful to treat nonbound methods specially—they normally require an explicit instance object to be passed in.</p>
+<p>Implied by this model, classes can also code methods that do <em>not</em> require a <code>self</code> instance, and are called normally when fetched from their <em>class</em>; apart from inheritance, this is similar to a function in a module file:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Hack3:</strong></code>
+        <code><strong>def doit3(message):</strong></code>        <code><em># A self-less method (function)</em></code>
+            <code><strong>print(message)</strong></code>
+ 
+&gt;&gt;&gt; <code><strong>Hack3.doit3('guten tag')</strong></code>       <code><em># No "self" is passed</em></code>
+guten tag</pre>
+<p>This falls down, though, if we try to call such a self-less method function through an <em>instance</em>: because the bound method made along the way packages and passes an instance, the call sends one too many arguments:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x = Hack3()</strong></code>
+&gt;&gt;&gt; <code><strong>x.doit3('namaste')</strong></code>
+TypeError: Hack3.doit3() takes 1 positional argument but 2 were given</pre>
+<p>In other words, you can code self-less functions in a class, and can call them normally through a class without an instance. To call them though an instance, too, though, you’ll have to stay tuned for the next chapter’s coverage of <em>static</em> and <em>class</em> methods—methods marked specially to suppress an automatic instance argument in all contexts. Also in the next chapter, you’ll see that the <code>super</code> built-in binds an instance with a method, too, but is substantially more convoluted than the bound method pairs we’ve met here.</p>
+<p>Finally, to demo how flexible bound methods can be, the following stores four of them in a list and calls them generically, with normal call expressions:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Number:</strong></code>
+<code> <strong>       def __init__(self, base):
+            self.base = base
+        def double(self):
+            return self.base * 2
+        def triple(self):
+            return self.base * 3
+</strong></code>
+&gt;&gt;&gt; <code><strong>x, y, z = Number(2), Number(3), Number(4)</strong></code>           <code><em># Class instance objects</em></code>
+&gt;&gt;&gt; <code><strong>x.double()</strong></code>                                          <code><em># Normal immediate calls
+</em></code>4
+&gt;&gt;&gt; <code><strong>acts = [x.double, y.double, z.double, z.triple]</strong></code>     <code><em># List of bound methods</em></code>
+&gt;&gt;&gt; <code><strong>for act in acts:</strong></code>                                    <code><em># Calls are deferred</em></code>
+        <code><strong>print(act(), end=' ')</strong></code>                           <code><em># Call as though functions</em></code>
+
+4 6 8 12</pre>
+<p>In the end, calls to <code>act</code> here run methods in the class to process instances—both saved previously in bound methods.</p>
+<aside data-type="sidebar" epub:type="sidebar"><div class="sidebar" id="why_you_will_care_bound_method_callback">
+<h1>Why You Will Care: Bound Method Callbacks</h1>
+<p>Because bound methods automatically <a contenteditable="false" data-type="indexterm" data-primary="callbacks" data-secondary="bound methods" id="id4125"></a>pair an instance with a class’s method function, you can use them anywhere a simple function is expected. One of the most common places you’ll see this idea put to work is in code that registers methods to handle event callbacks run by GUI interfaces, like Python’s <code>tkinter</code> standard-library module. As review, here’s the simple case:</p>
+<pre data-type="programlisting">def handler():
+    …<code><em>use globals or closure scopes for state</em></code>…
+…
+widget = Button(text='Tap', command=<code><strong>handler</strong></code>)</pre>
+<p>With <code>tkinter</code>, to register a handler for button click events, we usually pass a callable object that takes no arguments to the <code>command</code> keyword argument. Function names (and <code>lambda</code>s) work here, and so do class-level methods—though they must be bound methods if they expect an instance when called:</p>
+<pre data-type="programlisting">class MyGui:
+    def handler(self):
+        …<code><em>use self.attr for state</em></code>…
+    def makewidgets(self):
+        b = Button(text='Tap', command=<code><strong>self.handler</strong></code>)</pre>
+<p>Here, the event handler is <code>self.handler</code>—a bound method object that remembers both <code>self</code> and <code>MyGui.handler</code>. Because <code>self</code> will refer to the original instance when <code>handler</code> is later invoked on events, the method will have access to instance attributes that can retain state between events, as well as class-level methods. With simple functions, state normally must be retained in global variables or enclosing function scopes (a.k.a. closures) instead.</p>
+<p>See also the discussion of <code>__call__</code> operator overloading in <a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a> for another way to make classes compatible with function-based APIs, as well as <code>lambda</code> in <a data-type="xref" href="ch19.html#function_odds_and_ends">Chapter 19</a> for another tool often used in callback roles. As noted in the former of these, you don’t need to wrap a bound method in a <code>lambda</code> unless extra arguments must be added to the call; because the bound method in <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="method objects" data-startref="clssmthbj" id="id4126"></a><a contenteditable="false" data-type="indexterm" data-primary="method objects" data-startref="mobjst" id="id4127"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="method objects" data-startref="bjmbjs" id="id4128"></a>the preceding example <em>already</em> defers the call (there are no parentheses to trigger one!), adding a <code>lambda</code> here would otherwise be pointless.</p>
+</div></aside>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Classes Are Objects: Generic Object Factories"><div class="sect1" id="classes_are_objects_generic_object_fact">
+<h1>Classes Are Objects: Generic Object Factories</h1>
+<p>Sometimes, class-based designs require <a contenteditable="false" data-type="indexterm" data-primary="object factories" id="objfctr"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="object factories" id="clssbjc"></a><a contenteditable="false" data-type="indexterm" data-primary="factory functions" id="fctrycos"></a>objects to be created in response to conditions that can’t be predicted when a program is written. The factory design pattern allows such a deferred approach. Due in large part to Python’s flexibility, factories can take multiple forms, some of which don’t seem special at all.</p>
+<p>Because classes are also first-class objects (in the <a data-type="xref" href="ch19.html#function_odds_and_ends">Chapter 19</a> sense), it’s easy to pass them around a program, store them in data structures, and so on. You can also pass classes to functions that generate arbitrary kinds of objects; such functions are sometimes called <em>factories</em> in OOP design circles. Factories can be a major undertaking in a statically typed language such as C++ but are almost trivial to implement in Python.</p>
+<p>For example, the call syntax we studied in <a data-type="xref" href="ch18.html#arguments">Chapter 18</a> can call any class with any number of positional or keyword constructor arguments in one step to generate any sort of instance. <a data-type="xref" href="#example_threeone_sevendot_factorydotpy">Example 31-7</a> demos the underlying code.</p>
+<div data-type="example" id="example_threeone_sevendot_factorydotpy">
+<h5><span class="label">Example 31-7. </span>factory.py</h5>
+<pre data-type="programlisting">def factory(aClass, *pargs, **kargs):        <code><em># Varargs tuple, dict</em></code>
+    return aClass(*pargs, **kargs)           <code><em># Call aClass</em></code>
+
+class Hack:
+    def doit(self, message):
+        print(message)
+
+class Person:
+    def __init__(self, name, job=None):
+        self.name = name
+        self.job  = job
+
+object1 = factory(Hack)                      <code><em># Make a Hack object</em></code>
+object2 = factory(Person, 'Sue', 'dev')      <code><em># Make a Person object</em></code>
+object3 = factory(Person, name='Bob')        <code><em># Ditto, with keywords and default</em></code></pre>
+</div>
+<p>This code’s <code>factory</code> is passed a class object, along with zero or more arguments for the class’s constructor. When called, it uses star syntax to collect and unpack arguments and calls the class to return an instance. Really, <code>factory</code> can invoke any callable object, including functions, classes, and methods, but we’re using it for classes here.</p>
+<p>The rest of the example simply defines two classes and generates instances of both by passing them to the <code>factory</code> function. And that’s the only factory function you may ever need to write in Python; it works for any class and any constructor arguments. If you run this example live, your objects will look like this:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from factory import *</strong></code>
+&gt;&gt;&gt; <code><strong>object1.doit(99)</strong></code>
+99
+&gt;&gt;&gt; <code><strong>object2.name, object2.job</strong></code>
+('Sue', 'dev')
+&gt;&gt;&gt; <code><strong>object3.name, object3.job</strong></code>
+('Bob', None)</pre>
+<p>By now, you should know that everything is a first-class object in Python—including classes, which are usually just compiler input in languages like C++. It’s natural to pass them around this way. As <span class="keep-together">mentioned</span> at the start of this part of the book, though, only objects <em>derived</em> from classes do full OOP in Python.</p>
+<section data-type="sect2" data-pdf-bookmark="Why Factories?"><div class="sect2" id="why_factoriesquestion_mark">
+<h2>Why Factories?</h2>
+<p>So, what good is the <code>factory</code> function (besides providing an excuse to illustrate first-class class objects in this book)? Unfortunately, it’s difficult to show applications of this design pattern without listing much more code than we have space for here. In general, though, such a factory might allow code to be insulated from the details of dynamically configured object construction.</p>
+<p>For instance, recall the <code>Processor</code> class presented as a composition demo earlier in <a data-type="xref" href="#example_threeone_threedot_streamsdotpy">Example 31-3</a>. It accepts reader and writer objects for processing arbitrary data streams. The original abstract version of this example in <a data-type="xref" href="ch26.html#oop_the_big_picture">Chapter 26</a> manually passed in instances of specialized classes like <code>FileWriter</code> and <code>SocketReader</code> to customize the data streams being processed; later, we passed in hardcoded file, stream, and formatter objects. In a more dynamic scenario, external devices such as configuration files or GUIs might be used to configure the streams.</p>
+<p>In such a dynamic world, we might not be able to hardcode the creation of stream interface objects in our scripts but might instead create them at runtime according to the contents of a configuration file.</p>
+<p>Such a file might simply give the string name of a stream class to be imported from a module, plus an optional constructor call argument. Factory-style functions or code might come in handy here because they would allow us to fetch and pass in classes that are not hardcoded in our program ahead of time. Indeed, those classes might not even have existed at all when we wrote our code. Hypothetically:</p>
+<pre data-type="programlisting">classname = …<code><em>parse from config file</em></code>…
+classarg  = …<code><em>parse from config file</em></code>…
+
+import streamtypes                           <code><em># Customizable code</em></code>
+aclass = getattr(streamtypes, classname)     <code><em># Fetch from module</em></code>
+reader = factory(aclass, classarg)           <code><em># Or aclass(classarg)</em></code>
+processor(reader, …)</pre>
+<p>Here, the <code>getattr</code> built-in is again used to fetch a module attribute given a string name (it’s like saying <code><em>obj</em>.<em>attr</em></code>, but <code><em>attr</em></code> is a string). This code snippet doesn’t strictly need <code>factory</code>—it could make an instance with just <code>aclass(classarg)</code>. A separate function, though, may prove more useful when extra work is required at instance creation time, such as caching objects for reuse. However they are <a contenteditable="false" data-type="indexterm" data-primary="object factories" data-startref="objfctr" id="id4129"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="object factories" data-startref="clssbjc" id="id4130"></a><a contenteditable="false" data-type="indexterm" data-primary="factory functions" data-startref="fctrycos" id="id4131"></a>coded, factories are almost trivial with Python’s dynamic typing and universal first-class object model.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Multiple Inheritance and the MRO"><div class="sect1" id="multiple_inheritance_and_the_mro">
+<h1>Multiple Inheritance and the MRO</h1>
+<p>Our last design pattern is one of the most useful and will serve as a subject for more realistic examples <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="inheritance" data-tertiary="multiple inheritance" id="clhrmph"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="multiple" id="id4132"></a><a contenteditable="false" data-type="indexterm" data-primary="multiple inheritance" id="id4133"></a>to wrap up this chapter. As a bonus, the code we’ll write here may be useful tools.</p>
+<p>Most of our examples so far have used <em>single inheritance</em>—class trees in which each class has just one superclass. This suffices for simple hierarchies and enables customization. In our pizza shop demo of <a data-type="xref" href="#example_threeone_onedot_employeesdotpy">Example 31-1</a>, for example, each worker belonged to just one category and inherited names from only one branch of the class tree. Abstractly:</p>
+<pre data-type="programlisting">class B: …
+class A(B): …
+I = A()                <code><em># Use attributes from I, A, and B - in that order</em></code></pre>
+<p>Many class-based designs, however, call for <em>combining</em> disparate sets of methods. As we’ve seen, in a <code>class</code> statement, more than one superclass can be listed in parentheses in the header line. When you do this, you leverage <em>multiple inheritance</em>—the class and its instances inherit names from <em>all</em> the listed superclasses:</p>
+<pre data-type="programlisting">class C: …
+class B: …
+class A(B, C): …
+I = A()                <code><em># Use attributes from I, A, B, and C – in that order</em></code></pre>
+<p>In general, multiple inheritance is good for modeling objects that belong to more than one set. For instance, a person may be an engineer, a writer, a musician, and so on and inherit properties from all such sets. With multiple inheritance, objects obtain the <em>union</em> of the behavior in all their superclasses. As you’ll see ahead, multiple inheritance also allows classes to function as general packages of mixable attributes known as <em>mix-in</em> classes.</p>
+<p>Although it’s a useful tool, multiple inheritance adds another dimension to attribute inheritance:</p>
+<ul>
+<li><p><em>Single</em> inheritance searches only <em>depth first</em>—from instance, to class, and to each superclass from lowest to highest. This order is determined by the class from which an instance is made and the superclass listed in parentheses in each <code>class</code> statement’s header (which is mirrored by class objects’ <code>__bases__</code> attributes).<a contenteditable="false" data-type="indexterm" data-primary="__bases__ attribute" data-primary-sortas="bases attribute" id="id4134"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="__bases__ attribute" data-secondary-sortas="bases attribute" id="id4135"></a></p></li>
+<li><p><em>Multiple</em> inheritance also searches <em>left to right</em>—according to the order of classes listed in parentheses in <code>class</code> headers. This is a nested component, pursued only after branches further to the left have reached the top of the tree and have been exhausted of their own right-branch candidates.</p></li>
+</ul>
+<p>We call the combination of <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="multiple" data-tertiary="DFLR" id="id4136"></a><a contenteditable="false" data-type="indexterm" data-primary="multiple inheritance" data-secondary="DFLR (depth first, left to right)" id="id4137"></a><a contenteditable="false" data-type="indexterm" data-primary="DFLR (depth first, then left to right)" id="id4138"></a>these two <em>DFLR</em>, for depth first, and then left to right. This search suffices when an attribute name shows up in just one branch of a class tree, which is a typical case. When the same name appears in multiple branches, though, DFLR alone is subpar: a lower (and hence more specialized) subclass to the right isn’t able to redefine a name in one of its higher (and hence more general) superclasses reached through a branch to the left.</p>
+<p>Because of this, multiple inheritance <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="MRO (method resolution order)" id="id4139"></a><a contenteditable="false" data-type="indexterm" data-primary="multiple inheritance" data-secondary="MRO (method resolution order)" id="id4140"></a><a contenteditable="false" data-type="indexterm" data-primary="MRO (method resolution order)" id="id4141"></a>requires a slightly different search order known as <em>MRO</em>, for method resolution order (though it’s used for all attributes, not just methods). In brief, MRO order works the same as DFLR in typical trees but proceeds <em>across</em> by tree levels before moving up in a more breadth-first fashion when multiple classes in a tree share a common superclass, forming what’s called a <em>diamond</em> pattern—after the tree’s square-on-its-corner shape.</p>
+<p>This MRO search order is run for all class trees but differs from DFLR when multiple-inheritance diamonds are present. It’s designed to visit a common superclass just <em>once</em>, and <em>after</em> all its subclasses. While user-defined classes don’t often form diamonds in Python, the built-in <code>object</code> class automatically added above all <em>root</em> (topmost) classes makes every multiple-inheritance tree a diamond; without MRO, <code>object</code>’s defaults may hide user-defined versions.</p>
+<p>To illustrate what diamonds are all about and how MRO search runs across before up in this one somewhat atypical case, let’s turn to some code.</p>
+<section data-type="sect2" data-pdf-bookmark="How Multiple Inheritance Works"><div class="sect2" id="how_multiple_inheritance_works">
+<h2>How Multiple Inheritance Works</h2>
+<p>We’ll get more formal about MROs in the <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="multiple" data-tertiary="overview" id="ihmpvv"></a><a contenteditable="false" data-type="indexterm" data-primary="multiple inheritance" data-secondary="overview" id="mulphav"></a>next section, but it’s easy to demo live. Let’s start with the simple and typical case. In the following, class <code>A</code> inherits from both <code>B</code> and <code>C</code> using multiple inheritance, and <code>B</code> and <code>C</code> are root (topmost) classes that define unique attributes. When we make an  instance <code>I</code> of <code>A</code> and ask for its attributes, inheritance searches <code>I</code>, <code>A</code>, <code>B</code>, and <code>C</code>—and in that order. Hence, <code>attr1</code> is located in <code>B</code>, and <code>attr2</code> in <code>C</code> (if you’re working along in a REPL, type a blank line after each <code>class</code>, omitted here for brevity):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class C:       attr2 = 'C2'</strong></code>
+&gt;&gt;&gt; <code><strong>class B:       attr1 = 'B1'</strong></code>
+&gt;&gt;&gt; <code><strong>class A(B, C): pass</strong></code>
+
+&gt;&gt;&gt; <code><strong>I = A()</strong></code>
+&gt;&gt;&gt; <code><strong>I.attr1, I.attr2</strong></code>
+('B1', 'C2')</pre>
+<p>As you might already expect, <code>B</code> wins if it has the <em>same</em> name as <code>C</code> due to the left-to-right component of the search, and lower classes like <code>A</code> still beat their supers as before:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class C:       attr2 = 'C2'</strong></code>
+&gt;&gt;&gt; <code><strong>class B:       attr2 = 'B2'; attr1 = 'B1'</strong></code>
+&gt;&gt;&gt; <code><strong>class A(B, C): attr1 = 'A1'</strong></code>
+
+&gt;&gt;&gt; <code><strong>I = A()</strong></code>
+&gt;&gt;&gt; <code><strong>I.attr1, I.attr2</strong></code>
+('A1', 'B2')</pre>
+<p>Next, let’s add a higher superclass above <code>B</code>: in the following, <code>A</code> inherits from both <code>B</code> and <code>C</code> as before, but <code>B</code> also inherits from <code>D</code>, and <code>C</code> is a root class with no supers. Per the DFLR order (depth first and then left to right), <code>attr2</code> is found in <code>D</code> by virtue of searching <code>I</code>, <code>A</code>, <code>B</code>, and <code>D</code>—and before <code>C</code> is even checked:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class D:       attr2 = 'D2'</strong></code> 
+&gt;&gt;&gt; <code><strong>class C:       attr2 = 'C2'</strong></code>
+&gt;&gt;&gt; <code><strong>class B(D):    attr1 = 'B1'</strong></code>
+&gt;&gt;&gt; <code><strong>class A(B, C): pass</strong></code>
+
+&gt;&gt;&gt; <code><strong>I = A()</strong></code>
+&gt;&gt;&gt; <code><strong>I.attr1, I.attr2</strong></code>
+('B1', 'D2')</pre>
+<p>Watch what happens, though, if <code>B</code> and <code>C</code> <em>both</em> inherit from <code>D</code>, and <code>C</code> has the same attribute as <code>D</code>—per the MRO, the lower <code>C</code> class’s attribute wins and effectively replaces that attribute in <code>D</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class D:       attr2 = 'D2'</strong></code>
+&gt;&gt;&gt; <code><strong>class C(D):    attr2 = 'C2'</strong></code>
+&gt;&gt;&gt; <code><strong>class B(D):    attr1 = 'B1'</strong></code>
+&gt;&gt;&gt; <code><strong>class A(B, C): pass</strong></code>
+ 
+&gt;&gt;&gt; <code><strong>I = A()</strong></code>
+&gt;&gt;&gt; <code><strong>I.attr1, I.attr2</strong></code>
+('B1', 'C2')</pre>
+<p>This last case is what is meant by a <em>diamond</em> pattern of inheritance: multiple classes, <code>B</code> and <code>C</code>, both inherit from the same superclass. When this happens, the lower class’s version of an attribute is used instead of a same-named version in a superclass—even if that superclass could be reached first by depth alone.</p>
+<p>Importantly, this differs only in diamonds: <em>nondiamonds</em> still choose higher superclasses over lower classes with the same attribute name as in the third example in this section. The MRO allows a class to override attributes in a higher class from which it inherits; in the last example, <code>C</code> can replace names in <code>D</code> even if <code>D</code> is first per DFLR.</p>
+<p>To summarize: in <em>nondiamonds</em>, the search proceeds all the way to the top, then backs up and starts searching to the right (DFLR); in <em>diamonds</em>, the search checks classes to the right before climbing up to a common superclass (MRO).</p>
+<p>Strictly speaking, all four examples in this section are <em>implicit</em> diamonds because root classes inherit from the built-in <code>object</code> class automatically. We’ve seen that <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="multiple" data-tertiary="overview" data-startref="ihmpvv" id="id4142"></a><a contenteditable="false" data-type="indexterm" data-primary="multiple inheritance" data-secondary="overview" data-startref="mulphav" id="id4143"></a>this class provides defaults for some methods, such as print displays. Because of the MRO, the <code>object</code> built-in’s defaults never hide methods in user-defined classes below it in a class tree. To see how <code>object</code> is ruled out this way, let’s get a bit more precise on the MRO’s order.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="How the MRO Works"><div class="sect2" id="how_the_mro_works">
+<h2>How the MRO Works</h2>
+<p>Formally speaking, the MRO inheritance <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="MRO (method resolution order)" id="ihmlmro"></a><a contenteditable="false" data-type="indexterm" data-primary="multiple inheritance" data-secondary="MRO (method resolution order)" id="mlhmreso"></a><a contenteditable="false" data-type="indexterm" data-primary="MRO (method resolution order)" id="mrmrder"></a>search order works as if all classes are listed per the DFLR, and then all but the rightmost duplicate of each class is removed. In more detail, it’s computed as <span class="keep-together">follows</span>:</p>
+<ol>
+<li><p>List all the classes from which an instance inherits using the DFLR lookup order, and include a class multiple times if it’s visited more than once.</p></li>
+<li><p>Scan the resulting list for duplicate classes, removing all but the last (rightmost) occurrence of duplicates in the list.</p></li>
+</ol>
+<p>The resulting MRO sequence for a given class includes the class, its superclasses, and all higher superclasses up to and including the implicit or explicit <code>object</code> root class above the tops of the tree. It’s ordered such that each class appears before its parents, and multiple parents retain the order in which they appear in the <code>class</code> header.</p>
+<p>Because common parents in diamonds appear only at the position of their <em>last</em> visitation in the MRO, lower classes are searched first when the MRO list is used later by attribute inheritance (making it more breadth-first than depth-first in diamonds only), and each class is included and thus visited just once, no matter how many classes lead to it.</p>
+<p>Consider the <em>nondiamond</em> class tree of <a data-type="xref" href="#example_threeone_eightdot_mro_nondiamon">Example 31-8</a>, whose shape is sketched as “ASCII art” in its <span class="keep-together">comments</span>.</p>
+<div data-type="example" id="example_threeone_eightdot_mro_nondiamon">
+<h5><span class="label">Example 31-8. </span>mro_nondiamond.py</h5>
+<pre data-type="programlisting">class E:       attr = 'E'     #   D     E
+class D:       attr = 'D'     #   |     |
+class C(E):    attr = 'C'     #   B     C
+class B(D):    pass           #    \   /
+class A(B, C): pass           #      A
+                              #      |
+X = A()                       #      X
+print(X.attr)  # D</pre>
+</div>
+<p>To compute the MRO inheritance search order through this tree, Python first enumerates all classes accessible per DFLR and then removes duplicates (remember that the built-in <code>object</code> is implicitly above all root classes):</p>
+<pre data-type="programlisting">DFLR =&gt; [X, A, B, D, object, C, E, object]
+MRO  =&gt; [X, A, B, D, C, E, object]</pre>
+<p>In this tree, the net result for both DFLR and MRO ordering is the same: the output is “D” by taking <code>attr</code> from class <code>D</code> at the top left. Technically, the MRO differs because the built-in <code>object</code> appears just once at the end after its <a contenteditable="false" data-type="indexterm" data-primary="diamonds, user-defined" id="id4144"></a>duplicates are removed; this is irrelevant to our classes because they don’t redefine an <code>object</code> default (like print strings). When a user-defined <em>diamond</em> is coded in <a data-type="xref" href="#example_threeone_ninedot_mro_diamonddot">Example 31-9</a>, however, the MRO’s difference is more striking.</p>
+<div data-type="example" id="example_threeone_ninedot_mro_diamonddot">
+<h5><span class="label">Example 31-9. </span>mro_diamond.py</h5>
+<pre data-type="programlisting">class D:       attr = 'D'     #      D
+class C(D):    attr = 'C'     #    /   \
+class B(D):    pass           #   B     C
+class A(B, C): pass           #    \   /
+                              #      A
+X = A()                       #      |
+print(X.attr)  # C            #      X</pre>
+</div>
+<p>For this tree, the common user-defined class <code>D</code> is reached <em>twice</em> by DFLR. Because the MRO keeps only the last (rightmost) <code>D</code>, the lower <code>C</code>’s definition of <code>attr</code> now wins over <code>D</code>’s. Hence, the output is now “C” instead of “D”:</p>
+<pre data-type="programlisting">DFLR =&gt; [X, A, B, D, object, C, D, object]
+MRO  =&gt; [X, A, B, C, D, object]</pre>
+<p>In fact, you can view the MRO of any class with its built-in <code>__mro__</code> attribute.<a contenteditable="false" data-type="indexterm" data-primary="__mro__ attribute" data-primary-sortas="mro attribute" id="id4145"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="__mro__ attribute" data-secondary-sortas="mro attribute" id="id4146"></a> This tuple gives the inheritance search order followed for instances of the class (after the instance itself). It’s set to the result of the <code>mro</code> class method at class creation time (which can technically be customized for roles too obscure to cover here). It’s also a lot  to look at unless we select class names as in the following, which inspects classes in the <em>nondiamond</em> tree of <a data-type="xref" href="#example_threeone_eightdot_mro_nondiamon">Example 31-8</a>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from mro_nondiamond import *</strong></code>
+D
+&gt;&gt;&gt; <code><strong>[c.__name__ for c in A.__mro__]</strong></code>
+['A', 'B', 'D', 'C', 'E', 'object']
+&gt;&gt;&gt; <code><strong>[c.__name__ for c in C.__mro__]</strong></code>
+['C', 'E', 'object']</pre>
+<p>And here’s the case for the <em>diamond</em> class tree in <a data-type="xref" href="#example_threeone_ninedot_mro_diamonddot">Example 31-9</a>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from mro_diamond import *</strong></code>
+C
+&gt;&gt;&gt; <code><strong>[c.__name__ for c in A.__mro__]</strong></code>
+['A', 'B', 'C', 'D', 'object']
+&gt;&gt;&gt; <code><strong>[c.__name__ for c in C.__mro__]</strong></code>
+<code><strong>['C', 'D', 'object']</strong></code></pre>
+<p> The full <code>__mro__</code> is the classes used by inheritance at a given class, and <code>__bases__</code> is just supers there:<a contenteditable="false" data-type="indexterm" data-primary="__class__ attribute" data-primary-sortas="class attribute" id="id4147"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="__class__ attribute" data-secondary-sortas="class attribute" id="id4148"></a></p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>A.__mro__</strong></code>
+(&lt;class 'mro_diamond.A'&gt;, &lt;class 'mro_diamond.B'&gt;, &lt;class 'mro_diamond.C'&gt;, 
+&lt;class 'mro_diamond.D'&gt;, &lt;class 'object'&gt;)
+
+&gt;&gt;&gt; <code><strong>X.__class__.__mro__</strong></code>
+(&lt;class 'mro_diamond.A'&gt;, &lt;class 'mro_diamond.B'&gt;, &lt;class 'mro_diamond.C'&gt;, 
+&lt;class 'mro_diamond.D'&gt;, &lt;class 'object'&gt;)
+
+&gt;&gt;&gt; <code><strong>A.__bases__</strong></code>
+(&lt;class 'mro_diamond.B'&gt;, &lt;class 'mro_diamond.C'&gt;)
+
+&gt;&gt;&gt; <code><strong>D.__bases__</strong></code>
+(&lt;class 'object'&gt;,)</pre>
+<p>Experiment with <code>__mro__</code> on your own for more fidelity. Especially if you’re unsure how the MRO handles a given class tree, this attribute can be consulted to see how <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="MRO (method resolution order)" data-startref="ihmlmro" id="id4149"></a><a contenteditable="false" data-type="indexterm" data-primary="multiple inheritance" data-secondary="MRO (method resolution order)" data-startref="mlhmreso" id="id4150"></a><a contenteditable="false" data-type="indexterm" data-primary="MRO (method resolution order)" data-startref="mrmrder" id="id4151"></a>inheritance will truly search.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Attribute Conflict Resolution"><div class="sect2" id="attribute_conflict_resolution">
+<h2>Attribute Conflict Resolution</h2>
+<p>Though a useful pattern, multiple inheritance’s chief downside is that it can pose a <em>conflict</em> when the <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="multiple" data-tertiary="attribute conflicts" id="ihmlcof"></a><a contenteditable="false" data-type="indexterm" data-primary="multiple inheritance" data-secondary="attribute conflicts" id="mlhmrttfl"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="conflict resolution" id="attbcfsl"></a>same method (or other attribute) name is defined in more than one branch of the class tree. When this occurs, the conflict is resolved either automatically by the inheritance search order or manually in your code:</p>
+<dl>
+<dt>Default</dt><dd><p>By default, inheritance chooses the <em>first</em> occurrence of an attribute it finds when an attribute is referenced normally (e.g., by <code>self.<em>attr</em></code>). In this mode, Python chooses the first appearance located while scanning the MRO of an instance’s class, from left to right.</p></dd>
+<dt>Explicit</dt><dd><p>In some class models, you may need to <em>select</em> an attribute explicitly by referencing it through its class name (e.g., by <code><em>superclass</em>.<em>attr</em></code>). Your code resolves the conflict this way and overrides the search’s default to select an option other than the inheritance search’s default.</p></dd>
+</dl>
+<p>By default, multiple inheritance assumes that names on the <em>left</em> of a class tree should override the same names on the right, and the MRO further assumes that <em>lower</em> classes should override same-named attributes in common superclasses of diamonds. Of course, the problem with assumptions is that they assume things. In <a data-type="xref" href="#example_threeone_ninedot_mro_diamonddot">Example 31-9</a>, what if you need some same-named attributes from <code>B</code> but <em>also</em> some others from <code>C</code>?</p>
+<p>Luckily, there is an inheritance escape hatch. If the default search order doesn’t work, or if you simply want more control over the search process, you can always force the selection of an attribute from anywhere in the tree by assigning or otherwise naming the one you want at the place where classes are mixed together.</p>
+<p>In <a data-type="xref" href="#example_threeone_ninedot_mro_diamonddot">Example 31-9</a>, for instance, any of the following selections are allowed, but the latter two make the choice explicit rather than relying on the implicit and subtle “magic” of MRO inheritance:</p>
+<pre data-type="programlisting">class A(B, C): pass              <code><em># Use the default MRO choice (C)</em></code>
+class A(B, C): attr = B.attr     <code><em># Choose attr from the left branch (D)</em></code>
+class A(B, C): attr = C.attr     <code><em># Choose attr from the right branch (C)</em></code></pre>
+<p>Naturally, attributes picked this way can also be methods—which are normal, assignable attributes that happen to reference callable function objects. Moreover, the choice can be made in a call:</p>
+<pre data-type="programlisting">class A(B, C):
+    def …:
+        self.method(…)           <code><em># Use the default MRO choice</em></code>
+
+class A(B, C):
+    def …:
+        B.method(self, …)        <code><em># Choose method from the left branch</em></code>
+
+class A(B, C):  
+    def …:              
+        C.method(self, …)        <code><em># Choose method from the right branch</em></code></pre>
+<p>Such calls can be used to override the MRO, but also to kick calls up the tree when the class’s own version must be skipped. As you’ll see in the next chapter, such calls might also use <code>super().method()</code>, which selects the class following the call’s host on <code>self</code>’s MRO; though simple in single inheritance, this can be stunningly implicit in multiple inheritance and doesn’t provide as much control as explicit class names.</p>
+<p class="pagebreak-before">However they are coded, such manual overrides are required only when the <em>same name</em> appears in multiple superclasses, and you do not wish to use the first one inherited. For example, manual overrides allow you to unambiguously choose among a set of same names in <em>both</em> left and right branches, while inheritance would choose just names on the left. They can also be used to make choices explicit in general, though, even in nondiamonds.</p>
+<p>Because this isn’t as common an issue in typical Python code as it may sound, we’ll defer details on this topic until we study the <code>super</code> built-in in the next chapter and revisit this as a “gotcha” at the end of that chapter. First, though, the next section demonstrates a practical use case for the multiple-inheritance design pattern.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>The inheritance finale</em>: Despite the MRO’s complexity, there are still a few inheritance hurdles left to clear. Its complete algorithm is more complex than the model sketched here, incorporating special cases for metaclasses, descriptors, and built-ins. In <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>, we’ll expand inheritance for the metaclass tree and apply its MRO in the <code>super</code> built-in, and in <a data-type="xref" href="ch38.html#managed_attributes">Chapter 38</a>, we’ll study its special case for built-in operations, but we won’t be able to formalize inheritance in full until <a data-type="xref" href="ch40.html#metaclasses_and_inheritance">Chapter 40</a> after we’ve studied all these tools in more depth. The good news is that the remaining hurdles almost never trip up application programs; for most <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="multiple" data-tertiary="attribute conflicts" data-startref="ihmlcof" id="id4152"></a><a contenteditable="false" data-type="indexterm" data-primary="multiple inheritance" data-secondary="attribute conflicts" data-startref="mlhmrttfl" id="id4153"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="conflict resolution" data-startref="attbcfsl" id="id4154"></a>coders, the “finale” is a fully optional read.</p>
+</div>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Example: “Mix-in” Attribute Listers"><div class="sect2" id="example_a_quotation_markmix_inquotation">
+<h2>Example: “Mix-in” Attribute Listers</h2>
+<p>Perhaps the most common way multiple inheritance is used is to “mix in” general-purpose methods <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="multiple" data-tertiary="mix-in classes" id="ihmxcl"></a><a contenteditable="false" data-type="indexterm" data-primary="multiple inheritance" data-secondary="mix-in classes, attribute lists" id="mimxatls"></a><a contenteditable="false" data-type="indexterm" data-primary="mix-in classes" data-secondary="attribute lists" id="id4155"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="listing, mix-in classes" id="id4156"></a>from superclasses. Such superclasses are usually called <em>mix-in classes</em>—they provide methods you add to application classes by inheritance. In a sense, mix-in classes are similar to modules: they provide packages of methods for use in their client subclasses. Unlike simple functions in modules, though, methods in mix-in classes also can participate in inheritance hierarchies and have access to the <code>self</code> instance for using state information and other methods in their trees.</p>
+<p>For example, we’ve seen that Python’s default way to print a class instance object isn’t incredibly useful:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Hack:
+        def __init__(self, what):</strong></code>               <code><em># No __repr__ or __str__</em></code>
+            <code><strong>self.data1 = what</strong></code>
+
+&gt;&gt;&gt; <code><strong>X = Hack('code')
+</strong></code>&gt;&gt;&gt; <code><strong>print(X)</strong></code>                                   <code> <em># Default: class name + address (id)</em></code>
+&lt;__main__.Hack object at 0x10ba464e0&gt;</pre>
+<p>As you learned in both <a data-type="xref" href="ch28.html#a_more_realistic_example">Chapter 28</a>’s case study and <a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a>’s operator-overloading coverage, classes can provide a <code>__str__</code> or <code>__repr__</code> method to implement custom displays. But rather than coding one of these in each class you wish to print, why not code it once in a general-purpose tool class and inherit it in all your other classes?</p>
+<p>That’s what mix-ins are for. Defining a display method in a mix-in superclass once enables us to reuse it anywhere we want to see a custom display format—even in classes that may already have another superclass. We’ve already explored tools that do related work:</p>
+<ul class="pagebreak-before">
+<li><p><a data-type="xref" href="ch28.html#a_more_realistic_example">Chapter 28</a>’s <code>AttrDisplay</code> class, of <a data-type="xref" href="ch28.html#example_twoeight_onethreedot_classtools">Example 28-13</a>, formatted instance attributes in a generic <code>__repr__</code> method, but it did not climb class trees and was utilized in single-inheritance mode only.</p></li>
+<li><p><a data-type="xref" href="ch29.html#class_coding_details">Chapter 29</a>’s <em>classtree.py</em> module, of <a data-type="xref" href="ch29.html#example_twonine_ninedot_classtreedotpy">Example 29-9</a>, defined functions for climbing and sketching class trees, but it did not display object attributes along the way and was not architected as an inheritable class.</p></li>
+</ul>
+<p>Here, we’re going to revisit these examples’ techniques and expand upon them to code a set of three mix-in classes that serve as generic display tools for listing instance attributes, inherited attributes, and attributes on all objects in a class tree, respectively. We’ll also use our tools in multiple-inheritance mode and deploy coding techniques that make classes better suited to use as generic tools.</p>
+<p>Unlike <a data-type="xref" href="ch28.html#a_more_realistic_example">Chapter 28</a>, we’ll code this with a <code>__str__</code> instead of a <code>__repr__</code>. This is partially a style issue and limits their role to <code>print</code> and <code>str</code>, but the displays we’ll be developing are meant to be user-friendly, not imitative of code. This policy also leaves client classes the option of coding an alternative lower-level display for interactive echoes and nested appearances with a <code>__repr__</code> and has built-in immunity from <code>__repr__</code> looping perils covered ahead.</p>
+<section data-type="sect3" data-pdf-bookmark="Listing instance attributes with __dict__"><div class="sect3" id="listing_instance_attributes_with_dict">
+<h3>Listing instance attributes with __dict__</h3>
+<p>Let’s get started with <a contenteditable="false" data-type="indexterm" data-primary="mix-in classes" data-secondary="attribute lists" data-tertiary="__dict__" data-tertiary-sortas="dict" id="xttdc"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="listing, mix-in classes" data-tertiary="__dict__" data-tertiary-sortas="dict" id="atlxdc"></a>the simple case—listing attributes attached to an instance. <a data-type="xref" href="#example_threeone_onezerodot_listinstanc">Example 31-10</a>, coded in the file <em>listinstance.py</em>, defines a mix-in called <code>ListInstance</code> that overloads the <code>__str__</code> method for all classes that include it in their header lines. Because this is coded as a class, <code>ListInstance</code> is a generic tool whose formatting logic can be used for instances of any subclass client.</p>
+<div data-type="example" id="example_threeone_onezerodot_listinstanc">
+<h5><span class="label">Example 31-10. </span>listinstance.py</h5>
+<pre data-type="programlisting">class ListInstance:
+    """
+    Mix-in class that provides a formatted print() or str() of instances via
+    inheritance of __str__ coded here.  Displays instance attrs only; self is
+    instance of lowest class; __X naming avoids clashing with client's attrs.
+    Works for classes with slots: a __dict__ is ensured by lack of slots here.
+    """
+    def __attrnames(self):
+        result = '\n'
+        for attr in sorted(self.__dict__):                      <code><em># Slots okay</em></code>
+            result += f'\t{attr}={self.__dict__[attr]!r}\n'     <code><em># Repr for quotes</em></code>
+        return result
+
+    def __str__(self):
+        return (f'&lt;Instance of {self.__class__.__name__}, '     <code><em># My class's name</em></code>
+                f'address {id(self):#x}:'                       <code><em># My address (hex)</em></code>
+                f'{self.__attrnames()}&gt;')                       <code><em># name=value list</em></code>
+
+if __name__ == '__main__':
+    import testmixin
+    testmixin.tester(ListInstance)      <code><em># Test class in this module</em></code></pre>
+</div>
+<p>The <code>__attrnames</code> method here exhibits a classic comprehension pattern, and you might save some program real estate <a contenteditable="false" data-type="indexterm" data-primary="generator expressions" id="id4157"></a><a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="generator expressions" id="id4158"></a>by implementing it more concisely with a <em>generator expression</em> triggered by a <code>''.join()</code> call; we’ll leave this as a suggested exercise. As coded, <code>ListInstance</code> uses some previously explored techniques to extract the instance’s class name and attributes:</p>
+<ul>
+<li><p>It uses a <code>self.__class__.__name__</code> expression to fetch the name of an instance’s class. Recall that each instance has a built-in <code>__class__</code> attribute that references the class from which it was created, and each class has a <code>__name__</code> attribute that references the class’s name given in its header line.</p></li>
+<li><p>It does most of its work by simply scanning the instance’s attribute dictionary (remember, it’s available in <code>__dict__</code>) to build up a string showing the names and values of all instance attributes. The dictionary’s keys are sorted by name to be human-friendly, instead of relying on the dictionary’s insertion order.</p></li>
+</ul>
+<p>In these respects, <code>ListInstance</code> is similar to <a data-type="xref" href="ch28.html#a_more_realistic_example">Chapter 28</a>’s attribute display; in fact, it’s largely just a variation on a theme. Our class here, though, uses two additional techniques:</p>
+<ul>
+<li><p>It displays the instance’s memory address by calling the <code>id</code> built-in function, which returns any object’s address. By definition, this is a unique object identifier, which will be useful in later mutations of this code.</p></li>
+<li><p>It uses the <em>pseudoprivate</em> naming <a contenteditable="false" data-type="indexterm" data-primary="pseudoprivate naming" id="id4159"></a>pattern for its worker method: <code>__attrnames</code>. As we saw earlier in this chapter, Python automatically localizes any such name to its enclosing class by expanding the attribute name to include the class name; in this case, it becomes <code>_ListInstance__attrnames</code>. This holds true for both class attributes like methods and instance attributes attached to <code>self</code>. As first noted in <a data-type="xref" href="ch28.html#a_more_realistic_example">Chapter 28</a>, this helps in a general tool like this, as it ensures that its names won’t clash with any names used in its client subclasses.</p></li>
+</ul>
+<p>Because <code>ListInstance</code> defines a <code>__str__</code> operator-overloading method, instances derived from this class display their attributes automatically when printed, giving a bit more information than a simple address. Here is this tool class in action in single-inheritance mode, mixed in to the previous section’s class:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from listinstance import ListInstance
+</strong></code>&gt;&gt;&gt; <code><strong>class Hack(ListInstance):</strong></code>                    <code><em># Inherit a __str__ method</em></code>
+<code> <strong>       def __init__(self, what):</strong></code>
+            <code><strong>self.data1 = what</strong></code>
+
+&gt;&gt;&gt; <code><strong>X = Hack('code')
+</strong></code>&gt;&gt;&gt; <code><strong>print(X)</strong></code>                                   <code> <em> # print() and str() run __str__</em></code>
+&lt;Instance of Hack, address 0x10c890b90:
+        data1='code'
+&gt;</pre>
+<p>You can also get the listing display as a string with <code>str</code> without printing it (use <code>print</code> later to apply escapes), and interactive echoes and nesting still use the default format (we’ve left <code>__repr__</code> as an option for clients):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>str(X)</strong></code>
+"&lt;Instance of Hack, address 0x10c890b90:\n\tdata1='code'\n&gt;"
+&gt;&gt;&gt; <code><strong>X</strong></code>
+&lt;__main__.Hack object at 0x10c890b90&gt;</pre>
+<p>The <code>ListInstance</code> class is useful for any classes you write—even classes that already have one or more superclasses. This is where <em>multiple inheritance</em> comes in handy: by adding <code>ListInstance</code> to the list of superclasses in a class header (i.e., mixing it in), you get its <code>__str__</code> “for free” while still inheriting from the existing superclass(es). The file <em>testmixin.py</em> in <a data-type="xref" href="#example_threeone_oneonedot_testmixindot">Example 31-11</a> codes test classes that prove the point.</p>
+<div data-type="example" id="example_threeone_oneonedot_testmixindot">
+<h5><span class="label">Example 31-11. </span>testmixin.py</h5>
+<pre data-type="programlisting">"""
+Generic lister-mixin tester: similar to transitive reloader in
+Chapter 25, but passes a class object to tester (not function),
+and testByNames adds loading of both module and class by name
+strings here, in keeping with Chapter 31's factories pattern.
+"""
+import importlib
+
+def tester(listerclass, sept=False):   
+    "Pass any lister class to listerclass"
+
+    class Super:
+        def __init__(self):                 <code><em># Superclass __init__</em></code>
+            self.data1 = 'code'             <code><em># Create instance attrs</em></code>
+        def method1(self):
+            pass
+
+    class Sub(Super, listerclass):          <code><em># Mix in method1 and a __str__</em></code>
+        def __init__(self):                 <code><em># Listers have access to self</em></code>
+            Super.__init__(self)            <code><em># Or super().__init__()</em></code>
+            self.data2 = 'Python'           <code><em># More instance attrs</em></code>
+            self.data3 = 3.12
+        def method2(self):                  <code><em># Define another method here</em></code>
+            pass
+
+    instance = Sub()                        <code><em># Build instance with lister's __str__</em></code>
+    print(instance)                         <code><em># Run mixed-in __str__ (or via str(x))</em></code>
+    if sept: print(f'\n{'-' * 80}\n')       <em># Python 3.12+ f-string</em>
+
+def testByNames(modname, classname, sept=False):
+    modobject   = importlib.import_module(modname)    <code><em># Import mod by namestring</em></code>
+    listerclass = getattr(modobject, classname)       <code><em># Fetch attr by namestring</em></code>
+    tester(listerclass, sept)
+
+if __name__ == '__main__':
+    testByNames('listinstance',  'ListInstance',  True)      <code><em># Test all three here</em></code>
+    testByNames('listinherited', 'ListInherited', True)      <code><em># See others ahead...</em></code>
+    testByNames('listtree',      'ListTree',      False)</pre>
+</div>
+<p>This file is instrumented to allow us to test a variety of listers. To this end, it is passed a lister class, <code>listerclass</code>, to be mixed in with test classes nested in a function. Again, classes are passable first-class objects, and we need to make the lister class a parameter to allow it to vary per test. This file also has tools to fetch classes by name strings, which we’ll set aside for the moment.</p>
+<p>More important here is the self-test code in <a data-type="xref" href="#example_threeone_onezerodot_listinstanc">Example 31-10</a>: it imports the <code>tester</code> function in <a data-type="xref" href="#example_threeone_oneonedot_testmixindot">Example 31-11</a> and passes in <code>ListInstance</code> to be tested here. Hence, <code>Sub</code> here inherits names from both <code>Super</code> and <code>ListInstance</code>; it’s a <em>composite</em> of its own names and names in both its superclasses. When you make a <code>Sub</code> instance and print it, you automatically get the custom representation mixed in from <code>ListInstance</code>:</p>
+<pre data-type="programlisting">$ <code><strong>python3 listinstance.py</strong></code> 
+&lt;Instance of Sub, address 0x10caae300:
+        data1='code'
+        data2='Python'
+        data3=3.12
+&gt;</pre>
+<p>The <code>ListInstance</code> class responsible for this display works in any class it’s mixed into because <code>self</code> refers to an instance of the subclass that pulls this class in, whatever that may be. Again, in a sense, mix-in classes are the class equivalent of modules—packages of methods useful in a variety of clients.</p>
+<p>Besides the utility they provide, mix-ins optimize code maintenance, as all classes do. For example, if you later decide to extend <code>ListInstance</code>’s <code>__str__</code> to also print all the class attributes that an instance inherits, you’re covered; because it’s an inherited method, changing <code>__str__</code> automatically updates the display of each subclass that imports the class and mixes it in. And since it’s now officially “later,” let’s move on to the next section to see <a contenteditable="false" data-type="indexterm" data-primary="mix-in classes" data-secondary="attribute lists" data-tertiary="__dict__" data-tertiary-sortas="dict" data-startref="xttdc" id="id4160"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="listing, mix-in classes" data-tertiary="__dict__" data-tertiary-sortas="dict" data-startref="atlxdc" id="id4161"></a>what such an extension might look like.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Listing inherited attributes with dir"><div class="sect3" id="listing_inherited_attributes_with_dir">
+<h3>Listing inherited attributes with dir</h3>
+<p>As it is, our <code>ListInstance</code> mix-in displays instance attributes only—names attached to the <a contenteditable="false" data-type="indexterm" data-primary="mix-in classes" data-secondary="attribute lists" data-tertiary="__dir__" data-tertiary-sortas="dir" id="xttrid"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="listing, mix-in classes" data-tertiary="__dir__" data-tertiary-sortas="dir" id="atlxrid"></a>instance object itself. It’s nearly trivial, though, to extend the class to display <em>all</em> the attributes accessible from an instance—both its own and those it inherits from its classes. The trick is to use the <code>dir</code> built-in function instead of scanning the instance’s <code>__dict__</code> dictionary; the latter holds instance attributes only, but the former also collects all inherited attributes.</p>
+<p>The mutation in <a data-type="xref" href="#example_threeone_onetwodot_listinherite">Example 31-12</a>, <em>listinherited.py</em>, codes this scheme. This is located in its own module to facilitate testing, but if existing clients were to use this version instead, they would pick up the new display automatically (and recall from <a data-type="xref" href="ch25.html#module_odds_and_ends">Chapter 25</a> that a <code>from</code> import’s <code>as</code> clause can rename a new version to a prior name being used).</p>
+<div data-type="example" id="example_threeone_onetwodot_listinherite">
+<h5><span class="label">Example 31-12. </span>listinherited.py</h5>
+<pre data-type="programlisting">class ListInherited:
+    """
+    Use dir() to collect both instance attrs and names inherited from
+    its classes.  This includes default names inherited from the implied 
+    'object' superclass above topmost classes.  getattr() can fetch
+    inherited names not in self.__dict__.  
+
+    Caution: use __str__, not __repr__, or else this loops when printing 
+    bound methods that may be returned for some attributes by getattr().
+    This will normally fail for class "slots" attributes not yet assigned.
+    """
+
+    def __attrnames(self, unders=False):
+        result = '\n'
+        for attr in dir(self):                                   <code><em># Instance dir()</em></code>
+            if attr[:2] == '__' and attr[-2:] == '__':           <code><em># Built-in names</em></code>
+                result += f'\t{attr}\n' if unders else ''        <code><em># Skip built-ins?
+</em></code>            else:
+                result += f'\t{attr}={getattr(self, attr)!r}\n'
+        return result
+
+    def __str__(self):
+        return (f'&lt;Instance of {self.__class__.__name__}, '      <code><em># My class's name</em></code>
+                f'address {id(self):#x}:'                        <code><em># My address (hex)</em></code>
+                f'{self.__attrnames()}&gt;')                        <code><em># name=value list</em></code>
+
+if __name__ == '__main__':
+    import testmixin
+    testmixin.tester(ListInherited)      <code><em># Test class in this module</em></code></pre>
+</div>
+<p>Notice that this code, by default, skips all <code>__<em>X</em>__</code> names for brevity. There are 27 such names in the test case, and most of these are internal names that we don’t generally care about in a generic listing like this. Some are user-defined operator-overloading methods like our <code>__str__</code>, though most reflect defaults in the implicit <code>object</code> root class, and there’s no easy way to determine an attribute’s class of origin here (but stay tuned).</p>
+<p>Because <code>dir</code> results may include names from anywhere in a class tree, this version also must use the <code>getattr</code> built-in function to fetch attributes by name string instead of indexing the instance’s <code>__dict__</code> attribute dictionary. <code>getattr</code> runs inheritance search, and some of the names we’re listing here are not stored on the instance itself.</p>
+<p>To test the new version, run its file directly—it passes the <code>ListInherited</code> class it defines to the <em>testmixin.py</em> file’s test function in <a data-type="xref" href="#example_threeone_oneonedot_testmixindot">Example 31-11</a> to be mixed in with a subclass in the function. Here’s the output of this test and lister class; notice the extra names inherited from classes and the name mangling at work in the lister’s method name:</p>
+<pre data-type="programlisting">$ <code><strong>python3 listinherited.py</strong></code>
+&lt;Instance of Sub, address 0x101d76600:
+        _ListInherited__attrnames=&lt;bound method ListInherited.__attrnames of &lt;…&gt;&gt;
+        data1='code'
+        data2='Python'
+        data3=3.12
+        method1=&lt;bound method tester.&lt;locals&gt;.Super.method1 of &lt;testmixin.tester…&gt;&gt;
+        method2=&lt;bound method tester.&lt;locals&gt;.Sub.method2 of &lt;testmixin.tester…&gt;&gt;
+&gt;</pre>
+<p>The display of bound methods in this was truncated to fit this page; here’s what the first two look like with an added line break (as usual, run on your own for the full and up-to-date picture):</p>
+<pre data-type="programlisting">        _ListInherited__attrnames=&lt;bound method ListInherited.__attrnames of
+            &lt;testmixin.tester.&lt;locals&gt;.Sub object at 0x101d76600&gt;&gt;
+
+        method1=&lt;bound method tester.&lt;locals&gt;.Super.method1 of 
+            &lt;testmixin.tester.&lt;locals&gt;.Sub object at 0x101d76600&gt;&gt;</pre>
+<p>Display formatting is an open-ended task (e.g., Python’s standard <code>pprint</code> “pretty printer” module may offer options here too), so we’ll leave further polishing as a suggested exercise. The tree lister of the next section may be more useful in any event, so let’s move on.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Looping in</em> <code>__<em>repr</em>__</code>: Now that we’re displaying inherited methods too, we must use <code>__str__</code> instead of <code>__repr__</code> to overload printing. With <code>__repr__</code>, this code (and code like it) will fall into <em>recursive loops</em>—its <code>getattr</code> returns a bound method; whose display includes the instance; which triggers <code>__repr__</code> again to display the instance; and so on, quickly triggering a stack-overflow exception. Subtle, but true! Change <code>__str__</code> to <code>__repr__</code> to see this live. One way to avoid such <code>__repr__</code> loops is to skip <code>getattr</code> results for which <code>isinstance</code> comparisons to the standard library’s <code>types.MethodType</code> <a contenteditable="false" data-type="indexterm" data-primary="mix-in classes" data-secondary="attribute lists" data-tertiary="__dir__" data-tertiary-sortas="dir" data-startref="xttrid" id="id4162"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="listing, mix-in classes" data-tertiary="__dir__" data-tertiary-sortas="dir" data-startref="atlxrid" id="id4163"></a>are true. Using <code>__str__</code> instead is simpler.</p>
+</div>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Listing attributes per object in class trees"><div class="sect3" id="listing_attributes_per_object_in_class">
+<h3>Listing attributes per object in class trees</h3>
+<p>Let’s code one last extension. As it is, our latest lister includes inherited names but doesn’t give any <a contenteditable="false" data-type="indexterm" data-primary="mix-in classes" data-secondary="attribute lists" data-tertiary="class trees" id="xttclstr"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="listing, mix-in classes" data-tertiary="class trees" id="atlxctrss"></a><a contenteditable="false" data-type="indexterm" data-primary="class trees" data-secondary="attribute listings" id="clsttlsg"></a>sort of designation of the classes from which the names are acquired. As we saw in the <em>classtree.py</em> example near the end of <a data-type="xref" href="ch29.html#class_coding_details">Chapter 29</a>, though, it’s straightforward to climb class inheritance trees in code.</p>
+<p>The mix-in class in <a data-type="xref" href="#example_threeone_onethreedot_listtreedo">Example 31-13</a>, coded in file <em>listtree.py</em>, makes use of this same technique to display attributes grouped by the classes in which they live—it sketches the full <em>physical class tree</em>, displaying attributes attached to each object along the way. The reader must still infer attribute inheritance (and we’ll address this in the next section’s final demo), but this version gives substantially more detail than a simple flat list of attributes, inherited or not.</p>
+<div data-type="example" id="example_threeone_onethreedot_listtreedo">
+<h5><span class="label">Example 31-13. </span>listtree.py</h5>
+<pre data-type="programlisting">class ListTree:
+    """
+    Mix-in that returns a __str__ trace of the entire class tree and all
+    its objects' attrs at and above the self instance.  The display is
+    run by print() automatically; use str() to fetch as a string.  This:
+
+    -Uses __X pseudoprivate attr names to avoid conflicts with clients
+    -Recurses to superclasses explicitly in DLFR (though not MRO) order
+    -Uses __dict__ instead of dir() because attrs are listed per object
+    -Supports classes with slots: lack of slots here ensures a __dict__
+    """
+
+    def __attrnames(self, obj, indent, unders=True):
+        spaces = ' ' * (indent + 1)
+        result = ''
+        for attr in sorted(obj.__dict__):
+            if attr.startswith('__') and attr.endswith('__'):
+                if unders: result += f'{spaces}{attr}\n'
+            else:
+                result += f'{spaces}{attr}={getattr(obj, attr)!r}\n'
+        return result
+
+    def __listclass(self, aClass, indent):
+        dots = '.' * indent
+        preamble = (f'\n{dots}'
+                    f'&lt;Class {aClass.__name__}'
+                    f', address {id(aClass):#x}')
+
+        if aClass in self.__visited:
+            return preamble + ': (see above)&gt;\n'                <code><em># Already listed</em></code>
+        elif aClass is object:
+            self.__visited[aClass] = True
+            return preamble + ': (see dir(object))&gt;\n'          <code><em># Skip object's 24</em></code>
+        else:
+            self.__visited[aClass] = True
+            here  = self.__attrnames(aClass, indent)            <code><em># My attrs + supers</em></code>
+            above = ''
+            for Super in aClass.__bases__:
+                above += self.__listclass(Super, indent + 4)
+            return preamble + f':\n{here}{above}{dots}&gt;\n'
+
+    def __str__(self):
+        self.__visited = {}
+        here  = self.__attrnames(self, 0)                       <code><em># My attrs</em></code>
+        above = self.__listclass(self.__class__, 4)             <code><em># My supers tree</em></code>
+        return (f'&lt;Instance of {self.__class__.__name__}'       <code><em># My class's name</em></code>
+                f', address {id(self):#x}'                      <code><em># My address (hex)</em></code>
+                f':\n{here}{above}&gt;')                           <code><em># attrs + supers</em></code>
+
+if __name__ == '__main__':
+    import testmixin
+    testmixin.tester(ListTree)      <code><em># Test class in this module</em></code></pre>
+</div>
+<p>This class achieves its goal by traversing the inheritance tree—from an instance’s <code>__class__</code> to its class, and then from the class’s <code>__bases__</code> to all superclasses recursively, scanning each object’s attribute <code>__dict__</code> along the way to enumerate attributes. Ultimately, it concatenates each tree portion’s string as the recursion unwinds.</p>
+<p>It can take a few moments to understand recursive programs like this, but given the arbitrary shape and depth of class trees, we really have no choice here (apart from explicit stack equivalents of the sorts we met in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch19.html#function_odds_and_ends">19</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch25.html#module_odds_and_ends">25</a>, which tend to be no simpler, and which we’ll omit here for space and time). This class is coded to keep its business as explicit as possible, though, to maximize clarity.</p>
+<p>To test, run this class’s module file as before; it passes the <code>ListTree</code> class to <em>testmixin.py</em> of <a data-type="xref" href="#example_threeone_oneonedot_testmixindot">Example 31-11</a> again, to be mixed in with a subclass in the test function. The file’s tree-sketcher output is as follows:</p>
+<pre data-type="programlisting">$ <code><strong>python3 listtree.py</strong></code>
+&lt;Instance of Sub, address 0x10a45f980:
+ _ListTree__visited={}
+ data1='code'
+ data2='Python'
+ data3=3.12
+
+....&lt;Class Sub, address 0x7fb26a448530:
+     __doc__
+     __init__
+     __module__
+     method2=&lt;function tester.&lt;locals&gt;.Sub.method2 at 0x10a482ac0&gt;
+
+........&lt;Class Super, address 0x7fb26a445c00:
+         __dict__
+         __doc__
+         __init__
+         __module__
+         __weakref__
+         method1=&lt;function tester.&lt;locals&gt;.Super.method1 at 0x10a4823e0&gt;
+
+............&lt;Class object, address 0x10a01b100: (see dir(object))&gt;
+........&gt;
+
+........&lt;Class ListTree, address 0x7fb26a443d20:
+         _ListTree__attrnames=&lt;function ListTree.__attrnames at 0x10a480f40&gt;
+         _ListTree__listclass=&lt;function ListTree.__listclass at 0x10a480fe0&gt;
+         __dict__
+         __doc__
+         __module__
+         __str__
+         __weakref__
+
+............&lt;Class object, address 0x10a01b100: (see above)&gt;
+........&gt;
+....&gt;
+&gt;</pre>
+<p class="pagebreak-before">Some points to notice about this example:</p>
+<ul>
+<li><p>The <code>__visited</code> table’s name is mangled in the instance’s attribute dictionary for <em>pseudoprivacy</em>; unless we’re very unlucky, this won’t clash with other data there. Some of the lister class’s methods are mangled as well.</p></li>
+<li><p>To minimize displays, <code>__<em>X</em>__</code> attributes are listed by <em>name</em> only, skipping their values. The built-in <code>object</code> class implied above all topmost classes is also singled out to simply refer readers to its <code>dir</code> result; <code>object</code> comes with 24 attributes today, which wouldn’t be useful to repeat in every display.</p></li>
+<li><p>The attributes that were bound methods in the prior version are now plain <em>functions</em>. This reflects the fact that this version fetches methods from <em>classes</em> instead of the instance—the <code>getattr</code> here is run on the current tree object whose <code>__dict__</code> is being scanned (<code>getattr</code> and <code>__dict__</code> indexing are equivalent in this context). Again, class methods are just functions, which are bound only when fetched from an instance.</p></li>
+<li><p>To avoid listing a class object more than once, a table records classes <em>visited</em> so far. A dictionary works in this role because class objects are hashable and thus may be dictionary keys; a set would work similarly.</p></li>
+</ul>
+<p>On the last point, <em>cycles</em> are not generally possible in class inheritance trees—a class must already have been defined to be named as a superclass, and Python raises an exception as it should if you attempt to create a cycle later by <code>__bases__</code> changes. The visited mechanism here is still needed, though, to avoid relisting a class twice:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class C: pass
+</strong></code>&gt;&gt;&gt; <code><strong>class B(C): pass
+</strong></code>&gt;&gt;&gt; <code><strong>C.__bases__ = (B,)</strong></code>        <code><em># Dark magic</em></code>
+TypeError: a __bases__ item causes an inheritance cycle</pre>
+<p>For more fun, try mixing this class into something more substantial, like the <code>Button</code> class of Python’s <code>tkinter</code> GUI-toolkit module. In general, you’ll want to name <code>ListTree</code> first (<em>leftmost</em>) in a <code>class</code> header, so its <code>__str__</code> is picked up; <code>Button</code> has one, too, and the leftmost superclass is searched first in multiple inheritance’s default:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from tkinter import Button</strong></code>
+&gt;&gt;&gt; <code><strong>from listtree import ListTree</strong></code>
+
+&gt;&gt;&gt; <code><strong>class ButtonPlus(ListTree, Button): pass</strong>  </code>     <code><em># ListTree's str, not Button's</em></code>
+&gt;&gt;&gt; <code><strong>print(ButtonPlus())</strong></code>
+…<code><em>our class's display</em></code>…
+
+&gt;&gt;&gt; <code><strong>class ButtonPlus(Button, ListTree): pass</strong>  </code>     <code><em># Mix-in order can matter!</em></code>
+&gt;&gt;&gt; <code><strong>print(ButtonPlus())</strong></code>
+.!buttonplus2</pre>
+<p>Order matters in multiple inheritance, though the manual overrides we explored earlier can force the issue:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class ButtonPlus(Button, ListTree): __str__ = ListTree.__str__</strong></code>
+…<code><em>our class's display</em></code>…</pre>
+<p>You might also try running <em>testmixin.py</em> of <a data-type="xref" href="#example_threeone_oneonedot_testmixindot">Example 31-11</a> directly; its self-test code that we shelved earlier runs each of our three lister classes in turn, using their module and class name strings—a trivial class factory in action:</p>
+<pre data-type="programlisting">$ <code><strong>python3 testmixin.py</strong></code>
+…<code><em>all three listers' results</em></code>…</pre>
+<p>While our tree lister works as planned, it doesn’t really follow Python’s MRO ordering through class trees with diamonds. In fact, it really just sketches the DFLR order and leaves <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="multiple" data-tertiary="mix-in classes" data-startref="ihmxcl" id="id4164"></a><a contenteditable="false" data-type="indexterm" data-primary="multiple inheritance" data-secondary="mix-in classes, attribute lists" data-startref="mimxatls" id="id4165"></a><a contenteditable="false" data-type="indexterm" data-primary="mix-in classes" data-secondary="attribute lists" data-tertiary="class trees" data-startref="xttclstr" id="id4166"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="listing, mix-in classes" data-tertiary="class trees" data-startref="atlxctrss" id="id4167"></a><a contenteditable="false" data-type="indexterm" data-primary="class trees" data-secondary="attribute listings" data-startref="clsttlsg" id="id4168"></a>it to readers to determine from which class a given attribute is inherited. To do better, let’s move on to a final example to close out this chapter.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Example: Mapping Attributes to Inheritance Sources"><div class="sect2" id="example_mapping_attributes_to_inheritan">
+<h2>Example: Mapping Attributes to Inheritance Sources</h2>
+<p>This section wraps up with an example <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="multiple" data-tertiary="inheritance sources" id="ihmhrsrc"></a><a contenteditable="false" data-type="indexterm" data-primary="multiple inheritance" data-secondary="inheritance sources" id="mimisrsrc"></a>that demos an application for the MRO in programming tools. As coded, the preceding section’s tree lister gave the <em>physical</em> locations of attributes in a class tree. However, by mapping the list of inherited attributes in a <code>dir</code> result to the linear MRO sequence, such tools can more directly associate attributes with the classes from which they are actually <em>inherited</em>—also a useful relationship for programmers.</p>
+<p>We won’t recode our tree lister in full here, but as a first major step, <a data-type="xref" href="#example_threeone_onefourdot_mapattrsdot">Example 31-14</a>, file <em>mapattrs.py</em>, implements tools that can be used to associate attributes with their inheritance source. As an added bonus, its <code>mapattrs</code> function demonstrates how inheritance actually searches for attributes in class tree objects—though the MRO is largely automated for us with the built-in <code>__mro__</code> class attribute<a contenteditable="false" data-type="indexterm" data-primary="__mro__ attribute" data-primary-sortas="mro attribute" id="id4169"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="__mro__ attribute" data-secondary-sortas="mro attribute" id="id4170"></a> we met earlier.</p>
+<div data-type="example" id="example_threeone_onefourdot_mapattrsdot">
+<h5><span class="label">Example 31-14. </span>mapattrs.py</h5>
+<pre data-type="programlisting">"""
+Main tool: mapattrs() maps all attributes on or inherited by an
+instance to the instance or class from which they are inherited.
+Also here: assorted dictionary tools using comprehensions.
+
+Assumes dir() gives all attributes of an instance.  To emulate 
+inheritance, this uses the class's __mro__ tuple, which gives the
+MRO search order for classes in Python 3.X.  A recursive tree
+traversal for the DFLR order of classes is included but unused.
+"""
+
+import pprint
+def trace(label, X, end='\n'):
+    print(f'{label}\n{pprint.pformat(X)}{end}')   <code><em># Print nicely
+</em></code>
+def filterdictvals(D, V):
+    """
+    dict D with entries for value V removed.
+    filterdictvals(dict(a=1, b=2, c=1), 1) =&gt; {'b': 2}
+    """
+    return {K: V2 for (K, V2) in D.items() if V2 != V}
+
+def invertdict(D):
+    """
+    dict D with values changed to keys (grouped by values).
+    Values must all be hashable to work as dict/set keys.
+    invertdict(dict(a=1, b=2, c=1)) =&gt; {1: ['a', 'c'], 2: ['b']}
+    """
+    def keysof(V):
+        return sorted(K for K in D.keys() if D[K] == V)
+    return {V: keysof(V) for V in set(D.values())}
+
+def dflr(cls):
+    """
+    Depth-first left-to-right order of class tree at cls.
+    Cycles not possible: Python disallows on __bases__ changes.
+    """
+    here = [cls]
+    for sup in cls.__bases__:
+        here += dflr(sup)
+    return here
+
+def inheritance(instance):
+    """
+    Inheritance order sequence: MRO or DFLR.
+    DFLR alone is no longer used in Python 3.X.
+    """
+    if hasattr(instance.__class__, '__mro__'):
+        return (instance,) + instance.__class__.__mro__
+    else:
+        return [instance] + dflr(instance.__class__)
+
+def mapattrs(instance, withobject=False, bysource=False):
+    """
+    dict with keys giving all inherited attributes of instance,
+    with values giving the object that each is inherited from.
+    withobject: False=remove object built-in class attributes.
+    bysource:   True=group result by objects instead of attributes.
+    Supports classes with slots that preclude __dict__ in instances.
+    """
+    attr2obj = {}
+    inherits = inheritance(instance)
+    for attr in dir(instance):
+        for obj in inherits:
+             if hasattr(obj, '__dict__') and attr in obj.__dict__:    <code><em># Slots okay</em></code>
+               attr2obj[attr] = obj
+               break
+
+    if not withobject:
+        attr2obj = filterdictvals(attr2obj, object)
+    return attr2obj if not bysource else invertdict(attr2obj)
+
+if __name__ == '__main__':
+
+    class D:         attr2 = 'D'
+    class C(D):      attr2 = 'C'
+    class B(D):      attr1 = 'B'
+    class A(B, C):   pass
+    I = A()
+    I.attr0 = 'I'
+
+    print(f'Py=&gt;{I.attr0=}, {I.attr1=}, {I.attr2=}\n')    <code><em># Python's search</em></code>
+    trace('INHERITANCE', inheritance(I))                  <code><em># [Inheritance order]</em></code>
+    trace('ATTRIBUTES',  mapattrs(I))                     <code><em># {Attr =&gt; Source}</em></code>
+    trace('SOURCES',     mapattrs(I, bysource=True))      <code><em># {Source =&gt; [Attrs]}</em></code></pre>
+</div>
+<p>This module’s main <code>mapattrs</code> function uses <code>dir</code> to collect all the attributes that an instance inherits. For each, it maps the attribute to its source by scanning the MRO order available in the <code>__mro__</code> of the instance’s class, searching each object’s namespace <code>__dict__</code> along the way. The net effect replicates Python’s true inheritance search for each attribute accessible from the instance passed in.</p>
+<p>This file’s self-test code applies its tools to a diamond multiple-inheritance tree similar to those we studied earlier. It uses Python’s <code>pprint</code> standard-library module to display lists and dictionaries nicely—<code>pprint.pprint</code> is its basic call, and its <code>pformat</code> returns a print string. Notably, <code>attr2</code>, whose value is given on the first line and whose name appears in later function results, is inherited from class <code>C</code> per the MRO order we’ve studied:</p>
+<pre data-type="programlisting">$ <code><strong>python3 mapattrs.py</strong></code>
+Py=&gt;I.attr0='I', I.attr1='B', I.attr2='C'
+
+INHERITANCE
+(&lt;__main__.A object at 0x10cc33e00&gt;,
+ &lt;class '__main__.A'&gt;,
+ &lt;class '__main__.B'&gt;,
+ &lt;class '__main__.C'&gt;,
+ &lt;class '__main__.D'&gt;,
+ &lt;class 'object'&gt;)
+
+ATTRIBUTES
+{'__dict__': &lt;class '__main__.D'&gt;,
+ '__doc__': &lt;class '__main__.A'&gt;,
+ '__module__': &lt;class '__main__.A'&gt;,
+ '__weakref__': &lt;class '__main__.D'&gt;,
+ 'attr0': &lt;__main__.A object at 0x10cc33e00&gt;,
+ 'attr1': &lt;class '__main__.B'&gt;,
+ 'attr2': &lt;class '__main__.C'&gt;}
+
+SOURCES
+{&lt;__main__.A object at 0x10cc33e00&gt;: ['attr0'],
+ &lt;class '__main__.D'&gt;: ['__dict__', '__weakref__'],
+ &lt;class '__main__.C'&gt;: ['attr2'],
+ &lt;class '__main__.B'&gt;: ['attr1'],
+ &lt;class '__main__.A'&gt;: ['__doc__', '__module__']}</pre>
+<p>Although this module was not designed to be a mix-in class itself, listers may index its <code>mapattrs</code> function’s dictionary results to obtain an attribute’s source or a source’s attributes. Moreover, it’s easy to adapt this module’s results to be a mix-in by wrapping them in a <code>__str__</code>. Here it is listing attributes’ sources in the test classes of the prior section’s <a data-type="xref" href="#example_threeone_oneonedot_testmixindot">Example 31-11</a>:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>import pprint</strong></code>
+&gt;&gt;&gt; <code><strong>from mapattrs import mapattrs</strong></code>
+&gt;&gt;&gt; <code><strong>class ListAttr2Source:</strong></code>
+<code> <strong>       def __str__(self):</strong></code>
+<code> <strong>           return pprint.pformat(mapattrs(self))</strong></code>
+
+&gt;&gt;&gt; <code><strong>from testmixin import tester</strong></code>
+&gt;&gt;&gt; <code><strong>tester(ListAttr2Source)</strong></code>
+{'__dict__': &lt;class 'testmixin.tester.&lt;locals&gt;.Super'&gt;,
+ '__doc__': &lt;class 'testmixin.tester.&lt;locals&gt;.Sub'&gt;,
+ '__init__': &lt;class 'testmixin.tester.&lt;locals&gt;.Sub'&gt;,
+ '__module__': &lt;class 'testmixin.tester.&lt;locals&gt;.Sub'&gt;,
+ '__str__': &lt;class '__main__.ListAttr2Source'&gt;,
+ '__weakref__': &lt;class 'testmixin.tester.&lt;locals&gt;.Super'&gt;,
+ 'data1': &lt;testmixin.tester.&lt;locals&gt;.Sub object at 0x102a8fa40&gt;,
+ 'data2': &lt;testmixin.tester.&lt;locals&gt;.Sub object at 0x102a8fa40&gt;,
+ 'data3': &lt;testmixin.tester.&lt;locals&gt;.Sub object at 0x102a8fa40&gt;,
+ 'method1': &lt;class 'testmixin.tester.&lt;locals&gt;.Super'&gt;,
+ 'method2': &lt;class 'testmixin.tester.&lt;locals&gt;.Sub'&gt;}</pre>
+<p class="pagebreak-before">Listing sources’ attributes is just as easy (see also Python’s docs for <code>pprint</code> options like <code>compact</code> and <code>width</code>):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class ListSource2Attr:</strong></code>
+<code> <strong>       def __str__(self):</strong></code>
+<code> <strong>           return pprint.pformat(mapattrs(self, bysource=True))</strong></code>
+ 
+&gt;&gt;&gt; <code><strong>tester(ListSource2Attr)</strong></code>
+{&lt;testmixin.tester.&lt;locals&gt;.Sub object at 0x102ad12e0&gt;: ['data1',
+                                                         'data2',
+                                                         'data3'],
+ &lt;class 'testmixin.tester.&lt;locals&gt;.Super'&gt;: ['__dict__',
+                                             '__weakref__',
+                                             'method1'],
+ &lt;class 'testmixin.tester.&lt;locals&gt;.Sub'&gt;: ['__doc__',
+                                           '__init__',
+                                           '__module__',
+                                           'method2'],
+ &lt;class '__main__.ListSource2Attr'&gt;: ['__str__']}</pre>
+<p>Study this example’s code for more insight. As callouts, notice how it uses <code>hasattr</code> to check whether an object has a <code>__dict__</code> attribute dictionary before trying to index it. Though rare, some instances may not have a <code>__dict__</code> if they use the class extension known as <em>slots</em> noted earlier. The prior section’s slot story is varied: as mix-ins, <code>ListTree</code> and <code>ListInstance</code> work as is for classes with slots because their <em>lack</em> of slots ensures an instance <code>__dict__</code>, but <code>ListInherited</code> can fail for slots not yet assigned—findings to be clarified in the next chapter.</p>
+<p>Additionally, both slots and other “virtual” instance attributes like <em>properties</em> and <em>descriptors</em> live at the class instead of the instance and hence may require generic handling—<code>dir</code> enumeration, and either <code>getattr</code> fetches, tree climbs, or MRO scans. This example and the prior section’s listers accommodate this, but unevenly: some such names will be associated with the classes in which their implementations live, not the instance through which they are accessed.</p>
+<p>Moreover, no lister can show attribute names dynamically computed in full by methods like <span class="keep-together"><code>__getattr__</code></span> because these names have no physical basis. Classes implementing such dynamic names can also define a <code>__dir__</code> method to provide an attribute result list for <code>dir</code> calls, but general tools like our listers and mapper cannot depend on this optional and relatively uncommon interface being present.</p>
+<p>Finally, all the attribute listers and mappers in this chapter work in full for normal <em>instances</em> but don’t support <em>classes</em>. For the latter, prints run a default display instead of any of the three listers, and <code>mapattrs</code> strangely attributes most names to a mystery class called “type.” The lister skips stem from the fact that built-ins like <code>print</code> skip the “instance,” as we’ve noted before. The <code>mapattrs</code> oddity reflects the fact that classes acquire names from both their own superclass tree (and MRO), and a secondary tree (and MRO) formed by “metaclasses” that we have yet to meet.</p>
+<p>But to understand both the inheritance bifurcation of metaclasses, as well as ethereal attributes like slots, properties, <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="inheritance" data-tertiary="multiple inheritance" data-startref="clhrmph" id="id4171"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="multiple" data-tertiary="inheritance sources" data-startref="ihmhrsrc" id="id4172"></a><a contenteditable="false" data-type="indexterm" data-primary="multiple inheritance" data-secondary="inheritance sources" data-startref="mimisrsrc" id="id4173"></a>and descriptors, we need to move on to the next chapter.</p>
+</div></section>
+</div></section>
+<section class="pagebreak-before" data-type="sect1" data-pdf-bookmark="Other Design-Related Topics"><div class="sect1" id="other_design_related_topics">
+<h1 class="less_space">Other Design-Related Topics</h1>
+<p>In this chapter, we’ve studied an assortment of design patterns used to combine classes in Python programs, along with the mechanism behind some of them. We’ve really only scratched the surface here in the design patterns domain, though. Elsewhere in this book, you’ll find coverage of other design-related topics, such as:</p>
+<ul>
+<li><p><em>Abstract superclasses</em> (<a data-type="xref" href="ch29.html#class_coding_details">Chapter 29</a>)</p></li>
+<li><p><em>Decorators</em> (Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch32.html#class_odds_and_ends">32</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch39.html#decorators">39</a>)</p></li>
+<li><p><em>Type subclasses</em> (<a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>)</p></li>
+<li><p><em>Static and class methods</em> (<a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>)</p></li>
+<li><p><em>Managed attributes</em> (Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch32.html#class_odds_and_ends">32</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch38.html#managed_attributes">38</a>)</p></li>
+<li><p><em>Metaclasses</em> (Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch32.html#class_odds_and_ends">32</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch40.html#metaclasses_and_inheritance">40</a>)</p></li>
+</ul>
+<p>For even more details on design patterns, this book must delegate to other resources on OOP at large. Although patterns are important in OOP work and are often more natural in Python than other languages, they are not specific to Python itself and a subject that’s often best acquired by experience.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00042">
+<h1>Chapter Summary</h1>
+<p>In this chapter, we sampled common ways to use and combine classes to optimize their reusability and factoring benefits—what are usually considered design issues, which are often independent of any particular programming language (though Python can make them easier to implement). We studied <em>inheritance</em> (acquiring behavior from other classes), <em>composition</em> (controlling embedded objects), and <em>delegation</em> (wrapping objects in proxy classes), as well as the related topics of pseudoprivate attributes, bound methods, factories, multiple inheritance, and the MRO.</p>
+<p>The next chapter concludes our look at classes and OOP by surveying class-related topics that are more esoteric than most of what we’ve already seen. Some of its material may be of more interest to tool writers than application programmers, but it still merits a review by most people who will do OOP in Python—if not for your code, then for others’ code you may need to understand and reuse. First, though, here’s another quick chapter quiz to review.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000183">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>What is multiple inheritance?</p></li>
+<li><p>What is composition?</p></li>
+<li><p>What is delegation?</p></li>
+<li><p>What are bound methods?</p></li>
+<li><p>What are pseudoprivate attributes used for?</p></li>
+<li><p>How does the MRO inheritance search order differ from DFLR?</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" class="pagebreak-before" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000182">
+<h1 class="less_space">Test Your Knowledge: Answers</h1>
+<ol>
+<li><p><em>Multiple inheritance</em> occurs when a class inherits from more than one superclass; it’s useful for mixing together multiple packages of class-based code. The left-to-right order in <code>class</code> statement headers determines the general order of attribute searches, and the MRO specializes search for diamonds with common superclasses.</p></li>
+<li><p><em>Composition</em> is a technique whereby a controller class embeds and directs a number of objects and provides an interface all its own; it’s a way to build up larger structures with classes.</p></li>
+<li><p><em>Delegation</em> involves wrapping an object in a proxy class, which adds extra behavior and passes other operations to the wrapped object. The proxy generally retains the interface of the wrapped object.</p></li>
+<li><p><em>Bound methods</em> combine an instance and a method function; you can call them without passing in an instance object explicitly because the original instance is still available in the instance+function pair.</p></li>
+<li><p><em>Pseudoprivate attributes</em>, whose names begin but do not end with two leading underscores (e.g., <code>__<em>X</em></code>), are used to localize names to the enclosing class. This includes both class attributes, like methods defined inside the <code>class</code> statement, and <code>self</code> instance attributes assigned inside the class’s methods. Such names are expanded to include the class name, which makes them generally unique among all classes in an inheritance tree.</p></li>
+<li><p>The MRO selects same-named attributes in a <em>lower</em> subclass over those in a higher common superclass in multiple-inheritance “diamond” trees—effectively searching across before up in this specific case. The DFLR is otherwise the same; in fact, the MRO is defined by <em>starting</em> with the DFLR order and then <em>removing</em> all but the last (rightmost) appearances of classes that are visited more than once. This differs from DFLR only when there are duplicates, which arise only in diamonds that have common superclasses. That said, the built-in <code>object</code> makes every multiple-inheritance tree a diamond, so this is a common, if implicit, occurrence.  </p></li>
+</ol>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>

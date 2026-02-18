@@ -1,0 +1,1155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 9. Tuples, Files, and Everything Else"><div class="chapter" id="tuplescomma_filescomma_and_everything_e">
+<h1><span class="label">Chapter 9. </span>Tuples, Files, and Everything Else</h1>
+<p>This chapter rounds out our in-depth tour of the core object types in Python by exploring the <em>tuple</em>, a collection of other objects that cannot be changed, and the <em>file</em>, an interface to external files on your computer. As you’ll see, the tuple is a relatively simple object that largely performs operations you’ve already learned about for strings and lists. The file object is a commonly used and full-featured tool for processing files on a host of devices. Because files are so pervasive in programming, the basic overview of files here is supplemented by larger examples in later chapters.</p>
+<p>This chapter also concludes this part of the book by summarizing properties common to all the core object types we’ve met—the notions of equality, comparisons, object copies, and so on. We’ll also briefly explore other object types in Python’s toolbox, including the <code>None</code> placeholder and the <code>namedtuple</code> hybrid; as you’ll see, although we’ve covered all the primary built-in types, the object story in Python is broader than implied thus far. Finally, we’ll close this part of the book by taking a look at a set of common object type pitfalls and exploring some exercises that will allow you to experiment with and cement the ideas you’ve learned.</p>
+<p>One logistics note up front: as for strings in <a data-type="xref" href="ch07.html#string_fundamentals">Chapter 7</a>, our exploration of files here will be limited to fundamentals that most Python programmers—and especially Python newcomers—need to know. In particular, <em>Unicode</em> text files were previewed in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>, but we’re going to postpone full coverage of them until <a data-type="xref" href="ch37.html#unicode_and_byte_strings">Chapter 37</a>, as optional or deferred reading. For this chapter’s purpose, we’ll assume that the contents of any text files will be encoded and decoded per your platform’s default Unicode encoding (and you won’t yet need to know what that means). The basics you’ll learn here, though, will apply both to the simpler files in this chapter as well as their extensions in <a data-type="xref" href="ch37.html#unicode_and_byte_strings">Chapter 37</a>.</p>
+<section data-type="sect1" data-pdf-bookmark="Tuples"><div class="sect1" id="tuples-id000115">
+<h1>Tuples</h1>
+<p>The last collection type in our survey <a contenteditable="false" data-type="indexterm" data-primary="tuples" id="tplse"></a>is the Python <em>tuple</em>. Tuples construct simple groups of objects. They work much like lists, except that tuples can’t be changed in place (they’re immutable) and are usually written as a series of items in parentheses, not square brackets. Although they don’t support as many methods, tuples share most of their properties with lists. Here’s a quick look at the basics. Tuples are:</p>
+<dl>
+<dt>Ordered collections of arbitrary objects</dt>
+<dd>Like strings and lists, tuples are positionally ordered collections of objects (i.e., they maintain a left-to-right order among their contents). Like lists and dictionaries, they can embed any kind of object.</dd>
+<dt>Accessed by offset</dt>
+<dd>Like strings and lists, items in a tuple are accessed by offset (not by key); they support all the offset-based access operations, such as indexing and slicing.</dd>
+<dt>Of the category “immutable sequence”</dt>
+<dd>Like strings and lists, tuples are sequences; they support many of the same operations. However, like strings, tuples are immutable; they don’t support any of the in-place change operations applied to lists.</dd>
+<dt>Fixed-length, heterogeneous, and arbitrarily nestable</dt>
+<dd>Because tuples are immutable, you cannot change the size of a tuple without making a copy. On the other hand, tuples may contain any type of object, including other collection objects (e.g., lists, dictionaries, and other tuples), and so support arbitrary nesting.</dd>
+<dt>Arrays of object references</dt>
+<dd>Like lists, tuples are best thought of as object reference arrays: tuples store access points to other objects (references), and indexing a tuple is relatively quick.</dd>
+</dl>
+<p><a data-type="xref" href="#common_tuple_literals_and_operations">Table 9-1</a> highlights common tuple operations. In it, <code>T</code> means a tuple. As shown, a tuple is written as a series of objects (technically, expressions that generate objects), separated by commas and normally enclosed in parentheses. An empty <a contenteditable="false" data-type="indexterm" data-primary="tuples" data-startref="tplse" id="id2216"></a>tuple is just a parentheses pair with nothing inside.</p>
+<table class="border" id="common_tuple_literals_and_operations">
+<caption><span class="label">Table 9-1. </span>Common tuple literals and operations</caption>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>()</code></td>
+<td>An empty tuple</td>
+</tr>
+<tr>
+<td><code>T = (0,)</code></td>
+<td>A one-item tuple (not an expression)</td>
+</tr>
+<tr>
+<td><code>T = (0, 'Py', 1.2, 3)</code></td>
+<td>A four-item tuple</td>
+</tr>
+<tr>
+<td><code>T = 0, 'Py', 1.2, 3</code></td>
+<td>Another four-item tuple (same as prior line)</td>
+</tr>
+<tr>
+<td><code>T = ('Pat', ('dev', 'mgr'))</code></td>
+<td>Nested tuples</td>
+</tr>
+<tr>
+<td><code>T = tuple('hack')</code></td>
+<td>Tuple of items in an iterable</td>
+</tr>
+<tr>
+<td><code>T[i]</code><br/>
+<code>T[i][j]</code><br/>
+<code>T[i:j]</code><br/>
+<code>len(T)</code></td>
+<td>Index, index of index, slice, length</td>
+</tr>
+<tr>
+<td><code>T1 + T2</code><br/>
+<code>T * 3</code></td>
+<td>Concatenate, repeat</td>
+</tr>
+<tr>
+<td><code>T1 &gt; T2, T1 == T2</code></td>
+<td>Comparisons: magnitude, equality</td>
+</tr>
+<tr>
+<td><code>'code' in T </code><br/>
+<code>for x in T: print(x)</code><br/>
+<code>[x ** 2 for x in T]</code></td>
+<td>Membership, iteration</td>
+</tr>
+<tr>
+<td><code>T = (*x, 0, *y, *x)</code></td>
+<td>Iterable unpacking</td>
+</tr>
+<tr>
+<td><code>T.index('Py')</code><br/>
+<code>T.count('Py')</code></td>
+<td>Methods: search, count</td>
+</tr>
+<tr>
+<td><code>namedtuple('Emp', ['name', 'jobs'])</code></td>
+<td>Named-tuple extension type</td>
+</tr>
+</tbody>
+</table>
+<section data-type="sect2" data-pdf-bookmark="Tuples in Action"><div class="sect2" id="tuples_in_action">
+<h2>Tuples in Action</h2>
+<p>As usual, let’s start an interactive session to explore tuples at work. Notice in <a data-type="xref" href="#common_tuple_literals_and_operations">Table 9-1</a> that tuples do not have most of the methods that lists have (e.g., an <code>append</code> call won’t work here). They do, however, support the usual sequence operations that we explored for both strings and lists, compare recursively as usual, and support the same <code>*</code> iterable-unpacking syntax in their literals that we used for lists in the preceding chapter:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>                      <code><em># Start your REPL</em></code>
+&gt;&gt;&gt; <code><strong>(1, 2) + (3, 4)</strong></code>            <code><em># Concatenation</em></code>
+(1, 2, 3, 4)
+
+&gt;&gt;&gt; <code><strong>(1, 2) * 4</strong></code>                 <code><em># Repetition</em></code>
+(1, 2, 1, 2, 1, 2, 1, 2)
+
+&gt;&gt;&gt; <code><strong>T = (1, 2, 3, 4)</strong></code>
+&gt;&gt;&gt; <code><strong>T[0], T[1:3]</strong></code>               <code><em># Indexing, slicing</em></code>
+(1, (2, 3))
+
+&gt;&gt;&gt; <code><strong>T == (1, 2, 3, 4), T &gt; (1, 2, 3, 3), T &gt; (1, 2, 3)</strong></code>
+(True, True, True)
+
+&gt;&gt;&gt; <code><strong>L = ['code', 'hack']</strong></code>
+&gt;&gt;&gt; <code><strong>(*L, 1, 2, *(3, 4))</strong>   </code>     <code><em># Iterable unpacking</em></code>
+('code', 'hack', 1, 2, 3, 4)</pre>
+<section data-type="sect3" data-pdf-bookmark="Tuple syntax peculiarities: Commas and parentheses"><div class="sect3" id="tuple_syntax_peculiarities_commas_and_p">
+<h3>Tuple syntax peculiarities: Commas and parentheses</h3>
+<p>The second and fourth <a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="syntax" id="tplsyx"></a><a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="tuples" id="syxtpl"></a>entries in <a data-type="xref" href="#common_tuple_literals_and_operations">Table 9-1</a> merit a bit more explanation. Because parentheses can also enclose expressions (see <a data-type="xref" href="ch05.html#numbers_and_expressions">Chapter 5</a>), you need to do something special to tell Python when a single object in parentheses is a tuple object and <a contenteditable="false" data-type="indexterm" data-primary="parentheses" data-secondary="tuples" id="parple"></a><a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="parentheses" id="tppthe"></a><a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="commas" id="pltcm"></a><a contenteditable="false" data-type="indexterm" data-primary="commas" data-secondary="tuples" id="cmtpls"></a>not a simple expression. If you really want a single-item tuple, simply add a trailing comma after the single item, before the closing parenthesis:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x = (40)</strong></code>                   <code><em># An integer!</em></code>
+&gt;&gt;&gt; <code><strong>x</strong></code>
+40
+&gt;&gt;&gt; <code><strong>y = (40,)</strong></code>                  <code><em># A tuple containing an integer</em></code>
+&gt;&gt;&gt; <code><strong>y</strong></code>
+(40,)</pre>
+<p>As a special case, Python also allows you to <em>omit</em> the opening and closing parentheses for a tuple in contexts where it isn’t syntactically ambiguous to do so. For instance, the fourth line of <a data-type="xref" href="#common_tuple_literals_and_operations">Table 9-1</a> simply lists four items separated by commas. In the context of an assignment statement, Python recognizes this as a tuple, even though it doesn’t have parentheses. That’s why all the comma-separated items we’ve typed at the REPL print with parentheses—it’s a tuple:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>1, 2, 3, 4</strong></code>                 <code><em># Tuple sans parentheses, in REPL and elsewhere</em></code>
+(1, 2, 3, 4)</pre>
+<p>This syntactic trick is also commonly <a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="sequence assignment" id="id2217"></a><a contenteditable="false" data-type="indexterm" data-primary="sequences" data-secondary="tuples" id="id2218"></a>leveraged by the <em>sequence assignment</em> shorthand we used briefly in <a data-type="xref" href="ch07.html#string_fundamentals">Chapter 7</a> and will study in earnest in <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>—names on the left are paired with values on the right and assigned by position, but both sides are really tuples without parentheses:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a, b, c = 1, 2, 3</strong></code>          <code><em># Sequence assignment: tuples on both sides</em></code>
+&gt;&gt;&gt; <code><strong>a, b, c</strong></code>
+(1, 2, 3)</pre>
+<p>Now, some people will tell you to always use parentheses in your tuples, and some will tell you to never use parentheses in tuples (and still others have lives and won’t tell you what to do with your tuples!). The most common places where the parentheses are <em>required</em> for tuple literals are those where:</p>
+<ul>
+<li><p><em>Parentheses</em> matter—within a function call, or nested in a larger expression</p></li>
+<li><p><em>Commas</em> matter—within a function call, or embedded in the literal of a larger object like a list or dictionary</p></li>
+</ul>
+<p>In most other contexts, the enclosing parentheses are optional. For beginners, the best advice is that it’s probably easier to use the parentheses than it is to remember when they are optional or required. Many programmers also find that parentheses tend to aid script readability by making the tuples more explicit and obvious.</p>
+<p>And for language lawyers in the audience, bear in mind that the comma is really a sort of <em>lowest precedence operator</em>, though only in contexts where it’s not otherwise significant. In such contexts, it’s the <em>comma</em> that builds tuples, not the parentheses. This makes the latter optional, but can also lead to odd, unexpected syntax errors if parentheses are omitted (e.g., in <code>lambda</code> covered in <a data-type="xref" href="part04.html#functions_and_generators">Part IV</a>). Adding <a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="syntax" data-startref="tplsyx" id="id2219"></a><a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="tuples" data-startref="syxtpl" id="id2220"></a><a contenteditable="false" data-type="indexterm" data-primary="parentheses" data-secondary="tuples" data-startref="parple" id="id2221"></a><a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="parentheses" data-startref="tppthe" id="id2222"></a><a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="commas" data-startref="pltcm" id="id2223"></a><a contenteditable="false" data-type="indexterm" data-primary="commas" data-secondary="tuples" data-startref="cmtpls" id="id2224"></a>parentheses to your tuples as a habit avoids the oddities.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Conversions, methods, and immutability"><div class="sect3" id="conversionscomma_methodscomma_and_immut">
+<h3>Conversions, methods, and immutability</h3>
+<p>Apart from literal-syntax differences, tuple operations (the middle rows in <a data-type="xref" href="#common_tuple_literals_and_operations">Table 9-1</a>) are identical <a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="conversions" id="ptvrss"></a><a contenteditable="false" data-type="indexterm" data-primary="conversions" data-secondary="tuples" id="covtpl"></a><a contenteditable="false" data-type="indexterm" data-primary="immutability" data-secondary="tuples" id="immttp"></a><a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="immutability" id="tplsmmtb"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="tuples" id="mthdtp"></a><a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="methods" id="ptmhtd"></a>to string and list operations. The only differences worth noting are that the <code>+</code>, <code>*</code>, and slicing operations return new <em>tuples</em> when applied to tuples, and that tuples don’t provide the same methods you saw for strings, lists, and dictionaries. If you want to <em>sort</em> a tuple, for example, you’ll usually have to either <a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="sorting" id="id2225"></a>first convert it to a list to gain access to a sorting method call and make it a mutable object, or use the newer <code>sorted</code> built-in that accepts any sequence object (and other <em>iterables</em>—a term introduced in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a> that we’ll be more formal about in the next part of this book):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>T = ('cc', 'aa', 'dd', 'bb')
+</strong></code>&gt;&gt;&gt; <code><strong>tmp = list(T)</strong></code>                  <code><em># Make a list from a tuple's items</em></code>
+&gt;&gt;&gt; <code><strong>tmp.sort()</strong></code>                     <code><em># Sort the list</em></code>
+&gt;&gt;&gt; <code><strong>tmp</strong></code>
+['aa', 'bb', 'cc', 'dd']
+&gt;&gt;&gt; <code><strong>T = tuple(tmp)</strong></code>                 <code><em># Make a tuple from the list's items</em></code>
+&gt;&gt;&gt; <code><strong>T</strong></code>
+('aa', 'bb', 'cc', 'dd')
+
+&gt;&gt;&gt; <code><strong>sorted(T, reverse=True)</strong></code>        <code><em># Or use the sorted built-in, and save steps</em></code>
+['dd', 'cc', 'bb', 'aa']</pre>
+<p>Here, the <code>list</code> and <code>tuple</code> built-in functions are used to convert the object to a list and then back to a tuple. Really, both calls make new objects from any sort of iterables, but the net effect is like a <span class="keep-together">conversion</span>.</p>
+<p>In some sense, list <em>comprehensions</em> can <a contenteditable="false" data-type="indexterm" data-primary="comprehensions" data-secondary="converting tuples" id="id2226"></a>also be used to convert tuples. The following, for example, makes a list from a tuple, adding 20 to each item along the way:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>T = (1, 2, 3, 4, 5)
+</strong></code>&gt;&gt;&gt; <code><strong>L = [x + 20 for x in T]</strong>   </code>     <code><em># Like list(T) + expression logic</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[21, 22, 23, 24, 25]<strong></strong></pre>
+<p>List comprehensions <a contenteditable="false" data-type="indexterm" data-primary="list comprehensions" data-secondary="sequence operations" id="id2227"></a><a contenteditable="false" data-type="indexterm" data-primary="sequence operations" data-secondary="list comprehensions" id="id2228"></a><a contenteditable="false" data-type="indexterm" data-primary="comprehensions" data-secondary="list comprehensions" data-tertiary="sequence operations" id="id2229"></a>are really <em>sequence</em> operations—they always build new lists, but they may be used to iterate over any sequence objects, including tuples, strings, and other lists. As you’ll see later in the book, they even work on some things that are not physically stored sequences—any <em>iterable</em> objects <a contenteditable="false" data-type="indexterm" data-primary="iteration tools" id="id2230"></a>will do, including files, which are automatically read line by line. Given this, they may be better called <em>iteration</em> tools.</p>
+<p>Notice that you’d have to convert the prior example’s list result back to a tuple if your code must care. There is no tuple comprehension in Python (as explored later in this book, parenthesized comprehensions make <em>generators</em>), though you simulate one by using <code>tuple</code> to force a generator to give up its <span class="keep-together">values</span>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>tuple(x + 20 for x in T)</strong>  </code>     <code><em># Tuple "comprehension" = generator + builder</em></code>
+(21, 22, 23, 24, 25)</pre>
+<p>Although tuples don’t have the same <em>methods</em> as lists and strings, they do have two of their own—<code>index</code> and <code>count</code> work as they do for lists, but they are defined for tuple objects:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>T = (1, 2, 3, 2, 4, 2)</strong></code>         <code><em># Tuple methods</em></code>
+&gt;&gt;&gt; <code><strong>T.index(2)</strong></code>                     <code><em># Offset of first appearance of 2: index _of_!</em></code>
+1
+&gt;&gt;&gt; <code><strong>T.index(2, 2)</strong></code>                  <code><em># Offset of appearance after offset 2</em></code>
+3
+&gt;&gt;&gt; <code><strong>T.count(2)</strong></code>                     <code><em># How many 2s are there?
+</em></code>3</pre>
+<p>Also, note that the rule about tuple <em>immutability</em> applies only to the top level of the tuple itself, not to its contents. A list inside a tuple, for instance, can be changed as usual:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>T = (1, [2, 3], 4)
+</strong></code>&gt;&gt;&gt; <code><strong>T[1] = 'mod'</strong></code>                   <code><em># This fails: can't change tuple itself
+</em></code>TypeError: 'tuple' object does not support item assignment
+
+&gt;&gt;&gt; <code><strong>T[1][0] = 'mod'</strong></code>                <code><em># This works: can change mutables inside</em></code>
+&gt;&gt;&gt; <code><strong>T</strong></code>
+(1, ['mod', 3], 4)</pre>
+<p>For most programs, this one-level-deep immutability is sufficient for common tuple <a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="conversions" data-startref="ptvrss" id="id2231"></a><a contenteditable="false" data-type="indexterm" data-primary="conversions" data-secondary="tuples" data-startref="covtpl" id="id2232"></a><a contenteditable="false" data-type="indexterm" data-primary="immutability" data-secondary="tuples" data-startref="immttp" id="id2233"></a><a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="immutability" data-startref="tplsmmtb" id="id2234"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="tuples" data-startref="mthdtp" id="id2235"></a><a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="methods" data-startref="ptmhtd" id="id2236"></a>roles. Which, coincidentally, brings us to the next section.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Why Lists and Tuples?"><div class="sect2" id="why_lists_and_tuplesquestion_mark">
+<h2>Why Lists and Tuples?</h2>
+<p>This seems to always be the first <a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="compared to lists" id="id2237"></a><a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="compared to tuples" id="id2238"></a>question that comes up when teaching beginners about tuples: why do we need tuples if we have lists? Some of the reason is philosophical: a tuple is meant to be a simple association of objects, while a list is intended to be a data structure that changes over time. In fact, this meaning of “tuple” derives from mathematics, as well its frequent use for a row in a relational database table.</p>
+<p>The best answer, however, seems to be that the immutability of tuples provides some <em>integrity</em>—you can be sure a tuple won’t be changed through another reference elsewhere in a program, but there’s no such guarantee for lists. Tuples and other immutables, therefore, serve a similar role to “constant” <span class="keep-together">declarations</span> in other languages, though the notion of constantness is associated with <em>objects</em> in Python, not variables.</p>
+<p>Tuples can also be used in places that lists cannot—for example, as dictionary keys (see the sparse matrix example in <a data-type="xref" href="ch08.html#lists_and_dictionaries">Chapter 8</a>). Some built-in operations may also require or imply tuples instead of lists (e.g., the substitution values in the <code>%</code> string formatting expression of <a data-type="xref" href="ch07.html#string_fundamentals">Chapter 7</a>), though some operations have often been generalized to be more flexible. As a rule of thumb, lists are the tool of choice for ordered collections that might need to change; tuples can handle the other cases of fixed associations.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Records Revisited: Named Tuples"><div class="sect2" id="records_revisited_named_tuples">
+<h2>Records Revisited: Named Tuples</h2>
+<p>In fact, the choice of data types is even richer <a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="named" id="tplsnmd"></a><a contenteditable="false" data-type="indexterm" data-primary="named tuples" id="nmdtpls"></a>than the prior section may have implied—Python programmers can choose from an assortment of both built-in core types, and extension types built on top of them. For example, in the prior chapter’s sidebar <a data-type="xref" href="ch08.html#why_you_will_care_list_versus_dictionar">“Why You Will Care: List Versus Dictionary Versus Set”</a>, we saw how to represent record-like information with both a list and a dictionary and noted that dictionaries offer the advantage of more mnemonic keys that label data. As long as we don’t require mutability, tuples can serve similar roles, with positions for record fields like lists:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>pat = ('Pat', 40.5, ['dev', 'mgr'])</strong></code>                    <code><em># Tuple record
+</em></code>&gt;&gt;&gt; <code><strong>pat</strong></code>
+('Pat', 40.5, ['dev', 'mgr']) 
+
+&gt;&gt;&gt; <code><strong>pat[0], pat[2]</strong></code>                                         <code><em># Access by position</em></code>
+('Pat', ['dev', 'mgr'])</pre>
+<p>As for lists, though, field numbers in tuples generally carry less information than the names of keys in a <em>dictionary</em>. To review, here’s the same record recoded as a dictionary with named fields:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>pat = dict(name='Pat', age=40.5, jobs=['dev', 'mgr'])</strong></code>  <code><em># Dictionary record</em></code>
+&gt;&gt;&gt; <code><strong>pat['name'], pat['jobs']</strong></code>                               <code><em># Access by key</em></code>
+('Pat', ['dev', 'mgr'])</pre>
+<p>In fact, we can convert parts of the dictionary <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="converting to tuples" id="id2239"></a><a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="converting from dictionaries" id="id2240"></a>to tuples if needed:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>tuple(pat.values())</strong></code>                                    <code><em># Values to tuple</em></code>
+('Pat', 40.5, ['dev', 'mgr']) 
+&gt;&gt;&gt; <code><strong>list(pat.items())</strong></code>                                      <code><em># Items to tuple list</em></code>
+[('name', 'Pat'), ('age', 40.5), ('jobs', ['dev', 'mgr'])]</pre>
+<p>But really, this is a false dichotomy: with extra code, we can implement objects that offer <em>both</em> positional and named access to record fields. For example, the <code>namedtuple</code> utility, noncore but always available in the standard library’s <code>collections</code> module, implements an extension type that adds logic to tuples that allows components to be accessed by both <em>position</em> and attribute <em>name</em>, and can be converted to dictionary-like form for access by <em>key</em> if desired. Attribute names come from classes and are not exactly dictionary keys, but they are similarly mnemonic:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from collections import namedtuple</strong> </code>                    <code><em># Import extension type</em></code>
+&gt;&gt;&gt; <code><strong>Rec = namedtuple('Rec', ['name', 'age', 'jobs'])</strong> </code>      <code><em># Make a generated class</em></code>
+&gt;&gt;&gt; <code><strong>pat = Rec('Pat', age=40.5, jobs=['dev', 'mgr'])</strong></code>        <code><em># A named-tuple record</em></code>
+&gt;&gt;&gt; <code><strong>pat</strong></code>
+Rec(name='Pat', age=40.5, jobs=['dev', 'mgr'])
+
+&gt;&gt;&gt; <code><strong>pat[0], pat[2]</strong></code>                                         <code><em># Access by position
+</em></code>('Pat', ['dev', 'mgr']) 
+&gt;&gt;&gt; <code><strong>pat.name, pat.jobs</strong></code>                                     <code><em># Access by attribute</em></code>
+('Pat', ['dev', 'mgr'])</pre>
+<p>Converting to a dictionary also supports key-based behavior when needed:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = pat._asdict()</strong></code>                                      <code><em># Dictionary-like form</em></code>
+&gt;&gt;&gt; <code><strong>D['name'], D['jobs']</strong></code>                                   <code><em># Access by key too</em></code>
+(('Pat', ['dev', 'mgr'])
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'name': 'Pat', 'age': 40.5, 'jobs': ['dev', 'mgr']}</pre>
+<p>As you can see, named tuples are a tuple/class/dictionary <em>hybrid</em>. They also represent a classic <em>trade-off</em>. In exchange for their extra utility, they require extra code to use (the two startup lines in the preceding examples that import the type and make the class) and incur some performance costs to work this magic. Still, they are an example of the kind of custom data types that we can build on top of built-in types like tuples when extra utility is desired. They are also <em>extensions</em>, not core types—they live in the standard library and fall into the same category as <a data-type="xref" href="ch05.html#numbers_and_expressions">Chapter 5</a>’s <code>Fraction</code> and <code>Decimal</code>—so we’ll delegate to the Python library manual for more details.</p>
+<p>Watch for a final rehash of this record representation thread when we explore how user-defined <em>classes</em> compare in <a data-type="xref" href="ch27.html#class_coding_basics">Chapter 27</a>. As you’ll find there, classes label fields with names too, but can also provide program <em>logic</em> to process the record’s data in the <a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="named" data-startref="tplsnmd" id="id2241"></a><a contenteditable="false" data-type="indexterm" data-primary="named tuples" data-startref="nmdtpls" id="id2242"></a>same code package.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Files"><div class="sect1" id="files-id00094">
+<h1>Files</h1>
+<p>You may already be familiar with the notion of files, which are named storage compartments on your PC, phone, or other computer that are managed by your operating system. The last major built-in object type that we’ll examine on our object-types tour provides a way to access those files inside Python programs.</p>
+<p>In short, the built-in <code>open</code> function creates a Python file object, which serves <a contenteditable="false" data-type="indexterm" data-primary="file objects" data-secondary="creating" id="id2243"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="file objects" id="id2244"></a>as a link to a file residing on your device. After calling <code>open</code>, you can transfer strings of data to and from the associated external file by calling the returned file object’s methods.</p>
+<p>Compared to the types you’ve seen so far, file objects are outliers. They are considered a core type because they are created by a built-in function, but they’re not numbers, sequences, or mappings, and they don’t respond to expression operators; they export only <em>methods</em> for common file-processing tasks. Most file methods are concerned with performing input from and output to the external file associated with a file object, but other file methods allow us to seek to a new position in the <a contenteditable="false" data-type="indexterm" data-primary="file operations" id="id2245"></a>file, flush output buffers, and so on. <a data-type="xref" href="#common_file_operations">Table 9-2</a> summarizes common file operations.</p>
+<table class="border" id="common_file_operations">
+<caption><span class="label">Table 9-2. </span>Common file operations</caption>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>output = open(r'C:\data', 'w')</code></td>
+<td>Create output file (Windows path, <code>'w'</code> = write)</td>
+</tr>
+<tr>
+<td><code>input = open('/home/me/data', 'r')</code></td>
+<td>Create input file (Unix path, <code>'r'</code>= read)</td>
+</tr>
+<tr>
+<td><code>input = open('data')</code></td>
+<td>Create input file (current directory, <code>'r'</code> is default)</td>
+</tr>
+<tr>
+<td><code>aString = input.read()</code></td>
+<td>Read entire file into a single string</td>
+</tr>
+<tr>
+<td><code>aString = input.read(<code><em>N</em></code>)</code></td>
+<td>Read up to next <code><em>N</em></code> characters (or bytes) into a string</td>
+</tr>
+<tr>
+<td><code>aString = input.readline()</code></td>
+<td>Read next line (including <code>\n</code> newline) into a string</td>
+</tr>
+<tr>
+<td><code>aList = input.readlines()</code></td>
+<td>Read entire file into a list of line strings (with <code>\n</code>)</td>
+</tr>
+<tr>
+<td><code>output.write(aString)</code></td>
+<td>Write a string of characters (or bytes) into a file</td>
+</tr>
+<tr>
+<td><code>output.writelines(aList)</code></td>
+<td>Write all line strings in a list into a file (verbatim)</td>
+</tr>
+<tr>
+<td><code>output.close()</code></td>
+<td>Manual close (done for you when file is collected)</td>
+</tr>
+<tr>
+<td><code>output.flush()</code></td>
+<td>Flush output buffer to disk without closing</td>
+</tr>
+<tr>
+<td><code>anyFile.seek(<code><em>N</em></code>)</code></td>
+<td>Change file position to offset <code><em>N</em></code> for next operation</td>
+</tr>
+<tr>
+<td><code>for line in open('data'): <code><em>use line</em></code></code></td>
+<td>File iterators read line by line</td>
+</tr>
+<tr>
+<td><code>open('f.txt', encoding='utf-8')</code></td>
+<td>Unicode text files (using <code>str</code> strings)</td>
+</tr>
+<tr>
+<td><code>open('f.bin', 'rb')</code></td>
+<td>Bytes files (using <code>bytes</code> strings)</td>
+</tr>
+<tr>
+<td><code>codecs.open('f.txt',…)</code></td>
+<td>Alternative Unicode text-file interface</td>
+</tr>
+</tbody>
+</table>
+<section data-type="sect2" data-pdf-bookmark="Opening Files"><div class="sect2" id="opening_files">
+<h2>Opening Files</h2>
+<p>To open a file, a program calls <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="opening" id="id2246"></a>the built-in <code>open</code> function, with the external filename first, followed by a processing mode. Both arguments are strings. The call returns a file <em>object</em>, which in turn has <em>methods</em> for data transfer:</p>
+<pre data-type="programlisting">afile = open(<code><em>filename</em></code>, <code><em>mode</em></code>)
+afile.<code><em>method</em></code>()</pre>
+<p>The first argument to <code>open</code>, the external <code><em>filename</em></code>, may include a platform-specific and <em>absolute</em> (complete) or <em>relative</em> (partial) directory-path prefix that identifies a file’s location in the host device’s filesystem. The filesystem is just a hierarchy of folders that stores files and nested folders. A filename <em>a/b/file.txt</em>, for example, includes the path prefix <em>a/b</em> that leads to a file on Unix (e.g., macOS, Linux, or Android), and <em>a\b\file.txt</em> does the same on Windows.</p>
+<p>If <code><em>filename</em></code> has <em>no</em> directory-path prefix at all, the file is assumed to exist in, and hence is <em>relative</em> to, the current working directory (<em>CWD</em>). The CWD is <a contenteditable="false" data-type="indexterm" data-primary="CWD (current working directory)" id="id2247"></a><a contenteditable="false" data-type="indexterm" data-primary="current working directory (CWD)" id="id2248"></a><a contenteditable="false" data-type="indexterm" data-primary="filenames" data-secondary="directory path" id="id2249"></a><a contenteditable="false" data-type="indexterm" data-primary="directory paths" data-secondary="filename" id="id2250"></a><a contenteditable="false" data-type="indexterm" data-primary="output buffering" id="id2251"></a><a contenteditable="false" data-type="indexterm" data-primary="buffering" data-secondary="output" id="id2252"></a>the folder from which a script is run (e.g., where you are in a console when you launch a Python command). In a REPL, the CWD is wherever you are working at the time; to see what the CWD is, run a <code>pwd</code> in most system shells, or Python’s <code>os.getcwd()</code> after <code>import os</code> in a REPL.</p>
+<p>As you’ll see in <a data-type="xref" href="ch37.html#unicode_and_byte_strings">Chapter 37</a>’s expanded file coverage, the <code><em>filename</em></code> may also contain non-ASCII <em>Unicode</em> characters that Python automatically translates to and from the underlying host’s encoding. These characters may be provided in the filename literally, or in a pre-encoded byte string that you’ll learn about later in this book.</p>
+<p>The second argument to <code>open</code>, processing <em>mode</em>, is typically the string <code>'r'</code> to open for text input (the default), <code>'w'</code> to create and open for text output, or <code>'a'</code> to open for appending text to the end (e.g., for adding to logfiles). The processing mode argument can specify additional options:</p>
+<ul>
+<li><p>Adding a <code>b</code> to the mode string (e.g., <code>'wb'</code>) allows for processing <em>binary</em> file content. End-of-line translations and Unicode encodings used for text are turned off.</p></li>
+<li><p>Adding a <code>+</code> to the mode (e.g., <code>'r+'</code>) opens the file for <em>both</em> input and output. You can read and write to the same file object, often in conjunction with seek operations to reposition in the file.</p></li>
+</ul>
+<p>Both of the first two arguments to <code>open</code> must be Python strings. An optional third argument takes an integer to control output <em>buffering</em>—passing a zero means that output is unbuffered (it’s transferred to the external file immediately on a write method call), and additional arguments may be provided for special types of files (e.g., the string name of a Unicode <em>encoding</em> for text files). You can also use <code><em>name</em>=<em>value</em></code> keywords to pass <code>open</code> arguments (e.g., <code>file=<em>name</em></code>, <code>mode=<em>mode</em></code>), though this is somewhat above our pay grade in this chapter.</p>
+<p>We’ll cover file fundamentals and explore some basic examples here, but we won’t go into all file-processing mode options; run <code>help(open)</code> in a REPL or consult the Python library manual for additional details.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Using Files"><div class="sect2" id="using_files">
+<h2>Using Files</h2>
+<p>Once you make a file object with <code>open</code>, you can call its methods to read from or write to the associated external file. In all cases, file content takes the form of strings in Python programs; reading a file returns its content in strings, and content is passed to the write methods as strings. Reading and writing <span class="keep-together">methods</span> come in multiple flavors; <a data-type="xref" href="#common_file_operations">Table 9-2</a> lists the most common. Here are a few points of orientation up front:</p>
+<dl>
+<dt>File iterators may be best for reading text lines</dt>
+<dd>Though the reading and writing <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="iterators" id="id2253"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="text files" id="id2254"></a><a contenteditable="false" data-type="indexterm" data-primary="text files" data-secondary="iterators" id="id2255"></a><a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="text files" id="id2256"></a>methods in the table are common, keep in mind that probably the best way to read lines from a text file today is to not read the file at all—as you’ll see in <a data-type="xref" href="ch14.html#iterations_and_comprehensions">Chapter 14</a>, files also have an <em>iterator</em> that automatically reads one line at a time in a <code>for</code> loop, list comprehension, or other iteration context.</dd>
+<dt>Content is strings, not objects</dt>
+<dd><p>Notice in <a data-type="xref" href="#common_file_operations">Table 9-2</a> that content <em>read</em> from a file always comes back to your script as a string, so you’ll <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="content" id="id2257"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="strings" id="id2258"></a><a contenteditable="false" data-type="indexterm" data-primary="strings" id="id2259"></a>have to convert it to a different type of object if a string is not what you need. Similarly, file <em>write</em> operations do not add any sort of formatting and do not convert objects to strings automatically, so you must convert if needed and format as desired. Because of this, the tools we have already met to convert objects from and to strings (e.g., <code>int</code>, <code>float</code>, <code>str</code>, and string formatting) come in handy when dealing with files. Also note that newlines, added by <code>print</code> but not file <em>writes</em>, may have to be skipped if text from file <em>reads</em> is sent to <code>print</code> to avoid double spacing.</p>
+<p>Python also includes advanced standard-library tools for handling generic object storage (the <code>pickle</code> module), for dealing with packed binary data in files (the <code>struct</code> module), and for processing special types of content such as JSON and CSV text. We’ll demo these later in this chapter, but Python’s manuals document them in full.</p></dd>
+<dt>Files are buffered and seekable</dt>
+<dd>By default, output files are always <em>buffered</em>, which means that text you write may not be transferred from <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="buffered" id="id2260"></a><a contenteditable="false" data-type="indexterm" data-primary="buffering" data-secondary="files" id="id2261"></a>memory to disk immediately—closing a file, or running its <code>flush</code> method, forces the buffered data to disk. You can avoid buffering with extra <code>open</code> arguments, but it may impede performance. Python files are also <em>random-access</em> on a byte-offset basis—their <code>seek</code> method allows your scripts to jump around to read and write at specific locations.</dd>
+<dt><code>close</code> may be optional: auto-close on collection</dt>
+<dd><p>Calling the file <code>close</code> method <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="close method" id="id2262"></a>terminates your connection to the external file, releases its system resources, and flushes its buffered output to disk if any is still in memory. As discussed in <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>, an object’s memory space is automatically reclaimed as soon as the object is no longer referenced anywhere in the program. When <em>file</em> objects are reclaimed, Python also automatically <em>closes</em> them if they are still open (this also happens to open files when a program shuts down). This means you don’t always need to manually close your files in Python, especially those in simple scripts with short runtimes, and temporary files used by a single line or expression.</p>
+<p>On the other hand, manual <code>close</code> calls don’t hurt and are a good habit to form, especially in long-running systems and code run at the REPL. Strictly speaking, this auto-close of files is an implementation artifact of the standard <em>CPython</em>, and not part of the language definition—it may change over time, may not happen when you expect it to in interactive REPLs, and may not work the same in Python implementations whose garbage collectors reclaim space differently than CPython. In fact, when many files are opened within loops, some Pythons may <em>require</em> close calls to free up system resources immediately, before garbage collection can get around to freeing objects. Close calls may sometimes also be required to flush buffered output of file objects not yet reclaimed. For an alternative and automatic way to ensure closes, watch for the file object’s <em>context manager</em> ahead.</p></dd>
+</dl>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Files in Action"><div class="sect2" id="files_in_action">
+<h2>Files in Action</h2>
+<p>Let’s work through an example <a contenteditable="false" data-type="indexterm" data-primary="file-processing" id="flepccs"></a>that demonstrates file-processing basics. The following code begins by opening a new text file for output, writing two lines (strings terminated with a newline marker, <code>\n</code>), and closing the file. Later, the example opens the same file again in input mode and reads the lines back one at a time with <code>readline</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>myfile = open('myfile.txt', 'w')</strong></code>        <code><em># Open for text output: create/empty</em></code>
+&gt;&gt;&gt; <code><strong>myfile.write('hello text file\n')</strong></code>       <code><em># Write a line of text: string</em></code>
+16
+&gt;&gt;&gt; <code><strong>myfile.write('goodbye text file\n')</strong></code>
+18
+&gt;&gt;&gt; <code><strong>myfile.close()</strong></code>                          <code><em># Ensure output is flushed to disk
+</em></code>
+&gt;&gt;&gt; <code><strong>myfile = open('myfile.txt')</strong></code>             <code><em># Open for text input: 'r' is default</em></code>
+&gt;&gt;&gt; <code><strong>myfile.readline()</strong></code>                       <code><em># Read the lines back</em></code>
+'hello text file\n'
+&gt;&gt;&gt; <code><strong>myfile.readline()</strong></code>
+'goodbye text file\n'
+&gt;&gt;&gt; <code><strong>myfile.readline()</strong></code>                       <code><em># Empty string: end-of-file</em></code>
+''</pre>
+<p>Notice that the third <code>readline</code> call returns an <em>empty string</em>—this is how most file read methods tell you that you’ve reached the <em>end of the file</em> (and as you’ll see ahead, the empty string is inherently false in logical tests). Empty lines in the file instead come back as strings containing just a <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="strings" data-tertiary="empty" id="id2263"></a><a contenteditable="false" data-type="indexterm" data-primary="strings" data-secondary="empty" id="id2264"></a><a contenteditable="false" data-type="indexterm" data-primary="empty strings" id="id2265"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="newline characters" id="id2266"></a><a contenteditable="false" data-type="indexterm" data-primary="newline character" id="id2267"></a>newline character (<code>'\n'</code>), not as empty strings.</p>
+<p>Also notice that file <code>write</code> calls return the number of characters written; this is normally superfluous apart from error checks but is echoed in a REPL like this. This example writes each line of text, including its newline terminator, <code>\n</code>, as a string. Write methods don’t add the newline character for us, so we must include it to properly terminate our lines; without this, the next write will simply extend the current line in the file.</p>
+<p>If you want to display the file’s content with newline characters interpreted, read the entire file into a string <em>all at once</em> with the file object’s <code>read</code> method and print it (stringing together the <code>open</code> and <code>read</code> like this runs left to right and doesn’t allow for an explicit <code>close</code>, but it doesn’t matter for simple input at the REPL):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>open('myfile.txt').read()</strong></code>               <code><em># Read all at once into string</em></code>
+'hello text file\ngoodbye text file\n'
+
+&gt;&gt;&gt; <code><strong>print(open('myfile.txt').read())</strong></code>        <code><em># User-friendly display
+</em></code>hello text file
+goodbye text file</pre>
+<p>And if you want to scan a text file <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="iterators" id="id2268"></a>line by line, <em>file iterators</em> are often your best option:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for line in open('myfile.txt'):</strong></code>         <code><em># Use file iterators, not reads</em></code>
+...     <code><strong>print(line, end='')</strong>  </code>               <code><em># Don't add another \n: line has one!</em></code>
+...
+hello text file
+goodbye text file</pre>
+<p>When coded this way, the temporary file object created by <code>open</code> will automatically read and return one line on each loop iteration. This form is usually easiest to code, light on memory use, and may be faster than some other options (depending on many variables, of course). Since we haven’t reached statements or iterators yet, though, you’ll have to wait until <a data-type="xref" href="ch14.html#iterations_and_comprehensions">Chapter 14</a> for a more complete explanation of this code.</p>
+<p>As noted, files content is always strings, so other kinds of objects must be converted for <code>write</code>. The <code>str</code> call and concatenating separators and newlines suffice and emulate what <code>print</code> does automatically (but if you like the sugarcoating provided by <code>print</code>, stay tuned for its coverage in the next part of this book, where you’ll learn how to route its display to a file you make first with <code>open</code>):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>myfile = open('myfile2.txt', 'w')</strong>  </code>     <code><em># Nonstring objects fail</em></code>
+&gt;&gt;&gt; <code><strong>myfile.write(3.14)</strong></code>
+TypeError: write() argument must be str, not float
+
+&gt;&gt;&gt; <code><strong>myfile.write(str(3.14) + '\n')</strong></code>          <code><em># Convert (and emulate print)</em></code>
+5
+&gt;&gt;&gt; <code><strong>myfile.close()</strong></code>
+&gt;&gt;&gt; <code><strong>open('myfile2.txt').read()</strong></code>              <code><em># Can reconvert with float()</em></code><strong></strong>
+'3.14\n'</pre>
+<p>Incidentally, the files we’ve made here show up in the <em>CWD</em>, because we didn’t provide a path prefix in their filenames. In Python, you can check what the CWD is and get a listing of the files there, with the <code>os</code> standard-library module:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import os</strong></code>
+&gt;&gt;&gt; <code><strong>os.getcwd()</strong></code>                   <code><em># Show the current working directory</em></code>
+'/Users/me/code/Chapter09'
+&gt;&gt;&gt; <code><strong>os.listdir()</strong>   </code>               <code><em># List files here (or in a passed path)</em></code>
+['myfile2.txt', 'myfile.txt']</pre>
+<p>This was run on macOS and mirrors shell commands, but such tools are useful in many programs. The takeaway is that filename <em>myfile.txt</em> in this CWD is equivalent to <span class="keep-together"><em>/Users/me/code/Chapter09/myfile.txt</em></span> in <code>open</code> and other tools.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Coding Windows paths</em>: If you opt to provide full directory paths for files on Windows, they may require special <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="directory paths" id="id2269"></a><a contenteditable="false" data-type="indexterm" data-primary="directory paths" id="id2270"></a><a contenteditable="false" data-type="indexterm" data-primary="Windows" data-secondary="directory paths" id="id2271"></a>handling because the Windows <code>\</code> path separator is also used for string escapes in Python per <a data-type="xref" href="ch07.html#string_fundamentals">Chapter 7</a>. As noted there, <code>open</code> accepts Unix-style forward slashes in place of backward slashes on Windows, so any of the following forms work for directory paths on Windows:</p>
+<pre data-type="programlisting">open(r'C:\Users\me\code\newata.txt')        <code><em># Raw strings</em></code>
+open('C:/Users/me/code/newdata.txt')        <code><em># Forward slashes</em></code>
+open(‘C:\\Users\\me\\code\\newdata.txt')    <code><em># Doubled-up escapes</em></code></pre>
+<p>The raw string form in the first command is useful to turn off unintended escapes (e.g., <code>\n</code>), though the other two options make the escapes issue moot. On Unix, you’ll simply use forward slashes, of course (and drop the Windows drive letter: your drives <a contenteditable="false" data-type="indexterm" data-primary="file-processing" data-startref="flepccs" id="id2272"></a>are mounted, not segregated).</p>
+</div>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Text and Binary Files: The Short Story"><div class="sect2" id="text_and_binary_files_the_short_story">
+<h2>Text and Binary Files: The Short Story</h2>
+<p>Strictly speaking, the examples in the prior <a contenteditable="false" data-type="indexterm" data-primary="text files" id="tstfl"></a><a contenteditable="false" data-type="indexterm" data-primary="binary files" id="bnryfle"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="binary" id="flsbnyr"></a>section use <em>text</em> files. More generally, file type is determined by the second argument to <code>open</code>, the mode string—including a “b” in it means <em>binary</em>, which is sharply distinguished from text:</p>
+<ul>
+<li><p><em>Text files</em> represent content as a normal <code>str</code> string, perform Unicode encoding and decoding automatically, and perform newline translation by default. This mode is useful for processing text of all kinds.</p></li>
+<li><p><em>Binary files</em> represent content as a special <code>bytes</code> string and allow programs to access file content unaltered. This mode is useful for processing nontext content like media.</p></li>
+</ul>
+<p>Programs that deal only with simple text like ASCII can get by with the basic text-file interface used in the prior examples, and normal strings. All text strings are technically Unicode in Python, but ASCII users will not generally notice because it’s a subset of Unicode (every ASCII file is a Unicode file, even if its character range is limited).</p>
+<p>If you need to handle non-ASCII text or byte-oriented data, though, you’ll need to match object types to file modes—<code>bytes</code> strings for binary files, and normal <code>str</code> strings for text files. Because text files implement Unicode encodings, you also should not open a binary data file in text mode: decoding its content to Unicode text will likely fail.</p>
+<p>Let’s turn to a brief example. When you write and read a <em>binary</em> file, you send and receive a <code>bytes</code> <span class="keep-together">object—a</span> sequence of small integers that represent absolute byte values (which may or may not correspond to characters), and which is coded with a leading <code>b</code> but looks and feels almost exactly like a normal text string:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>myfile = open('myfile3.bin', 'wb')</strong>   </code>     <code><em># Make binary file: wb=write binary</em></code>
+&gt;&gt;&gt; <code><strong>myfile.write(b'\x00\x01hack\x02\x03').</strong></code>    <code><em># Bytes string holds binary data</em></code>
+8
+&gt;&gt;&gt; <code><strong>myfile.close()</strong></code>
+
+&gt;&gt;&gt; <code><strong>data = open('myfile3.bin', 'rb').read()</strong>   <em># Read binary file: rb=read binary</em></code>
+&gt;&gt;&gt; <code><strong>data           </strong>  </code>                         <code><em># Raw, unaltered bytes returned</em></code>
+b'\x00\x01hack\x02\x03'
+&gt;&gt;&gt; <code><strong>data[2:6]      </strong>  </code>                         <code><em># Bytes act like text strings</em></code>
+b'hack'
+&gt;&gt;&gt; <code><strong>byte = data[2:6][0]</strong>   </code>                    <code><em># But really small 8-bit integers</em></code>
+&gt;&gt;&gt; <code><strong>byte, chr(byte), bin(byte)</strong></code>
+(104, 'h', '0b1101000')</pre>
+<p>In addition, binary files do not perform any <em>newline</em> translation on content, but text files by default map all forms to and from <code>\n</code> when read and written. Text files also implement Unicode <em>encodings</em> on transfers, using an optional encoding name passed to the <code>encoding</code> argument of <code>open</code>. If <code>encoding</code> is not passed (as in earlier examples), files fall back on the underlying platform’s default, which may not be interoperable with other hosts or files.</p>
+<p>Per the start of this chapter, though, that’s as much as we’re going to say about Unicode text and binary data files here, and just enough to understand upcoming examples in this chapter. If you’re anxious to dive into this topic further, see either the preview in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a> or wait for the full story in <a data-type="xref" href="ch37.html#unicode_and_byte_strings">Chapter 37</a>.</p>
+<p>For this chapter, let’s move on to a handful of more substantial file examples that demonstrate common ways to <a contenteditable="false" data-type="indexterm" data-primary="text files" data-startref="tstfl" id="id2273"></a><a contenteditable="false" data-type="indexterm" data-primary="binary files" data-startref="bnryfle" id="id2274"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="binary" data-startref="flsbnyr" id="id2275"></a>store Python object values in files.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Storing Objects with Conversions"><div class="sect2" id="storing_objects_with_conversions">
+<h2>Storing Objects with Conversions</h2>
+<p>Our next example writes a variety of Python objects <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="text files" data-tertiary="conversions" id="flxtvr"></a><a contenteditable="false" data-type="indexterm" data-primary="text files" data-secondary="conversions" id="txflcvr"></a><a contenteditable="false" data-type="indexterm" data-primary="conversions" data-secondary="text files" id="cvrststf"></a><a contenteditable="false" data-type="indexterm" data-primary="object storage, conversions" id="objsgv"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="object storage" id="flsbjst"></a>to a <em>text</em> file on multiple lines. We wrote a single number to a file earlier, but are kicking it up a notch here to demo more conversions. Again, file content is strings in our code, and write methods do not do any to-string formatting (for space, this chapter omits <code>write</code> return values from here on):</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>X, Y, Z = 62, 63, 64</strong></code>                       <code><em># Native Python objects
+</em></code>&gt;&gt;&gt; <code><strong>S = 'Text'</strong></code>                                 <code><em># Must be strings to store in file</em></code>
+&gt;&gt;&gt; <code><strong>D = {'a': 1, 'b': 2}</strong></code>
+&gt;&gt;&gt; <code><strong>L = [1, 2, 3]</strong></code>
+
+&gt;&gt;&gt; <code><strong>F = open('datafile.txt', 'w')</strong></code>              <code><em># Create output text file</em></code>
+&gt;&gt;&gt; <code><strong>F.write(S + '\n')</strong></code>                          <code><em># Terminate lines with \n
+</em></code>&gt;&gt;&gt; <code><strong>F.write(f'{X},{Y},{Z}\n')</strong></code>                  <code><em># Convert numbers to strings</em></code>
+&gt;&gt;&gt; <code><strong>F.write(str(L) + '$' + str(D) + '\n')</strong></code>      <code><em># Convert and separate with $</em></code>
+&gt;&gt;&gt; <code><strong>F.close()</strong></code></pre>
+<p>Once we have created our file, we can inspect its contents by opening it and reading it into a string (strung together as a single operation here). Notice that the interactive echo gives the exact character contents, while the <code>print</code> operation interprets embedded newline characters to render a more user-friendly display:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>chars = open('datafile.txt').read()</strong></code>        <code><em># Raw string display</em></code>
+&gt;&gt;&gt; <code><strong>chars</strong></code>
+"Text\n62,63,64\n[1, 2, 3]${'a': 1, 'b': 2}\n"
+&gt;&gt;&gt; <code><strong>print(chars)</strong></code>                               <code><em># User-friendly display</em></code>
+Text
+62,63,64
+[1, 2, 3]${'a': 1, 'b': 2}</pre>
+<p>We now have to use other conversion tools to translate from the strings in the text file to real Python objects. As Python never converts strings to numbers (or other types of objects) automatically, this is required if we need to gain access to normal object tools like indexing, addition, and so on:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>F = open('datafile.txt')</strong></code>                   <code><em># Open again</em></code>
+&gt;&gt;&gt; <code><strong>line = F.readline()</strong></code>                        <code><em># Read one line</em></code>
+&gt;&gt;&gt; <code><strong>line</strong></code>
+'Text\n' 
+&gt;&gt;&gt; <code><strong>line.rstrip()</strong></code>                              <code><em># Remove newline</em></code>
+'Text'</pre>
+<p>For this first line, we used the <a contenteditable="false" data-type="indexterm" data-primary="strings" data-secondary="strip method" id="id2276"></a>string <code>rstrip</code> method to get rid of the trailing newline character; a <code>line[:−1]</code> slice would work, too, but only if we can be sure all lines end in the <code>\n</code> character (the last line in a file sometimes does not).</p>
+<p>So far, we’ve read the line containing the string. Now let’s grab the next line, which contains numbers, and parse out (that is, extract) the objects on that line:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>line = F.readline()</strong></code>                       <code><em># Next line from file</em></code>
+&gt;&gt;&gt; <code><strong>line</strong></code>                                      <code><em># It's a string here</em></code>
+'62,63,64\n' 
+&gt;&gt;&gt; <code><strong>parts = line.rstrip().split(',')</strong></code>          <code><em># Split (parse) on commas
+</em></code>&gt;&gt;&gt; <code><strong>parts</strong></code>
+['62', '63', '64']</pre>
+<p>We used the string <code>split</code> method <a contenteditable="false" data-type="indexterm" data-primary="strings" data-secondary="split method" id="id2277"></a>here to chop up the line on its comma delimiters (after removing the trailing <code>\n</code> with <code>rstrip</code> as before—its result is a new string on which we run <code>split</code>). The result is a list of substrings containing the individual numbers. We still must convert from strings to integers, though, if we wish to perform math on these:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>int(parts[1])</strong></code>                              <code><em># Convert from string to int</em></code>
+63
+&gt;&gt;&gt; <code><strong>numbers = [int(P) for P in parts]</strong></code>          <code><em># Convert all in list at once</em></code>
+&gt;&gt;&gt; <code><strong>numbers</strong></code>
+[62, 63, 64]</pre>
+<p>As we have learned, <code>int</code> translates a string of digits into an integer object, and the list comprehension expression introduced in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch04.html#introducing_python_objects">4</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch08.html#lists_and_dictionaries">8</a> can apply the call to each item in our list all at once (again, you’ll find more on list comprehensions later in this book). Nit: we didn’t have to use <code>rstrip</code> to delete the <code>\n</code> at the end of the line, because <code>int</code> and some other converters quietly ignore whitespace around digits; still, being explicit is often best.</p>
+<p>Finally, to convert the stored list and dictionary in the third line of the file, we can run them through <code>eval</code>, a built-in function we first met in <a data-type="xref" href="ch05.html#numbers_and_expressions">Chapter 5</a>, that treats a string as a piece of executable program code (technically, a string containing a Python expression, with trade-offs discussed in the next <span class="keep-together">section</span>):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>line = F.readline()</strong></code>                        <code><em># Next line from file</em></code>
+&gt;&gt;&gt; <code><strong>line</strong></code>
+"[1, 2, 3]${'a': 1, 'b': 2}\n"
+&gt;&gt;&gt; <code><strong>parts = line.split('$')</strong></code>                    <code><em># Split (parse) on $
+</em></code>&gt;&gt;&gt; <code><strong>parts</strong></code>
+['[1, 2, 3]', "{'a': 1, 'b': 2}\n"]
+&gt;&gt;&gt; <code><strong>eval(parts[0])</strong></code>                             <code><em># Convert to any object type</em></code>
+[1, 2, 3]
+&gt;&gt;&gt; <code><strong>objects = [eval(P) for P in parts]</strong></code>        <code> <em># Do same for all in list</em></code>
+&gt;&gt;&gt; <code><strong>objects</strong></code>
+[[1, 2, 3], {'a': 1, 'b': 2}]</pre>
+<p>Because the end result of all this parsing and converting is a list of normal Python objects instead of strings, we can now <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="text files" data-tertiary="conversions" data-startref="flxtvr" id="id2278"></a><a contenteditable="false" data-type="indexterm" data-primary="text files" data-secondary="conversions" data-startref="txflcvr" id="id2279"></a><a contenteditable="false" data-type="indexterm" data-primary="conversions" data-secondary="text files" data-startref="cvrststf" id="id2280"></a><a contenteditable="false" data-type="indexterm" data-primary="object storage, conversions" data-startref="objsgv" id="id2281"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="object storage" data-startref="flsbjst" id="id2282"></a>apply list and dictionary operations to them in our script.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Storing Objects with pickle"><div class="sect2" id="storing_objects_with_pickle">
+<h2>Storing Objects with pickle</h2>
+<p>Using <code>eval</code> to convert from <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="storage" data-tertiary="pickle module" id="ogjgckm"></a><a contenteditable="false" data-type="indexterm" data-primary="storage" data-secondary="objects" data-tertiary="pickle module" id="tgbjkd"></a><a contenteditable="false" data-type="indexterm" data-primary="pickle module" data-secondary="object storage" id="pkmdbj"></a>strings to objects, as demonstrated in the preceding code, is a powerful tool. In fact, sometimes it’s <em>too</em> powerful. <code>eval</code> will happily run any Python expression—even one that might delete all the files on your computer, given the necessary permissions. If you really want to store native Python objects, but you don’t want to run file content as program code, Python’s standard-library <code>pickle</code> module can help.</p>
+<p>The <code>pickle</code> module is a more advanced tool that allows us to store almost any Python object in a file directly, with no to- or from-string conversion requirement on our part. It’s like a super-general data formatting and parsing utility. To store a dictionary in a file, for instance, we pickle it directly after using binary mode to open the file:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = {'a': 1, 'b': 2}</strong></code>
+&gt;&gt;&gt; <code><strong>F = open('datafile.pkl', 'wb')</strong></code>
+&gt;&gt;&gt; <code><strong>import pickle</strong></code>
+&gt;&gt;&gt; <code><strong>pickle.dump(D, F)</strong></code>                          <code><em># Pickle almost any object to file</em></code>
+&gt;&gt;&gt; <code><strong>F.close()</strong></code></pre>
+<p>Then, to get the dictionary back later, we simply use <code>pickle</code> again to re-create it, again using a binary-mode file:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>F = open('datafile.pkl', 'rb')</strong></code>
+&gt;&gt;&gt; <code><strong>E = pickle.load(F)</strong></code>                         <code><em># Load almost any object from file</em></code>
+&gt;&gt;&gt; <code><strong>E</strong></code>
+{'a': 1, 'b': 2}</pre>
+<p>We get back an equivalent dictionary object, with <a contenteditable="false" data-type="indexterm" data-primary="object serialization" id="id2283"></a><a contenteditable="false" data-type="indexterm" data-primary="serialization" data-secondary="objects" id="id2284"></a>no manual splitting or converting required. The <code>pickle</code> module performs what is known as <em>object serialization</em>—converting objects to and from strings of bytes—but requires very little work on our part. In fact, <code>pickle</code> internally translates our dictionary to a bytes-string form; it’s not much to look at, and may vary for protocol options and future morph, but mandates binary-mode files:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>open('datafile.pkl', 'rb').read()</strong></code>          <code><em># Format is prone to change!</em></code>
+b'\x80\x04\x95\x11\x00\x00\x00\x00\ …etc… \x8c\x01a\x94K\x01\x8c\x01b\x94K\x02u.'</pre>
+<p>Because <code>pickle</code> can reconstruct <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="storage" data-tertiary="pickle module" data-startref="ogjgckm" id="id2285"></a><a contenteditable="false" data-type="indexterm" data-primary="storage" data-secondary="objects" data-tertiary="pickle module" data-startref="tgbjkd" id="id2286"></a><a contenteditable="false" data-type="indexterm" data-primary="pickle module" data-secondary="object storage" data-startref="pkmdbj" id="id2287"></a>the object from this format, we don’t have to deal with it ourselves. For more on the <code>pickle</code> module, see the Python standard-library manual, or import <code>pickle</code> and pass it to <code>help</code> interactively. While you’re exploring, also take a look at the <code>shelve</code> module. <code>shelve</code> is a tool that uses <code>pickle</code> to store Python objects in an access-by-key filesystem, which is beyond our scope here (though you will get to see an example of <code>shelve</code> in action in <a data-type="xref" href="ch28.html#a_more_realistic_example">Chapter 28</a>, and other <code>pickle</code> examples in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch31.html#designing_with_classes">31</a> and <a data-xrefstyle="select:labelnumber" data-type="xref" href="ch37.html#unicode_and_byte_strings">37</a>).</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Storing Objects with JSON"><div class="sect2" id="storing_objects_with_json">
+<h2>Storing Objects with JSON</h2>
+<p>The prior section’s <code>pickle</code> module translates nearly arbitrary Python objects to a proprietary format <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="storage" data-tertiary="JSON" id="ojsgj"></a><a contenteditable="false" data-type="indexterm" data-primary="storage" data-secondary="objects" data-tertiary="JSON" id="sgbjj"></a>developed specifically for Python, and honed for performance over many years. JSON is a newer data interchange format, which is both programming-language-neutral and supported by a variety of systems. <em>MongoDB</em>, for instance, stores data in a JSON document database (using a binary JSON format), and JSON is common in configuration roles.</p>
+<p>JSON does not support as broad a range of Python object types as <code>pickle</code>, but its portability is an advantage in some contexts, and it represents another way to serialize a specific category of Python objects for storage and transmission. Moreover, because JSON is so close to Python dictionaries and lists in syntax, the translation to and from Python objects is trivial, and is automated by the <code>json</code> standard-library module.</p>
+<p>For example, a Python dictionary with nested structures is very similar to JSON data, though Python’s variables and expressions support richer structuring options (any part of the following can be an arbitrary expression in Python):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>who = dict(first='Pat', last='Smith')</strong></code>
+&gt;&gt;&gt; <code><strong>rec = dict(name=who, job=['dev', 'mgr'], age=40.5)</strong></code>
+&gt;&gt;&gt; <code><strong>rec</strong></code>
+{'name': {'first': 'Pat', 'last': 'Smith'}, 'job': ['dev', 'mgr'], 'age': 40.5}</pre>
+<p>The final dictionary format displayed here is a valid literal in Python code, and almost passes for JSON when printed as is, but the <code>json</code> module makes the translation official—here translating Python objects to and from a JSON serialized string representation in memory:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import json</strong></code>
+&gt;&gt;&gt; <code><strong>json.dumps(rec)</strong></code>
+'{"name": {"first": "Pat", "last": "Smith"}, "job": ["dev", "mgr"], "age": 40.5}'
+
+&gt;&gt;&gt; <code><strong>S = json.dumps(rec)</strong>  </code>     <code><em># Python =&gt; JSON</em></code>
+&gt;&gt;&gt; <code><strong>O = json.loads(S)</strong></code>         <code><em># JSON =&gt; Python</em></code>
+&gt;&gt;&gt; <code><strong>O</strong></code>
+{'name': {'first': 'Pat', 'last': 'Smith'}, 'job': ['dev', 'mgr'], 'age': 40.5}
+&gt;&gt;&gt; <code><strong>O == rec</strong></code>
+True</pre>
+<p>It’s similarly straightforward to translate Python objects to and from JSON data strings in files. Prior to being stored in a file, your data is simply Python objects; the JSON module re-creates them from the JSON textual representation when it loads it from the file. In both cases, we use text files, because JSON is text:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>file = open('testjson.txt', 'w')</strong></code>
+&gt;&gt;&gt; <code><strong>json.dump(rec, fp=file, indent=4)</strong></code>         <code><em># Python =&gt; JSON</em></code>
+&gt;&gt;&gt; <code><strong>file.close()</strong></code>
+&gt;&gt;&gt; <code><strong>print(open('testjson.txt').read())</strong>   </code>     <code><em># Human-readable file content</em></code>
+{
+    "name": {
+        "first": "Pat",
+        "last": "Smith"
+    },
+    "job": [
+        "dev",
+        "mgr"
+    ],
+    "age": 40.5
+}
+&gt;&gt;&gt; <code><strong>P = json.load(open('testjson.txt'))</strong>  </code>     <code><em># JSON =&gt; Python</em></code>
+&gt;&gt;&gt; <code><strong>P</strong></code>
+{'name': {'first': 'Pat', 'last': 'Smith'}, 'job': ['dev', 'mgr'], 'age': 40.5}
+&gt;&gt;&gt; <code><strong>P == rec</strong></code>
+True</pre>
+<p>Once you’ve translated from JSON text, you process the data using normal Python object operations in your script. For more details on JSON-related topics, see Python’s library manuals and the web at large. You could, of course, store real Python dictionaries and lists in an imported Python <em>.py</em> module file, and the data would be just as readable and editable; JSON, however, is not run as code, and may be perceived by some as more interoperable today.</p>
+<p>Note that strings are all <em>Unicode</em> in JSON to support richer forms of text. Since Python strings in <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="storage" data-tertiary="JSON" data-startref="ojsgj" id="id2288"></a><a contenteditable="false" data-type="indexterm" data-primary="storage" data-secondary="objects" data-tertiary="JSON" data-startref="sgbjj" id="id2289"></a><a contenteditable="false" data-type="indexterm" data-primary="JSON, object storage" id="id2290"></a>memory simply <em>are</em> Unicode, the distinction matters most when transferring text to and from files. You’ll learn how to apply Unicode encodings to JSON (and other) files and data in <a data-type="xref" href="ch37.html#unicode_and_byte_strings">Chapter 37</a>.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Storing Objects with Other Tools"><div class="sect2" id="storing_objects_with_other_tools">
+<h2>Storing Objects with Other Tools</h2>
+<p>For other common ways to deal with formatted data files, see the standard library’s <code>struct</code> and <code>csv</code> modules. Very briefly, the <code>struct</code> module can both create and <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="storage" data-tertiary="struct module" id="id2291"></a><a contenteditable="false" data-type="indexterm" data-primary="storage" data-secondary="objects" data-tertiary="struct module" id="id2292"></a><a contenteditable="false" data-type="indexterm" data-primary="struct module" data-secondary="object storage" id="id2293"></a>parse packed binary data of the sort often shared with C programs:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import struct</strong></code>
+&gt;&gt;&gt; <code><strong>data = struct.pack('i6s', 62, b'Python')</strong></code>    <code><em># Pack an int and str in bytes</em></code>
+&gt;&gt;&gt; <code><strong>data</strong></code>
+b'&gt;\x00\x00\x00Python'
+
+&gt;&gt;&gt; <code><strong>file = open('data.bin', 'wb')</strong></code>               <code><em># Write/read file, and unpack</em></code>
+&gt;&gt;&gt; <code><strong>file.write(data) </strong>  </code>                         <code><em># Binary data in binary files</em></code>
+&gt;&gt;&gt; <code><strong>file.close()</strong></code> 
+
+&gt;&gt;&gt; <code><strong>struct.unpack('i6s', open('data.bin', 'rb').read())</strong></code>
+(62, b'Python')</pre>
+<p>And the <code>csv</code> module parses and <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="storage" data-tertiary="CSV module" id="id2294"></a><a contenteditable="false" data-type="indexterm" data-primary="storage" data-secondary="objects" data-tertiary="CSV module" id="id2295"></a><a contenteditable="false" data-type="indexterm" data-primary="CSV module, object storage" id="id2296"></a>creates comma-separated value (CSV) data in files and strings; it doesn’t map as directly to Python objects (and requires post-parse conversions), but is another way to map value to and from files:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import csv</strong></code>
+&gt;&gt;&gt; <code><strong>rdr = csv.reader(open('csvdata.txt'))</strong></code>
+&gt;&gt;&gt; <code><strong>for row in rdr: print(row)</strong></code>
+...
+['a', 'bbb', 'cc', 'dddd']
+['11', '22', '33', '44']</pre>
+<p>For additional data storage ideas like YAML and SQLite, see the overview of database tools in <span class="keep-together"><a data-type="xref" href="ch01.html#a_python_qampersanda_session">Chapter 1</a>.</span></p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="File Context Managers"><div class="sect2" id="file_context_managers">
+<h2>File Context Managers</h2>
+<p>You’ll also want to watch for <a data-type="xref" href="ch34.html#exception_coding_details">Chapter 34</a>’s in-depth discussion of the file’s context manager support. Though more a <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="context managers" id="id2297"></a><a contenteditable="false" data-type="indexterm" data-primary="context managers" id="id2298"></a>feature of exception processing than files themselves, it allows us to wrap file-processing code in a logic layer that ensures that the file will be closed (and if needed, have its output flushed to disk) automatically on statement exit, instead of relying on the auto-close during garbage collection or manual <code>close</code> calls. As a preview:</p>
+<pre data-type="programlisting">with open('data.txt') as myfile:              <code><em># File closed on "with" exit</em></code> 
+    for line in myfile:                       <code><em># See Chapter 34 for details</em></code>
+        …<code><em>use line here</em></code>…</pre>
+<p>The <code>with</code> statement closes the temporary file on exit, whether an error occurs or not. The <code>try/finally</code> statement that we’ll also study in <a data-type="xref" href="ch34.html#exception_coding_details">Chapter 34</a> can provide similar functionality, but at some cost in extra code—three extra lines, to be precise (though we can often avoid both options and let Python close files for us automatically):</p>
+<pre data-type="programlisting">myfile = open('data.txt')
+try:                                          <code><em># General termination handler</em></code>
+    for line in myfile:                       <code><em># See Chapter 34 for details</em></code>
+        …<code><em>use line here</em></code>…
+finally:
+    myfile.close()</pre>
+<p>The <code>with</code> context manager scheme ensures release of system resources in all Pythons and may be more useful for output files to guarantee buffer flushes; unlike the more general <code>try</code>, though, it is also limited to objects that support its protocol. Since both these options require more information than we have yet obtained, however, we’ll postpone the rest of their stories until later in this book.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Other File Tools"><div class="sect2" id="other_file_tools">
+<h2>Other File Tools</h2>
+<p>There are additional, more specialized file methods shown in <a data-type="xref" href="#common_file_operations">Table 9-2</a>, and even more that are not in the table. For instance, as mentioned earlier, <code>seek</code> resets your current position in a file (the next read or write happens at that position); <code>flush</code> forces buffered output to be written out to disk without closing the connection (by default, files are always buffered); and <code>readlines</code> and <code>writelines</code> process file content in line lists.</p>
+<p>The Python standard-library manual and other reference resources provide complete details on file methods, but for a quick look, run a <code>dir</code> or <code>help</code> call interactively, passing in <code>open</code> or a file object made with it. And for more file-processing examples, watch for <a data-type="xref" href="ch37.html#unicode_and_byte_strings">Chapter 37</a>’s extended coverage, as well as the sidebar <a data-type="xref" href="ch13.html#why_you_will_care_file_scanners">“Why You Will Care: File Scanners”</a>, which sketches common file-scanning patterns with statements we have not yet covered here.</p>
+<p>Also, note that although the <code>open</code> function and the file objects it returns are your main interface to external files in a Python script, there are additional file-related tools in the Python toolset. Prominent among these are:</p>
+<dl>
+<dt>Standard streams</dt>
+<dd>Preopened file objects in the <code>sys</code> module, such as <code>sys.stdout</code>, connected by <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="standard streams" id="id2299"></a><a contenteditable="false" data-type="indexterm" data-primary="standard streams" id="id2300"></a>default to the UI where a script is run (see <a data-type="xref" href="ch11.html#print_operations">“Print Operations”</a> for details)</dd>
+<dt>Descriptor files in the <code>os</code> module</dt>
+<dd>Integer file handles <a contenteditable="false" data-type="indexterm" data-primary="os module" data-secondary="descriptor files" id="id2301"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="descriptor files, os module" id="id2302"></a><a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="files, os module" id="id2303"></a>that support lower-level tools such as read-only access (see also the “x” mode modifier in <code>open</code> for exclusive creation)</dd>
+<dt>Sockets, pipes, and FIFOs</dt>
+<dd>File-like objects used to synchronize <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="sockets" id="id2304"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="pipes" id="id2305"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="FIFOs" id="id2306"></a><a contenteditable="false" data-type="indexterm" data-primary="FIFO (first in, first out), queues" id="id2307"></a><a contenteditable="false" data-type="indexterm" data-primary="pipes" id="id2308"></a><a contenteditable="false" data-type="indexterm" data-primary="sockets" id="id2309"></a>processes or communicate over networks</dd>
+<dt>Access-by-key files known as shelves</dt>
+<dd>Used to store unaltered and pickled <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="access-by-key" id="id2310"></a><a contenteditable="false" data-type="indexterm" data-primary="access-by-key files" id="id2311"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="shelves" id="id2312"></a><a contenteditable="false" data-type="indexterm" data-primary="shelves" id="id2313"></a>Python objects directly, by key (see <a data-type="xref" href="ch28.html#a_more_realistic_example">Chapter 28</a> for an example)</dd>
+<dt>Shell-command streams</dt>
+<dd>Tools such as <code>os.popen</code> and <code>subprocess.Popen</code> that support spawning shell commands and <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="shell-command streams" id="id2314"></a><a contenteditable="false" data-type="indexterm" data-primary="shell-command streams" id="id2315"></a><a contenteditable="false" data-type="indexterm" data-primary="streams" data-secondary="shell command" id="id2316"></a>reading and writing to their standard streams (see <a data-type="xref" href="ch21.html#the_benchmarking_interlude">Chapter 21</a> for an <code>os.popen</code> example)</dd>
+</dl>
+<p>The third-party open source domain offers even more file-like tools, including support for communicating with serial ports in the <em>PySerial</em> extension and interactive programs in the <em>pexpect</em> system. Consult the web at large for additional information on file-like tools.</p>
+<p>For code spelunkers, it’s also worth noting that Python’s <code>open</code> function is really just an interface to tools in its standard-library <code>io</code> module, which adds logic on top of the underlying system’s file tools to make them portable and efficient. If you’re looking for docs, implementation details, or customization hooks, look for this module in all the usual places. <code>io</code> is really a folder called a module package—a structure for larger code that we’ll study later.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Core Types Review and Summary"><div class="sect1" id="core_types_review_and_summary">
+<h1>Core Types Review and Summary</h1>
+<p>Now that we’ve seen all of Python’s built-in objects in action, let’s wrap up our object-types tour by reviewing some of the properties they share. <a data-type="xref" href="#object_classifications">Table 9-3</a> classifies all the major types we’ve studied so far according to the type categories introduced earlier. Here are some points to remember:</p>
+<ul>
+<li><p>Objects share operations <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="categories" id="id2317"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="operation sharing" id="id2318"></a>according to their category. For instance, <em>sequence</em> objects—strings, lists, and tuples—all share sequence operations such as concatenation, length, and indexing.</p></li>
+<li><p>Only <em>mutable</em> objects—lists, dictionaries, and <a contenteditable="false" data-type="indexterm" data-primary="mutability" data-secondary="objects, changing in place" id="id2319"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="mutable" data-tertiary="changing in place" id="id2320"></a>sets—may be changed in place. You cannot change numbers, strings, or tuples in place, but can make a new one with a different value.</p></li>
+<li><p>Files export only <em>methods</em>, so <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="methods export" id="id2321"></a>mutability doesn’t really apply to them—their state may be changed when they are processed, but this isn’t quite the same as Python object mutability.</p></li>
+<li><p>“Numbers” in <a data-type="xref" href="#object_classifications">Table 9-3</a> includes <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="number types" id="id2322"></a><a contenteditable="false" data-type="indexterm" data-primary="number types, files" id="id2323"></a><a contenteditable="false" data-type="indexterm" data-primary="integers" data-secondary="files" id="id2324"></a><a contenteditable="false" data-type="indexterm" data-primary="floating point numbers" data-secondary="files" id="id2325"></a><a contenteditable="false" data-type="indexterm" data-primary="complex numbers" id="id2326"></a><a contenteditable="false" data-type="indexterm" data-primary="fractions" data-secondary="files" id="id2327"></a>all number types: integer, floating point, complex, decimal, and fraction.</p></li>
+<li><p>“Strings” in <a data-type="xref" href="#object_classifications">Table 9-3</a> includes <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="string types" id="id2328"></a>all string types: <code>str</code> for text, as well as <code>bytes</code> for binary data. Exception: the <code>bytearray</code> string type convolutes categorization because it is a mutable string.</p></li>
+<li><p>Sets are something like <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="sets" id="id2329"></a><a contenteditable="false" data-type="indexterm" data-primary="sets" id="id2330"></a>the keys of a valueless dictionary, but they don’t map to values and are not ordered, so sets are neither a mapping nor a sequence type. Exception: <code>frozenset</code> is an immutable variant of <code>set</code>.</p></li>
+<li><p>In addition to type category operations, all the objects types in <a data-type="xref" href="#object_classifications">Table 9-3</a> have callable methods in Python today, which are generally specific to their type.</p></li>
+</ul>
+<table class="border" id="object_classifications">
+<caption><span class="label">Table 9-3. </span>Object classifications</caption>
+<thead>
+<tr>
+<th>Object type</th>
+<th>Category</th>
+<th>Mutable?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Numbers</td>
+<td>Numeric</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Strings</td>
+<td>Sequence</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Lists</td>
+<td>Sequence</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Dictionaries</td>
+<td>Mapping</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Tuples</td>
+<td>Sequence</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Files</td>
+<td>Extension</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>Sets</td>
+<td>Set</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>Frozenset</code></td>
+<td>Set</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>bytearray</code></td>
+<td>Sequence</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<aside data-type="sidebar" epub:type="sidebar"><div class="sidebar" id="why_you_will_care_operator_overloading">
+<h1>Why You Will Care: Operator Overloading</h1>
+<p>In <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a> of this book, you’ll learn that objects <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" id="id2331"></a><a contenteditable="false" data-type="indexterm" data-primary="overloading operators" id="id2332"></a>implemented with classes can pick and choose from these categories arbitrarily. For instance, if we want to provide a new kind of specialized sequence object that is consistent with built-in sequences, we can code a class that overloads things like indexing and concatenation:</p>
+<pre data-type="programlisting">class MySequence:
+    def __getitem__(self, index):
+        <em># Called on self[index], others</em>
+    def __add__(self, other):
+        <em># Called on self + other</em>
+    def __iter__(self):
+        <em># Preferred in iterations</em></pre>
+<p>and so on. We can also make the new object mutable or not by selectively implementing methods called for in-place change operations (e.g., <code>__setitem__</code> is called on <code>self[index]=value</code> assignments). Although it’s beyond this book’s scope, it’s also possible to implement new objects in an external language like C as extension types. For these, we fill in C function pointer slots to choose between number, sequence, and mapping operation sets, and similarly choose immutability <span class="keep-together">constraints</span>.</p>
+</div></aside>
+<section data-type="sect2" data-pdf-bookmark="Object Flexibility"><div class="sect2" id="object_flexibility">
+<h2>Object Flexibility</h2>
+<p>This part of the book introduced <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="flexibility" id="objfxlb"></a>a number of <em>compound</em> object types—collections with components. In general:</p>
+<ul>
+<li><p>Lists, dictionaries, and tuples can hold any kind of object.</p></li>
+<li><p>Sets can contain any type of immutable object.</p></li>
+<li><p>Lists, dictionaries, and tuples can be arbitrarily nested.</p></li>
+<li><p>Lists, dictionaries, and sets can dynamically grow and shrink.</p></li>
+</ul>
+<p>Because they support arbitrary structures, Python’s compound object types are good at representing complex information in programs. For example, values in dictionaries may be lists, which may contain tuples, which may contain dictionaries, and so on. The nesting can be as deep as needed to model the data to be processed.</p>
+<p>In code, the following interaction defines a tree of nested compound sequence objects, sketched in <a data-type="xref" href="#a_nested_object_tree_with_the_offsets_o">Figure 9-1</a>. To access its components, you may include as many index operations as required. Python evaluates the indexes from left to right and fetches a reference to a more deeply nested object at each step. <a data-type="xref" href="#a_nested_object_tree_with_the_offsets_o">Figure 9-1</a> may seem a pathologically complicated data structure, but it illustrates the syntax used to access nested objects in general:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = ['abc', [(1, 2), ([3], 4)], 5]</strong></code>
+&gt;&gt;&gt; <code><strong>L[1]</strong></code>
+[(1, 2), ([3], 4)]
+&gt;&gt;&gt; <code><strong>L[1][1]</strong></code>
+([3], 4)
+&gt;&gt;&gt; <code><strong>L[1][1][0]</strong></code>
+[3]
+&gt;&gt;&gt; <code><strong>L[1][1][0][0]</strong></code>
+3</pre>
+<figure><div id="a_nested_object_tree_with_the_offsets_o" class="figure">
+<img src="assets/lpy6_0901.png" alt="" width="799" height="952"/>
+<h6><span class="label">Figure 9-1. </span>A nested object tree <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="flexibility" data-startref="objfxlb" id="id2333"></a>with the offsets of its components</h6>
+</div></figure>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="References Versus Copies"><div class="sect2" id="references_versus_copies">
+<h2>References Versus Copies</h2>
+<p><a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a> mentioned that assignments <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="references" id="objref"></a><a contenteditable="false" data-type="indexterm" data-primary="references" id="refrc"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="copies" id="objpyo"></a><a contenteditable="false" data-type="indexterm" data-primary="copies" data-secondary="of objects" id="picrc"></a>always store references to objects, not copies of those objects. In practice, this is usually what you want. Because assignments can generate multiple references to the same object, though, it’s important to be aware that changing a mutable object in place may affect other references to the same object elsewhere in your program. If you don’t want such behavior, you’ll need to tell Python to copy the object explicitly.</p>
+<p>We studied this phenomenon in <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>, but it can become more subtle when larger objects of the sort we’ve explored since then come into play. For instance, the following example creates a list assigned to <code>X</code>, and another list assigned to <code>L</code> that embeds a reference back to list <code>X</code>. It also creates a dictionary <code>D</code> that contains another reference back to list <code>X</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>X = [1, 2, 3]</strong></code>
+&gt;&gt;&gt; <code><strong>L = ['a', X, 'b']</strong></code>            <code><em># Embed references to X's object in two others</em></code>
+&gt;&gt;&gt; <code><strong>D = {'x':X, 'y':2}</strong></code></pre>
+<p>At this point, there are three references to the first list created: from the name <code>X</code>, from inside the list assigned to <code>L</code>, and from inside the dictionary assigned to <code>D</code>. The situation is illustrated in <a data-type="xref" href="#shared_objects_changing_from_x_makes_it">Figure 9-2</a>.</p>
+<figure><div id="shared_objects_changing_from_x_makes_it" class="figure">
+<img src="assets/lpy6_0902.png" alt="" width="1327" height="458"/>
+<h6><span class="label">Figure 9-2. </span>Shared objects: changing from X makes it look different from L and D too</h6>
+</div></figure>
+<p>Because lists are mutable, changing the shared list object from any of the three references also changes what the other two reference:</p>
+<pre data-type="programlisting">&gt;&gt;&gt;<code> <strong>X[1] = 'surprise'</strong></code>             <code><em># Changes all three references!</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+['a', [1, 'surprise', 3], 'b']
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'x': [1, 'surprise', 3], 'y': 2}</pre>
+<p>References are a higher-level analogue of pointers in other languages that are always followed when used. Although you can’t grab hold of the reference itself, it’s possible to store the same reference in more than one place (variables, lists, and so on). This is a feature—you can pass a large object around a program without generating expensive copies of it along the way. If you really want to avoid the potential side effects of shared references, however, you can request <em>copies</em>, in one of a number of ways:</p>
+<ul>
+<li><p>Slice expressions with empty limits (<code><em>L</em>[:]</code>) copy sequences.</p></li>
+<li><p>The dictionary, set, and list <code>copy</code> method (<code><em>X</em>.copy()</code>) copies a dictionary, set, or list.</p></li>
+<li><p>Some built-in functions, such as <code>list</code> and <code>dict</code> make copies (<code>list(<em>L</em>)</code>, <code>dict(<em>D</em>)</code>, <code>set(<em>S</em>)</code>).</p></li>
+<li><p>The <code>copy</code> standard-library module makes full (“recursive”) copies when needed.</p></li>
+</ul>
+<p>For example, say you have a list and a dictionary, and you don’t want their values to be changed through other variables:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1,2,3]</strong></code>
+&gt;&gt;&gt; <code><strong>D = {'a':1, 'b':2}</strong></code></pre>
+<p>To prevent this, simply assign copies to the other variables, not references to the same objects:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>A = L[:]</strong></code>                      <code><em># Instead of A = L (or list(L), L.copy())</em></code>
+&gt;&gt;&gt; <code><strong>B = D.copy()</strong></code>                  <code><em># Instead of B = D (ditto for sets)</em></code></pre>
+<p class="pagebreak-before">This way, changes made from the other variables will change the copies, not the originals:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>A[1] = 'Py'</strong></code>
+&gt;&gt;&gt; <code><strong>B['c'] = 'code'</strong></code>               <code><em># Changes copies, not originals</em></code>
+&gt;&gt;&gt;
+&gt;&gt;&gt; <code><strong>L, D</strong></code>
+([1, 2, 3], {'a': 1, 'b': 2})
+&gt;&gt;&gt; <code><strong>A, B</strong></code>
+([1, 'Py', 3], {'a': 1, 'b': 2, 'c': 'code'})</pre>
+<p>In terms of our original example, you can avoid the reference side effects by slicing the original list instead of simply naming it:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>X = [1, 2, 3]</strong></code>
+&gt;&gt;&gt; <code><strong>L = ['a', X[:], 'b']</strong></code>           <code><em># Embed copies of X's object</em></code>
+&gt;&gt;&gt; <code><strong>D = {'x':X[:], 'y':2}</strong></code></pre>
+<p>This changes the picture in <a data-type="xref" href="#shared_objects_changing_from_x_makes_it">Figure 9-2</a>—<code>L</code> and <code>D</code> will now point to <em>different</em> lists than <code>X</code>. The net effect <span class="keep-together">is that</span> changes made through <code>X</code> will impact only <code>X</code>, not <code>L</code> and <code>D</code>; similarly, changes to <code>L</code> or <code>D</code> will not <span class="keep-together">impact <code>X</code>.</span></p>
+<p>One final note on copies: empty-limit slices and the dictionary <code>copy</code> method only make <em>top-level</em> copies; that is, they do not copy nested data structures, if any are present. If you need a complete, fully independent copy of a deeply nested data structure (like the various record structures we’ve coded in recent chapters), use the standard <code>copy</code> module, introduced in <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>:</p>
+<pre data-type="programlisting">import copy
+<code><em>X</em></code> = copy.deepcopy(<code><em>Y</em></code>)               <code><em># Fully copy an arbitrarily nested object Y</em></code></pre>
+<p>This call traverses objects to copy all their parts, no matter how deep they may be. This is a much rarer case, though, which is why you have to say more to use this scheme. References are usually what you will want; when they are not, slices and copy methods are <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="references" data-startref="objref" id="id2334"></a><a contenteditable="false" data-type="indexterm" data-primary="references" data-startref="refrc" id="id2335"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="copies" data-startref="objpyo" id="id2336"></a><a contenteditable="false" data-type="indexterm" data-primary="copies" data-secondary="of objects" data-startref="picrc" id="id2337"></a>usually as much copying as you’ll need to do.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Comparisons, Equality, and Truth"><div class="sect2" id="comparisonscomma_equalitycomma_and_trut">
+<h2>Comparisons, Equality, and Truth</h2>
+<p>All Python objects also respond <a contenteditable="false" data-type="indexterm" data-primary="comparisons" id="cprsn"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="comparisons" id="bjcmp"></a><a contenteditable="false" data-type="indexterm" data-primary="testing" data-secondary="comparisons" id="tstgcpr"></a>to comparisons: tests for equality, relative magnitude, and so on. We’ve seen comparison at work on specific objects in earlier chapters but can finally summarize the general rules.</p>
+<p>In short, Python comparisons always inspect <a contenteditable="false" data-type="indexterm" data-primary="compound objects" id="id2338"></a>all parts of compound objects until a result can be determined. When nested objects are present, Python automatically traverses data structures to apply comparisons from left to right, and as deeply as needed. The first difference found along the way determines the comparison result.</p>
+<p>This is sometimes called a <em>recursive</em> comparison—the same comparison requested on the top-level objects is <a contenteditable="false" data-type="indexterm" data-primary="comparisons" data-secondary="recursive" id="id2339"></a><a contenteditable="false" data-type="indexterm" data-primary="recursion" id="id2340"></a>applied to each of the nested objects, and to each of <em>their</em> nested objects, and so on, until a result is found. Later in this book (<a data-type="xref" href="ch19.html#function_odds_and_ends">Chapter 19</a>) you’ll learn how to write recursive functions of your own that work similarly on nested structures. For now, think about comparing all the linked pages at two websites if you want a metaphor for such structures, and a reason for writing recursive functions to process them.</p>
+<p>In terms of core objects, the recursion is automatic. For instance, a comparison of list objects compares all their components automatically until a mismatch is found or the end is reached:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L1 = [1, ('a', 3)]</strong></code>           <code><em># Same value, but different objects</em></code>
+&gt;&gt;&gt; <code><strong>L2 = [1, ('a', 3)]</strong></code>
+&gt;&gt;&gt; <code><strong>L1 == L2, L1 is L2</strong></code>           <code><em># Same value? Same object?
+</em></code>(True, False)</pre>
+<p>Here, <code>L1</code> and <code>L2</code> are assigned lists that are equivalent but distinct objects. As a review of <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>’s coverage, because of the nature of Python references, there <a contenteditable="false" data-type="indexterm" data-primary="testing" data-secondary="equality" id="id2341"></a><a contenteditable="false" data-type="indexterm" data-primary="equality, testing for" id="id2342"></a>are two ways to test for equality:</p>
+<ul>
+<li><p><strong>The</strong> <code><strong>==</strong></code> <strong>operator tests value equivalence</strong>. Python performs an equivalence test, comparing all nested objects recursively.</p></li>
+<li><p><strong>The</strong> <code><strong>is</strong></code> <strong>operator tests object identity</strong>. Python tests whether the two are really the same object (i.e., live at the same address in memory).</p></li>
+</ul>
+<p>In the preceding example, <code>L1</code> and <code>L2</code> pass the <code>==</code> test (they have equivalent values because all their components are equivalent) but fail the <code>is</code> check (they reference two different objects, and hence two different pieces of memory). Notice what happens for short strings, though:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S1 = 'text'</strong></code>
+&gt;&gt;&gt; <code><strong>S2 = 'text'</strong></code>
+&gt;&gt;&gt; <code><strong>S1 == S2, S1 is S2</strong></code>
+(True, True)</pre>
+<p>Here, we should again have two distinct objects that happen to have the same value: <code>==</code> should be true, and <code>is</code> should be false. But because Python internally caches and reuses some objects as an optimization, there really is just a single string <code>'text'</code> in memory, shared by <code>S1</code> and <code>S2</code>. Hence, the <code>is</code> identity test reports a true result. To trigger the normal behavior, we need to use strings that are longer (or otherwise defeat caching rules prone to change over time):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S1 = 'a longer string'</strong></code>
+&gt;&gt;&gt; <code><strong>S2 = 'a longer string'</strong></code>
+&gt;&gt;&gt; <code><strong>S1 == S2, S1 is S2</strong></code>
+(True, False)</pre>
+<p>Of course, because strings are <em>immutable</em>, the object caching mechanism is irrelevant to your code—strings can’t be changed in place, regardless of how many variables refer to them. If identity tests seem confusing, see <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a> for a refresher on object reference concepts. As a rule of thumb, the <code>==</code> operator is what you will want to use for almost all equality checks; <code>is</code> is reserved for highly specialized roles. You’ll see use cases for both later.</p>
+<p>As demoed along the way, <a contenteditable="false" data-type="indexterm" data-primary="comparisons" data-secondary="relative magnitude" id="id2343"></a><a contenteditable="false" data-type="indexterm" data-primary="relative magnitude comparisons" id="id2344"></a>relative <em>magnitude</em> comparisons are also applied recursively to nested data structures:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L1 = [1, ('a', 3)]</strong> </code>               <code><em># Nested 3 &gt; nested 2</em></code>
+&gt;&gt;&gt; <code><strong>L2 = [1, ('a', 2)]</strong></code>
+&gt;&gt;&gt; <code><strong>L1 &lt; L2, L1 == L2, L1 &gt; L2</strong></code>        <code><em># Less, equal, greater: tuple of results</em></code>
+(False, False, True)</pre>
+<p>Here, <code>L1</code> is greater than <code>L2</code> because the nested <code>3</code> is greater than the nested <code>2</code>. More broadly, Python compares its core object <a contenteditable="false" data-type="indexterm" data-primary="comparisons" data-secondary="core object types" id="id2345"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="comparisons" data-tertiary="core object types" id="id2346"></a>types as follows:</p>
+<ul>
+<li><p><em>Numbers</em> are compared by <a contenteditable="false" data-type="indexterm" data-primary="numbers" data-secondary="comparisons" id="id2347"></a>relative magnitude, after conversion to the common highest type if needed (e.g., <code>1 &lt; 1.1</code> after <code>1</code> is replaced with <code>1.0</code>).</p></li>
+<li><p><em>Strings</em> are <a contenteditable="false" data-type="indexterm" data-primary="strings" data-secondary="comparisons" id="id2348"></a>compared lexicographically (by the character code-point values returned by <code>ord</code>), and character by character until the end or first mismatch (e.g., <code>'abc' &lt; 'ac'</code>).</p></li>
+<li><p><em>Lists</em> and <em>tuples</em> are compared <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="comparisons" id="id2349"></a>by comparing each component from left to right, and recursively for nested structures, until the end or first mismatch (e.g., <code>[1, 3] &gt; [1, 2]</code>).</p></li>
+<li><p><em>Sets</em> are equal if both <a contenteditable="false" data-type="indexterm" data-primary="sets" data-secondary="comparisons" id="id2350"></a>contain the same items (formally, if each is a subset of the other), and magnitude comparison operators for sets apply subset and superset tests.</p></li>
+<li><p><em>Dictionaries</em> compare as equal if their sorted <code>(<em>key</em>, <em>value</em>)</code> lists are equal. Magnitude comparisons are not supported for dictionaries but can be coded by comparing manually sorted <code>items</code> results.</p></li>
+<li><p>Nonnumeric <em>mixed-type</em> magnitude comparisons (e.g., <code>1 &lt; 'text'</code>) are <a contenteditable="false" data-type="indexterm" data-primary="mixed-type comparisons" id="id2351"></a><a contenteditable="false" data-type="indexterm" data-primary="comparisons" data-secondary="mixed-type" id="id2352"></a>errors. By proxy, this also applies to sorts, which use comparisons internally: nonnumeric mixed-type collections cannot be sorted sans conversions.</p></li>
+</ul>
+<p>In general, comparisons of structured objects proceed as though you had written the objects as literals and compared all their parts one at a time from left to right. In later chapters, you’ll also see that class-based objects can change the way they are compared. Here, the following sections provide a few more details on Python’s built-in comparisons.</p>
+<section data-type="sect3" data-pdf-bookmark="Mixed-type comparisons and sorts"><div class="sect3" id="mixed_type_comparisons_and_sorts">
+<h3>Mixed-type comparisons and sorts</h3>
+<p>The preceding section’s last bullet point applies only to nonnumeric mixed-type magnitude tests, not equality, but it also applies by proxy to <em>sorting</em>, which does magnitude testing internally. Python disallows mixed-type magnitude testing, except for numeric types and manually converted types:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>11 == '11'</strong></code>                          <code><em># Equality works but magnitude does not</em></code>
+False
+&gt;&gt;&gt; <code><strong>11 &gt;= '11'</strong></code>
+TypeError: '&gt;=' not supported between instances of 'int' and 'str'
+
+&gt;&gt;&gt; <code><strong>['11', '22'].sort()</strong></code>                 <code><em># Ditto for sorts
+</em></code>&gt;&gt;&gt; <code><strong>[11, '11'].sort()</strong></code>
+TypeError: '&lt;' not supported between instances of 'str' and 'int'
+
+&gt;&gt;&gt; <code><strong>11 &gt; 9.123</strong></code>                          <code><em># Mixed numbers convert to highest type</em></code>
+True
+&gt;&gt;&gt; <code><strong>str(11) &gt;= '11', 11 &gt;= int('11')</strong></code>    <code><em># Manual conversions force the issue</em></code>
+(True, True)
+
+&gt;&gt;&gt; <strong>[11, '11'].sort(key=str)</strong>            <em># Ditto for sorts: see Chapter 8</em></pre>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Dictionary comparisons"><div class="sect3" id="dictionary_comparisons">
+<h3>Dictionary comparisons</h3>
+<p>As noted in <a data-type="xref" href="ch08.html#lists_and_dictionaries">Chapter 8</a>, magnitude <a contenteditable="false" data-type="indexterm" data-primary="comparisons" data-secondary="dictionaries" id="id2353"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="comparisons" id="id2354"></a>comparisons don’t work for dictionaries directly. Though subject to implementation morph, this purportedly reflects that fact that magnitude comparison would incur too much overhead and may hamper the more common equality test, which may use an optimized scheme that doesn’t compare sorted key/value lists:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D1 = {'b':3, 'a':1}</strong></code>
+&gt;&gt;&gt; <code><strong>D2 = {'a':1, 'b':3}</strong></code>
+&gt;&gt;&gt; <code><strong>D1 == D2          </strong>  </code>                         <code><em># Equality, not magnitude</em></code>
+True
+&gt;&gt;&gt; <code><strong>D1 &lt; D2</strong></code>
+TypeError: '&lt;' not supported between instances of 'dict' and 'dict'</pre>
+<p>To work around this limitation, either write loops to compare values by key, or, as also shown in <a data-type="xref" href="ch08.html#lists_and_dictionaries">Chapter 8</a>, simply compare sorted key/value lists manually by combining the <code>items</code> dictionary method and <code>sorted</code> built-in:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>list(D1.items())</strong></code>
+[('b', 3), ('a', 1)] 
+&gt;&gt;&gt; <code><strong>sorted(D1.items())</strong></code>
+[('a', 1), ('b', 3)] 
+
+&gt;&gt;&gt; <code><strong>sorted(D1.items()) &lt; sorted(D2.items())</strong></code>      <code><em># Dictionary magnitude tests</em></code>
+False
+&gt;&gt;&gt; <code><strong>sorted(D1.items()) &gt;= sorted(D2.items())</strong></code>
+True</pre>
+<p>This takes more code than a simple <code>&lt;</code> or <code>&gt;</code> and may run relatively slowly; but in practice, most programs requiring this behavior either will develop more efficient ways to <a contenteditable="false" data-type="indexterm" data-primary="comparisons" data-startref="cprsn" id="id2355"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="comparisons" data-startref="bjcmp" id="id2356"></a><a contenteditable="false" data-type="indexterm" data-primary="testing" data-secondary="comparisons" data-startref="tstgcpr" id="id2357"></a>compare data in dictionaries or won’t care about the sloth.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="The Meaning of True and False in Python"><div class="sect2" id="the_meaning_of_true_and_false_in_python">
+<h2>The Meaning of True and False in Python</h2>
+<p>Notice that the test results <a contenteditable="false" data-type="indexterm" data-primary="truth values" id="trvlsu"></a><a contenteditable="false" data-type="indexterm" data-primary="false values" id="flsvl"></a>returned in the last two examples represent true and false values. They print as the words <code>True</code> and <code>False</code>, but now that we’re using logical tests like these in earnest, it’s time to be a bit more formal about what these names really mean.</p>
+<p>In Python, as in most programming languages, an integer <code>0</code> represents false, and an integer <code>1</code> represents true (a heritage rooted in the digital nature of computer hardware). In addition, though, Python recognizes any <em>empty</em> data structure as false and any <em>nonempty</em> data structure as true. More <a contenteditable="false" data-type="indexterm" data-primary="empty data structures" id="id2358"></a><a contenteditable="false" data-type="indexterm" data-primary="nonempty data structures" id="id2359"></a>generally, the notions of true and false are intrinsic properties of every object in Python—each object is either true or false, as follows:</p>
+<ul>
+<li><p>Numbers are false if zero, and <a contenteditable="false" data-type="indexterm" data-primary="numbers" data-secondary="true and false" id="id2360"></a>true otherwise.</p></li>
+<li><p>Collection objects are false if empty, and true otherwise.</p></li>
+<li><p>The <code>None</code> placeholder object is always false.</p></li>
+<li><p>True and False are preset to true and false, respectively.</p></li>
+</ul>
+<p><a data-type="xref" href="#example_object_truth_values">Table 9-4</a> gives examples of true and false values of various objects in Python.</p>
+<table class="border" id="example_object_truth_values">
+<caption><span class="label">Table 9-4. </span>Example object truth values</caption>
+<thead>
+<tr>
+<th>Object</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>'text'</code></td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>''</code></td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>[1, 2]</code></td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>[]</code></td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>{'a': 1}</code></td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>{}</code></td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>0.0</code></td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>None</code></td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table>
+<p>As one application of this, because objects are true or false themselves, it’s common to see Python programmers code tests like <code>if X:</code>, which, assuming <code>X</code> is a string, is the same as <code>if X != '':</code>. In other words, you can test the object <em>itself</em> to see if it contains anything, instead of comparing it to an empty—and therefore false—object of the same type.</p>
+<section data-type="sect3" data-pdf-bookmark="The None object"><div class="sect3" id="the_none_object">
+<h3>The None object</h3>
+<p>As shown in the last row in <a data-type="xref" href="#example_object_truth_values">Table 9-4</a>, Python <a contenteditable="false" data-type="indexterm" data-primary="None object" id="id2361"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="None" id="id2362"></a>also provides a special object called <code>None</code>, which is always considered to be false. <code>None</code> was introduced briefly in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>; it is the only value of a special data type in Python and typically serves as an empty placeholder (much like a <code>NULL</code> pointer in C).</p>
+<p>For example, recall that for lists you cannot assign to an offset unless that offset already exists—the list does not magically grow if you attempt an out-of-bounds assignment. To preallocate a list such that you can store values in any of its offsets, you can fill it with <code>None</code> objects:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>size = 50</strong></code>
+&gt;&gt;&gt; <code><strong>L = []</strong></code>
+&gt;&gt;&gt; <code><strong>L[size - 1] = 'NO'</strong></code>
+IndexError: list assignment index out of range
+
+&gt;&gt;&gt; <code><strong>L = [None] * size</strong></code>
+&gt;&gt;&gt; <code><strong>L[size - 1] = 'OK'</strong></code>
+&gt;&gt;&gt; <code><strong>L[-10:]</strong></code>
+[None, None, None, None, None, None, None, None, None, 'OK']</pre>
+<p>This doesn’t limit the size of the list (it can still grow and shrink later), but simply presets an initial size to allow for future index assignments. You could initialize a list with zeros the same way, of course, but best practice suggests using <code>None</code> if the type of the list’s contents is variable or not yet known.</p>
+<p>Keep in mind that <code>None</code> does not mean “undefined.” That is, <code>None</code> is something, not nothing (despite its name!)—it is a real object and a real piece of memory that is created and given a built-in name by Python itself. Watch for other uses of this special object later in the book; as you’ll learn in <a data-type="xref" href="part04.html#functions_and_generators">Part IV</a>, it is also the default return value of functions that don’t exit by running into a <code>return</code> statement with a result value.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="The bool type"><div class="sect3" id="the_bool_type">
+<h3>The bool type</h3>
+<p>While we’re on the topic of truth, also <a contenteditable="false" data-type="indexterm" data-primary="Boolean type" id="id2363"></a>keep in mind that the Python Boolean type <code>bool</code>, introduced in <a data-type="xref" href="ch05.html#numbers_and_expressions">Chapter 5</a>, simply augments the notions of true and false in Python. As we learned earlier, the built-in words <code>True</code> and <code>False</code> are just customized versions of the integers <code>1</code> and <code>0</code>—it’s as if these two words have been preassigned to <code>1</code> and <code>0</code> everywhere in Python. Because of the way this new type is implemented, this is really just a minor extension to the notions of true and false already described, designed to make truth values more explicit:</p>
+<ul>
+<li><p>When used explicitly in truth test code, the words <code>True</code> and <code>False</code> are equivalent to <code>1</code> and <code>0</code>, respectively, but they make the programmer’s intent clearer.</p></li>
+<li><p>Results of Boolean tests run interactively print as the words <code>True</code> and <code>False</code>, instead of as <code>1</code> and <code>0</code>, to make the type of result clearer.</p></li>
+</ul>
+<p>You are not required to use only Boolean types in logical statements such as <code>if</code>; all objects are still inherently true or false, and all the Boolean concepts mentioned in this chapter still work as described if you use other types. Python also provides a <code>bool</code> built-in function that can be used to extract the Boolean value of an object. You can use this to explicitly check if an object is true—that is, nonzero or nonempty:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>bool(1)</strong></code>
+True
+&gt;&gt;&gt; <code><strong>bool('text')</strong></code>
+True
+&gt;&gt;&gt; <code><strong>bool({})</strong></code>
+False</pre>
+<p>In practice, though, you’ll rarely notice the Boolean type produced by logic tests, because Boolean results are <a contenteditable="false" data-type="indexterm" data-primary="truth values" data-startref="trvlsu" id="id2364"></a><a contenteditable="false" data-type="indexterm" data-primary="false values" data-startref="flsvl" id="id2365"></a>used automatically by <code>if</code> statements and other selection tools. We’ll explore Booleans further when we study logical statements in <a data-type="xref" href="ch12.html#if_and_match_selections">Chapter 12</a>.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Python’s Type Hierarchies"><div class="sect2" id="pythonapostrophes_type_hierarchies">
+<h2>Python’s Type Hierarchies</h2>
+<p>As a summary and reference, <a data-type="xref" href="#pythonapostrophes_major_built_in_object">Figure 9-3</a> sketches all the major built-in object <a contenteditable="false" data-type="indexterm" data-primary="object types" data-secondary="hierarchy" id="id2366"></a><a contenteditable="false" data-type="indexterm" data-primary="types" data-secondary="object types" data-tertiary="hierarchy" id="id2367"></a>types available in Python and their relationships. We’ve explored the most prominent of these in this part of the book. Other objects in <a data-type="xref" href="#pythonapostrophes_major_built_in_object">Figure 9-3</a> are program units (e.g., functions and modules) or interpreter internals (e.g., stack frames and compiled code).</p>
+<p>The main point to notice here is that <em>everything</em> processed in a Python program is an object type. This is sometimes called a “first class” object model, because all objects are on equal footing with respect to your code. For instance, you can pass a class to a function, assign it to a variable, stuff it in a list or dictionary, and so on.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Type Objects"><div class="sect2" id="type_objects">
+<h2>Type Objects</h2>
+<p>In fact, even types themselves <a contenteditable="false" data-type="indexterm" data-primary="type objects" id="id2368"></a>are an object type in Python: the type of an object is an object of type <code>type</code> (and not just because it’s a decent tongue twister!). Seriously, a call to the built-in function <code>type(<em>X</em>)</code> returns the type object of object <code><em>X</em></code>. The practical application of this is that type objects can be used for manual type comparisons in Python <code>if</code> statements. However, for reasons introduced in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a> that we won’t rehash here, manual type testing is usually not the right thing to do in Python, since it limits your code’s flexibility. Python is about flexibility, not constraints.</p>
+<p>One note on type names: each core type has a built-in name that supports various roles, including type customization through object-oriented subclassing: <code>dict</code>, <code>list</code>, <code>str</code>, <code>tuple</code>, <code>int</code>, <code>float</code>, <code>complex</code>, <code>bytes</code>, <code>type</code>, <code>set</code>, and more. Technically speaking, these names reference classes, and calls to these names are really object constructor calls, not simply conversion functions, though you can treat them as simple functions for basic usage.</p>
+<p>In addition, the <code>types</code> standard-library module provides additional type names for types that <a contenteditable="false" data-type="indexterm" data-primary="types library module" id="id2369"></a>are not available as built-ins (e.g., <code>types.FunctionType</code> is the is the type of functions), and the <code>isinstance</code> built-in function checks types with consideration of inheritance in OOP—a topic we’ll reach later on our Python journey. Because types can be customized with OOP in Python, though, the <code>isinstance</code> technique is generally recommended in the very rare cases where code must know about specific types. There’s more on type customizations in <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>, and an example in which <code>isinstance</code> is useful and warranted in <a data-type="xref" href="ch19.html#function_odds_and_ends">Chapter 19</a>.</p>
+<figure><div id="pythonapostrophes_major_built_in_object" class="figure">
+<img src="assets/lpy6_0903.png" alt="" width="1298" height="1818"/>
+<h6><span class="label">Figure 9-3. </span>Python’s major built-in object types, organized by categories</h6>
+</div></figure>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Other Types in Python"><div class="sect1" id="other_types_in_python">
+<h1>Other Types in Python</h1>
+<p>Besides the core objects studied in this part of the book, and the program-unit objects such as functions, modules, and classes that you’ll meet later, a typical Python installation has dozens of additional object types available as linked-in C extensions or imported Python classes—regular expression objects, GUI widgets, network sockets, and so on. Depending on whom you ask, the <em>named tuple</em> you met earlier in this chapter may fall in this category too, along with <code>Decimal</code> and <code>Fraction</code> of <a data-type="xref" href="ch05.html#numbers_and_expressions">Chapter 5</a>.</p>
+<p>The main difference between these extra tools and the built-in types you’ve seen so far is that the built-ins have language-defined syntax for creating their objects (e.g., <code>4</code> for <a contenteditable="false" data-type="indexterm" data-primary="type objects" data-secondary="built-ins" id="id2370"></a>an integer, <code>[1,2]</code> for a list, the <code>open</code> function for files, and <code>def</code> and <code>lambda</code> for functions). Other tools are made available in standard-library modules that you import to use. For instance, to make a regular-expression object in pattern matching, you import <code>re</code> and call <code>re.compile()</code>.</p>
+<p>Because most objects in this noncore category are application-level tools that are beyond the scope of this language tutorial, be sure to browse Python’s library reference early and often in your coding career for a comprehensive chronicle of all the supplemental tools available to Python programs.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>What about</em> <code><em>range</em></code><em>?</em>: Python’s documentation reclassified the built-in <code>range</code> function as a sequence type, along with lists and tuples, but this is an academic sleight of hand that we won’t adhere to in this book. As you’ll see later, <code>range</code> returns an <em>iterable</em> object that produces results on demand, not a physically stored sequence. It supports some—but not all—sequence operations (e.g., indexing works but concatenation does not), but even this is an implementation trick, and hardly enough to constitute a new type on the same level as real sequences. Labeling <code>range</code> an “immutable sequence of integers” conflates tool categories and confuses Python learners.</p>
+</div>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Built-in Type Gotchas"><div class="sect1" id="built_in_type_gotchas">
+<h1>Built-in Type Gotchas</h1>
+<p>That’s the end of our look at core data types. We’ll wrap up this part of the book with a discussion of common problems that seem to trap new users (and the occasional expert), along with their solutions. Some of this is a review of ideas we’ve already covered, but these issues are important enough to warrant callouts again here.</p>
+<section data-type="sect2" data-pdf-bookmark="Assignment Creates References, Not Copies"><div class="sect2" id="assignment_creates_referencescomma_not">
+<h2>Assignment Creates References, Not Copies</h2>
+<p>Yes, this is redundant, but it’s <a contenteditable="false" data-type="indexterm" data-primary="built-in types" data-secondary="references" id="id2371"></a><a contenteditable="false" data-type="indexterm" data-primary="object types" data-secondary="built-ins" data-tertiary="references" id="id2372"></a><a contenteditable="false" data-type="indexterm" data-primary="references" data-secondary="built-in types" id="id2373"></a><a contenteditable="false" data-type="indexterm" data-primary="copies" data-secondary="build-in types" id="id2374"></a>such a common pitfall that it’s worth underscoring one more time: shared references to <em>mutable</em> objects can matter. In the following, for instance, the list object assigned to the name <code>L</code> is referenced both from <code>L</code> and from inside the list assigned to the name <code>M</code>. Changing <code>L</code> in place changes what <code>M</code> references, too:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2, 3]</strong></code>
+&gt;&gt;&gt; <code><strong>M = ['X', L, 'Y']</strong></code>           <code><em># Embed a reference to L</em></code>
+&gt;&gt;&gt; <code><strong>M</strong></code>
+['X', [1, 2, 3], 'Y']
+
+&gt;&gt;&gt; <code><strong>L[1] = 0</strong></code>                    <code><em># Changes M (what M references) too</em></code>
+&gt;&gt;&gt; <code><strong>M</strong></code>
+['X', [1, 0, 3], 'Y']</pre>
+<p>This effect usually becomes important only in larger programs, and shared references are often exactly what you want. If objects change out from under you in ways unexpected and unwanted, though, you can avoid sharing objects easily by copying them explicitly. For lists, you can always make a top-level copy by using an empty-limits slice, among other techniques described earlier in this chapter:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2, 3]</strong></code>
+&gt;&gt;&gt; <code><strong>M = ['X', L[:], 'Y']</strong></code>        <code><em># Embed a copy of L</em></code>
+&gt;&gt;&gt; <code><strong>L[1] = 0</strong></code>                    <code><em># Changes only L, not M
+</em></code>&gt;&gt;&gt; <code><strong>L</strong></code>
+[1, 0, 3]
+&gt;&gt;&gt; <code><strong>M</strong></code>
+['X', [1, 2, 3], 'Y']</pre>
+<p>Remember, slice limits default to 0 and the length of the sequence being sliced; if both are omitted, the slice extracts every item in the sequence and so makes a top-level copy (a new, unshared object).</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Repetition Adds One Level Deep"><div class="sect2" id="repetition_adds_one_level_deep">
+<h2>Repetition Adds One Level Deep</h2>
+<p>As we’ve learned, repeating a sequence is like adding it to itself a number of times. However, when <em>mutable</em> sequences <a contenteditable="false" data-type="indexterm" data-primary="built-in types" data-secondary="repetition" id="id2375"></a><a contenteditable="false" data-type="indexterm" data-primary="object types" data-secondary="built-ins" data-tertiary="repetition" id="id2376"></a>are nested, the effect might not always be what you expect. For instance, in the following example <code>X</code> is assigned to <code>L</code> repeated four times, whereas <code>Y</code> is assigned to a list <em>containing</em> <code>L</code> repeated four times:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [4, 5, 6]</strong></code>
+&gt;&gt;&gt; <code><strong>X = L * 4</strong></code>                   <code><em># Like [4, 5, 6] + [4, 5, 6] + …</em></code>
+&gt;&gt;&gt; <code><strong>Y = [L] * 4</strong></code>                 <code><em># [L] + [L] + … = [L, L, …]
+</em></code>
+&gt;&gt;&gt; <code><strong>X</strong></code>
+[4, 5, 6, 4, 5, 6, 4, 5, 6, 4, 5, 6]
+&gt;&gt;&gt; <code><strong>Y</strong></code>
+[[4, 5, 6], [4, 5, 6], [4, 5, 6], [4, 5, 6]]</pre>
+<p>Subtly, because <code>L</code> was nested in the second repetition, <code>Y</code> winds up embedding references back to the <em>original</em> list assigned to <code>L</code>, and so is open to the same sorts of side effects noted in the preceding section:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L[1] = 0</strong></code>                    <code><em># Impacts Y but not X</em></code>
+&gt;&gt;&gt; <code><strong>X</strong></code>
+[4, 5, 6, 4, 5, 6, 4, 5, 6, 4, 5, 6]
+&gt;&gt;&gt; <code><strong>Y</strong></code>
+[[4, 0, 6], [4, 0, 6], [4, 0, 6], [4, 0, 6]]</pre>
+<p>This may seem artificial and academic—until it happens unexpectedly in your code! The same solutions to this problem apply here as in the previous section, as this is really just another way to create the shared mutable object reference case—make copies when you don’t want shared references:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [4, 5, 6]</strong></code>
+&gt;&gt;&gt; <code><strong>Y = [list(L)] * 4</strong></code>           <code><em># Embed a (shared) copy of L
+</em></code>&gt;&gt;&gt; <code><strong>L[1] = 0</strong></code>
+&gt;&gt;&gt; <code><strong>Y</strong></code>
+[[4, 5, 6], [4, 5, 6], [4, 5, 6], [4, 5, 6]]</pre>
+<p>Even more subtly, although <code>Y</code> doesn’t share an object with <code>L</code> anymore, it still embeds four references to the <em>same copy</em> of it. If you must avoid that sharing too, you’ll want to make sure each embedded copy is unique:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>Y[0][1] = 99</strong></code>                <code><em># All four copies are still the same</em></code>
+&gt;&gt;&gt; <code><strong>Y</strong></code>
+[[4, 99, 6], [4, 99, 6], [4, 99, 6], [4, 99, 6]]
+
+&gt;&gt;&gt; <code><strong>L = [4, 5, 6]</strong></code>
+&gt;&gt;&gt; <code><strong>Y = [list(L) for i in range(4)]</strong></code>
+&gt;&gt;&gt; <code><strong>Y</strong></code>
+[[4, 5, 6], [4, 5, 6], [4, 5, 6], [4, 5, 6]]
+
+&gt;&gt;&gt; <code><strong>Y[0][1] = 99</strong> </code>               <code><em># And now they're not!
+</em></code>&gt;&gt;&gt; <code><strong>Y</strong></code>
+[[4, 99, 6], [4, 5, 6], [4, 5, 6], [4, 5, 6]]</pre>
+<p>If you remember that repetition, concatenation, and slicing copy only the top level of their operand objects, these sorts of cases make much more sense.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Beware of Cyclic Data Structures"><div class="sect2" id="beware_of_cyclic_data_structures">
+<h2>Beware of Cyclic Data Structures</h2>
+<p>We encountered this concept in a prior <a contenteditable="false" data-type="indexterm" data-primary="built-in types" data-secondary="cyclic data structures" id="id2377"></a><a contenteditable="false" data-type="indexterm" data-primary="object types" data-secondary="built-ins" data-tertiary="cyclic data structures" id="id2378"></a><a contenteditable="false" data-type="indexterm" data-primary="cyclic data" data-secondary="structures" id="id2379"></a>exercise but didn’t explore it much: if a collection object contains a reference to itself, it’s called a <em>cyclic object</em>. Python prints a <code>[...]</code> whenever it detects a cycle in the object back to itself, rather than getting stuck in an infinite loop (as it once did long ago, when dinosaurs roamed the planet):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = ['stuff']</strong></code>                <code><em># Append reference to same object</em></code>
+&gt;&gt;&gt; <code><strong>L.append(L)</strong></code>                  <code><em># Makes a cycle back to the same object: [...]</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+['stuff', [...]]</pre>
+<p>Besides understanding that the three dots in square brackets represent a cycle in the object (should they ever crop up in your outputs or job interviews!), this case is worth knowing about because it can lead to real gotchas—cyclic structures may cause code of your own to fall into unexpected loops if you don’t anticipate them.</p>
+<p>For instance, some programs that walk through structured data must keep a list, dictionary, or set of <em>already visited</em> items, and check it when they’re about to step into a cycle that could cause an unwanted loop. See the Part I exercise solutions in <a data-type="xref" href="app02.html#part_icomma_getting_started">“Part I, Getting Started”</a> in <a data-type="xref" href="app02.html#appendix_b_solutions_to_end_of_part_exe">Appendix B</a> for more on this problem. Also watch for general discussion of recursion in <a data-type="xref" href="ch19.html#function_odds_and_ends">Chapter 19</a>, as well as the <em>reloadall.py</em> program in <a data-type="xref" href="ch25.html#module_odds_and_ends">Chapter 25</a> and the <code>ListTree</code> class in <a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a> for concrete examples of programs where cycle detection can matter.</p>
+<p>As is so often the case in programming, the solution is knowledge: don’t use cyclic references unless you really need to, and make sure you anticipate them in programs that must care. There are good reasons to create cycles, but unless you have code that knows how to handle them, objects that reference themselves may be more liability than asset. They need not, however, also be a surprise.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Immutable Types Can’t Be Changed in Place"><div class="sect2" id="immutable_types_canapostrophet_be_chang">
+<h2>Immutable Types Can’t Be Changed in Place</h2>
+<p>And just once more for completeness: you cannot change an immutable object in place. Instead, you construct a <a contenteditable="false" data-type="indexterm" data-primary="built-in types" data-secondary="immutable types" id="id2380"></a><a contenteditable="false" data-type="indexterm" data-primary="object types" data-secondary="built-ins" data-tertiary="immutable types" id="id2381"></a>new object with slicing, concatenation, and so on, and assign it back to the original reference, if needed:</p>
+<pre data-type="programlisting">T = (1, 2, 3)
+
+T[2] = 4              <code><em># Error!</em></code>
+
+T = T[:2] + (4,)      <code><em># OK: (1, 2, 4)</em></code></pre>
+<p>That might seem like extra coding work (and it is), but the upside is that most of the previous gotchas in this section can’t happen when you’re using immutable objects like tuples and strings; because they can’t be changed in place, they are not generally open to the sorts of side effects that can imperil mutable objects like lists and dictionaries.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00019">
+<h1>Chapter Summary</h1>
+<p>This chapter explored the last two major core object types—the tuple and the file. We learned that tuples support all the usual sequence operations, have just a few methods, do not allow any in-place changes because they are immutable, and are generalized by the named-tuple extension type. We also learned that files are returned by the built-in <code>open</code> function and provide methods for reading and writing content of both the text and binary kind.</p>
+<p>Along the way we explored how to translate Python objects to and from strings for storing in files, and we looked at <code>pickle</code>, <code>json</code>, and other modules for advanced roles (object serialization and binary data). Finally, we wrapped up by reviewing some properties common to all object types (e.g., shared references) and went through a list of common mistakes (“gotchas”) in the object-type domain.</p>
+<p>In the next part of this book, we’ll shift gears, turning to the topic of <em>statement syntax</em>—the way we code processing steps and logic in our scripts. Along the way, this next part explores all of Python’s basic procedural statements. The next chapter kicks off this topic with an introduction to Python’s general syntax model, which is applicable to all statement types. Before moving on, though, take the chapter quiz, and then work through the end-of-part lab exercises to review type concepts. The next part’s statements largely just create and process objects, so make sure you’ve mastered this domain by working through all the exercises before reading on.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000140">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>How can you determine how large a tuple is? Why is this tool located where it is?</p></li>
+<li><p>Write an expression that changes the first item in a tuple. <code>(4, 5, 6)</code> should become <code>(1, 5, 6)</code> in the process.</p></li>
+<li><p>What is the default for the processing mode argument in a file <code>open</code> call?</p></li>
+<li><p>What module might you use to store Python objects in a file without converting them to strings yourself?</p></li>
+<li><p>How might you go about copying all parts of a nested structure at once?</p></li>
+<li><p>When does Python consider an object to be true?</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000139">
+<h1>Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>The built-in <code>len</code> function returns the length (number of contained items) for any container object <a contenteditable="false" data-type="indexterm" data-primary="container object length" id="id2382"></a><a contenteditable="false" data-type="indexterm" data-primary="len function" id="id2383"></a>in Python, including tuples. It is a built-in function instead of a type method because it applies to many different types of objects. In general, built-in functions and expressions may span many object types; methods are specific to a single object type, though some method names may be available on more than one type (<code>index</code>, for example, works on lists and tuples).</p></li>
+<li><p>Because they are immutable, you <a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="generating" id="id2384"></a>can’t really <em>change</em> tuples in place, but you can generate a new tuple with the desired value. Given <code>T = (4, 5, 6)</code>, you can change the first item by making a new tuple from its parts by slicing and concatenating: <code>T = (1,) + T[1:]</code>. (Recall that single-item tuples require a trailing comma.) You could also convert the tuple to a list, change it in place, and convert it back to a tuple, but this is more expensive and is rarely required in practice—simply use a list if you know that the object will require in-place changes.</p></li>
+<li><p>The default for the processing mode argument in a file <code>open</code> call is <code>'r'</code>, for reading text input. For input text files, simply pass in the external file’s name or path (unless you also need to customize things like buffering policies or provide a Unicode text encoding to override your platform’s <span class="keep-together">default—as</span> fleshed out in <a data-type="xref" href="ch37.html#unicode_and_byte_strings">Chapter 37</a>).</p></li>
+<li><p>The <code>pickle</code> module <a contenteditable="false" data-type="indexterm" data-primary="pickle module" id="id2385"></a>can be used to store Python objects in a file without explicitly converting them to strings. <code>json</code> similarly converts a limited set of Python objects to and from strings per the JSON format. The <code>struct</code> module <a contenteditable="false" data-type="indexterm" data-primary="struct module" id="id2386"></a>is related, but it assumes the data is to be in packed binary format in the file.</p></li>
+<li><p>Import the <code>copy</code> module, and call <code>copy.deepcopy(<em>X</em>)</code> if you need to copy all parts of a nested structure <code><em>X</em></code>. This is also rarely needed in practice; references are usually the desired behavior, and shallow copies (e.g., <code>aList[:]</code>, <code>aDict.copy()</code>, <code>set(aSet)</code>) usually suffice for most copies.</p></li>
+<li><p>An object is considered true if it is either a nonzero number or a nonempty collection object. The built-in words <code>True</code> and <code>False</code> are essentially predefined to have the same meanings as integer <code>1</code> and <code>0</code>, respectively.</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Part II Exercises"><div class="sect1" id="test_your_knowledge_part_ii_exercises">
+<h1>Test Your Knowledge: Part II Exercises</h1>
+<p>This session asks you to get your feet wet with coding built-in object fundamentals. As before, a few new ideas may pop up along the way, so be sure to flip to the answers in <a data-type="xref" href="app02.html#part_iicomma_objects_and_operations">“Part II, Objects and Operations”</a> in <a data-type="xref" href="app02.html#appendix_b_solutions_to_end_of_part_exe">Appendix B</a> when you’re done (or even when you’re not). If you have limited time, consider starting with exercises 10 and 11 (the most practical of the bunch) and then working from first to last as time allows. This is all fundamental material, though, so try to do as many of these as you can; programming is a hands-on activity, and there is no substitute for practicing what you’ve read to make ideas gel.</p>
+<ol>
+<li><p><em>The basics</em>: Experiment interactively <a contenteditable="false" data-type="indexterm" data-primary="semicolons in statements" id="id2387"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="semicolon" id="id2388"></a>with the common type operations found in the various operation tables in this part of the book. To get started, bring up the Python interactive interpreter (a REPL of your choosing), type each of the following expressions, and try to explain what’s happening in each case. Note that the semicolon in some of these is being used as a statement separator, to squeeze multiple statements onto a single line: for example, <code>X=1;X</code> assigns and then prints a variable (more on statement syntax in the next part of the book). Also remember <a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="commas" id="id2389"></a><a contenteditable="false" data-type="indexterm" data-primary="commas" data-secondary="expressions" id="id2390"></a><a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="commas in expressions" id="id2391"></a>that a comma between expressions usually builds a tuple, even if there are no enclosing parentheses: <code>X,Y,Z</code> is a three-item tuple, which Python prints back to you in parentheses.</p>
+<pre data-type="programlisting">2 ** 16
+2 / 5, 2 / 5.0
+
+'hack' + 'code'
+S = 'Python'
+'grok ' + S
+S * 5
+S[0], S[:0], S[1:]
+
+how = 'fun'
+'coding %s is %s!' % (S, how)
+'coding {} is {}!'.format(S, how)
+f'coding {S} is {how}!'
+
+('x',)[0]
+('x', 'y')[1]
+
+L = [1, 2, 3] + [4, 5, 6]
+L, L[:], L[:0], L[−2], L[−2:]
+([1, 2, 3] + [4, 5, 6])[2:4]
+[L[2], L[3]]
+L.reverse(); L
+L.sort(); L
+L.index(4)
+
+{'a': 1, 'b': 2}['b']
+D = {'x': 1, 'y': 2, 'z': 3}
+D['w'] = 0
+D['x'] + D['w']
+D[(1, 2, 3)] = 4
+list(D.keys()), list(D.values()), (1, 2, 3) in D
+
+[[]], ["", [], (), {}, None]</pre></li>
+<li><p><em>Indexing and slicing</em>: At the interactive prompt, define a list named <code>L</code> that <a contenteditable="false" data-type="indexterm" data-primary="indexing" id="id2392"></a><a contenteditable="false" data-type="indexterm" data-primary="slicing" id="id2393"></a>contains four strings or numbers (e.g., <code>L=[0, 1, 2, 3]</code>). Then, experiment with the following boundary cases. You may never see these cases in real programs (especially not in the bizarre ways they may appear here!), but they are intended to make you think about the underlying model, and some may be useful in less artificial forms—slicing out of bounds can help, for example, if a sequence is not as long as you expect:</p>
+<ol type="a">
+<li><p>What happens when you try <a contenteditable="false" data-type="indexterm" data-primary="indexing" data-secondary="out of bounds" id="id2394"></a>to index out of bounds (e.g., <code>L[4]</code>)?</p></li>
+<li><p>What about slicing out of <a contenteditable="false" data-type="indexterm" data-primary="slicing" data-secondary="out of bounds" id="id2395"></a>bounds (e.g., <code>L[-1000:100]</code>)?</p></li>
+<li><p>Finally, how does Python handle it if you try to extract a sequence in reverse, with the lower bound greater than the higher bound (e.g., <code>L[3:1]</code>)? Hint: try assigning to this slice (<code>L[3:1]=['?']</code>), and see where the value is put. Do you think this may be the same phenomenon you saw when slicing out of bounds?</p></li>
+</ol></li>
+<li><p><em>Indexing, slicing, and</em> <code><em>del</em></code>: Define another list <code>L</code> with four items, and assign an empty list to one of its offsets (e.g., <code>L[2]=[]</code>). What happens? Then, assign an empty list to a slice (<code>L[2:3]=[]</code>). What happens now? Recall that slice assignment deletes the slice and inserts the new value where it used to be.</p>
+<p>The <code>del</code> statement deletes offsets, keys, attributes, and names. Use it on your list to delete an item (e.g., <code>del L[0]</code>). What happens if you delete an entire slice (<code>del L[1:]</code>)? What happens when you assign a nonsequence to a slice (<code>L[1:2]=1</code>)?</p></li>
+<li><p><em>Tuple assignment</em>: Type the following lines:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>X = 'code'</strong></code>
+&gt;&gt;&gt; <code><strong>Y = 'hack'</strong></code>
+&gt;&gt;&gt; <code><strong>X, Y = Y, X</strong></code></pre>
+<p>What do you think is happening to <code>X</code> and <code>Y</code> when you type this sequence?</p></li>
+<li><p><em>Dictionary keys</em>: Consider the following <a contenteditable="false" data-type="indexterm" data-primary="dictionary keys" id="id2396"></a>code fragments:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = {}</strong></code>
+&gt;&gt;&gt; <code><strong>D[1] = 'a'</strong></code>
+&gt;&gt;&gt; <code><strong>D[2] = 'b'</strong></code></pre>
+<p>You’ve learned that dictionaries aren’t accessed by offsets, so what’s going on here? Does the following shed any light on the subject? (Hint: strings, integers, and tuples share which type category?)</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D[(1, 2, 3)] = 'c'</strong></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{1: 'a', 2: 'b', (1, 2, 3): 'c'}</pre></li>
+<li><p><em>Dictionary indexing</em>: Create a <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="indexing" id="id2397"></a><a contenteditable="false" data-type="indexterm" data-primary="indexing" data-secondary="dictionaries" id="id2398"></a>dictionary named <code>D</code> with three entries, for keys <code>'a'</code>, <code>'b'</code>, and <code>'c'</code>. What happens if you try to index a nonexistent key (<code>D['d']</code>)? What does Python do if you try to assign to a nonexistent key <code>'d'</code> (e.g., <code>D['d']='hack'</code>)? How does this compare to out-of-bounds assignments and references for lists? Does this sound like the rule for variable names?</p></li>
+<li class="pagebreak-before"><p><em>Generic operations</em>: Run interactive <a contenteditable="false" data-type="indexterm" data-primary="testing" data-secondary="interactive tests" id="id2399"></a><a contenteditable="false" data-type="indexterm" data-primary="interactive tests" id="id2400"></a>tests to answer the following questions:</p>
+<ol type="a">
+<li><p>What happens when you try to use the <code>+</code> operator on different/mixed types (e.g., string <code>+</code> list, list <code>+</code> tuple)?</p></li>
+<li><p>Does <code>+</code> work when one of the operands is a dictionary?</p></li>
+<li><p>Does the <code>append</code> method work for both lists and strings? How about using the <code>keys</code> method on lists? (Hint: what does <code>append</code> assume about its subject object?)</p></li>
+<li><p>Finally, what type of object do you get back when you slice or concatenate two lists or two strings?</p></li>
+</ol></li>
+<li><p><em>String indexing</em>: Define a <a contenteditable="false" data-type="indexterm" data-primary="string indexing" id="id2401"></a><a contenteditable="false" data-type="indexterm" data-primary="indexing" data-secondary="string indexing" id="id2402"></a>string <code>S</code> of four characters: <code>S = 'hack'</code>. Then type the following expression: <code>S[0][0][0][0][0]</code>. Any clue as to what’s happening this time? (Hint: recall that a string is a collection of characters, but Python characters are one-character strings.) Does this indexing expression still work if you apply it to a list such as <code>['h', 'a', 'c', 'k']</code>? Why?</p></li>
+<li><p><em>Immutable types</em>: Define a string <code>S</code> of four characters again: <code>S = 'hack'</code>. Write <a contenteditable="false" data-type="indexterm" data-primary="immutable types" id="id2403"></a><a contenteditable="false" data-type="indexterm" data-primary="types" data-secondary="immutable" id="id2404"></a>an assignment that changes the string to <code>'heck'</code>, using only slicing and concatenation. Could you perform the same operation using just indexing and concatenation? How about index assignment?</p></li>
+<li><p><em>Nesting</em>: Write a data <a contenteditable="false" data-type="indexterm" data-primary="nesting" id="id2405"></a>structure that represents your personal information: name (first, middle, last), age, job, address, email address, and phone number. You may build the data structure with any combination of built-in object types you like (lists, tuples, dictionaries, strings, numbers). Then, access the individual components of your data structures by indexing. Do some structures make more sense than others for this object?</p></li>
+<li><p><em>Files</em>: Write a script that creates a new output file called <em>myfile.txt</em> and writes the string <code>'Hello file world!'</code> into it. Then write another script that opens <em>myfile.txt</em> and reads and prints its contents. Run your two scripts from the system command line (or other script-launcher tool available to you). Does the new file show up in the directory where you ran your scripts? What if you add a different directory path to the filename passed to <code>open</code>? Note: file <code>write</code> methods do not add newline characters to your strings; add an explicit <code>\n</code> at the end of the string if you want to fully terminate the line in the file.</p></li>
+</ol>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>

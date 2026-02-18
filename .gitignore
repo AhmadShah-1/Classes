@@ -1,0 +1,173 @@
+#################################################
+# 🔒 ENVIRONMENT / SECRETS
+#################################################
+
+.env
+.env.*
+*.env
+*.key
+*.pem
+*.crt
+*.pfx
+*.p12
+secrets.json
+config.local.*
+credentials.json
+
+
+#################################################
+# 🐍 PYTHON
+#################################################
+
+# Bytecode
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+**/.venv/
+**/venv/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Poetry
+poetry.lock
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+
+# Type checking / linting
+.mypy_cache/
+.pyre/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+
+#################################################
+# 🟢 NODE / NPM / JAVASCRIPT
+#################################################
+
+node_modules/
+**/node_modules/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build output
+dist/
+build/
+.out/
+.next/
+.vite/
+.cache/
+
+# Coverage
+coverage/
+
+# TypeScript
+*.tsbuildinfo
+
+
+#################################################
+# 🌐 FLASK / WEB APPS
+#################################################
+
+instance/
+*.sqlite3
+*.db
+
+
+#################################################
+# 📊 MACHINE LEARNING / DATA
+#################################################
+
+# Model files
+*.h5
+*.pt
+*.pth
+*.onnx
+*.ckpt
+*.model
+*.joblib
+*.pkl
+*.npy
+*.npz
+
+# Large datasets (remove if you want them tracked)
+data/
+datasets/
+
+# Optional – comment out if you version CSV data
+# *.csv
+# *.tsv
+
+
+#################################################
+# 🐳 DOCKER
+#################################################
+
+docker-compose.override.yml
+*.log
+
+
+#################################################
+# 💻 IDE / EDITOR
+#################################################
+
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+
+
+#################################################
+# 🪟 OS FILES
+#################################################
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+
+#################################################
+# 🧪 GENERAL LOGS
+#################################################
+
+logs/
+*.log
+
+
+#################################################
+# 🏗 MISC BUILD / TEMP
+#################################################
+
+tmp/
+temp/
+*.tmp
+*.bak
+*.orig

@@ -1,0 +1,1172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 8. Lists and Dictionaries"><div class="chapter" id="lists_and_dictionaries">
+<h1><span class="label">Chapter 8. </span>Lists and Dictionaries</h1>
+<p>Now that we’ve explored numbers and strings, this chapter moves on to give the full story on Python’s <em>list</em> and <em>dictionary</em> objects—collections of other objects, and the main workhorses in almost all Python scripts. As you’ll find, both are remarkably flexible: they can be changed in place, can grow and shrink on demand, and may contain and be nested in any other kind of object. By leveraging these built-in object types, you can create and process rich information structures in your scripts without having to define new object types of your own.</p>
+<section data-type="sect1" data-pdf-bookmark="Lists"><div class="sect1" id="lists-id000101">
+<h1>Lists</h1>
+<p>The first stop on this chapter’s tour <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="characteristics" id="lscct"></a>is the Python <em>list</em>. Lists are Python’s most flexible ordered collection object type. Unlike strings, lists can contain any sort of object: numbers, strings, and even other lists. Also, unlike strings, lists may be changed in place by assignment to offsets and slices, list method calls, deletion statements, and more—they are <em>mutable</em> objects.</p>
+<p>Python lists do the work of many of the collection data structures you might have to implement manually in lower-level languages such as C. Here is a quick look at their main properties. Python lists are:</p>
+<dl>
+<dt>Ordered collections of arbitrary objects</dt>
+<dd>From a functional view, lists are just places to collect other objects so you can treat them as groups. Lists also maintain a left-to-right positional ordering among the items they contain.</dd>
+<dt>Accessed by offset</dt>
+<dd>Just as with strings, you can fetch a component object from a list by indexing the list on the object’s offset. Because items in lists are ordered by their positions, you can also do tasks such as slicing and concatenation.</dd>
+<dt>Variable-length, heterogeneous, and arbitrarily nestable</dt>
+<dd>Unlike strings, lists can grow and shrink in place (their lengths can vary), and they can contain any sort of object, not just one-character strings (they’re heterogeneous). Because lists can both contain and be contained by other collection objects, they also support arbitrary nesting; you can create lists of lists of lists, and so on.</dd>
+<dt>Of the category “mutable sequence”</dt>
+<dd>In terms of our type category qualifiers, lists <a contenteditable="false" data-type="indexterm" data-primary="mutability" data-secondary="lists" id="id2108"></a><a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="mutability" id="id2109"></a>are mutable (i.e., can be changed in place) and can respond to all the <em>sequence</em> operations used with strings, such as indexing, slicing, and concatenation. In fact, sequence operations work the same on lists as they do on strings; the only difference is that sequence operations such as concatenation and slicing return new <em>lists</em> instead of new strings when applied to lists. Because lists are <em>mutable</em>, however, they also support other operations that strings don’t, such as deletion, expansion, and index assignment operations, which change the lists in place.</dd>
+<dt>Arrays of object references</dt>
+<dd>Technically, Python lists contain <a contenteditable="false" data-type="indexterm" data-primary="references" data-secondary="lists" id="id2110"></a>zero or more <em>references</em> to other objects. Lists might remind you of arrays of pointers (addresses) if you have a background in some other languages, and fetching an item from a Python list is about as fast as indexing a C array. In fact, lists really <em>are</em> arrays inside the standard CPython interpreter, not linked structures. As we learned in <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>, though, Python always follows a reference to an object whenever the reference is used, so your program deals only with objects. Whenever you assign an object to a data structure component or variable name, Python always stores a reference to that same object, not a copy of it (though the object stored may be a copy of another, if you requested one before the store).</dd>
+</dl>
+<p>As a preview and reference, <a data-type="xref" href="#common_list_literals_and_operations">Table 8-1</a> summarizes common and representative list object operations. It is fairly complete, but for the full story, consult the Python standard-library <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="literals" id="id2111"></a><a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="operations" id="id2112"></a>manual, or run a <code>help(list)</code> or <code>dir(list)</code> call interactively for a complete list of list methods—you can pass in a real list, or the word <code>list</code>, which is the name of the list data type. The set of methods here is especially prone to change, so be sure to cross-check in the future.</p>
+<table class="border" id="common_list_literals_and_operations">
+<caption><span class="label">Table 8-1. </span>Common list literals and operations</caption>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>L = []</code></td>
+<td>An empty list</td>
+</tr>
+<tr>
+<td><code>L = [123, 'abc', 1.23, {}]</code></td>
+<td>Four items: indexes 0..3</td>
+</tr>
+<tr>
+<td><code>L = ['Pat', 40.0, ['dev', 'mgr']]</code></td>
+<td>Nested sublists</td>
+</tr>
+<tr>
+<td><code>L = list('code')</code><br/>
+<code>L = list(range(-4, 4))</code></td>
+<td>List of an iterable’s items, list of successive integers</td>
+</tr>
+<tr>
+<td><code>L[i]</code><br/>
+<code>L[i][j]</code><br/>
+<code>L[i:j]</code><br/>
+<code>len(L)</code></td>
+<td>Index, index of index, slice, length</td>
+</tr>
+<tr>
+<td><code>L1 + L2</code><br/>
+    <code>L * 3</code></td>
+<td>Concatenate, repeat</td>
+</tr>
+<tr>
+<td><code>L1 &gt; L1, L1 == L2</code></td>
+<td>Comparisons: magnitude, equality</td>
+</tr>
+<tr>
+<td><code>3 in L</code><br/> 
+<code>for x in L: print(x)</code></td>
+<td>Membership, iteration</td>
+</tr>
+<tr>
+<td><code>L.append(4)</code><br/>
+<code>L.extend([5, 6, 7])</code><br/>
+<code>L.insert(i, X)</code></td>
+<td>Methods: growing</td>
+</tr>
+<tr>
+<td><code>L.index(X)</code><br/>
+<code>L.count(X)</code></td>
+<td>Methods: searching</td>
+</tr>
+<tr>
+<td><code>L.sort()</code><br/>
+<code>L.reverse()</code><br/>
+<code>L.copy()</code><br/>
+<code>L.clear()</code></td>
+<td>Methods: sorting, reversing,
+copying, clearing</td>
+</tr>
+<tr>
+<td><code>L.pop(i)</code><br/>
+<code>L.remove(X)</code><br/>
+<code>del L[i]</code><br/>
+<code>del L[i:j]</code><br/>
+<code>L[i:j] = []</code></td>
+<td>Methods, statements: shrinking</td>
+</tr>
+<tr>
+<td><code>L[i] = 3</code><br/>
+<code>L[i:j] = [4, 5, 6]</code></td>
+<td>Index assignment, slice assignment</td>
+</tr>
+<tr>
+<td><code>L = [*x, 0, *y, *z]</code></td>
+<td>Iterable unpacking</td>
+</tr>
+<tr>
+<td><code>L = [x**2 for x in range(5)]</code><br/>
+<code>list(map(ord, 'python'))</code></td>
+<td>List comprehensions and maps</td>
+</tr>
+</tbody>
+</table>
+<p>When written down as a <em>literal</em> expression, a list <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="as literal expression" id="id2113"></a><a contenteditable="false" data-type="indexterm" data-primary="literal expressions" data-secondary="lists as" id="id2114"></a>is coded as a series of objects (really, expressions that return objects) in square brackets, separated by commas. For instance, the second row in <a data-type="xref" href="#common_list_literals_and_operations">Table 8-1</a> assigns the variable <code>L</code> to a four-item list. A <em>nested</em> list is coded as a nested square-bracketed series (row 3), and the <em>empty</em> list is just a square-bracket pair with nothing inside (row 1).<sup><a data-type="noteref" id="ch08fn1-marker" href="ch08.html#ch08fn1">1</a></sup></p>
+<p>Many of the operations in <a data-type="xref" href="#common_list_literals_and_operations">Table 8-1</a> should look familiar, as they are the same sequence operations we put to work on strings earlier—indexing, concatenation, iteration, and so on. Lists also respond to list-specific method calls (which provide utilities such as sorting, reversing, adding items to the end, etc.), as well as in-place change operations (deleting items, assignment to indexes and slices, and so forth). Again, lists have these tools for change operations <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="characteristics" data-startref="lscct" id="id2115"></a>because they are a mutable object type.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Lists in Action"><div class="sect1" id="lists_in_action">
+<h1>Lists in Action</h1>
+<p>Probably the best way to understand lists is to see them at work. Let’s once again turn to some simple interpreter interactions to illustrate the operations in <a data-type="xref" href="#common_list_literals_and_operations">Table 8-1</a>.</p>
+<section data-type="sect2" data-pdf-bookmark="Basic List Operations"><div class="sect2" id="basic_list_operations">
+<h2>Basic List Operations</h2>
+<p>Because they are <em>sequences</em>, lists <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="operators" id="id2116"></a><a contenteditable="false" data-type="indexterm" data-primary="operators" data-secondary="lists" id="id2117"></a>support many of the same operations as strings, which means we don’t have to repeat all the operation details again here. In short, though, lists respond to the <code>+</code> and <code>*</code> operators much like strings—they mean concatenation and repetition here too, except that the result is a new list, not a string:</p>
+<pre data-type="programlisting"><code>$ <strong>python3         </strong>  </code>                         <code><em># Launch a REPL</em></code>
+&gt;&gt;&gt; <code><strong>len([1, 2, 3])</strong></code>                           <code><em># Length</em></code>
+3
+&gt;&gt;&gt; <code><strong>[1, 2, 3] + [4, 5, 6]</strong></code>                    <code><em># Concatenation</em></code>
+[1, 2, 3, 4, 5, 6]
+&gt;&gt;&gt; <code><strong>['Py!'] * 4</strong></code>                              <code><em># Repetition</em></code>
+['Py!', 'Py!', 'Py!', 'Py!']</pre>
+<p>Although the <code>+</code> operator works the same for lists and strings, it’s important to know that it expects the <em>same</em> sort of sequence on both sides—otherwise, you get a type error when the code runs. For instance, you cannot concatenate a list and a string unless you first convert the list to a string (using tools such as <code>str</code> or formatting) or convert the string to a list (the <code>list</code> built-in function does the trick):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>str([1, 2]) + '34'</strong></code>                       <code><em># Same as '[1, 2]' + '34'</em></code>
+'[1, 2]34'
+&gt;&gt;&gt; <code><strong>[1, 2] + list('34')</strong></code>                      <code><em># Same as [1, 2] + ['3', '4']</em></code>
+[1, 2, '3', '4']</pre>
+<p>As suggested in prior chapters, lists <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="comparisons" id="id2118"></a><a contenteditable="false" data-type="indexterm" data-primary="comparisons" data-secondary="lists" id="id2119"></a>also support <em>comparisons</em>, which automatically compare all parts from left to right until a result is known. In the following, for instance, a nested <code>3</code> is greater than a nested <code>2</code>, and the one-item list <code>[1]</code> at the end is considered less because it’s shorter (though it broadly prefers the term horizontally challenged):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, [2, 3], 4]</strong></code>
+&gt;&gt;&gt; <code><strong>(L == [1, [2, 3], 4]), (L &gt; [1, [2, 2], 4]), (L &gt; [1])</strong></code>
+(True, True, True)</pre>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Indexing and Slicing"><div class="sect2" id="indexing_and_slicing-id000100">
+<h2>Indexing and Slicing</h2>
+<p>Because lists are sequences, indexing <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="indexing" id="lsdxg"></a><a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="slicing" id="lstsslc"></a><a contenteditable="false" data-type="indexterm" data-primary="indexing" data-secondary="lists" id="idxlst"></a><a contenteditable="false" data-type="indexterm" data-primary="slicing" data-secondary="lists" id="slcglsts"></a>and slicing also work the same way for lists as they do for strings. For lists, though, the result of indexing is whatever type of object lives at the offset you specify (not a one-character string), and slicing a list always returns a new list (not a string):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = ['hack', 'Hack', 'HACK!']</strong></code>
+&gt;&gt;&gt; <code><strong>L[2]</strong></code>                              <code><em># Offsets start at zero</em></code>
+'HACK!'
+&gt;&gt;&gt; <code><strong>L[-2]</strong></code>                             <code><em># Negative: count from the right</em></code>
+'Hack'
+&gt;&gt;&gt; <code><strong>L[1:]</strong></code>                             <code><em># Slicing fetches sections</em></code>
+['Hack', 'HACK!']</pre>
+<p>New here: because you can nest lists and other object types within lists, you will sometimes need to string together index operations to go <em>deeper</em> into a data structure. For example, one of the simplest ways to represent matrixes (multidimensional arrays) in Python is as lists with nested sublists. Here’s a basic 3 × 3 two-dimensional list-based array—a reprise from <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]</strong></code></pre>
+<p>With one index, you get an entire row (really, a nested sublist), and with two, you get an item within the row:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>matrix[1]</strong></code>
+[4, 5, 6]
+&gt;&gt;&gt; <code><strong>matrix[1][1]</strong></code>
+5
+&gt;&gt;&gt; <code><strong>matrix[2][0]</strong></code>
+7</pre>
+<p>As demoed earlier, lists can naturally span multiple lines if you want them to because they are contained by a pair of brackets; watch for more on syntax like this in the next part of the book (and ignore the “…” if absent in your REPL):</p>
+<pre data-type="programlisting" class="pagebreak-before">&gt;&gt;&gt; <code><strong>matrix = [[1, 2, 3],</strong></code>
+...           <code><strong>[4, 5, 6],</strong></code>
+...           <code><strong>[7, 8, 9]]</strong></code>
+&gt;&gt;&gt; <code><strong>matrix[1][1]</strong></code>
+5</pre>
+<p>For more on matrixes, also watch for a dictionary-based alternative later in this chapter, which can be more efficient when matrixes are largely empty. We’ll also continue this thread in <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a> where we’ll write additional matrix code, especially with list comprehensions. And for high-powered numeric work, the <em>NumPy</em> extension mentioned in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch01.html#a_python_qampersanda_session">1</a>, <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch04.html#introducing_python_objects">4</a>, and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch05.html#numbers_and_expressions">5</a> provides other ways to handle <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="indexing" data-startref="lsdxg" id="id2120"></a><a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="slicing" data-startref="lstsslc" id="id2121"></a><a contenteditable="false" data-type="indexterm" data-primary="indexing" data-secondary="lists" data-startref="idxlst" id="id2122"></a><a contenteditable="false" data-type="indexterm" data-primary="slicing" data-secondary="lists" data-startref="slcglsts" id="id2123"></a>matrixes.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Changing Lists in Place"><div class="sect2" id="changing_lists_in_place">
+<h2>Changing Lists in Place</h2>
+<p>Because lists are mutable, they support operations that change a list object <em>in place</em>. That is, list operations in this section and others all modify the list object directly—overwriting its former value—without requiring that you make a new copy, as you had to for strings. Because Python deals only in object references, this distinction between changing an object in place and creating a new object matters; as discussed in <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>, if you change an object in place, you might impact more than one reference to it at the same time.</p>
+<section data-type="sect3" data-pdf-bookmark="Index and slice assignments"><div class="sect3" id="index_and_slice_assignments">
+<h3>Index and slice assignments</h3>
+<p>First up in this category is a twist on <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="index assignments" id="lstdxss"></a><a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="slice assignments" id="lstssgn"></a><a contenteditable="false" data-type="indexterm" data-primary="slice assignments" id="slssg"></a><a contenteditable="false" data-type="indexterm" data-primary="index assignments" id="ldxsgnm"></a>the indexing and slicing we’ve already explored. When using a list, you can change its contents by <em>assigning</em> to either a particular item (<em>offset</em>) or an entire section (<em>slice</em>):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = ['code', 'Code', 'CODE!']</strong></code>
+&gt;&gt;&gt; <code><strong>L[1] = 'Hack'</strong></code>                     <code><em># Index assignment</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>                                 <code><em># Replaces item 1</em></code>
+['code', 'Hack', 'CODE!']
+
+&gt;&gt;&gt; <code><strong>L[0:2] = ['write', 'Python']</strong></code>      <code><em># Slice assignment: "delete+insert"</em></code>
+&gt;&gt;&gt; <code><strong>L</strong>   </code>                              <code><em># Replaces items 0,1</em></code>
+['write', 'Python', 'CODE!']</pre>
+<p>Both index and slice assignments are in-place changes—they modify the subject list directly, rather than generating a new list object for the result. <em>Index assignment</em> in Python works much as it does in most other languages: Python replaces the single object reference at the designated offset with a new one; the offset’s reference is changed.</p>
+<p><em>Slice assignment</em>, the last operation in the preceding example, replaces an entire section of a list in a single step. Because it can be a bit complex, it is perhaps best thought of as a combination of two steps:</p>
+<ol>
+<li><p><em>Deletion</em>: The slice you specify to the left of the <code>=</code> is deleted.</p></li>
+<li><p><em>Insertion</em>: The new items contained in the iterable object to the right of the <code>=</code> are inserted into the list on the left, at the place where the old slice was deleted.<sup><a data-type="noteref" id="ch08fn2-marker" href="ch08.html#ch08fn2">2</a></sup></p></li>
+</ol>
+<p>This isn’t what really happens, but it can help clarify why the number of items inserted doesn’t have to match the number of items deleted. For instance, given a list <code>L</code> of two or more items, an assignment <code><em>L</em>[1:2]=[4,5]</code> replaces one item with two—it’s as though Python first deletes the one-item slice at <code>[1:2]</code> (from offset 1, up to but not including offset 2), then inserts both <code>4</code> and <code>5</code> where the deleted slice used to be. The net effect makes the list <em>larger</em>.</p>
+<p>This also explains why the second slice assignment in the following is really an <em>insert</em>—Python replaces an empty slice at <code>[1:1]</code> with two items; and why the third is really a <em>deletion</em>—Python deletes the slice (the item at offset 1), and then inserts nothing:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2, 3]</strong></code>
+&gt;&gt;&gt;<code> <strong>L[1:2] = [4, 5]</strong></code>                   <code><em># Replacement/insertion</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[1, 4, 5, 3]
+&gt;&gt;&gt; <code><strong>L[1:1] = [6, 7]</strong></code>                   <code><em># Insertion (replace nothing)</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[1, 6, 7, 4, 5, 3]
+&gt;&gt;&gt; <code><strong>L[1:2] = []</strong></code>                       <code><em># Deletion (insert nothing)
+</em></code>&gt;&gt;&gt; <code><strong>L</strong></code>
+[1, 7, 4, 5, 3]</pre>
+<p>In effect, slice assignment replaces an entire section, or “column,” all at once—even if the column or its replacement is empty. Because the length of the sequence being assigned does not have to match the length of the slice being assigned to, slice assignment can be used to <em>replace</em> (by overwriting), <em>expand</em> (by inserting), or <em>shrink</em> (by deleting) the subject list. It’s a powerful operation, but frankly, one that you may not see very often in practice. There are often more straightforward and mnemonic ways to replace, insert, and delete (including concatenation expressions, and the <code>insert</code>, <code>pop</code>, and <code>remove</code> list methods coming up soon), which Python programmers tend to prefer in practice.</p>
+<p>On the other hand, this operation can be used as a sort of in-place concatenation at the front of the <span class="keep-together">list—per</span> the next section’s method coverage, something the list’s <code>extend</code> does more mnemonically <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="index assignments" data-startref="lstdxss" id="id2124"></a><a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="slice assignments" data-startref="lstssgn" id="id2125"></a><a contenteditable="false" data-type="indexterm" data-primary="slice assignments" data-startref="slssg" id="id2126"></a><a contenteditable="false" data-type="indexterm" data-primary="index assignments" data-startref="ldxsgnm" id="id2127"></a>but at list end:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1]</strong></code>
+&gt;&gt;&gt;<code> <strong>L[:0] = [2, 3, 4]</strong></code>          <code><em># Insert all at :0, an empty slice at front</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[2, 3, 4, 1]
+&gt;&gt;&gt; <code><strong>L[len(L):] = [5, 6, 7]</strong></code>     <code><em># Insert all at len(L):, an empty slice at end</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[2, 3, 4, 1, 5, 6, 7]
+&gt;&gt;&gt; <code><strong>L.extend([8, 9, 10])</strong></code>       <code><em># Insert all at end, named method (see also +=)</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[2, 3, 4, 1, 5, 6, 7, 8, 9, 10]</pre>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="List method calls"><div class="sect3" id="list_method_calls">
+<h3>List method calls</h3>
+<p>Like strings, Python list objects also <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="method calls" id="lsmthc"></a><a contenteditable="false" data-type="indexterm" data-primary="method calls" data-secondary="lists" id="mclls"></a>support type-specific method calls, most of which change the subject list itself:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = ['write']</strong></code>
+&gt;&gt;&gt; <code><strong>L.append('Python')</strong></code>                     <code><em># Append: add one item at the end</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+['write', 'Python']
+&gt;&gt;&gt; <code><strong>L.extend(['code', 'goodly'])</strong></code>           <code><em># Extend: add many items at the end</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+['write', 'Python', 'code', 'goodly']
+&gt;&gt;&gt; <code><strong>L.sort()</strong></code>                               <code><em># Sort: order list items ('P' &lt; 'c')</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+['Python', 'code', 'goodly', 'write']</pre>
+<p><em>Methods</em> were introduced in <a data-type="xref" href="ch07.html#string_fundamentals">Chapter 7</a>. In brief, they are functions (really, object attributes that reference functions) that are associated with and act upon particular subject objects (the objects through which they are called). Methods provide type-specific tools; the list methods presented here, for instance, are generally available only for lists.</p>
+<p>Demoed in the preceding code, <code>append</code> is perhaps the most commonly used list method. It simply tacks a <em>single</em> item (really, an object reference) onto the end of the subject list <em>in place</em>, and the list expands to make room for the addition. Unlike concatenation, <code>append</code> expects you to pass in one object, not a list, and uses it literally. In fact, the effect of <code><em>L</em>.append(<em>X</em>)</code> is similar to <code><em>L</em>+[<em>X</em>]</code>, but the former changes <code><em>L</em></code> in place, while the latter makes a new list.<sup><a data-type="noteref" id="ch08fn3-marker" href="ch08.html#ch08fn3">3</a></sup></p>
+<p>By contrast, the <code>extend</code> method adds <em>multiple</em> items at the end of the list, again in place. Technically, <code>extend</code> always iterates through and adds each item in the passed <em>iterable</em> object, whereas <code>append</code> simply adds a single item as is without iterating—a distinction that will be more meaningful in <a data-type="xref" href="ch14.html#iterations_and_comprehensions">Chapter 14</a>. For now, it’s enough to know that <code>extend</code> adds many items, and <code>append</code> adds one. Also ahead: <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a> covers the <code>+=</code> statement, which does in-place assignment for lists too, and is yet another way to add many items that redundantly mirrors <code>extend</code>.</p>
+<p>The <code>sort</code> method <em>orders</em> the list’s items <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="method calls" data-startref="lsmthc" id="id2128"></a><a contenteditable="false" data-type="indexterm" data-primary="method calls" data-secondary="lists" data-startref="mclls" id="id2129"></a>but merits a section of its own.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Sorting lists"><div class="sect3" id="sorting_lists">
+<h3>Sorting lists</h3>
+<p>As we’ve just witnessed, <code>sort</code> orders a list in place. It’s a common tool that uses Python standard <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="ordering" id="lisorder"></a>comparison tests (string comparisons in most examples here, but other objects work in sorts too), and by default <a contenteditable="false" data-type="indexterm" data-primary="keyword arguments" data-secondary="list order" id="id2130"></a>sorts in ascending order. You can modify sort behavior by passing in <em>keyword arguments</em>—a special <code><em>name</em>=<em>value</em></code> syntax in function calls that we’ve used in earlier chapters, gives values by name, and is often used for configuration options.</p>
+<p>In sorts, the <code>reverse</code> argument allows sorts to be made in descending instead of ascending order, and the <code>key</code> argument gives a one-argument function that returns the value to be used in sorting—the string object’s standard <code>lower</code> case converter in the following (though its newer <code>casefold</code> may handle some types of Unicode text better):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = ['abc', 'ABD', 'aBe']</strong></code>
+&gt;&gt;&gt;<code> <strong>L.sort()</strong></code>                                <code><em># Sort with mixed case</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+['ABD', 'aBe', 'abc']
+
+&gt;&gt;&gt; <code><strong>L = ['abc', 'ABD', 'aBe']</strong></code>
+&gt;&gt;&gt;<code> <strong>L.sort(key=str.lower)</strong></code>                   <code><em># Normalize to lowercase</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+['abc', 'ABD', 'aBe']
+
+&gt;&gt;&gt; <code><strong>L = ['abc', 'ABD', 'aBe']</strong></code>
+&gt;&gt;&gt;<code> <strong>L.sort(key=str.lower, reverse=True)</strong></code>     <code><em># And change sort order</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+['aBe', 'ABD', 'abc']</pre>
+<p>The sort <code>key</code> argument can also be <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="dictionaries, sorting" id="id2131"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="lists, sorting" id="id2132"></a>useful when sorting lists of dictionaries, to select a sort value by indexing each dictionary on a field along the way. We’ll study dictionaries later in this chapter, and you’ll learn more about keyword function arguments in <a data-type="xref" href="part04.html#functions_and_generators">Part IV</a>.</p>
+<p>Two notes of caution here: first, sorts won’t work by default with <em>mixed types</em>. In Python, magnitude comparison of mixed types is an error, as it’s generally ambiguous. Because sorting uses these comparisons internally, though, sorting mixed-type lists fails by proxy. To work around this limitation, use the <code>key</code> argument to code value transformations during the sort. The following simply converts all items to strings with the <code>str</code> built-in, but <code>key</code> can be an arbitrary function of your making (and is often coded inline with the <code>lambda</code> expression you’ll meet later in this book):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 'hack', 2]</strong>  </code>          <code><em># Mixed-type sorts fail by default</em></code>
+&gt;&gt;&gt; <code><strong>L.sort()</strong></code>
+TypeError: '&lt;' not supported between instances of 'str' and 'int'
+
+&gt;&gt;&gt; <code><strong>L.sort(key=str)</strong></code>
+&gt;&gt;&gt; <code><strong>L  </strong>  </code>                         <code><em># Enable mixed-type sorts: all str</em></code>
+[1, 2, 'hack']</pre>
+<p>Second, beware that <code>append</code>, <code>extend</code>, and <code>sort</code> change the associated list object <em>in place</em>, but don’t return the modified list as a result (technically, they return the <code>None</code> placeholder object introduced in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>). If you run <code><em>L</em>=<em>L</em>.append(<em>X</em>)</code>, you won’t get the modified value of <code><em>L</em></code>; in fact, you’ll lose the reference to the list altogether! When you use methods like these, objects are changed as a side effect, so there’s no reason to reassign.</p>
+<p>Partly because of such constraints, sorting is also available in Python as the <code>sorted</code> built-in <em>function</em>, which sorts <em>any</em> collection (not just lists) and returns a <em>new</em> list for the result (instead of changing the collection in place):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = ['abc', 'ABD', 'aBe']</strong></code>
+&gt;&gt;&gt; <code><strong>sorted(L)</strong></code>                                      <code><em># Sorting built-in function</em></code>
+['ABD', 'aBe', 'abc']
+&gt;&gt;&gt; <code><strong>L</strong></code>                                              <code><em># L is not modified</em></code>
+['abc', 'ABD', 'aBe']
+
+&gt;&gt;&gt;<code> <strong>sorted(L, key=str.lower, reverse=True)</strong></code>         <code><em># Same arguments as list.sort
+</em></code>['aBe', 'ABD', 'abc']
+
+&gt;&gt;&gt; <code><strong>L = ['abc', 'ABD', 'aBe']</strong></code>
+&gt;&gt;&gt;<code> <strong>sorted([x.lower() for x in L], reverse=True)</strong></code>   <code><em># Pretransform items: differs!</em></code>
+['abe', 'abd', 'abc']</pre>
+<p>Notice the last example here—we can convert to lowercase prior to the sort with a list comprehension (introduced in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a> and expanded shortly), but the result does not contain the <em>original</em> list’s values as it does with the <code>key</code> argument. The latter is applied temporarily during the sort, instead of changing the values to be sorted altogether. As we move along, you’ll see roles in which the <code>sorted</code> built-in can sometimes be more useful <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="ordering" data-startref="lisorder" id="id2133"></a>than the <code>sort</code> method.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="More List Methods"><div class="sect2" id="more_list_methods">
+<h2>More List Methods</h2>
+<p>Like strings, lists have other methods <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="ordering" data-tertiary="reversing" id="id2134"></a><a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="deleting one item" id="id2135"></a>that perform other specialized operations. For instance, <code>reverse</code> reverses the list in place, and <code>pop</code> deletes one item at the end (by default). Just like sorting, there is also a <code>reversed</code> built-in function that does not change the list in place. Confusingly, though, <code>reversed</code> does not return a new list like <code>sorted</code>; it instead returns an iterable object that produces results on demand, and must be wrapped in a <code>list</code> call to collect its results if a real list is needed (e.g., for indexing, or display at the REPL here):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2, 3, 4, 5]</strong></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[1, 2, 3, 4, 5]
+&gt;&gt;&gt; <code><strong>L.pop()</strong></code>                         <code> <em># Delete and return an item: @ -1 by default</em></code>
+5
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[1, 2, 3, 4]
+&gt;&gt;&gt; <code><strong>L.reverse()</strong></code>                      <code><em># In-place reversal
+</em></code>&gt;&gt;&gt; <code><strong>L</strong></code>
+[4, 3, 2, 1]
+&gt;&gt;&gt; <code><strong>list(reversed(L))</strong></code>                <code><em># Reversal built-in with a result (iterable)</em></code>
+[1, 2, 3, 4]
+&gt;&gt;&gt; <code><strong>L     </strong>  </code>                         <code><em># L was unchanged</em></code>
+[4, 3, 2, 1]</pre>
+<p>In some types of programs, the list <code>pop</code> method is used in conjunction with <code>append</code> to implement a quick last-in-first-out (LIFO) <em>stack</em> structure. The end of the list serves as the “top” of the stack:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = []</strong></code>
+&gt;&gt;&gt;<code> <strong>L.append(1)</strong></code>                      <code><em># Push onto stack
+</em></code>&gt;&gt;&gt; <code><strong>L.append(2)</strong></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[1, 2]
+&gt;&gt;&gt; <code><strong>L.pop()</strong></code>                          <code><em># Pop off stack</em></code>
+2
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[1]</pre>
+<p>The <code>pop</code> method also accepts an optional offset of the item to be deleted and returned (the default is the last item at offset −1). Other list methods remove an item by value (<code>remove</code>), insert an item at an offset (<code>insert</code>), count the number of occurrences (<code>count</code>), and search for an item’s offset (<code>index</code>—a search for the <em>index of</em> an item, not to be confused with indexing itself, despite the name!):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = ['hack', 'Py', 'code']</strong></code>
+&gt;&gt;&gt;<code> <strong>L.index('Py')</strong></code>                    <code><em># Index _of_ an object (search/find)</em></code>
+1
+&gt;&gt;&gt; <code><strong>L.insert(1, 'more')</strong></code>              <code><em># Insert at offset/position
+</em></code>&gt;&gt;&gt; <code><strong>L</strong></code>
+['hack', 'more', 'Py', 'code']
+&gt;&gt;&gt; <code><strong>L.remove('code')</strong></code>                 <code><em># Delete by value</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+['hack', 'more', 'Py'] 
+&gt;&gt;&gt; <code><strong>L.pop(1)</strong></code>                         <code><em># Delete by offset/position</em></code>
+'more'
+&gt;&gt;&gt; <code><strong>L</strong></code>
+['hack', 'Py'] 
+&gt;&gt;&gt;<code> <strong>L.count('Py')</strong></code>                    <code><em># Number of occurrences</em></code>
+1</pre>
+<p>Note that unlike other list methods, <code>count</code> and <code>index</code> do not change the list itself, but return information about its content. Run a <code>help(list)</code> or <code>dir(list</code>) in your REPL, see Python reference resources, or experiment with these calls interactively on your own to learn more about list methods.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Iteration, Comprehensions, and Unpacking"><div class="sect2" id="iterationcomma_comprehensionscomma_and">
+<h2>Iteration, Comprehensions, and Unpacking</h2>
+<p>Lists also respond to other sequence <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="iteration" id="id2136"></a><a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="lists" id="id2137"></a>operations we used on strings in the prior chapter, including <em>iteration</em> tools, and are regularly used in conjunction with the <code>range</code> built-in previewed in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>3 in [1, 2, 3]</strong></code>                           <code><em># Membership
+</em></code>True
+&gt;&gt;&gt; <code><strong>for x in [1, 2, 3]:</strong></code>
+...     <code><strong>print(x, end=' ')</strong></code>                    <code><em># Iteration</em></code>
+...
+1 2 3
+&gt;&gt;&gt; <code><strong>list(range(5))</strong></code>                           <code><em># Counter generators (0…N-1)</em></code>
+[0, 1, 2, 3, 4]</pre>
+<p>We will talk more formally about <code>for</code> iteration and the <code>range</code> built-in in <a data-type="xref" href="ch13.html#while_and_for_loops">Chapter 13</a>, because they are related to statement syntax. Per <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a> previews, though, <code>for</code> loops step through items in any sequence (or other iterable) from left to right, executing one or more statements for each item; and <code>range</code> makes a series of integers, for use in a variety of roles, including counter loops (and coerced by <code>list</code> to surrender its values for display here).</p>
+<section data-type="sect3" data-pdf-bookmark="List comprehensions and maps"><div class="sect3" id="list_comprehensions_and_maps">
+<h3>List comprehensions and maps</h3>
+<p>The last items in <a data-type="xref" href="#common_list_literals_and_operations">Table 8-1</a>, list comprehensions and <code>map</code> calls, were <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="comprehensions" id="lscph"></a><a contenteditable="false" data-type="indexterm" data-primary="comprehensions" data-secondary="lists" id="cprhlst"></a><a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="maps" id="ltsmp"></a>also introduced in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a> and are covered in full in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch14.html#iterations_and_comprehensions">14</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch20.html#comprehensions_and_generations">20</a>. Their basic usage is straightforward, though—list <em>comprehensions</em> are close kin to <code>for</code> loops, and build a new list by applying an expression to each item in a sequence (really, any iterable):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>res = [x * 4 for x in 'code']</strong></code>            <code><em># List comprehension</em></code>
+&gt;&gt;&gt; res
+['cccc', 'oooo', 'dddd', 'eeee']</pre>
+<p>As a preview, this expression is equivalent to a <code>for</code> loop that builds up a list of results manually with the <code>append</code> we met earlier, but as you’ll learn in later chapters, list comprehensions are simpler to code and may run faster:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>res = []</strong></code>                                 <code><em># Equivalent loop code</em></code>
+&gt;&gt;&gt; <code><strong>for x in 'code':</strong></code>                         <code><em># Append expression results</em></code> 
+...     <code><strong>res.append(x * 4)</strong></code>                    
+... 
+&gt;&gt;&gt; <code><strong>res</strong></code>
+['cccc', 'oooo', 'dddd', 'eeee']</pre>
+<p>Comprehension also support extensions like <code>if</code> filters and nested <code>for</code> loops, and the <code>map</code> built-in function does similar work, but applies a <em>function</em> instead of an expression to items in a sequence (or other iterable) and collects all the results in a new list—if we wrap it in <code>list</code> to force it to produce all its results:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>[x * 4 for x in 'program' if x &gt;= 'p']</strong></code>   <code><em># Filter items with if clauses</em></code>
+['pppp', 'rrrr', 'rrrr']
+
+&gt;&gt;&gt; <code><strong>[x + y for x in 'py' for y in '312']</strong></code>     <code><em># Nested loops: see Chapter 14!</em></code>
+['p3', 'p1', 'p2', 'y3', 'y1', 'y2']
+
+&gt;&gt;&gt; <code><strong>list(map(abs, [−1, −2, 0, 1, 2]))</strong></code>        <code><em># Map a function across a sequence</em></code>
+[1, 2, 0, 1, 2]</pre>
+<p>While these are powerful tools, their loop equivalents also make them optional. Stay tuned for the related dictionary comprehension later in this chapter, and much more on <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="comprehensions" data-startref="lscph" id="id2138"></a><a contenteditable="false" data-type="indexterm" data-primary="comprehensions" data-secondary="list comprehensions" data-startref="cprhlst" id="id2139"></a><a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="maps" data-startref="ltsmp" id="id2140"></a>comprehensions and maps later in this book.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="List-literal unpacking"><div class="sect3" id="list_literal_unpacking">
+<h3>List-literal unpacking</h3>
+<p>As of Python 3.5, list literals also <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="literals" data-tertiary="unpacking" id="id2141"></a><a contenteditable="false" data-type="indexterm" data-primary="literals" data-secondary="lists, unpacking" id="id2142"></a>support a <code>*</code> syntax that <em>unpacks</em> the contents of any iterable (including sequences like lists and strings) at the top level of the list being created. The effect flattens the starred item in the new list:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = ['code', 'hack']</strong></code>
+&gt;&gt;&gt; <code><strong>[L, 2, 3, L]</strong></code>
+[['code', 'hack'], 2, 3, ['code', 'hack']]   <code><em># Normal assignments nest items</em></code>
+
+&gt;&gt;&gt; <code><strong>[*L, 2, 3, *L]</strong> </code>                          <code><em># Iterable unpacking in list literal</em></code>
+['code', 'hack', 2, 3, 'code', 'hack']
+
+&gt;&gt;&gt; <code><strong>S = 'code'</strong></code>                               <code><em># Any sequence (or other iterable)</em></code>
+&gt;&gt;&gt; <code><strong>[*'Py', *S, *range(3)]</strong></code>
+['P', 'y', 'c', 'o', 'd', 'e', 0, 1, 2]</pre>
+<p>Importantly, and as is so often true in Python today, <code>*</code> unpacking is never required. The following simple <em>concatenation</em>, for example, has the same effect as <a contenteditable="false" data-type="indexterm" data-primary="concatenation" data-secondary="list literals" id="id2143"></a>the preceding’s first <code>*</code> unpacking—which is redundant in this case:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L + [2, 3] + L</strong></code>                           <code><em># What * unpacking does, for lists</em></code>                      
+['code', 'hack', 2, 3, 'code', 'hack']</pre>
+<p>For nonlist iterables, unpacking without <code>*</code> requires <em>conversions</em> because <code>+</code> expects lists on both sides, but it’s not much extra work, especially given the rarity of such code:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list('Py') + list(S) + list(range(3))</strong></code>    <code><em># What * unpacking does, for nonlists</em></code>
+['P', 'y', 'c', 'o', 'd', 'e', 0, 1, 2]</pre>
+<p><em>Loops</em> can achieve the same goals as unpacking too; they may be more verbose, but are also more general purpose:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>M = []</strong></code>
+&gt;&gt;&gt; <code><strong>for x in ('Py', S, range(3)): M.extend(x)</strong>   </code>     <code><em># Loops v special-case hacks</em></code>
+... 
+&gt;&gt;&gt; <code><strong>M</strong></code>
+['P', 'y', 'c', 'o', 'd', 'e', 0, 1, 2]</pre>
+<p>Notice two things about this example. First, it codes a <em>tuple</em> of three items as the sequence that the <code>for</code> loop steps through (the tuple’s outer parentheses are <a contenteditable="false" data-type="indexterm" data-primary="tuples" id="id2144"></a>optional but explicit). Second, the <code>for</code> loop in this code avoids a line by moving its body up to its <em>header</em>, using a syntax rule we’ll define formally in the next part of this book (tl;dr: this works only for simple statements, like calls to <code>print</code> and <code>extend</code>).</p>
+<p>Because we’re not quite ready for the full iteration story, we’ll postpone further details for now, but watch for similar unpacking expressions for dictionaries later in this chapter. Here, though, you should already be able to weigh for yourself whether the alternatives to <code>*</code> unpacking were sufficiently subpar to warrant the convolution.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" class="pagebreak-before" data-pdf-bookmark="Other List Operations"><div class="sect2" id="other_list_operations">
+<h2 class="less_space">Other List Operations</h2>
+<p>Because lists are mutable, you can also use the <code>del</code> statement to delete an item or section in place:</p>
+<pre data-type="programlisting">&gt;&gt;&gt;<code> <strong>L = ['hack', 'more', 'Py', 'code']</strong> </code>
+&gt;&gt;&gt;<code> <strong>del L[0]</strong></code>                             <code><em># Delete one item (in place)</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+['more', 'Py', 'code'] 
+&gt;&gt;&gt; <code><strong>del L[1:]</strong></code>                            <code><em># Delete an entire section</em></code>
+&gt;&gt;&gt; <code><strong>L</strong> </code>                                   <code><em># Same as L[1:] = []</em></code>
+['more']</pre>
+<p>As covered earlier, because <em>slice assignment</em> is a <a contenteditable="false" data-type="indexterm" data-primary="slice assignments" id="id2145"></a><a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="slice assignments" id="id2146"></a>deletion plus an insertion, you can also delete a section of a list by assigning an empty list to a slice (<code>L[<em>i</em>:<em>j</em>]=[]</code>); Python deletes the slice named on the left, and then inserts nothing. Assigning an empty list to an index, on the other hand, just stores a reference to the empty list object in the specified slot, rather than deleting an item:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = ['hack', 'more', 'Py', 'code']</strong></code>
+&gt;&gt;&gt; <code><strong>L[0:1] = []</strong></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+['more', 'Py', 'code']
+&gt;&gt;&gt; <code><strong>L[1:] = []</strong></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+['more']
+&gt;&gt;&gt; <code><strong>L[0] = []</strong></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[[]]</pre>
+<p>Although all the operations just discussed are typical, there may be additional list methods and operations not illustrated here. The method toolbox may also change over time, and in fact has: the newer <code><em>L</em>.copy()</code> method makes a top-level copy of the list, much like <code><em>L</em>[:]</code> and <code>list(<em>L</em>)</code>, but is symmetric with <code>copy</code> methods in sets and dictionaries. For a comprehensive and up-to-date list of type tools, you should always consult Python’s manuals.</p>
+<p>And because it’s such a common hurdle, this book is compelled to remind you once again that all the in-place change operations discussed here work only for <em>mutable</em> objects: they won’t work on strings (or tuples, coming up in <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a>), no matter how hard you try. Mutability is an inherent yes/no property of each object type—including the subject of this chapter’s next section.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Dictionaries"><div class="sect1" id="dictionaries-id00092">
+<h1>Dictionaries</h1>
+<p>Along with lists, <em>dictionaries</em> are one of the most flexible built-in object types in Python. If you <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="characteristics" id="dicchrc"></a>think of lists as order-based collections of objects, you can think of dictionaries as key-based collections; the chief distinction is that in dictionaries, items are stored<a contenteditable="false" data-type="indexterm" data-primary="keys" data-secondary="dictionaries" id="id2147"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="keys" id="id2148"></a> and fetched by <em>key</em>, instead of by positional offset. While lists can serve roles similar to arrays in other languages, dictionaries can take the place of records, search tables, and any other sort of aggregation where item names are more meaningful than item positions.</p>
+<p>For example, dictionaries can replace many of the searching algorithms and data structures you might have to implement manually in lower-level languages—as a highly optimized built-in tool, indexing a dictionary is a very fast search operation. Dictionaries also sometimes do the work of records and symbol tables used in other languages, can be used to represent sparse (mostly empty) data structures, and much more. As a rundown of their main properties, Python dictionaries are:</p>
+<dl>
+<dt>Accessed by key, not offset position</dt>
+<dd>Dictionaries are sometimes <a contenteditable="false" data-type="indexterm" data-primary="arrays, associative" id="id2149"></a><a contenteditable="false" data-type="indexterm" data-primary="associative arrays" id="id2150"></a><a contenteditable="false" data-type="indexterm" data-primary="hashes" id="id2151"></a>called <em>associative arrays</em> or <em>hashes</em> (especially by users of other scripting languages). They associate a set of values with corresponding keys, so you can fetch an item out of a dictionary using the key under which you originally stored it. You use the same indexing operation to get components in a dictionary as you do in a list, but the index takes the form of a key, not a relative offset.</dd>
+<dt>Insertion-ordered collections of arbitrary objects</dt>
+<dd>Unlike in a list, keys in a dictionary <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="key order" id="id2152"></a>are ordered only by the order in which they are <em>inserted</em>. This is not the same as the positional ordering of sequences like lists: items added to dictionaries later always show up at the end of the keys list (even if they appeared earlier in the past), and there is no way to insert a key into the middle of the keys list. Moreover, this ordering is new as of Python 3.7, before which keys’ left-to-right order was pseudo random. Under either ordering regime, keys provide the symbolic (not physical) locations of items in a dictionary.</dd>
+<dt>Variable-length, heterogeneous, and arbitrarily nestable</dt>
+<dd>Like lists, dictionaries can grow and shrink in place (without new copies being made), they can contain <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="collections" id="id2153"></a>objects of any type, and they support nesting to any depth (they can be freely mixed with lists, other dictionaries, and so on). Each key can have just one associated value, but that value can be a <em>collection</em> of multiple objects if needed, and a given value can be stored under any number of keys.</dd>
+<dt>Of the category “mutable mapping”</dt>
+<dd>You can change dictionaries in place by assigning to indexes (they are <em>mutable</em>), but they don’t support the sequence operations that work on strings and lists. Because <a contenteditable="false" data-type="indexterm" data-primary="mutability" data-secondary="dictionaries" id="id2154"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="mutability" id="id2155"></a><a contenteditable="false" data-type="indexterm" data-primary="mapping" data-secondary="mutability" id="id2156"></a>dictionaries are key-based collections, operations that depend on a fixed positional order (e.g., concatenation, slicing) don’t make sense. Instead, dictionaries are the only built-in, core-type representatives of the <em>mapping</em> category—objects that map keys to values. Other mappings in Python are created by imported modules, not language syntax.</dd>
+<dt>Tables of object references (hash tables)</dt>
+<dd>If lists are arrays of object references that support access by position, dictionaries are tables of object <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="object references" id="id2157"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="references" data-tertiary="dictionaries" id="id2158"></a>references that support access by key. Internally, dictionaries are implemented as hash tables (data structures that support very fast retrieval), which start small and grow on demand. Moreover, Python employs optimized hashing algorithms to find keys, so retrieval is quick. Like lists, though, dictionaries store object <em>references</em> (not copies, unless you make them explicitly before storing).</dd>
+</dl>
+<p>For reference and preview, <a data-type="xref" href="#common_dictionary_literals_and_operatio">Table 8-2</a> summarizes some of the most common and <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="literals" id="id2159"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="operations" id="id2160"></a><a contenteditable="false" data-type="indexterm" data-primary="literals" data-secondary="dictionaries" id="id2161"></a><a contenteditable="false" data-type="indexterm" data-primary="operations" data-secondary="dictionaries" id="id2162"></a>representative dictionary operations and is relatively complete at this writing. As usual, though, you should consult Python’s library manual or run a <code>dir(dict)</code> or <code>help(dict)</code> call for a complete list (<code>dict</code> is the built-in name of the dictionary type).</p>
+<table class="border" id="common_dictionary_literals_and_operatio">
+<caption><span class="label">Table 8-2. </span>Common dictionary literals and operations</caption>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>D = {}</code></td>
+<td>Empty dictionary</td>
+</tr>
+<tr>
+<td><code>D = {'name': 'Pat', 'age': 40.0}</code></td>
+<td>Two-item dictionary</td>
+</tr>
+<tr>
+<td><code>E = {'cto': {'name': 'Sue', 'age': 40}}</code></td>
+<td>Nesting</td>
+</tr>
+<tr>
+<td><code>D = dict(name='Bob', age=40)</code><br/>
+    <code>D = dict([('name', 'Bob'), ('age', 40)])</code><br/>
+    <code>D = dict(zip(keyslist, valueslist))</code><br/>
+    <code>D = dict.fromkeys(['name', 'age'])</code></td>
+<td>Alternative construction techniques:
+keywords, key/value pairs, zipped key/value lists, key lists</td>
+</tr>
+<tr>
+<td><code>D['name']</code><br/>
+<code>E['cto']['age']</code></td>
+<td>Indexing by key, nested indexes</td>
+</tr>
+<tr>
+<td><code>'age' in D</code><br/>
+<code>for key in D: print(D[key])</code></td>
+<td>Key membership and iteration</td>
+</tr>
+<tr>
+<td><code>D.keys()</code><br/>
+<code>D.values()</code><br/>
+<code>D.items()</code><br/>
+<code>D.copy()</code><br/>
+<code>D.clear()</code><br/>
+<code>D.update(D2)</code><br/>
+<code>D.get(key, default?)</code><br/>
+<code>D.pop(key, default?)</code><br/>
+<code>D.setdefault(key, default?)</code><br/>
+<code>D.popitem()</code></td>
+<td>Methods: all keys,<br/>
+all values,<br/>
+all key+value tuples,<br/>
+copy (top-level),<br/>
+clear (remove all items),<br/>
+merge by keys,<br/>
+fetch by key, if absent default (or None),<br/>
+remove by key, if absent default (or error)<br/>
+fetch by key, if absent set default (or None),<br/>
+remove/return any (key, value) pair; etc.</td>
+</tr>
+<tr>
+<td><code>len(D)</code></td>
+<td>Length: number of stored entries</td>
+</tr>
+<tr>
+<td><code>D[key] = 62</code></td>
+<td>Adding keys, changing key values</td>
+</tr>
+<tr>
+<td><code>del D[key]</code></td>
+<td>Deleting entries by key</td>
+</tr>
+<tr>
+<td><code>D1 == D2</code></td>
+<td>Comparisons: equality (only)</td>
+</tr>
+<tr>
+<td><code>list(D.keys())</code><br/>
+<code>D1.keys() &amp; D2.keys()</code></td>
+<td>Dictionary views</td>
+</tr>
+<tr>
+<td><code>D = {**x, 'a': 1, **y, **z}</code></td>
+<td>Dictionary unpacking</td>
+</tr>
+<tr>
+<td><code>D = {x: x*2 for x in range(10)}</code></td>
+<td>Dictionary comprehensions</td>
+</tr>
+<tr>
+<td><code>D | E</code></td>
+<td>Dictionary merge expression: copy + update</td>
+</tr>
+</tbody>
+</table>
+<p>Per <a data-type="xref" href="#common_dictionary_literals_and_operatio">Table 8-2</a>, when coded as a <em>literal</em> expression, a dictionary <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="literal expressions" id="id2163"></a><a contenteditable="false" data-type="indexterm" data-primary="literal expressions" data-secondary="dictionaries" id="id2164"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="empty" id="id2165"></a><a contenteditable="false" data-type="indexterm" data-primary="empty dictionaries" id="id2166"></a>is written as a series of <code><em>key</em>:<em>value</em></code> pairs separated by commas, and enclosed in curly braces.<sup><a data-type="noteref" id="ch08fn4-marker" href="ch08.html#ch08fn4">4</a></sup> An empty dictionary is an empty set of curly braces, and you can nest dictionaries by simply coding one as a value inside another dictionary, or within a list or tuple literal. There’s a lot more to dictionaries than their literals, though, as the next section’s tutorial <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="characteristics" data-startref="dicchrc" id="id2167"></a>will begin to reveal.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Dictionaries in Action"><div class="sect1" id="dictionaries_in_action">
+<h1>Dictionaries in Action</h1>
+<p>As <a data-type="xref" href="#common_dictionary_literals_and_operatio">Table 8-2</a> summarizes, dictionaries are indexed by key, and nested dictionary entries are referenced by a series of indexes (keys in square brackets). When Python creates a dictionary, it stores its items in a way that associates values with keys; to fetch a value back, you supply the key with which it is associated, not its relative position. Let’s go back to the interactive prompt to see what this all looks like in code.</p>
+<section data-type="sect2" class="pagebreak-before" data-pdf-bookmark="Basic Dictionary Operations"><div class="sect2" id="basic_dictionary_operations">
+<h2 class="less_space">Basic Dictionary Operations</h2>
+<p>In normal operation, you create dictionaries with literals and store and access items by key with <span class="keep-together">indexing</span>:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>D = {'hack': 1, 'Py': 2, 'code': 3}</strong>  </code>     <code><em># Make a dictionary</em></code>
+&gt;&gt;&gt; <code><strong>D['Py']        </strong>  </code>                         <code><em># Fetch a value by key</em></code>
+2
+&gt;&gt;&gt; <code><strong>D              </strong>  </code>                         <code><em># Insertion ordered</em></code>
+{'hack': 1, 'Py': 2, 'code': 3}</pre>
+<p>Here, the dictionary is assigned to the variable <code>D</code>; the value of the key <code>'Py'</code> is the integer <code>2</code>, and so on. We use the same square bracket syntax to index dictionaries by key as we did to index lists by offset, but here it means access by key, not by position. Notice the end of this example: unlike the randomly ordered sets we studied in <a data-type="xref" href="ch05.html#numbers_and_expressions">Chapter 5</a>, dictionary keys retain their insertion order today, but we need to cover some more basics before formalizing this.</p>
+<p>The built-in <code>len</code> function works on dictionaries, too—it returns the number of values stored in <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="len function" id="id2168"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="in operator" id="id2169"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="keys method" id="id2170"></a>the dictionary or, equivalently, the number of its keys. The dictionary <code>in</code> membership operator allows you to test for key existence, and the <code>keys</code> method returns all the keys in the dictionary. The latter of these can be useful for processing dictionaries in full, by fetching corresponding values in loops. Because the <code>keys</code> result can be treated like a normal list, it can also be sorted if order matters and the automatic insertion order doesn’t do the job (more on sorting and dictionaries later):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>len(D)</strong></code>                                    <code><em># Number of entries in dictionary</em></code>
+3
+&gt;&gt;&gt; <code><strong>'code' in D</strong></code>                               <code><em># Key membership test
+</em></code>True
+&gt;&gt;&gt; <code><strong>list(D.keys())</strong></code>                            <code><em># Create a new list of D's keys
+</em></code>['hack', 'Py', 'code']</pre>
+<p>Notice the second step in this listing. As noted, the <code>in</code> membership test used for strings and lists also works on dictionaries, where it checks whether a key is <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="keys" data-tertiary="storage" id="id2171"></a>stored. Technically, this works because dictionaries define a protocol run by <code>in</code> to lookup a key quickly. Other objects provide <code>in</code> protocols that reflect their common uses; files, for example, use iterators that read line by line. This will matter later in this book, when we reach iterators and classes.</p>
+<p>Also note the syntax of the last step in this listing. It uses <code>list</code> for similar reasons—the dictionary <code>keys</code> method returns an <code>iterable</code> “view” object that produces results on demand, instead of a physical list. The <code>list</code> call forces it to serve up all its values at once for display at the interactive REPL, though this call isn’t required and may even be subpar in some other contexts. More on this, as well as other dictionary basics like comparisons, later in this chapter.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Changing Dictionaries in Place"><div class="sect2" id="changing_dictionaries_in_place">
+<h2>Changing Dictionaries in Place</h2>
+<p>Let’s continue with our interactive session. Dictionaries, like lists, are <em>mutable</em>, so you can change, expand, <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="mutability" id="dctmtb"></a><a contenteditable="false" data-type="indexterm" data-primary="mutability" data-secondary="dictionaries" id="mtbdct"></a>and shrink them in place without making new dictionaries: simply assign a value to a key to change or create an entry. The <code>del</code> statement works here, too; it deletes the entry associated with the key specified as an index. Notice also the nesting of a list inside a dictionary in this example (the value of the key <code>'Py'</code>); all collection data types in Python can nest inside each other arbitrarily, and can be changed independently of their containing objects:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>D</strong></code>
+{'hack': 1, 'Py': 2, 'code': 3}
+
+&gt;&gt;&gt; <code><strong>D['Py'] = ['app', 'dev']</strong></code>                      <code><em># Change entry (value=list)</em></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'hack': 1, 'Py': ['app', 'dev'], 'code': 3}
+
+&gt;&gt;&gt; <code><strong>del D['code']</strong></code>                                 <code><em># Delete entry (also D.pop(k))</em></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'hack': 1, 'Py': ['app', 'dev']}
+
+&gt;&gt;&gt; <code><strong>D['years'] = 32</strong></code>                               <code><em># Add new entry</em></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{ {'hack': 1, 'Py': ['app', 'dev'], 'years': 32}
+
+&gt;&gt;&gt; <code><strong>D['Py'][0] = 'program'</strong></code>                        <code><em># Change a nested list in place</em></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'hack': 1, 'Py': ['program', 'dev'], 'years': 32}</pre>
+<p>Like lists, assigning to an existing index in a dictionary changes its associated value. Unlike lists, however, whenever you assign a <em>new</em> dictionary key (one that isn’t already present) you create a new entry in the dictionary, as was done in the previous example for the key <code>'years'</code>. This doesn’t work for lists because you can only assign to existing list offsets—Python considers an offset beyond the end of a list out of bounds and raises an error. As you learned earlier, to expand a list, you need to use tools such as the <code>append</code> method or <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="mutability" data-startref="dctmtb" id="id2172"></a><a contenteditable="false" data-type="indexterm" data-primary="mutability" data-secondary="dictionaries" data-startref="mtbdct" id="id2173"></a>slice assignment instead.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="More Dictionary Methods"><div class="sect2" id="more_dictionary_methods">
+<h2>More Dictionary Methods</h2>
+<p>Dictionary methods provide a variety <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="methods" id="dctmthd"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="dictionaries" id="mthddctn"></a>of type-specific tools. For instance, the dictionary <code>values</code> and <code>items</code> methods return all of the dictionary’s values and <code>(<em>key</em>,<em>value</em>)</code> pair tuples, respectively; along with <code>keys</code>, these are useful in loops that need to step through dictionary entries one by one (we’ll start coding such loops later in this chapter). As with <code>keys</code>, these two methods also return <em>iterable</em> objects, and wrapping them in a <code>list</code> call collects their values all at once for display:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = {'program': 1, 'script': 2, 'app': 3}</strong></code>
+
+&gt;&gt;&gt; <code><strong>list(D.keys())      </strong>  </code>                         <code><em># All keys</em></code>
+['program', 'script', 'app']
+&gt;&gt;&gt; <code><strong>list(D.values())    </strong>  </code>                         <code><em># All values</em></code>
+[1, 2, 3]
+&gt;&gt;&gt; <code><strong>list(D.items())     </strong>  </code>                         <code><em># All (key, value) tuples</em></code> 
+[('program', 1), ('script', 2), ('app', 3)]</pre>
+<p>In realistic programs that gather data as they run, you often won’t be able to predict what will be in a dictionary before the program is launched, much less when it’s coded. Fetching a nonexistent key is normally an error, but the <code>get</code> method returns a default value—<code>None</code>, or a passed-in default—if the key doesn’t exist. It’s an easy way to fill in a default for a key that isn’t present and avoid a missing-key error when your program can’t anticipate contents ahead of time:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D.get('script')</strong></code>                        <code><em># A key that is present</em></code>
+2
+&gt;&gt;&gt; <code><strong>print(D.get('code'))</strong></code>                   <code><em># A key that is missing</em></code>
+None
+&gt;&gt;&gt; <code><strong>D.get('code', 4)</strong></code>
+4</pre>
+<p>The <code>update</code> method provides something similar to concatenation for dictionaries (though it works in the realm of keys and values, not just values). It <em>merges</em> the keys and values of one dictionary into another, both adding new entries for new keys, and blindly overwriting values of the same key if there’s a clash:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D</strong></code>
+{'program': 1, 'script': 2, 'app': 3}
+&gt;&gt;&gt; <code><strong>D2 = {'code':4, 'hack':5, 'app': 6}</strong></code>    <code><em># New keys added, app:6 wins</em></code>        
+&gt;&gt;&gt; <code><strong>D.update(D2)</strong></code>
+&gt;&gt;&gt;<code> <strong>D</strong></code>
+{'program': 1, 'script': 2, 'app': 6, 'code': 4, 'hack': 5}</pre>
+<p> Finally, the dictionary <code>pop</code> method deletes a key from a dictionary and returns the value it had. It’s similar to the list <code>pop</code> method, but it takes a key instead of an optional position:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D.pop('app')</strong>  </code>                         <code><em># Pop a dictionary key</em></code>
+6
+&gt;&gt;&gt; <code><strong>D.pop('hack')</strong></code>                          <code><em># Delete key and return its value</em></code>
+5
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'program': 1, 'script': 2, 'code': 4} 
+
+&gt;&gt;&gt; <code><strong>L = ['aa', 'bb', 'cc', 'dd']</strong> </code>          <code><em># Pop a list by position</em></code>
+&gt;&gt;&gt;<code> <strong>L.pop()</strong></code>                                <code><em># Delete and return from the end</em></code>
+'dd'
+&gt;&gt;&gt; <code><strong>L.pop(1)</strong></code>                               <code><em># Delete from a specific position
+</em></code>'bb'
+&gt;&gt;&gt; <code><strong>L</strong></code>
+['aa', 'cc']</pre>
+<p>Dictionaries also provide a <code>copy</code> method that, as you might guess, makes a copy; we’ll revisit this in <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a>, as it’s a way to avoid the potential side effects of shared references to the same dictionary. In fact, dictionaries come with more methods than the common ones demoed here, and over time may gain others beyond those listed in <a data-type="xref" href="#common_dictionary_literals_and_operatio">Table 8-2</a>; again, see the <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="methods" data-startref="dctmthd" id="id2174"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="dictionaries" data-startref="mthddctn" id="id2175"></a>Python library manual, <code>dir</code> and <code>help</code>, or other reference resources for a comprehensive list.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Other Dictionary Makers"><div class="sect2" id="other_dictionary_makers">
+<h2>Other Dictionary Makers</h2>
+<p>Because dictionaries are so useful, multiple ways to build them have emerged over time. The following summarizes <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="building" id="dtcbld"></a>the most common alternatives; its last two calls to the <code>dict</code> constructor (really, type name) have the same effect as the literal and key-assignment forms listed above them:</p>
+<pre data-type="programlisting">{'name': 'Pat', 'age': 40}              <code><em># 1) Traditional literal expression</em></code>
+
+D = {}                                  <code><em># 2) Assign by keys dynamically</em></code>
+D['name'] = 'Pat'
+D['age']  = 40
+
+dict(name='Pat', age=40)                <code><em># 3) dict keyword-argument form</em></code>
+
+dict([('name', 'Pat'), ('age', 40)])    <code><em># 4) dict key/value tuples form</em></code></pre>
+<p class="pagebreak-before">All four of these forms create the same two-key dictionary, but they are useful in differing <span class="keep-together">circumstances</span>:</p>
+<ul>
+<li><p>The first is handy if you can spell out the entire dictionary ahead of time.</p></li>
+<li><p>The second is of use if you need to create the dictionary one field at a time on the fly.</p></li>
+<li><p>The third involves less typing than the first, but it requires all keys to be strings.</p></li>
+<li><p>The last is useful if you need to build up keys and values as sequences at runtime.</p></li>
+</ul>
+<p>We met <code><em>name</em>=<em>value</em></code> keyword arguments earlier when sorting lists; the <code>dict</code> form in this summary that uses them is newer than literals and common in Python code, because it has less syntax (and hence less room for mistakes). The last form in the summary is also commonly used in conjunction with the <code>zip</code> function, to combine separate lists of keys and values obtained dynamically at runtime (parsed out of a data file’s columns, for instance):</p>
+<pre data-type="programlisting">dict(zip(keyslist, valueslist))        <code><em># Zipped key/value tuples form (ahead)</em></code></pre>
+<p>There is more on zipping dictionary keys in the next section. Provided all the key’s values are the same initially, you can also create a dictionary with the following special form—simply pass in a list of keys and an initial value for all of the values (the default is <code>None</code>). Notice this is run from the <code>dict</code> type name, not an actual dictionary:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>dict.fromkeys(['a', 'b'], 0)</strong></code>
+{'a': 0, 'b': 0}</pre>
+<p>Although you could get by with just literals and key assignments at this point in your Python career, you’ll probably find uses for all of these dictionary-creation forms as you start applying them in realistic Python programs.</p>
+<section data-type="sect3" data-pdf-bookmark="Dictionary-literal unpacking"><div class="sect3" id="dictionary_literal_unpacking">
+<h3>Dictionary-literal unpacking</h3>
+<p>As of Python 3.5, dictionary <em>literals</em> also support a special <code>**</code> syntax that <em>unpacks</em> the contents <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="literal unpacking" id="id2176"></a>of another dictionary in its top level, similar to the <code>*</code> in list literals we met earlier. Any number of <code>**</code> can appear in a literal to unpack any number of dictionaries, and the rightmost’s value wins when keys <span class="keep-together">collide</span>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = dict(a=4, c=3)</strong></code>
+&gt;&gt;&gt; <code><strong>{'a': 1, 'b': 2, **D}</strong></code>                     <code><em># Dictionary-literal unpacking</em></code>
+{'a': 4, 'b': 2, 'c': 3}
+
+&gt;&gt;&gt; <code><strong>dict(a=1, b=2) | D</strong>   </code>                     <code><em># Same, but with union operator</em></code>
+{'a': 4, 'b': 2, 'c': 3}</pre>
+<p>As shown, the effect of <code>**</code> is similar to both the <code>update</code> method we met earlier and the dictionary <code>|</code> union covered ahead and might avoid a follow-up <code>update</code> call in some contexts. It’s also related to the extended-unpacking assignment statement you’ll meet in <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>.</p>
+<p>The <code>**</code> also works in <code>dict</code>, but simply because <code>**</code> unpacks keyword arguments in <em>any</em> function call (as usual in Python, this relies on larger concepts we’ll reach later in this book). Unlike in <code>{}</code> literals though, <code>**</code> in <code>dict</code> fails if any key appears twice:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>dict(a=1, **{'b': 2}, **dict(c=3))</strong></code>        <code><em># Works in dict(), as in all calls</em></code>
+{'a': 1, 'b': 2, 'c': 3}                      <code><em># As long as no keys are repeated!</em></code>
+ 
+&gt;&gt;&gt; <code><strong>dict(a=1, b=2, **dict(a=4, c=3))</strong></code>
+TypeError: dict() got multiple values for keyword argument 'a'</pre>
+<p>The examples so far demo the many basic ways to create dictionaries, but there is yet another that’s even <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="building" data-startref="dtcbld" id="id2177"></a>more powerful, as the next section will explain.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Dictionary Comprehensions"><div class="sect2" id="dictionary_comprehensions">
+<h2>Dictionary Comprehensions</h2>
+<p>Like the set and list comprehensions we met in previous coverage, dictionary comprehensions run an implied <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="comprehensions" id="tnrdcmph"></a><a contenteditable="false" data-type="indexterm" data-primary="comprehensions" data-secondary="dictionaries" id="comphdctr"></a>loop, collecting the key/value results of expressions on each iteration and using them to fill out a new dictionary. A loop variable allows the comprehension to use loop iteration <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="dictionary comprehensions" id="id2178"></a>values along the way. The net effect lets us create new dictionaries with small bits of code that are simpler than the full-blown statements we’ll study later in this book.</p>
+<p>Abstractly, dictionary comprehensions <a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="dictionary comprehensions" id="id2179"></a>map to <code>for</code> loops as follows, where both <code>k</code> and <code>v</code> can use loop variable <code>x</code>:</p>
+<pre data-type="programlisting">{k: v for x in iterable}        <code><em># Dictionary comprehension</em></code>
+
+new = {}                        <code><em># Equivalent loop code</em></code>
+for x in iterable:
+    new[k] = v</pre>
+<p>To illustrate, a standard way to <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="initializing" id="id2180"></a>initialize a dictionary dynamically is to combine its keys and values with <code>zip</code>, and pass the result to the <code>dict</code> call, per the last section. The <code>zip</code> built-in function is the hook that allows us to construct a dictionary from key and value lists this way—if you cannot predict the set of keys and values in your code, you may be able to build them up as lists and zip them together. We’ll study <code>zip</code> in detail in the next part of this book; it’s an iterable, so we must wrap it in a <code>list</code> call to show its results there, but its basic usage is otherwise straightforward:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(zip(['a', 'b', 'c'], [1, 2, 3]))</strong></code>        <code><em># Zip together keys and values</em></code>
+[('a', 1), ('b', 2), ('c', 3)]
+
+&gt;&gt;&gt; <code><strong>D = dict(zip(['a', 'b', 'c'], [1, 2, 3]))</strong></code>    <code><em># Make a dict from zip result</em></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'a': 1, 'b': 2, 'c': 3}</pre>
+<p>You can achieve the same effect, though, with a dictionary <em>comprehension</em> expression. The following uses tuple assignment to unpack items into variables (per its <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a> debut), as it scans the list of zipped pairs from left to right. The net effect builds a new dictionary with a key/value pair for every such pair in the <code>zip</code> result (the Python code reads almost the same as this natural-language description, but with a bit more formality):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = {k: v for (k, v) in zip(['a', 'b', 'c'], [1, 2, 3])}</strong></code>
+&gt;&gt;&gt;<code> <strong>D</strong></code>
+{'a': 1, 'b': 2, 'c': 3}</pre>
+<p>Comprehensions are longer to code in this case, but they’re also more general than this example <span class="keep-together">implies—we</span> can use them to map a single stream of values to dictionaries and apply them to any kind of sequence (or other iterable), and collected keys can be computed with expressions just like collected values:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = {x: x ** 2 for x in [1, 2, 3, 4]}</strong></code>        <code><em># Or: in range(1, 5)</em></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{1: 1, 2: 4, 3: 9, 4: 16}
+
+&gt;&gt;&gt; <code><strong>D = {c: c * 4 for c in 'HACK'}</strong></code>               <code><em># Loop over any iterable</em></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'H': 'HHHH', 'A': 'AAAA', 'C': 'CCCC', 'K': 'KKKK'}
+
+&gt;&gt;&gt; <code><strong>D = {c.lower(): (c + '!') for c in ['HACK', 'PY', 'CODE']}</strong></code>    <code><em># Expr: expr</em></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'hack': 'HACK!', 'py': 'PY!', 'code': 'CODE!'}</pre>
+<p>Dictionary comprehensions are also useful for initializing dictionaries from keys lists, in much the same way as the <code>fromkeys</code> method we met at the end of the preceding section:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = dict.fromkeys(['a', 'b', 'c'], 0)</strong></code>        <code><em># Initialize dict from keys
+</em></code>&gt;&gt;&gt; <code><strong>D</strong></code>
+{'a': 0, 'b': 0, 'c': 0}
+
+&gt;&gt;&gt; <code><strong>D = {k: 0 for k in ['a', 'b', 'c']}</strong></code>          <code><em># Same, but with a comprehension</em></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'a': 0, 'b': 0, 'c': 0}
+
+&gt;&gt;&gt; <code><strong>D = dict.fromkeys('code')</strong></code>                    <code><em># Other iterables, default value
+</em></code>&gt;&gt;&gt; <code><strong>D</strong></code>
+{'c': None, 'o': None, 'd': None, 'e': None}
+
+&gt;&gt;&gt; <code><strong>D = {k: None for k in 'code'}</strong></code>
+&gt;&gt;&gt;<code> <strong>D</strong></code>
+{'c': None, 'o': None, 'd': None, 'e': None}</pre>
+<p>Like its list and set relatives, dictionary comprehensions support additional syntax not shown here, including <code>if</code> clauses to filter values out of results, and nested <code>for</code> loops. Unfortunately, to truly understand dictionary comprehensions, you need to also know more about iteration statements and concepts in Python, and this book hasn’t yet disclosed enough information to tell that story well. You’ll learn much more about all flavors of comprehensions—list, set, dictionary, and generator—in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch14.html#iterations_and_comprehensions">14</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch20.html#comprehensions_and_generations">20</a>, so we’ll defer <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="comprehensions" data-startref="tnrdcmph" id="id2181"></a><a contenteditable="false" data-type="indexterm" data-primary="comprehensions" data-secondary="dictionaries" data-startref="comphdctr" id="id2182"></a>further details until later.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Key Insertion Ordering"><div class="sect2" id="key_insertion_ordering">
+<h2>Key Insertion Ordering</h2>
+<p>By now, you’ve <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="key insertion order" id="dctkysrd"></a><a contenteditable="false" data-type="indexterm" data-primary="keys" data-secondary="dictionaries" data-tertiary="insertion order" id="dydtsrd"></a>probably noticed that dictionaries remember their keys’ order—no matter what sort of syntax we use to make them. As noted both earlier here and in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>, as of Python 3.7 (and <span class="keep-together">CPython</span> 3.6), dictionaries have shed their former random key order and adopted <em>insertion order</em> instead: keys are now ordered left to right from oldest to newest additions. This order is maintained for literals, <code>dict</code> calls, comprehensions, and new keys added on the fly.</p>
+<p>Among other things, insertion order makes dictionary outputs arguably more coherent and readable and may avoid key sorts in some programs. This isn’t the same as a list (e.g., there’s no way to add a key in the “middle”) and doesn’t make dictionaries sequences. The effect, however, is close. Here’s a brief illustration:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = dict(a=1, b=2)</strong></code>              <code><em># Literal keys stored left-to-right</em></code>
+&gt;&gt;&gt; <code><strong>D['c'] = 3</strong>  </code>                    <code><em># New keys always added at the end</em></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'a': 1, 'b': 2, 'c': 3}
+&gt;&gt;&gt; <code><strong>D.pop('b')</strong>  </code>                    <code><em># Method pop removes any key by name</em></code>
+2
+&gt;&gt;&gt; <code><strong>D    </strong>  </code>                         <code><em># Other keys still in insertion order</em></code>
+{'a': 1, 'c': 3}
+&gt;&gt;&gt; <code><strong>D['b'] = 2</strong>  </code>                    <code><em># Earlier key goes at the end too</em></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'a': 1, 'c': 3, 'b': 2}
+&gt;&gt;&gt; <code><strong>D['c'] = 0</strong>  </code>                    <code><em># Changing values doesn't impact order</em></code>
+&gt;&gt;&gt; <code><strong>D['d'] = 1</strong>  </code>                    <code><em># And new arrivals always go at the end</em></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'a': 1, 'c': 0, 'b': 2, 'd': 1}</pre>
+<p>If you stare at this long enough, you’ll probably notice that the insertion order of dictionaries is much like the LIFO <em>stack</em> ordering we coded with list <code>append</code> and <code>pop</code> methods earlier. In fact, the dictionary <code>popitem</code> is defined to return the key/value pair (really, tuple) for the key added most recently (i.e., at the end):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D.popitem()</strong></code>
+('d', 1)
+&gt;&gt;&gt; <code><strong>D.popitem()</strong></code>
+('b', 2)
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'a': 1, 'c': 0}</pre>
+<p>While useful in some contexts, keep in mind that you may still need to <em>sort</em> dictionary keys manually, using techniques we’ll study ahead. Ordering filenames for display, for example, will often warrant string-value sorts instead of a program’s <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="key insertion order" data-startref="dctkysrd" id="id2183"></a><a contenteditable="false" data-type="indexterm" data-primary="keys" data-secondary="dictionaries" data-tertiary="insertion order" data-startref="dydtsrd" id="id2184"></a>internal insertion order.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Dictionary “Union” Operator"><div class="sect2" id="dictionary_quotation_markunionquotation">
+<h2>Dictionary “Union” Operator</h2>
+<p>Last up in the dictionary toolbox is a <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="union operator" id="dtnunp"></a><a contenteditable="false" data-type="indexterm" data-primary="union operation, dictionaries" id="uprdct"></a>bit of an oddball: as of Python 3.9, dictionaries have sprouted a “union” operation that’s kicked off with the <code>|</code> operator—the same syntax used for union in the set objects you met in <a data-type="xref" href="ch05.html#numbers_and_expressions">Chapter 5</a>.</p>
+<p>Per the quotes, though, this operation isn’t really mathematical set union at all. It’s a positionally sensitive, key-based <em>merge</em> of dictionaries, that works the same as the dictionary <code>update</code> method but <em>returns</em> its result as a new dictionary instead of updating a subject in place. Hence, dictionary <code>|</code> is like the combination of running the dictionary’s <code>copy</code> and <code>update</code> methods in turn, and really just a minor convenience for narrow roles. Here it is at work:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = dict(a=1, b=2)</strong></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'a': 1, 'b': 2}
+ 
+&gt;&gt;&gt; <code><strong>D | {'b': 3, 'c': 4}</strong>   </code>          <code><em># Update, return, rightmost wins</em></code>
+{'a': 1, 'b': 3, 'c': 4}
+
+&gt;&gt;&gt; <code><strong>D | {'b': 3, 'c': 4} | dict(a=5, d=6)</strong></code>
+{'a': 5, 'b': 3, 'c': 4, 'd': 6}</pre>
+<p>You get roughly the same mileage with the dictionary’s longstanding <code>update</code> method, though it requires a manual <code>copy</code> to avoid in-place changes in programs that don’t want them (as a spoiler, the <code>|=</code> in-place assignment form of dictionary union that you’ll meet later in this book is <em>identical</em> to calling <code>update</code> with a single argument sans <code>copy</code>):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D</strong></code>
+{'a': 1, 'b': 2}
+&gt;&gt;&gt; <code><strong>C = D.copy()</strong></code>
+&gt;&gt;&gt; <code><strong>C.update({'b': 3, 'c': 4})</strong></code>       <code><em># "Union" sans the | expression</em></code>
+&gt;&gt;&gt; <code><strong>C.update(dict(a=5, d=6))</strong></code>
+&gt;&gt;&gt; <code><strong>C</strong></code>
+{'a': 5, 'b': 3, 'c': 4, 'd': 6}</pre>
+<p>The Python 3.5 dictionary-literal <em>unpacking</em> we explored earlier can have the same effect too, though, at least when used with gnarly embedded literals as in the following, perhaps less readably:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D</strong></code>
+{'a': 1, 'b': 2}
+&gt;&gt;&gt; <code><strong>{**D, **{'b': 3, 'c': 4}, **dict(a=5, d=6)}</strong></code>
+{'a': 5, 'b': 3, 'c': 4, 'd': 6}</pre>
+<p>Which—true sports fans will note—raises the number of dedicated dictionary merge operations from one to <em>three</em> since this book’s prior edition. This bloat is especially grievous, given that it takes <em>just one line of simple code</em> to accomplish what the <code>update</code> method, the newer <code>**</code> unpacking, and the newest <code>|</code> union operator all redundantly do in their main use cases:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D1 = dict(a=1, b=1)</strong></code>
+&gt;&gt;&gt; <code><strong>D2 = dict(a=2, c=2)</strong></code>
+
+&gt;&gt;&gt; <code><strong>for k in D2: D1[k] = D2[k]</strong>   </code>     <code><em># What update(), **, and | redundantly do</em></code>
+
+&gt;&gt;&gt; <code><strong>D1     </strong>  </code>                         <code><em># Did this really justify 3 alternatives?</em></code>
+{'a': 2, 'b': 1, 'c': 2}</pre>
+<p>Dictionary <code>|</code> “union” may be handy in limited contexts. But whether this justifies convoluting dictionaries with just one binary operator, just one of many set operations, and an operation that’s almost entirely redundant with two earlier tools that were already almost entirely redundant with very simple code, is a riddle left <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="union operator" data-startref="dtnunp" id="id2185"></a><a contenteditable="false" data-type="indexterm" data-primary="union operation, dictionaries" data-strtref="uprdct" id="id2186"></a>to the reader to solve.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Intermission: Books Database"><div class="sect2" id="intermission_books_database">
+<h2>Intermission: Books Database</h2>
+<p>Let’s take a break from the fine points and <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="books database example" id="dtcbdxp"></a><a contenteditable="false" data-type="indexterm" data-primary="databases" data-secondary="books database example" id="dbbdxp"></a>code a more concrete example of dictionaries at work. In honor of this book’s quarter-century milestone, the following builds a simple in-memory editions database that maps edition <em>years</em> (the keys) to <em>titles</em> (the values). As coded, you fetch edition names by indexing on year strings:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>table = {'2024': 'Learning Python, 6th Edition',</strong></code>       <code><em># Year =&gt; title</em></code>
+             <code><strong>'2013': 'Learning Python, 5th Edition',</strong></code>
+             <code><strong>'1999': 'Learning Python'}</strong></code>
+
+&gt;&gt;&gt;<code> <strong>table['2024']</strong></code>                                          <code><em># Key =&gt; Value
+</em></code>'Learning Python, 6th Edition' 
+
+&gt;&gt;&gt; <code><strong>for year in table:</strong></code>                        <code> <em>            # Keys iteration</em></code>
+        <code><strong>print(year + '\t' + table[year])</strong></code>
+
+2024     Learning Python, 6th Edition
+2013     Learning Python, 5th Edition
+1999     Learning Python</pre>
+<p>The last command uses a <code>for</code> loop, which we’ve used several times since its <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a> preview. The full tale of the <code>for</code> isn’t told until <a data-type="xref" href="ch13.html#while_and_for_loops">Chapter 13</a>, but this particular loop simply iterates through each key in the table to print a tab-separated list of keys and their values (recall from <a data-type="xref" href="ch07.html#string_fundamentals">Chapter 7</a> that <code>\t</code> in a Python string means vertical tab).</p>
+<p>Dictionaries aren’t sequences like lists and strings, but if you need to step through the items in a dictionary, it’s easy—either call the dictionary <code>keys</code> method or use the dictionary itself. Given a dictionary <code>D</code>, saying <code>for key in D</code> works the same as saying <code>for key in D.keys()</code>, and both use the <em>iteration protocol</em> that we’ll expand on later in this book. Either way, you can index from <em>key</em> to <em>value</em> inside the <code>for</code> loop as you go, as this code does.</p>
+<section data-type="sect3" data-pdf-bookmark="Mapping values to keys"><div class="sect3" id="mapping_values_to_keys">
+<h3>Mapping values to keys</h3>
+<p>Notice how the prior table maps years <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="keys" data-tertiary="mapping to" id="dkysmp"></a><a contenteditable="false" data-type="indexterm" data-primary="keys" data-secondary="dictionaries" data-tertiary="mapping values to" id="kydpv"></a>to titles, but not vice versa. If you want to map the other way—titles to years—you can either code the dictionary differently:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>table = {'Learning Python, 6th Edition': 2024,</strong></code>         <code><em># Title =&gt; year</em></code>
+             <code><strong>'Learning Python, 5th Edition': 2013,</strong></code>
+             <code><strong>'Learning Python':              1999}</strong></code>
+
+&gt;&gt;&gt; <code><strong>table['Learning Python']    </strong>  </code>                         <code><em># Key =&gt; value</em></code>
+1999</pre>
+<p>Or use other dictionary methods like <code>items</code> that give searchable sequences (the <code>list</code> call is required in the following because <code>items</code> returns an iterable <em>view</em>, a topic coming up shortly):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(table.items())[:2]</strong></code>
+[('Learning Python, 6th Edition', 2024), ('Learning Python, 5th Edition', 2013)]
+
+&gt;&gt;&gt;<code> <strong>[title for (title, year) in table.items() if year == 1999]</strong></code>     <code><em># Value =&gt; key</em></code>
+['Learning Python']</pre>
+<p>The last command here uses the list <em>comprehension</em> we explored earlier, as well as <em>tuple assignment</em> mentioned earlier and covered in this book’s next part (synopsis: it unpacks items into variables). The combo scans the <code>(<em>key</em>, <em>value</em>)</code> pairs returned by the dictionary’s <code>items</code> method, selecting keys for values matching a search target (<code>1999</code>).</p>
+<p>The net effect of all this is <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="backward indexing" id="id2187"></a>to index <em>backward</em>—from value to key, instead of key to value. This is useful if you want to store data just once and map backward from values only rarely (searching through sequences like this is generally much slower than a direct key-to-value index, though not all programs need to care).</p>
+<p>In fact, although dictionaries by nature map keys to values unidirectionally, there are multiple ways to map values back to keys with a bit of extra generalizable code:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>K = 'Learning Python'</strong></code>
+&gt;&gt;&gt; <code><strong>V = 1999</strong></code>
+&gt;&gt;&gt;<code> <strong>table[K]</strong></code>              <code><em># Key = &gt;Value (normal usage)
+</em></code>1999
+
+&gt;&gt;&gt; <code><strong>[key for (key, value) in table.items() if value == V]</strong></code>         <code><em># Value =&gt; Key</em></code>
+['Learning Python'] 
+
+&gt;&gt;&gt; <code><strong>[key for key in table.keys() if table[key] == V]</strong></code>              <code><em># Same: keys()</em></code>
+['Learning Python']</pre>
+<p>Note that both of the last two commands return a <em>list</em> of titles: in dictionaries, there’s just <em>one</em> value per key, but there may be <em>many</em> keys per value if a given value is be stored under multiple keys, and a value might be a collection itself to represent many values per key. It’s also possible to <em>invert</em> a dictionary for indexing values by zipping its values and keys—but <em>only</em> if its values are all immutable and don’t appear in multiple keys:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>dict(zip(table.values(), table.keys()))[1999]</strong> </code>     <code><em># Key/value inversion?</em></code>
+'Learning Python'</pre>
+<p>Sharp-eyed readers may notice that this yields a dictionary with <em>integer</em> keys, which works naturally per a tip in the next section. For more on this front, watch for a less lossy dictionary inversion function in the <em>mapattrs.py</em> example from <a data-type="xref" href="ch31.html#example_mapping_attributes_to_inheritan">“Example: Mapping Attributes to Inheritance Sources”</a>—code that would surely stretch this preview past its breaking point if included here. For this <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="books database example" data-startref="dtcbdxp" id="id2188"></a><a contenteditable="false" data-type="indexterm" data-primary="databases" data-secondary="books database example" data-startref="dbbdxp" id="id2189"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="keys" data-tertiary="mapping to" data-startref="dkysmp" id="id2190"></a><a contenteditable="false" data-type="indexterm" data-primary="keys" data-secondary="dictionaries" data-tertiary="mapping values to" data-startref="kydpv" id="id2191"></a>chapter’s purposes, let’s wrap up by adding in a few pragmatic pieces to the dictionary puzzle.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Dictionary Usage Tips"><div class="sect2" id="dictionary_usage_tips">
+<h2>Dictionary Usage Tips</h2>
+<p>Dictionaries are fairly straightforward tools once you get the hang of them, but here are a few additional pointers and reminders you should be aware of when using them:</p>
+<dl>
+<dt>Sequence operations don’t work</dt>
+<dd>Dictionaries are mappings, not <a contenteditable="false" data-type="indexterm" data-primary="sequences" data-secondary="dictionaries" id="id2192"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="operations" data-tertiary="sequence operations" id="id2193"></a>sequences. Because they deal with keys and values and are ordered by insertion-time only, things like concatenation (an ordered joining of values) and slicing (extracting a contiguous section of values) simply don’t apply—and Python raises an error if your code tries to use them on dictionaries.</dd>
+<dt>Assigning to new indexes adds entries</dt>
+<dd>Keys can be created when you write <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="new indexes" id="id2194"></a>a dictionary literal (embedded in the code of the literal itself), or when you assign values to new keys of an existing dictionary object individually. The end result is the same.</dd>
+<dt>Keys need not always be strings</dt>
+<dd>Our examples so far <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="keys" data-tertiary="immutable objects" id="id2195"></a>have used strings as keys, but any other <em>immutable</em> objects work just as well. For instance, you can use integers as keys, which makes the dictionary look much like a list (when indexing, at least). Tuples may be used as dictionary keys too, allowing compound key values—such as dates and IP addresses—to have associated values. User-defined class instance objects (discussed in <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a>) can also be used as keys, as long as they define the proper methods; roughly, they need to tell Python that their values are “hashable” and thus won’t change, as otherwise they would be useless as fixed keys. Mutable objects such as lists, sets, and other dictionaries don’t work as keys because they may change, but are allowed as values.</dd>
+</dl>
+<p>The following sections delve deeper into these and other mysteries of dictionary-processing code.</p>
+<section data-type="sect3" data-pdf-bookmark="Using dictionaries to simulate flexible lists: Integer keys"><div class="sect3" id="using_dictionaries_to_simulate_flexible">
+<h3>Using dictionaries to simulate flexible lists: Integer keys</h3>
+<p>The last point in the preceding <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="keys" data-tertiary="integer keys" id="id2196"></a><a contenteditable="false" data-type="indexterm" data-primary="keys" data-secondary="dictionaries" data-tertiary="integer keys" id="id2197"></a><a contenteditable="false" data-type="indexterm" data-primary="integer keys" id="id2198"></a>list is important enough to demonstrate with a few examples. When you use lists, it is illegal to assign to an offset that is off the end of the list:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = []</strong></code>
+&gt;&gt;&gt;<code> <strong>L[99] = 'hack'</strong></code>
+IndexError: list assignment index out of range</pre>
+<p>Although you can use repetition to preallocate as big a list as you’ll need (e.g., <code>[0]*100</code>), you can also do something that looks similar with dictionaries that does not require such space allocations—and potential waste. By using integer keys, dictionaries can emulate lists that seem to grow on offset assignment:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = {}</strong></code>
+&gt;&gt;&gt;<code> <strong>D[99] = 'hack'</strong></code>
+&gt;&gt;&gt;<code> <strong>D[99]</strong></code>
+'hack'
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{99: 'hack'}</pre>
+<p>Here, it looks as if <code>D</code> is a 100-item list, but it’s really a dictionary with a single entry; the value of the key <code>99</code> is the string <code>'hack'</code>. You can access this structure with offsets much like a list, catching nonexistent keys with <code>get</code> or <code>in</code> tests if required, but you don’t have to allocate space for all the positions to which you might need to assign values in the future. When used like this, dictionaries are like more flexible equivalents of lists:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>D[62] = 'code'</strong></code>
+&gt;&gt;&gt; <code><strong>D[30] = 'write'</strong></code>
+&gt;&gt;&gt; <code><strong>D[62]</strong></code>
+'code'
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{99: 'hack', 62: 'code', 30: 'write'}</pre>
+<p>As another example, we might also employ integer keys in the first book <em>book-database</em> code we wrote earlier to avoid quoting the year, albeit at the expense of expressiveness (integer keys cannot contain nondigit characters):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>table = {2024: 'Learning Python, 6th Edition',</strong></code>      <code><em># Integers work as keys</em></code>
+<code> <strong>            …<em>etc</em>…</strong></code>
+&gt;&gt;&gt; <code><strong>table[2024]</strong></code>
+'Learning Python, 6th Edition'</pre>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Using dictionaries for sparse data structures: Tuple keys"><div class="sect3" id="using_dictionaries_for_sparse_data_stru">
+<h3>Using dictionaries for sparse data structures: Tuple keys</h3>
+<p>In a similar way, dictionary keys <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="keys" data-tertiary="tuple keys" id="id2199"></a><a contenteditable="false" data-type="indexterm" data-primary="keys" data-secondary="dictionaries" data-tertiary="tuple keys" id="id2200"></a><a contenteditable="false" data-type="indexterm" data-primary="tuples" id="id2201"></a>are also commonly leveraged to implement <em>sparse</em>—mostly empty—data structures, such as multidimensional arrays where only a few positions have values stored in them:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>Matrix = {}</strong></code>
+&gt;&gt;&gt;<code> <strong>Matrix[(2, 3, 4)] = 88</strong></code>
+&gt;&gt;&gt;<code> <strong>Matrix[(7, 8, 9)] = 99</strong></code>
+&gt;&gt;&gt; 
+&gt;&gt;&gt;<code> <strong>X = 2; Y = 3; Z = 4</strong></code>               <code><em># A ; separates statements: see Chapter 10</em></code>
+&gt;&gt;&gt; <code><strong>Matrix[(X, Y, Z)]</strong></code>
+88
+&gt;&gt;&gt; <code><strong>Matrix</strong></code>
+{(2, 3, 4): 88, (7, 8, 9): 99}</pre>
+<p>Here, we’ve used a dictionary to represent a three-dimensional array that is empty except for the two positions <code>(2,3,4)</code> and <code>(7,8,9)</code>. The keys are <em>tuples</em> that record the coordinates of nonempty slots. Rather than allocating a large and mostly empty three-dimensional matrix to hold these values, we can use a simple two-item dictionary. In this scheme, accessing an empty slot triggers a nonexistent key exception, as these slots are not physically stored:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>Matrix[(2,3,6)]</strong></code>
+KeyError: (2, 3, 6)</pre>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Avoiding missing-key errors"><div class="sect3" id="avoiding_missing_key_errors">
+<h3>Avoiding missing-key errors</h3>
+<p>Errors for nonexistent key fetches like <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="keys" data-tertiary="missing" id="id2202"></a><a contenteditable="false" data-type="indexterm" data-primary="keys" data-secondary="dictionaries" data-tertiary="missing" id="id2203"></a>the foregoing are common in sparse matrixes, but you probably won’t want them to shut down your program. There are at least three ways to fill in a default value instead of getting such an error message—you can use the dictionary <code>get</code> method shown earlier to provide a default for keys that do not exist, test for keys ahead of time in <code>if</code> statements, or use a <code>try</code> statement to catch and recover from the error. Though straightforward, the last of these are previews of statement syntax we’ll begin studying in <a data-type="xref" href="ch10.html#introducing_python_statements">Chapter 10</a>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>Matrix.get((2, 3, 4), 0)</strong></code>           <code><em># Exists: fetch and return
+</em></code>88
+&gt;&gt;&gt; <code><strong>Matrix.get((2, 3, 6), 0)</strong></code>           <code><em># Doesn't exist: use passed default
+</em></code>0
+
+&gt;&gt;&gt; <code><strong>if (2, 3, 6) in Matrix:</strong></code>            <code><em># Check for key before fetch</em></code>
+...     <code><strong>print(Matrix[(2, 3, 6)])</strong></code>       <code><em># See Chapters 10 and 12 for if/else</em></code>
+... <code><strong>else:</strong></code>
+...     <code><strong>print(0)</strong></code>
+...
+0
+
+&gt;&gt;&gt; <code><strong>try:</strong></code>
+...     <code><strong>print(Matrix[(2, 3, 6)])</strong></code>      <code> <em># Try to index</em></code>
+... <code><strong>except KeyError:</strong></code>                   <code><em># Catch and recover
+</em></code>...     <code><strong>print(0)</strong></code>                       <code><em># See Chapters 10 and 34 for try/except</em></code>
+...
+0</pre>
+<p>Of these, the <code>get</code> method is the most concise in terms of coding requirements, but the <code>if</code> and <code>try</code> statements are much more general in scope—as you’ll start seeing for yourself soon in <a data-type="xref" href="ch10.html#introducing_python_statements">Chapter 10</a>.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Nesting in dictionaries"><div class="sect3" id="nesting_in_dictionaries">
+<h3>Nesting in dictionaries</h3>
+<p>As you can tell, dictionaries can play <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="nesting" id="id2204"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="dictionaries" id="id2205"></a>many roles in Python. In general, they can replace search data structures (because indexing by key is a search operation) and can represent many types of structured information. For example, dictionaries are one of many ways to describe the properties of an item in your program’s domain; that is, they can serve the same role as “records” or “structs” in other language, and <em>JSON</em> content in language-neutral roles. The following, for example, fills out a dictionary describing a book, by assigning to new keys:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>rec = {}</strong></code>
+&gt;&gt;&gt;<code> <strong>rec['title'] = 'Learning Python, 5th Edition'</strong></code>
+&gt;&gt;&gt;<code> <strong>rec['year']  = 2013</strong></code>
+&gt;&gt;&gt;<code> <strong>rec['isbn']  = '9781449355739'</strong></code>
+&gt;&gt;&gt;
+&gt;&gt;&gt; <code><strong>rec['year'], rec['isbn']</strong></code>
+(2013, '9781449355739')<strong></strong></pre>
+<p>Especially when nested, though, Python’s built-in data types allow us to easily represent <em>structured</em> information. The following again uses a dictionary to capture object properties, but it codes it all at once rather than assigning to each key separately, and nests a dictionary and list to represent structured property values:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>rec = {'title':  'Learning Python, 5th Edition',</strong></code>
+          <code> <strong>'date':   {'year': 2013, 'month': 'July'},</strong></code>
+          <code> <strong>'isbns':  ['1449355730', '9781449355739']}</strong></code></pre>
+<p>To fetch components of nested objects, simply string together indexing operations:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>rec['title']</strong></code>
+'Learning Python, 5th Edition'
+&gt;&gt;&gt; <code><strong>rec['isbns']</strong></code>
+['1449355730', '9781449355739']
+&gt;&gt;&gt; <code><strong>rec['isbns'][1]</strong></code>
+'9781449355739'
+&gt;&gt;&gt; <code><strong>rec['date']['year']</strong></code>
+2013</pre>
+<p>Although you’ll learn in <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a> that <em>classes</em> (which group both data and logic) can sometimes be better in this record role, dictionaries are an easy-to-use tool for simpler requirements. For more on record representation choices, see also the upcoming sidebar <a data-type="xref" href="#why_you_will_care_list_versus_dictionar">“Why You Will Care: List Versus Dictionary Versus Set”</a>.</p>
+<p>Also notice that while we’ve focused on a single “record” with nested data here, there’s no reason we couldn’t nest the record itself in a larger, enclosing <em>database</em> collection coded as a list or dictionary, though an external file or formal database interface often plays the role of top-level container in realistic programs. The following abstract snippets would both print a record’s two-item <code>isbns</code> list if run live and provided with an <code>other</code> record omitted here:</p>
+<pre data-type="programlisting">db = []
+db.append(rec)             <code><em># A list "database"</em></code>
+db.append(other)
+db[0]['isbns']
+
+db = {}
+db['lp5e'] = rec            <code><em># A dictionary "database"</em></code>
+db['lp6e'] = other
+db['lp5e']['isbns']</pre>
+<p>Later in the book you’ll meet tools such as Python’s <code>shelve</code>, which works much the same way, but automatically maps objects to and from files to make them permanent. Python objects really <em>can</em> be database records.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Dictionary key/value/item view objects"><div class="sect3" id="dictionary_keysolidusvaluesolidusitem_v">
+<h3>Dictionary key/value/item view objects</h3>
+<p>When we explored the dictionary <code>keys</code>, <code>values</code>, and <code>items</code> methods <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="views objects" id="dctrvwb"></a><a contenteditable="false" data-type="indexterm" data-primary="view objects" id="vwbjs"></a>earlier, we wrapped their results in list calls for display at the REPL prompt. Technically, this is because these methods return <em>view objects</em> that produce results on demand, instead of physical lists. Displaying their raw values suggests as much, but collects their values anyhow:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = dict(program=1, script=2, app=3)</strong></code>
+&gt;&gt;&gt; <code><strong>D.keys()</strong></code>
+dict_keys(['program', 'script', 'app'])</pre>
+<p>View objects are <em>iterables</em>, which we’ve <a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="view objects" id="id2206"></a>seen simply means objects that generate result items one at a time, instead of producing the result list all at once in memory. Besides being iterable, dictionary views are <em>insertion</em> ordered, reflect future <em>changes</em> to the dictionary, and support <em>set</em> operations. On the other hand, because they are not lists, they do not directly support operations like indexing or the list <code>sort</code> method, and do not display as a normal list when printed.</p>
+<p>We’ll discuss the notion of iterables more formally in <a data-type="xref" href="ch14.html#iterations_and_comprehensions">Chapter 14</a>, but for our purposes here it’s enough to know that we have to run the results of these three methods through the <code>list</code> built-in if we want to apply list operations or display their values as lists. For example:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = dict(a=1, b=2, c=3)</strong></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'a': 1, 'b': 2, 'c': 3}
+ 
+&gt;&gt;&gt; <code><strong>K = D.keys()</strong></code>                   <code><em># Makes a view object, not a list</em></code>
+&gt;&gt;&gt; <code><strong>K</strong></code>
+dict_keys(['a', 'b', 'c'])
+&gt;&gt;&gt; <code><strong>list(K)</strong></code>                        <code><em># Force a real list when needed</em></code>
+['a', 'b', 'c']
+ 
+&gt;&gt;&gt; <code><strong>V = D.values()</strong></code>                 <code><em># Ditto for values and items views</em></code>
+&gt;&gt;&gt; <code><strong>V</strong></code>
+dict_values([1, 2, 3])
+&gt;&gt;&gt; <code><strong>list(V)</strong></code>
+[1, 2, 3]
+ 
+&gt;&gt;&gt; <code><strong>D.items()</strong></code>
+dict_items([('a', 1), ('b', 2), ('c', 3)])
+&gt;&gt;&gt; <code><strong>list(D.items())</strong></code>
+[('a', 1), ('b', 2), ('c', 3)]
+ 
+&gt;&gt;&gt; <code><strong>K[0]</strong></code>                           <code><em># List operations fail unless converted</em></code>
+TypeError: 'dict_keys' object is not subscriptable
+&gt;&gt;&gt; <code><strong>K.sort()</strong></code>
+AttributeError: 'dict_keys' object has no attribute 'sort'
+&gt;&gt;&gt; <code><strong>list(K)[0], list(K).sort()</strong></code>
+('a', None)</pre>
+<p>Unlike lists, though, dictionary views don’t take up <em>space</em> for their full results, and are not carved in stone when created—they <em>dynamically reflect future changes</em> made to the dictionary after the view object has been created:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = {'a': 1, 'b': 2, 'c': 3}</strong></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'a': 1, 'b': 2, 'c': 3}
+
+&gt;&gt;&gt; <code><strong>K = D.keys()</strong></code>
+&gt;&gt;&gt; <code><strong>V = D.values()</strong></code>
+&gt;&gt;&gt; <code><strong>list(K), list(V)</strong></code>              <code><em># Views maintain same order as dictionary</em></code>
+(['a', 'b', 'c'], [1, 2, 3])
+
+&gt;&gt;&gt; <code><strong>del D['b']</strong></code>                    <code><em># Change the dictionary in place</em></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'a': 1, 'c': 3}
+
+&gt;&gt;&gt; <code><strong>list(K), list(V)</strong></code>              <code><em># Reflected in any current view objects</em></code>
+(['a', 'c'], [1, 3])</pre>
+<p>That said, use cases for dynamic view morph are likely rare. In fact, apart from result displays at the interactive prompt, you probably won’t even notice views very often in practice, because looping constructs in Python automatically force them to produce one result on each:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for k in D.keys(): print(k)</strong></code>    <code><em># View iterators used automatically in loops</em></code>
+...                                <code><em># But no need to call keys() to iterate on D</em></code>
+a
+b
+c</pre>
+<p>As we’ve seen, it’s also often <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="views objects" data-startref="dctrvwb" id="id2207"></a><a contenteditable="false" data-type="indexterm" data-primary="view objects" data-startref="vwbjs" id="id2208"></a>unnecessary to call <code>keys</code> directly in such cases because dictionaries themselves provide <em>implicit</em> key iterators; for better or worse, <code>for k in D</code> is usually as much code as you need to type.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Dictionary views and sets"><div class="sect3" id="dictionary_views_and_sets">
+<h3>Dictionary views and sets</h3>
+<p>Though perhaps even more obscure than <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="views" id="dtnrvw"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="sets" id="dtrnstr"></a><a contenteditable="false" data-type="indexterm" data-primary="sets" data-secondary="dictionaries" id="stsdctr"></a>view objects in general, some dictionary views are also <em>set-like</em> and support set operations such as union and intersection that we used on true sets in <a data-type="xref" href="ch05.html#numbers_and_expressions">Chapter 5</a>. Specifically, views returned by the <code>keys</code> method are set-like, <code>values</code> views are not, and <code>items</code> views are if their <code>(<em>key</em>, <em>value</em>)</code> pairs are unique and hashable (immutable). This reflects logical symmetry: set items are unique and immutable just like dictionary keys, and sets themselves behave like unordered and valueless dictionaries (and are even coded in curly braces).</p>
+<p>Here is what <code>keys</code> views look like when used in set operations (continuing the prior section’s session); as also shown, dictionary value views are never set-like, because their items are not necessarily unique or immutable:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>K, V</strong></code>
+(dict_keys(['a', 'c']), dict_values([1, 3])) 
+
+&gt;&gt;&gt; <code><strong>K | {'x': 4}</strong></code>                   <code><em># Keys (and some items) views are set-like</em></code>
+{'x', 'a', 'c'}                    <code><em># Results are unordered sets, not views</em></code>
+
+&gt;&gt;&gt; <code><strong>V | {'x': 4}</strong></code>
+TypeError: unsupported operand type(s) for |: 'dict_values' and 'dict'
+&gt;&gt;&gt; <code><strong>V | {'x': 4}.values()</strong></code>
+TypeError: unsupported operand type(s) for |: 'dict_values' and 'dict_values'</pre>
+<p>Be careful not to confuse the <code>|</code> here with the <em>dictionary</em> union operation we met earlier in <a data-type="xref" href="#dictionary_quotation_markunionquotation">“Dictionary “Union” Operator”</a>; when run on a view, <code>|</code> is not a full key-based dictionary merge. In set operations, views may be mixed with other views, sets, and dictionaries, and dictionaries are treated the same as their <code>keys</code> views:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = {'a': 1, 'b': 2, 'c': 3}</strong></code>
+&gt;&gt;&gt; <code><strong>D.keys() &amp; D.keys()</strong></code>            <code><em># Intersect views</em></code>
+{'b', 'a', 'c'}
+&gt;&gt;&gt; <code><strong>D.keys() &amp; {'b'}</strong></code>               <code><em># Intersect view and set</em></code>
+{'b'}
+&gt;&gt;&gt; <code><strong>D.keys() &amp; {'b': 1}</strong></code>            <code><em># Intersect view and dict</em></code>
+{'b'}
+&gt;&gt;&gt; <code><strong>D.keys() | {'b', 'c', 'd'}</strong></code>     <code><em># Union view and set</em></code>
+{'b', 'a', 'd', 'c'}</pre>
+<p>Items views are set-like too, but only if they are <em>hashable</em>—that is, if they contain only immutable objects:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>{'a': [1, 2]}.items() | {0, 1}</strong></code>     <code><em># Immutable value: no set ops</em></code>
+TypeError: unhashable type: 'list'
+
+&gt;&gt;&gt; <code><strong>D = {'a': 1}</strong></code>
+&gt;&gt;&gt; <code><strong>D.items()</strong></code>                          <code><em># Items set-like if and only if hashable</em></code>
+dict_items([('a', 1)])
+&gt;&gt;&gt; <code><strong>D.items() | D.keys()</strong></code>               <code><em># Union view and view</em></code>
+{('a', 1), 'a'}
+&gt;&gt;&gt; <code><strong>D.items() | D</strong></code>                      <code><em># Dictionary treated same as its keys</em></code>
+{('a', 1), 'a'}
+ 
+&gt;&gt;&gt; <code><strong>D.items() | {('c', 3), ('d', 4)}</strong></code>           <code><em># Set of key/value pairs</em></code>
+{('a', 1), ('c', 3), ('d', 4)}
+
+&gt;&gt;&gt; <code><strong>dict(D.items() | {('c', 3), ('d', 4)})</strong></code>     <code><em># dict accepts iterable sets too</em></code>
+{'a': 1, 'c': 3, 'd': 4}</pre>
+<p>See <a data-type="xref" href="ch05.html#numbers_and_expressions">Chapter 5</a>’s coverage of sets if you need a refresher on these operations. Their role in dictionary views is probably uncommon and may even be academic; but they work when helpful (and at least you now have a fighting chance when they crop up in sadistic final exams!). Here, let’s wrap up with two more quick coding notes <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="views" data-startref="dtnrvw" id="id2209"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="sets" data-startref="dtrnstr" id="id2210"></a><a contenteditable="false" data-type="indexterm" data-primary="sets" data-secondary="dictionaries" data-startref="stsdctr" id="id2211"></a>for dictionaries.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Sorting dictionary keys"><div class="sect3" id="sorting_dictionary_keys">
+<h3>Sorting dictionary keys</h3>
+<p>First of all, keys lists must be sorted <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="keys" data-tertiary="sorting" id="dkysrtg"></a><a contenteditable="false" data-type="indexterm" data-primary="keys" data-secondary="dictionaries" data-tertiary="sorting" id="kyctrt"></a>when the inherent insertion order doesn’t meet your goals. Beware, though, that a common coding pattern for scanning a collection in sorted order won’t work, because <code>keys</code> does not return a list:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = {'c': 3, 'b': 2, 'a': 1}</strong></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'c': 3, 'b': 2, 'a': 1}
+ 
+&gt;&gt;&gt; <code><strong>Ks = D.keys()</strong></code>                            <code><em># Sorting a view object doesn't work!</em></code>
+&gt;&gt;&gt; <code><strong>Ks.sort()</strong></code>
+AttributeError: 'dict_keys' object has no attribute 'sort'</pre>
+<p>To work around this, you can either convert keys to a list manually, or use the <code>sorted</code> call, applied to lists earlier in this chapter, on either a <code>keys</code> view or the dictionary itself:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>Ks = list(D.keys())</strong></code>                      <code><em># Convert keys to a list</em></code>
+&gt;&gt;&gt; <code><strong>Ks.sort()     </strong>  </code>                         <code><em># And then sort with list.sort()</em></code>
+&gt;&gt;&gt; <code><strong>for k in Ks: print(k, D[k])</strong></code>
+...
+a 1
+b 2
+c 3
+
+&gt;&gt;&gt; <code><strong>Ks = D.keys()</strong></code>                            <code><em># Or use sorted() on the keys view</em></code>
+&gt;&gt;&gt; <code><strong>for k in sorted(Ks): print(k, D[k])</strong></code>      <code><em># sorted() accepts any iterable</em></code>
+...                                          <code><em># sorted() returns its result</em></code>
+a 1
+b 2
+c 3</pre>
+<p>Of these, using the dictionary’s keys iterator is <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="keys" data-tertiary="sorting" data-startref="dkysrtg" id="id2212"></a><a contenteditable="false" data-type="indexterm" data-primary="keys" data-secondary="dictionaries" data-tertiary="sorting" data-startref="kyctrt" id="id2213"></a>simplest and common, though also arguably implicit:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for k in sorted(D): print(k, D[k])</strong></code>       <code><em># Or use sorted() on the dict</em></code>
+...                                          <code><em># dict iterators produce keys</em></code> 
+a 1
+b 2
+c 3</pre>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Dictionary magnitude comparisons"><div class="sect3" id="dictionary_magnitude_comparisons">
+<h3>Dictionary magnitude comparisons</h3>
+<p>Finally, dictionaries can be <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="magnitude comparisons" id="id2214"></a>compared for equality directly with <code>==</code>, which automatically compares each key/value pair and ignores insertion order:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D1 = dict(a=1, b=2, c=3)</strong></code>
+&gt;&gt;&gt; <code><strong>D2 = dict(c=3, b=2, a=1)</strong></code>
+&gt;&gt;&gt; <code><strong>D1, D2</strong></code>
+({'a': 1, 'b': 2, 'c': 3}, {'c': 3, 'b': 2, 'a': 1})
+&gt;&gt;&gt; <code><strong>D1 == D2, D1 != D2</strong></code>
+(True, False)</pre>
+<p>Magnitude comparisons like <code>&lt;</code> and <code>&gt;</code> do not work on dictionaries themselves, though you can implement them by comparing key/value <code>items</code> views manually, if you also <em>sort</em> them to discount any insert-order difference (subtlety: a <code>&gt;</code> on the <code>items</code> results directly runs the set <em>superset</em> test because the views are set-like—not greater-than!):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D1 = dict(a=1, b=2, c=4)</strong></code>
+&gt;&gt;&gt; <code><strong>D2 = dict(c=3, b=2, a=1)</strong> </code>                  <code><em># D1 &gt; D2: D1['c'] &gt; D2['c']</em></code>
+&gt;&gt;&gt; <code><strong>D1 &gt; D2</strong></code>
+TypeError: '&gt;' not supported between instances of 'dict' and 'dict'
+
+&gt;&gt;&gt; <code><strong>list(D1.items()), list(D2.items())</strong></code>
+([('a', 1), ('b', 2), ('c', <code><strong>4</strong></code>)], [('c', <code><strong>3</strong></code>), ('b', 2), ('a', 1)])
+ 
+&gt;&gt;&gt; <code><strong>list(D1.items()) &gt; list(D2.items())</strong>   </code>     <code><em># Fails: insertion order</em></code>
+False
+&gt;&gt;&gt; <code><strong>D1.items() &gt; D2.items()</strong>  </code>                  <code><em># Fails: superset, not magnitude</em></code>
+False
+&gt;&gt;&gt; <code><strong>sorted(D1.items()) &gt; sorted(D2.items())</strong></code>    <code><em># OK: sorted to neutralize order</em></code>
+True</pre>
+<p>Because we’ll revisit this near the end of the next chapter to reinforce them in the context of comparisons at large, we’ll postpone further coverage here.</p>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00018">
+<h1>Chapter Summary</h1>
+<p>In this chapter, we explored the list and dictionary types—probably the two most common, flexible, and powerful collection types you will see and use in Python code. We learned that the list type supports positionally ordered collections of arbitrary objects, and that it may be freely nested and grown and shrunk on demand. The dictionary type is similar, but it stores items by key instead of by position and orders keys by insertion time only. Both lists and dictionaries are mutable, and so support a variety of in-place change operations not available for strings: for example, lists can be grown by slice assignment and <code>append</code> calls, and dictionaries by key assignment and <code>update</code>.</p>
+<p>In the next chapter, we will wrap up our in-depth core object-type tour by looking at tuples and files. After that, we’ll move on to statements that code the logic that processes our objects, taking us another step toward writing complete programs. Before we tackle those topics, though, here are some chapter quiz questions to review what you’ve learned.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000138">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>Name two ways to build a list containing five integer zeros.</p></li>
+<li><p>Name two ways to build a dictionary with two keys, <code>'a'</code> and <code>'b'</code>, each having an associated value of <code>0</code>.</p></li>
+<li><p>Name four operations that change a list object in place.</p></li>
+<li><p>Name four operations that change a dictionary object in place.</p></li>
+<li><p>Why might you use a dictionary instead of a list?</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000137">
+<h1>Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>A literal expression like <code>[0, 0, 0, 0, 0]</code> and a repetition expression like <code>[0] * 5</code> will each <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="building" id="id2215"></a>create a list of five zeros. In practice, you might also build one up with a loop that starts with an empty list and appends <code>0</code> to it in each iteration, with <code>L.append(0)</code>. A list comprehension like <code>[0 for i in range(5)]</code> could work here, too, but this is more work than you need to do for this answer.</p></li>
+<li><p>A literal expression such as <code>{'a': 0, 'b': 0}</code> or a series of assignments like <code>D = {}</code>, <code>D['a'] = 0</code>, and <code>D['b'] = 0</code> would create the desired dictionary. You can also use the newer and simpler-to-code <code>dict(a=0, b=0)</code> keyword form, or the more flexible <code>dict([('a', 0), ('b', 0)])</code> <span class="keep-together">key/value</span> sequences form. Because all the values are the same, you can also use the special form <code>dict.fromkeys('ab', 0)</code>, and dictionary comprehension like <code>{k: 0 for k in 'ab'}</code> suffices too, though again, this may be overkill here.</p></li>
+<li><p>The <code>append</code> and <code>extend</code> methods grow a list in place, the <code>sort</code> and <code>reverse</code> methods order and reverse lists, the <code>insert</code> method inserts an item at an offset, the <code>remove</code> and <code>pop</code> methods delete from a list by value and by position, the <code>del</code> statement deletes an item or slice, and index and slice assignment statements replace an item or entire section. Pick any four of these for the quiz.</p></li>
+<li><p>Dictionaries are primarily changed by <em>assignment</em> to a new or existing key, which creates or changes the key’s associated value in the table. Also, the <code>del</code> statement deletes a key’s entry, the dictionary <code>update</code> method merges one dictionary into another in place, and <code>D.pop(key)</code> removes a key and returns the value it had. Dictionaries also have other, more exotic in-place change <span class="keep-together">methods</span> presented tersely or not at all in this chapter, such as <code>popitem</code> and <code>setdefault</code>; see reference resources for more details.</p></li>
+<li><p>This question is a bit unfair, given that the following sidebar gives the answer, but you may have already figured this out on your own. Dictionaries are generally better when the data is labeled (a record with field names, for example); lists are best suited to collections of unlabeled items (such as all the files in a directory). Dictionary lookup is also usually quicker than searching a list, though this might vary per program and Python.</p></li>
+</ol>
+<aside data-type="sidebar" epub:type="sidebar"><div class="sidebar" id="why_you_will_care_list_versus_dictionar">
+<h1>Why You Will Care: List Versus Dictionary Versus Set</h1>
+<p>With all the objects in Python’s core types arsenal, some readers may be puzzled over the choice between lists and dictionaries. In short, although both are flexible collections of other objects, lists assign items to <em>positions</em>, and dictionaries assign them to more mnemonic <em>keys</em>. Because of this, dictionary data often carries more meaning to human readers. For example, a nested list structure can always be used to record info:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = ['Pat', 40.5, ['dev', 'mgr']]</strong></code>  <code><em># List-based "record"</em></code>
+&gt;&gt;&gt; <code><strong>L[0]</strong></code>
+'Pat'
+&gt;&gt;&gt; <code><strong>L[1]</strong></code>                               <code><em># Positions/numbers for fields</em></code>
+40.5
+&gt;&gt;&gt; <code><strong>L[2][1]</strong></code>
+'mgr'</pre>
+<p>For some types of data, the list’s access-by-position makes sense—a list of employees in a company, the files in a directory, or numeric matrixes, for example. But a more symbolic record like this may be more meaningfully coded as a dictionary, with labeled fields replacing field positions:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = {'name': 'Pat', 'age': 40.5, 'jobs': ['dev', 'mgr']}</strong></code>
+&gt;&gt;&gt;<code> <strong>D['name']</strong></code>
+'Pat'
+&gt;&gt;&gt; <code><strong>D['age']</strong></code>                           <code><em># Dictionary-based "record"</em></code>
+40.5
+&gt;&gt;&gt; <code><strong>D['jobs'][1]</strong></code>                       <code><em># Names mean more than numbers</em></code>
+'mgr'</pre>
+<p>For variety, here is the same record recoded with <code>dict</code> and keywords, which may seem even more readable to some human readers:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = dict(name='Pat', age=40.5, jobs=['dev', 'mgr'])</strong></code>
+&gt;&gt;&gt;<code> <strong>D['name']</strong></code>
+'Pat'
+&gt;&gt;&gt; <code><strong>D['jobs'].remove('mgr')</strong></code>
+&gt;&gt;&gt;<code> <strong>D</strong></code>
+{'name': 'Pat', 'age': 40.5, 'jobs': ['dev']}</pre>
+<p>In practice, dictionaries tend to be best for data with labeled components, as well as structures that can benefit from quick, direct lookups by name, instead of slower linear (left-to-right) searches. As we’ve seen, they also may be better for sparse collections and collections that grow flexibly.</p>
+<p>Python programmers also have access to the <em>sets</em> we studied in <a data-type="xref" href="ch05.html#numbers_and_expressions">Chapter 5</a>, which are much like the keys of a valueless dictionary; they don’t map keys to values, but can often be used like dictionaries for fast lookups when there is no associated value, especially in search routines:</p>
+<pre data-type="programlisting" class="pagebreak-before">&gt;&gt;&gt; <code><strong>D = {}</strong></code>
+&gt;&gt;&gt;<code> <strong>D['state1'] = True</strong></code>                 <code><em># A visited-state dictionary</em></code>
+&gt;&gt;&gt; <code><strong>'state1' in D</strong></code>
+True
+&gt;&gt;&gt; <code><strong>S = set()</strong></code>
+&gt;&gt;&gt;<code> <strong>S.add('state1')</strong></code>                    <code><em># Same, but with sets</em></code>
+&gt;&gt;&gt; <code><strong>'state1' in S</strong></code>
+True</pre>
+<p>Watch for a rehash of this record representation thread in the next chapter, where you’ll see how <em>tuples</em> and <em>named tuples</em> compare to dictionaries in this role, as well as in <a data-type="xref" href="ch27.html#class_coding_basics">Chapter 27</a>, where you’ll learn how user-defined <em>classes</em> factor into this picture, combining both data and logic to process it.</p>
+</div></aside>
+</div></section>
+<div data-type="footnotes"><p data-type="footnote" id="ch08fn1"><sup><a href="ch08.html#ch08fn1-marker">1</a></sup> In practice, you won’t see many lists written out like this in list-processing programs. It’s more common to see code that processes lists constructed dynamically (at runtime), from user inputs, file contents, and so on. In fact, although it’s important to master literal syntax, many data structures in Python are built by running program code at runtime.</p><p data-type="footnote" id="ch08fn2"><sup><a href="ch08.html#ch08fn2-marker">2</a></sup> This description requires elaboration when the value and the slice being assigned <em>overlap</em>: <code><em>L</em>[2:5]=<em>L</em>[3:6]</code>, for instance, works fine because the value to be inserted is fetched <em>before</em> the deletion happens on the left. Hence, slice assignment is really a <em>fetch + delete + insert</em>, but the fetch part matters too rarely to make the marquee.</p><p data-type="footnote" id="ch08fn3"><sup><a href="ch08.html#ch08fn3-marker">3</a></sup> Unlike <code>+</code> concatenation, <code>append</code> doesn’t have to generate new objects, so it’s usually faster than <code>+</code> too. You can also mimic <code>append</code> with the clever slice assignments of the prior section: <code><em>L</em>[len(<em>L</em>):]=[<em>X</em>]</code> is like <code><em>L</em>.append(<em>X</em>)</code>, and <code><em>L</em>[:0]=[<em>X</em>]</code> is like appending at the front of a list. Both delete an empty slice and insert <code><em>X</em></code>, changing <code><em>L</em></code> in place quickly, like <code>append</code>. Both are arguably more complex than list methods, though. For instance, <code><em>L</em>.insert(0, X)</code> can also append an item to the front of a list, and seems noticeably more mnemonic. <code><em>L</em>.insert(len(<em>L</em>), <em>X</em>)</code> inserts one object at the end too, but unless you like typing, you might as well use <code><em>L</em>.append(<em>X</em>)</code>!</p><p data-type="footnote" id="ch08fn4"><sup><a href="ch08.html#ch08fn4-marker">4</a></sup> As for lists, you might not see dictionaries coded in full using literals very often—programs rarely know all their data before they are run, and more typically extract it dynamically from users, files, and so on. Lists and dictionaries are grown in different ways, though. In the next section you’ll see that you often build up dictionaries by assigning to new keys at runtime; this approach fails for lists, which are commonly grown with <code>append</code> or <code>extend</code> instead.</p></div></div></section></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,864 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 4. Introducing Python Objects"><div class="chapter" id="introducing_python_objects">
+<h1><span class="label">Chapter 4. </span>Introducing Python Objects</h1>
+<p>This chapter begins our tour of the Python language. In an informal sense, in Python we do <em>things with stuff</em>. “Things” take the form of operations like addition and concatenation, and “stuff” refers to the objects on which we perform those operations. In this part of the book, our focus is on that <em>stuff</em>, and the <em>things</em> our programs can do with it.</p>
+<p>Somewhat more formally, in Python, data takes <a contenteditable="false" data-type="indexterm" data-primary="objects" id="id1677"></a>the form of <em>objects</em>—either built-in objects that Python provides, such as strings and lists, or add-on objects we create with Python classes or external-language tools. As you’ll find, these objects are essentially just pieces of memory, with values and associated operations. Moreover, <em>everything</em> is an object in a Python script. Even simple numbers qualify, with values (e.g., <code>99</code>) and supported operations (<code>+</code>, <code>-</code>, and so on).</p>
+<p>Because objects are also the most fundamental notion in Python programming, this chapter gets us started with a survey that previews Python’s built-in object types. Later chapters in this part provide a second pass that fills in details we’ll gloss over in this survey. Here, our goal is a brief tour to introduce the basics.</p>
+<section data-type="sect1" data-pdf-bookmark="The Python Conceptual Hierarchy"><div class="sect1" id="the_python_conceptual_hierarchy">
+<h1>The Python Conceptual Hierarchy</h1>
+<p>Before we get to the code, let’s first establish a clear picture of how this chapter fits into the overall <a contenteditable="false" data-type="indexterm" data-primary="programs" data-secondary="modules" id="id1678"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="statements" id="id1679"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="expressions in" id="id1680"></a><a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="objects" id="id1681"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="expressions" id="id1682"></a>Python picture. From a more concrete perspective, Python programs can be decomposed into modules, statements, expressions, and objects, as follows:</p>
+<ol>
+<li><p>Programs are composed of modules.</p></li>
+<li><p>Modules contain statements.</p></li>
+<li><p>Statements contain expressions.</p></li>
+<li><p><em>Expressions create and process objects</em>.</p></li>
+</ol>
+<p>The discussion of modules in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a> introduced the highest level of this hierarchy. This part’s chapters begin at the bottom—exploring both built-in objects and the expressions you can code to use them.</p>
+<p>We’ll move on to statements in the next part of the book, though you will find that they largely exist to manage the objects you’ll meet here. Furthermore, by the time we reach classes in the OOP part of this book, you’ll discover that they allow you to define new object types of your own, by both using and emulating the object types you will explore here. Because of all this, built-in objects are a mandatory point of embarkation for all Python journeys.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Terminology moment</em>: Traditional introductions to programming often stress its three pillars of <em>sequence</em> (“Do this, then that”), <em>selection</em> (“Do this if that is true”), and <em>repetition</em> (“Do this many times”). Python has tools <a contenteditable="false" data-type="indexterm" data-primary="sequence" id="id1683"></a><a contenteditable="false" data-type="indexterm" data-primary="selection" id="id1684"></a><a contenteditable="false" data-type="indexterm" data-primary="repetition" id="id1685"></a>in all three categories, and these terms might help you organize your thinking early on. But they are also artificial and simplistic, and prone to confuse. For example, tools such as comprehensions are both repetition and selection; these terms have other, more specific meanings in Python; and many later concepts won’t seem to fit this mold at all. In Python, the more strongly unifying principle is <em>objects</em> and what we can do with them. To see why, read on.</p>
+</div>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Why Use Built-in Objects?"><div class="sect1" id="why_use_built_in_objectsquestion_mark">
+<h1>Why Use Built-in Objects?</h1>
+<p>If you’ve used lower-level programming <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="built-in" id="obblt"></a><a contenteditable="false" data-type="indexterm" data-primary="built-in objects" id="bltbjc"></a>languages, you know that much of your work centers on implementing <em>objects</em>—also known as <em>data structures</em>—to represent the components in your application’s domain. You may need to lay out memory structures, manage memory allocation, implement search and access routines, and so on. These chores are about as tedious (and error-prone) as they sound, and they usually distract from your program’s real goals.</p>
+<p>In typical Python programs, most of this grunt work goes away. Because Python provides powerful object types as an intrinsic part of the language, there’s usually no need to code object implementations before you start solving problems. In fact, unless you have a need for special processing that built-in objects don’t provide, you’re almost always better off using a built-in object instead of implementing your own. Here are some reasons why:</p>
+<ul>
+<li><p><strong>Built-in objects make programs easy to write.</strong> For simpler tasks, built-in objects are often all you need to represent the structure of problem domains. Because you <a contenteditable="false" data-type="indexterm" data-primary="collections" id="id1686"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" id="id1687"></a><a contenteditable="false" data-type="indexterm" data-primary="search tables" id="id1688"></a><a contenteditable="false" data-type="indexterm" data-primary="lists" id="id1689"></a><a contenteditable="false" data-type="indexterm" data-primary="built-in objects" data-secondary="collections" id="id1690"></a><a contenteditable="false" data-type="indexterm" data-primary="built-in objects" data-secondary="lists" id="id1691"></a><a contenteditable="false" data-type="indexterm" data-primary="built-in objects" data-secondary="search tables" id="id1692"></a><a contenteditable="false" data-type="indexterm" data-primary="built-in objects" data-secondary="dictionaries" id="id1693"></a>get powerful tools such as collections (lists) and search tables (dictionaries) for free, you can use them immediately. You can get a lot of work done with Python’s built-in object types alone.</p></li>
+<li><p><strong>Built-in objects are components of extensions.</strong> For more complex tasks, you may need to provide your own objects using Python classes or C-language interfaces. But as you’ll see in later parts of this book, objects implemented manually are often built on top of built-in objects such as lists and dictionaries. For instance, a stack data structure may be implemented as a class that manages or customizes a built-in list.</p></li>
+<li><p><strong>Built-in objects are often more efficient than custom data structures.</strong> Python’s built-in objects employ algorithms that have already been optimized and are often implemented in a lower-level language like C for speed. Although you can write similar object types on your own, you’ll usually be hard-pressed to match the level of performance that built-in object types provide.</p></li>
+<li><p><strong>Built-in objects are a standard part of the language.</strong> In some ways, Python borrows both from languages that rely on built-in tools (e.g., Lisp) and languages that rely on the programmer to provide tool implementations of their own (e.g., C++). Although you can implement unique object types in Python, you don’t need to do so just to get started. Moreover, because Python’s built-ins are standard, they’re always the same; proprietary toolkits, on the other hand, tend to differ from site to site.</p></li>
+</ul>
+<p>In other words, not only do built-in object types make programming easier, they’re also more powerful and accessible than most of what can be created from scratch. Regardless of whether you implement <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="built-in" data-startref="obblt" id="id1694"></a><a contenteditable="false" data-type="indexterm" data-primary="built-in objects" data-startref="bltbjc" id="id1695"></a>new object types, built-in objects form the core of every Python program.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Python’s Core Object Types"><div class="sect1" id="pythonapostrophes_core_object_types">
+<h1>Python’s Core Object Types</h1>
+<p><a data-type="xref" href="#python_built_in_left_parenthesiscorerig">Table 4-1</a> previews Python’s built-in objects, and some of the syntax used to code <a contenteditable="false" data-type="indexterm" data-primary="literals" id="id1696"></a><a contenteditable="false" data-type="indexterm" data-primary="object types" id="id1697"></a>their <em>literals</em>—that is, the expressions that generate these objects. Some of these objects will probably seem familiar if you’ve used other languages; for instance, numbers and strings represent numeric and textual values, respectively, and file objects provide an interface for processing real files stored on your computer.</p>
+<p>To some readers, though, the object types in <a data-type="xref" href="#python_built_in_left_parenthesiscorerig">Table 4-1</a> may be more general and flexible than what you are accustomed to. For instance, you’ll find that lists and dictionaries alone are powerful data representation tools that obviate most of the work you do to support collections and searching in lower-level languages. In short, lists provide ordered collections of other objects, while dictionaries store objects by key, and both come with automatic memory management, support arbitrarily nesting, can grow and shrink on demand, and may contain objects of any kind.</p>
+<table class="border" id="python_built_in_left_parenthesiscorerig">
+<caption><span class="label">Table 4-1. </span>Python built-in (core) objects</caption>
+<thead>
+<tr>
+<th>Object type</th>
+<th>Example literals/creation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Numbers</td>
+<td><code>1234</code>, <code>3.1415</code>, <code>0b111</code>, <code>1_234</code>, <code>3+4j</code>, <code>Decimal</code>, <code>Fraction</code></td>
+</tr>
+<tr>
+<td>Strings</td>
+<td><code>'code'</code>, <code>"app's"</code>, <code>b'a\x01c'</code>, <code>'h\u00c4ck'</code>, '<code>hÄck<img src="assets/snake_1f40d.png" width="160" height="160"/>'</code></td>
+</tr>
+<tr>
+<td>Lists</td>
+<td><code>[1, [2, 'three'], 4.5]</code>, <code>list(range(10))</code></td>
+</tr>
+<tr>
+<td>Dictionaries</td>
+<td><code>{'job': 'dev', 'years': 40}</code>, <code>dict(hours=10)</code></td>
+</tr>
+<tr>
+<td>Tuples</td>
+<td><code>(1, 'app', 4, 'U')</code>, <code>tuple('hack')</code>, <code>namedtuple</code></td>
+</tr>
+<tr>
+<td>Files</td>
+<td><code>open('docs.txt')</code>, <code>open(r'C:\data.bin', 'wb')</code></td>
+</tr>
+<tr>
+<td>Sets</td>
+<td><code>set('abc')</code>, <code>{'a', 'b', 'c'}</code></td>
+</tr>
+<tr>
+<td>Other core objects</td>
+<td>Booleans, types, <code>None</code></td>
+</tr>
+<tr>
+<td>Program-unit objects</td>
+<td>Functions, modules, classes (Parts <a data-type="xref" data-xrefstyle="select:labelnumber" href="part04.html#functions_and_generators">IV</a>, <a data-type="xref" data-xrefstyle="select:labelnumber" href="part05.html#modules_and_packages">V</a>, and <a data-type="xref" data-xrefstyle="select:labelnumber" href="part06.html#classes_and_oop">VI</a>)</td>
+</tr>
+<tr>
+<td>Implementation objects</td>
+<td>Compiled code, stack tracebacks (Parts <a data-type="xref" data-xrefstyle="select:labelnumber" href="part04.html#functions_and_generators">IV</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="part07.html#exceptions">VII</a>)</td>
+</tr>
+</tbody>
+</table>
+<p>Also shown in <a data-type="xref" href="#python_built_in_left_parenthesiscorerig">Table 4-1</a>, <em>program units</em> such as functions, modules, and classes—which you’ll meet in later parts of this book—are objects in Python too; they <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="program units" id="id1698"></a><a contenteditable="false" data-type="indexterm" data-primary="program units" id="id1699"></a>are created with statements and expressions such as <code>def</code>, <code>class</code>, <code>import</code>, and <code>lambda</code> and may be passed around scripts freely, stored within other objects, and so on. Python also provides <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="implementation-related" id="id1700"></a><a contenteditable="false" data-type="indexterm" data-primary="implementation-related objects" id="id1701"></a>a set of <em>implementation-related</em> objects such as compiled-code objects, which are generally of interest to tool builders more than application developers; we’ll explore these later, though in less depth due to their specialized roles.</p>
+<p>Despite its title, <a data-type="xref" href="#python_built_in_left_parenthesiscorerig">Table 4-1</a> isn’t really complete because <em>everything</em> we process in Python programs is a kind of object. For instance, when we perform text pattern matching in Python, we create pattern objects, and when we do network scripting, we use socket objects. These other kinds of objects are generally created by importing and using functions in standard or add-on library modules, and have behavior all their own. Patterns and sockets, for example, are made by calling tools in the standard library’s <code>re</code> and <code>socket</code> modules, respectively.</p>
+<p>We usually call the objects in <a data-type="xref" href="#python_built_in_left_parenthesiscorerig">Table 4-1</a> <em>core object types</em>, though, because they <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="calling, core object types" id="id1702"></a>are effective<a contenteditable="false" data-type="indexterm" data-primary="core object types" id="id1703"></a>ly built into the Python language itself—that is, there is specific expression syntax for generating most of them. For instance, when you run the following code with characters surrounded by quotes in a REPL or program file:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>'Python'</strong></code></pre>
+<p>you are, technically speaking, <a contenteditable="false" data-type="indexterm" data-primary="literal expressions" id="id1704"></a><a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="literal expressions" id="id1705"></a>running a <em>literal expression</em> that generates and returns a new <em>string</em> object. There is Python language syntax to make this object. Similarly, an <a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="lists" id="id1706"></a><a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="square brackets" id="id1707"></a>expression wrapped in square brackets makes a <em>list</em>, one in curly braces <a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="curly braces" id="id1708"></a><a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="dictionaries" id="id1709"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" id="id1710"></a>makes a <em>dictionary</em> or <em>set</em>, and so on. Even though, as you’ll see, Python does not require or use type declarations, the syntax of the expressions you run determines the types of objects you create and use. In fact, object-generation expressions like those in <a data-type="xref" href="#python_built_in_left_parenthesiscorerig">Table 4-1</a> are generally where types originate in the Python language.</p>
+<p>Just as importantly, once you create an object, you bind its operation set for all time—you can perform only string operations on a string and list operations on a list. In formal terms, this means that Python is <em>dynamically typed</em>, a model that keeps track of object types for you automatically instead of requiring declaration code, but it is also <em>strongly typed</em>, a constraint that means you can perform on an object only operations that are valid for its type.</p>
+<p>We’ll study each of the object types in <a data-type="xref" href="#python_built_in_left_parenthesiscorerig">Table 4-1</a> completely in upcoming chapters. Before digging into the full details, though, let’s begin by taking a quicker look at Python’s core objects in action. The rest of this chapter provides a preview of the operations we’ll explore in more depth in the chapters that follow. Don’t expect to find the full story here—the goal of this chapter is just to whet your appetite and introduce some key ideas. Still, the best way to get started is to get started, so let’s jump right into some real object-wrangling code.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Numbers"><div class="sect1" id="numbers">
+<h1>Numbers</h1>
+<p>If you’ve done any programming or scripting in the past, some of the object types in <a data-type="xref" href="#python_built_in_left_parenthesiscorerig">Table 4-1</a> will probably seem familiar. Even if you haven’t, numbers are fairly straightforward. Python’s core objects set includes the usual suspects: <em>integers</em> that have no fractional part, <em>floating-point</em> numbers that <a contenteditable="false" data-type="indexterm" data-primary="numbers" data-secondary="integers" id="id1711"></a><a contenteditable="false" data-type="indexterm" data-primary="numbers" data-secondary="floating-point" id="id1712"></a><a contenteditable="false" data-type="indexterm" data-primary="numbers" data-secondary="complex" id="id1713"></a><a contenteditable="false" data-type="indexterm" data-primary="numbers" data-secondary="decimals" id="id1714"></a><a contenteditable="false" data-type="indexterm" data-primary="numbers" data-secondary="rationals" id="id1715"></a><a contenteditable="false" data-type="indexterm" data-primary="numbers" data-secondary="sets" id="id1716"></a><a contenteditable="false" data-type="indexterm" data-primary="integers" id="id1717"></a><a contenteditable="false" data-type="indexterm" data-primary="floating point numbers" id="id1718"></a><a contenteditable="false" data-type="indexterm" data-primary="complex numbers" id="id1719"></a><a contenteditable="false" data-type="indexterm" data-primary="decimals" id="id1720"></a><a contenteditable="false" data-type="indexterm" data-primary="rational numbers" id="id1721"></a><a contenteditable="false" data-type="indexterm" data-primary="sets" id="id1722"></a>do, and more exotic types—<em>complex</em> numbers with imaginary parts, <em>decimals</em> with flexible precision, <em>rationals</em> with numerator and denominator, and full-featured <em>sets</em>. Built-in numbers are enough to represent most numeric quantities—from your age to your bank balance—but specialized numeric objects like vectors and matrixes are also available as third-party add-ons.</p>
+<p>Although they offer fancier options, Python’s basic number objects are, well, basic. Numbers in Python support the normal <a contenteditable="false" data-type="indexterm" data-primary="numbers" data-secondary="mathematical operations" id="id1723"></a><a contenteditable="false" data-type="indexterm" data-primary="mathematical operations" id="id1724"></a>mathematical operations. For instance, the plus sign (<code>+</code>) performs addition, a star (<code>*</code>) is used for multiplication, and two <a contenteditable="false" data-type="indexterm" data-primary="multiplication" id="id1725"></a><a contenteditable="false" data-type="indexterm" data-primary="exponentiation" id="id1726"></a>stars (<code>**</code>) are used for exponentiation. Here is a demo in a Python REPL of the sort we learned about in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a>:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>                        <code><em># Start up a REPL</em></code>
+&gt;&gt;&gt; <code><strong>123 + 222</strong></code>                    <code><em># Integer addition</em></code>
+345
+&gt;&gt;&gt; <code><strong>1.5 * 4</strong></code>                      <code><em># Floating-point multiplication</em></code>
+6.0
+&gt;&gt;&gt; <code><strong>1_234_567, 0x15, bin(21)</strong></code>     <code><em># Separators, hex, binary</em></code>
+(1234567, 21, '0b10101')
+&gt;&gt;&gt; <code><strong>2 ** 100</strong></code>                     <code><em># 2 to the power 100, again</em></code>
+1267650600228229401496703205376</pre>
+<p>Notice the last result here: Python’s integer object automatically provides extra precision for large <a contenteditable="false" data-type="indexterm" data-primary="integers" data-secondary="precision in large numbers" id="id1727"></a><a contenteditable="false" data-type="indexterm" data-primary="precision in large numbers" id="id1728"></a>numbers like this when needed. You can, for instance, compute 2 to the power 12,345 as an integer in Python, but you probably shouldn’t try to grok the result—with nearly 4K digits, it’s a lot to take in:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>len(str(2 ** 12345))</strong></code>         <code><em># How many digits in a really BIG number</em></code>
+3717</pre>
+<p>This nested-call <a contenteditable="false" data-type="indexterm" data-primary="nested calls" id="id1729"></a><a contenteditable="false" data-type="indexterm" data-primary="str function" id="id1730"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="str" id="id1731"></a>form works <em>from inside out</em>—first computing the <code>**</code> result, then converting it to a string of digits with the built-in <code>str</code> function, and finally getting the length of the resulting string with <code>len</code>. The end result is the number of digits in the number. <code>str</code> and <code>len</code> both work on many object types, and we’ll use them again as we move along.</p>
+<p>Besides expressions, there are a handful of useful numeric modules that ship with Python in <em>modules</em>—which are just packages of additional tools that we import to use, using statements like <code>import</code> introduced in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import math</strong></code>
+&gt;&gt;&gt; <code><strong>math.pi</strong></code>
+3.141592653589793
+&gt;&gt;&gt; <code><strong>math.sqrt(85)</strong></code>
+9.219544457292887</pre>
+<p>The <code>math</code> module contains <a contenteditable="false" data-type="indexterm" data-primary="math module" id="id1732"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="math module" id="id1733"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="random" id="id1734"></a><a contenteditable="false" data-type="indexterm" data-primary="random module" id="id1735"></a>more advanced numeric tools as functions, while the <code>random</code> module performs random-number generation and random selections (here, from a Python <em>list</em> coded in square brackets—an ordered collection of other objects to be introduced later in this chapter):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import random</strong></code>
+&gt;&gt;&gt; <code><strong>random.random()</strong></code>
+0.7082048489415967
+&gt;&gt;&gt; <code><strong>random.choice([1, 2, 3, 4])</strong></code>
+2</pre>
+<p>Python also includes more exotic numeric objects—such as complex, fixed-precision, and rational numbers, as well as sets and Booleans—and the third-party open source extension domain has even more (e.g., matrixes and vectors, and extended precision numbers). We’ll defer discussion of these objects until later in this chapter and book.</p>
+<p>So far, we’ve been using Python much like a simple calculator; to do better justice to its built-in objects catalog, let’s move on to explore strings.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Big numbers versus DOS attacks</em>: Python integers can be arbitrarily large and may even be used to represent floating-point values with extended precision. While integer size is limited only by your computer’s memory, though, Python 3.11 and later require extra steps to convert pathologically large numbers to decimal strings (e.g., for <code>str</code> or display). This avoids rare denial-of-service attacks with a 4,300-digit limit that can be lifted with a <code>sys</code> module tool, <code>set_int_max_str_digits</code>; call this to count digits in larger numbers, and see Python’s docs for all the sordid details.</p>
+</div>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Strings"><div class="sect1" id="strings">
+<h1>Strings</h1>
+<p>Strings are used to record both textual information (your name, for instance) as well as arbitrary collections of bytes (such as an image file’s contents). They are our first example of what in Python we call a <em>sequence</em>—a positionally ordered collection of other objects. Sequences maintain a left-to-right order among the items they contain: their items are stored and fetched by their relative positions. Strictly speaking, strings are sequences of one-character strings; other, more general sequence objects include <em>lists</em> and <em>tuples</em>, covered later.</p>
+<section data-type="sect2" data-pdf-bookmark="Sequence Operations"><div class="sect2" id="sequence_operations-id00075">
+<h2>Sequence Operations</h2>
+<p>As sequences, strings support <a contenteditable="false" data-type="indexterm" data-primary="strings" data-secondary="sequence operations" data-tertiary="indexing expressions" id="id1736"></a><a contenteditable="false" data-type="indexterm" data-primary="sequence operations" data-secondary="indexing expressions" id="id1737"></a><a contenteditable="false" data-type="indexterm" data-primary="indexing" data-secondary="expressions" id="id1738"></a><a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="indexing expressions" id="id1739"></a>operations that assume a positional ordering among items. For example, if we have a four-character string coded inside <em>quotes</em> (of the single or double straight kind—they mean the same thing, but single is more common and less busy), we can verify its length with the built-in <code>len</code> function and fetch its components with <em>indexing</em> expressions:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S = 'Code'</strong></code>           <code><em># Make a 4-character string, and assign it to a name</em></code>
+&gt;&gt;&gt; <code><strong>len(S)</strong></code>               <code><em># Length: number characters</em></code>
+4
+&gt;&gt;&gt; <code><strong>S[0]</strong></code>                 <code><em># The first item in S, indexing by zero-based position</em></code>
+'C'
+&gt;&gt;&gt; <code><strong>S[1]</strong></code>                 <code><em># The second item from the left</em></code>
+'o'</pre>
+<p>In Python, indexes are coded in square brackets as offsets from the front, so start from 0: the first item is at index 0, the second is at index 1, and so on.</p>
+<p>Notice how we assign the string to a <em>variable</em> named <code>S</code> here. We’ll go into detail on how this works later (especially in <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>), but Python variables never need to be declared ahead of time. A variable is created when you assign it a value, may be assigned any type of object, and is replaced with its value when it shows up in an expression. It must also have been previously assigned by the time you use its value. For the purposes of this chapter, it’s enough to know that we need to assign an object to a variable in order to save it for later use.</p>
+<p>In Python, we can also index backward, from the <em>end</em>—positive indexes count forward from the left, and negative indexes count backward from the right. Continuing our REPL session:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S[-1]</strong></code>                <code><em># The last item from the end in S</em></code>
+'e'
+&gt;&gt;&gt; <code><strong>S[-2]</strong></code>                <code><em># The second-to-last item from the end</em></code>
+'d'</pre>
+<p>Formally, a negative index is simply added to the string’s length to yield a positive offset, so the following two operations are equivalent (though the first is easier to code and less easy to get wrong):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S[-1]</strong></code>                <code><em># The last item in S</em></code>
+'e'
+&gt;&gt;&gt; <code><strong>S[len(S)-1]</strong></code>          <code><em># Negative indexing, the hard way</em></code>
+'e'</pre>
+<p>Notice that we can use <a contenteditable="false" data-type="indexterm" data-primary="strings" data-secondary="sequence operations" data-tertiary="arbitrary expressions" id="id1740"></a><a contenteditable="false" data-type="indexterm" data-primary="sequence operations" data-secondary="arbitrary expressions" id="id1741"></a><a contenteditable="false" data-type="indexterm" data-primary="arbitrary expressions" id="id1742"></a><a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="arbitrary" id="id1743"></a>an <em>arbitrary expression</em> in the square brackets, not just a hardcoded number literal—anywhere that Python expects a value, we can use a literal, a variable, or any expression we wish. Python’s syntax is completely general this way.</p>
+<p>In addition to simple positional <a contenteditable="false" data-type="indexterm" data-primary="indexing" data-secondary="expressions" data-tertiary="slicing" id="id1744"></a><a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="indexing expressions" data-tertiary="slicing" id="id1745"></a><a contenteditable="false" data-type="indexterm" data-primary="slicing" id="id1746"></a>indexing, sequences also support a more general form of indexing known as <em>slicing</em>, which is a way to extract an entire section (a.k.a. slice) in a single step. For example:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S</strong></code>                     <code><em># A 4-character string</em></code>
+'Code'
+&gt;&gt;&gt; <code><strong>S[1:3]</strong></code>                <code><em># Slice of S from offsets 1 through 2 (not 3)</em></code>
+'od'</pre>
+<p>Probably the easiest way to think of slices is that they are a way to extract an entire <em>column</em> from a string in a single step. Their general form, <code><em>X</em>[<em>I</em>:<em>J</em>]</code>, means “give me everything in <code><em>X</em></code> from offset <code><em>I</em></code> up to but not including offset <code><em>J</em></code>.” The result is returned in a new object. The second of the preceding operations, for instance, gives us all the characters in string <code>S</code> from offsets 1 through 2 (that is, 1 through 3 – 1) as a new string. The effect is to slice or “parse out” the two characters in the middle at offsets 1 and 2.</p>
+<p>In a slice, the left bound defaults to zero, and the right bound defaults to the length of the sequence being sliced. This leads to some common usage variations:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S[1:]</strong></code>                 <code><em># Everything past the first (1:len(S))</em></code>
+'ode'
+&gt;&gt;&gt; <code><strong>S</strong></code>                     <code><em># S itself hasn't changed</em></code>
+'Code'
+&gt;&gt;&gt; <code><strong>S[0:3]</strong></code>                <code><em># Everything but the last</em></code>
+'Cod'
+&gt;&gt;&gt; <code><strong>S[:3]</strong></code>                 <code><em># Same as S[0:3]</em></code>
+'Cod'
+&gt;&gt;&gt; <code><strong>S[:-1]</strong></code>                <code><em># Everything but the last again, but simpler (0:-1)</em></code>
+'Cod'
+&gt;&gt;&gt; <code><strong>S[:]</strong></code>                  <code><em># All of S as a top-level copy (0:len(S))</em></code>
+'Code'</pre>
+<p>Note in the second-to-last command how negative offsets can be used to give bounds for slices, too, and how the last operation effectively copies the entire string. As you’ll learn later, there is no reason to copy a string, but this form can be useful for other sequences like lists.</p>
+<p>Finally, as sequences, strings also support <em>concatenation</em> with the plus sign (joining two strings into a new string) and <em>repetition</em> (making a new string by repeating another):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S</strong></code>
+'Code'
+&gt;&gt;&gt; <code><strong>S + 'xyz'</strong></code>             <code><em># Concatenation</em></code>
+'Codexyz'
+&gt;&gt;&gt; <code><strong>S</strong></code>                     <code><em># S is unchanged
+</em></code>'Code'
+&gt;&gt;&gt; <code><strong>S * 8</strong> </code>                <code><em># Repetition</em></code>
+'CodeCodeCodeCodeCodeCodeCodeCode'</pre>
+<p>Notice that the plus sign (<code>+</code>) means different things for different objects: addition for numbers, and concatenation for strings. This is a general property of Python that we’ll <a contenteditable="false" data-type="indexterm" data-primary="polymorphism" id="id1747"></a>regularly call <em>polymorphism</em> in this book—in short, this means that the meaning of an operation depends on the objects being operated on.</p>
+<p>As you’ll see when we study dynamic typing, this polymorphism property accounts for much of the conciseness and flexibility of Python code. Because object types aren’t constrained, a Python-coded operation can normally work on many different types of objects automatically, as long as they support a compatible interface (like the <code>+</code> operation here). This turns out to be a huge idea in Python; you’ll learn more about it later on this tour.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Immutability"><div class="sect2" id="immutability">
+<h2>Immutability</h2>
+<p>Also notice in the prior examples <a contenteditable="false" data-type="indexterm" data-primary="strings" data-secondary="immutability" id="strimm"></a><a contenteditable="false" data-type="indexterm" data-primary="immutability" data-secondary="strings" id="immtsg"></a><a contenteditable="false" data-type="indexterm" data-primary="mutability" data-secondary="strings" id="mutstrg"></a>that we were not changing the original string with any of the operations we ran on it. As it turns out, every string operation is defined to produce a new string as its result, because strings are <em>immutable</em> in Python—they cannot be changed in place after they are created.</p>
+<p>More generally, you can never overwrite the values of immutable objects. For example, you can’t change a string by assigning to one of its positions, but you can always build a new one and assign it to the same name. Because Python automatically cleans up old objects as you go (as you’ll learn later), this isn’t as inefficient as it may sound:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>S</strong></code>
+'Code'
+
+&gt;&gt;&gt; <code><strong>S[0] = 'z'</strong></code>             <code><em># Immutable objects cannot be changed</em></code>
+…<code><em>error text omitted</em></code>…
+TypeError: 'str' object does not support item assignment
+
+&gt;&gt;&gt; <code><strong>S = 'Z' + S[1:]</strong></code>        <code><em># But we can run expressions to make new objects
+</em></code>&gt;&gt;&gt; <code><strong>S</strong></code>
+'Zode'</pre>
+<p>Every object in Python is classified as either immutable (unchangeable) or not. In terms of the core objects, <em>numbers</em>, <em>strings</em>, and <em>tuples</em> are immutable; but <em>lists</em>, <em>dictionaries</em>, and <em>sets</em> are not—they can be changed in place freely, as can most new objects you’ll code with classes. This distinction turns out to <span class="keep-together">be crucial</span> in Python work, in ways that we can’t yet fully explore. Among other things, immutability can be used to guarantee that an object remains constant throughout your program; mutable objects’ values, by contrast, can be changed at any time and place (and whether your code expects it or not!).</p>
+<p>Strictly speaking, you can change text-based data <em>in place</em> if you either expand it into a <em>list</em> of individual characters and join it back together with nothing between, or use the special-purpose <code>bytearray</code> object:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S = 'Python'</strong></code>
+&gt;&gt;&gt; <code><strong>L = list(S)</strong> </code>                            <code><em># Expand to a list: […]</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+['P', 'y', 't', 'h', 'o', 'n']
+&gt;&gt;&gt; <code><strong>L[0] = 'C'</strong></code>                              <code><em># Change it in place</em></code>
+&gt;&gt;&gt; <code><strong>''.join(L)</strong></code>                              <code><em># Join with empty delimiter</em></code>
+'Cython'
+
+&gt;&gt;&gt; <code><strong>B = bytearray(b'app')</strong></code>                   <code><em># A bytes/list hybrid (ahead)</em></code>
+&gt;&gt;&gt; <code><strong>B.extend(b'lication')</strong></code>                   <code><em># 'b' means bytes string</em></code>
+&gt;&gt;&gt; <code><strong>B</strong> </code>                                      <code><em># B[i] = ord(x) works here too</em></code>
+bytearray(b'application')
+&gt;&gt;&gt; <code><strong>B.decode()</strong></code>                              <code><em># Translate to normal string</em></code>
+'application'</pre>
+<p>The <code>bytearray</code> supports in-place changes for text, but only for text whose characters are all at most 8-bits wide (e.g., ASCII). All other strings are still immutable—<code>bytearray</code> is a distinct hybrid of immutable <em>bytes</em> strings (whose <code>b'…'</code> syntax distinguishes them from normal text strings) and mutable <em>lists</em> (coded and displayed in <code>[]</code>), but we have <a contenteditable="false" data-type="indexterm" data-primary="strings" data-secondary="immutability" data-startref="strimm" id="id1748"></a><a contenteditable="false" data-type="indexterm" data-primary="immutability" data-secondary="strings" data-startref="immtsg" id="id1749"></a><a contenteditable="false" data-type="indexterm" data-primary="mutability" data-secondary="strings" data-startref="mutstrg" id="id1750"></a>to wait until we learn more about both these and Unicode text ahead to fully grasp this code.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Type-Specific Methods"><div class="sect2" id="type_specific_methods">
+<h2>Type-Specific Methods</h2>
+<p>Every string operation we’ve studied <a contenteditable="false" data-type="indexterm" data-primary="strings" data-secondary="methods" id="strgmth"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="strings" id="mthdsgg"></a>so far is really a sequence operation—that is, these operations will work on other sequences in Python as well, including lists and tuples. In addition to generic sequence operations, though, strings also have operations all their own, available as <em>methods</em>—functions that are attached to and act upon a specific object, which are triggered with a call expression using parentheses.</p>
+<p>For example, the string <code>find</code> method is the basic substring search operation (it returns the offset of the passed-in substring, or <code>−1</code> if it is not present), and the string <code>replace</code> method performs global searches and replacements; both act on the subject that they are attached to and called from:</p>
+<pre data-type="programlisting" class="pagebreak-before">&gt;&gt;&gt; <code><strong>S = 'Code'</strong></code>
+&gt;&gt;&gt; <code><strong>S.find('od')</strong></code>                 <code><em># Find the offset of a substring in S</em></code>
+1
+&gt;&gt;&gt; <code><strong>S</strong></code>
+'Code'
+&gt;&gt;&gt; <code><strong>S.replace('od', 'abl')</strong></code>       <code><em># Replace all substrings 'od' in S with 'abl'</em></code>
+'Cable'
+&gt;&gt;&gt; <code><strong>S</strong></code>
+'Code'</pre>
+<p>Again, despite the names of these string methods, we are not changing the original strings here but creating new strings as the results—because strings are immutable, this is the only way this can work. String methods are the first line of text-processing tools in Python. Other methods split a string into substrings on a delimiter (handy as a simple form of parsing), perform case conversions, test the content of the string (digits, letters, and so on), and strip whitespace characters off the ends of the string:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>line = 'aaa,bbb,ccccc,dd'</strong></code>
+&gt;&gt;&gt; <code><strong>line.split(',')</strong></code>              <code><em># Split on a delimiter into a list of substrings</em></code>
+['aaa', 'bbb', 'ccccc', 'dd']
+
+&gt;&gt;&gt; <code><strong>S = 'code'</strong></code>
+&gt;&gt;&gt; <code><strong>S.upper()</strong></code>                    <code><em># Upper- and lowercase conversions</em></code>
+'CODE'
+&gt;&gt;&gt; <code><strong>S.isalpha()</strong></code>                  <code><em># Content tests: isalpha, isdigit, etc.</em></code>
+True
+
+&gt;&gt;&gt; <code><strong>line = 'aaa,bbb,ccccc,dd\n'</strong></code>
+&gt;&gt;&gt; <code><strong>line.rstrip()</strong></code>                <code><em># Remove whitespace characters on the right side
+</em></code>'aaa,bbb,ccccc,dd'
+&gt;&gt;&gt; <code><strong>line.rstrip().split(',')</strong></code>     <code><em># Combine two operations, run left to right</em></code>
+['aaa', 'bbb', 'ccccc', 'dd']</pre>
+<p>Notice the last command here—it strips before it splits because Python runs it <em>from left to right</em>, making a temporary result along the way. You can chain method calls this way, as long as the prior call returns an object with methods.</p>
+<p>Strings methods are also one way to run an advanced substitution operation known as <em>formatting</em>, available as an expression (the original), a string method call (newer), and a literal form called f-strings (newest). The first two replace keys with separate values, the third replaces embedded Python expressions with their results, and all three resolve substitution values and build new strings when they are run:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>tool  = 'Python'</strong></code>
+&gt;&gt;&gt; <code><strong>major = 3</strong></code>
+&gt;&gt;&gt; <code><strong>minor = 3</strong></code>
+ 
+&gt;&gt;&gt; <code><strong>'Using %s version %s.%s' % (tool, major, minor + 9)</strong></code>         <code><em># Format expression</em></code>
+'Using Python version 3.12'
+ 
+&gt;&gt;&gt; <code><strong>'Using {} version {}.{}'.format(tool, major, minor + 9)</strong></code>     <code><em># Format method</em></code>
+'Using Python version 3.12'
+
+&gt;&gt;&gt; <code><strong>f'Using {tool} version {major}.{minor + 9}'</strong>  </code>               <code><em># Format literal</em></code>
+'Using Python version 3.12'</pre>
+<p>And yes, this comes in <em>three</em> flavors today. While you may want to pick one for your own code, all three are fair game in code you may read (and inclusive books). Each form is rich with features, which we’ll postpone discussing until later in this book, and which tend to matter most when you must generate readable output and numeric reports:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>'%.2f | %+05d' % (3.14159, -62)</strong></code>                   <code><em># Digits, signs, padding</em></code>
+'3.14 | −0062'
+
+&gt;&gt;&gt; <code><strong>'{1:,.2f} | {0}'.format('sapp'[1:], 296999.256)</strong></code>   <code><em># Commas, decimal digits</em></code>
+'296,999.26 | app'
+
+&gt;&gt;&gt; <code><strong>f'{296999.256:,.2f} | {'sapp'[1:]}'</strong></code>               <code><em># Ditto, with nested quotes</em></code>
+'296,999.26 | app'</pre>
+<p>Although sequence operations are generic, methods are not—while some objects share some method names, string method operations generally work only on strings, and nothing else. As a rule of thumb, Python’s <em>toolset</em> is layered: generic operations that span multiple object types show up as built-in functions or expressions (e.g., <code>len(X)</code>, <code>X[0]</code>), but type-specific operations are method calls (e.g., <code><em>aString</em>.upper()</code>). Finding the tools you need among all these categories will become more natural as you use Python, but the <a contenteditable="false" data-type="indexterm" data-primary="strings" data-secondary="methods" data-startref="strgmth" id="id1751"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="strings" data-startref="mthdsgg" id="id1752"></a>next section gives a few tips you can use right now.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Getting Help"><div class="sect2" id="getting_help">
+<h2>Getting Help</h2>
+<p>The methods introduced in the <a contenteditable="false" data-type="indexterm" data-primary="strings" data-secondary="help resources" id="strhpr"></a>prior section are a representative, but small, sample of what is available for string objects. In general, this book is not exhaustive in its coverage of object methods, but for more <a contenteditable="false" data-type="indexterm" data-primary="dir function" id="id1753"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="dir" id="id1754"></a>details, you can always call the built-in <code>dir</code> function. This function lists variables assigned in the caller’s scope when called with no argument; more usefully, it returns a list of all the attributes available for any object passed to it. Because methods are callable attributes, they will show up in this list. Assuming <code>S</code> is still the string <code>'Code'</code>, here are its attributes:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>dir(S)</strong></code>
+['__add__', '__class__', '__contains__', '__delattr__', '__dir__', '__doc__',
+'__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', 
+…<code><em>etc</em></code>…
+'rindex', 'rjust', 'rpartition', 'rsplit', 'rstrip', 'split', 'splitlines',
+'startswith', 'strip', 'swapcase', 'title', 'translate', 'upper', 'zfill']</pre>
+<p>Run this live for the full list; its middle was cut at …<em>etc</em>… for space here (strings have 81 attributes today!). The names without underscores in the second half of this list are all the callable methods on string objects. The names with <em>double underscores</em> won’t be important until later in the book, when we study operator overloading in classes. In short, they represent the implementation of the string object and support customization. The <code>__add__</code> method of strings, for example, is how concatenation ultimately works; Python maps the first of the following to the second internally, though you shouldn’t usually use the second form yourself (it’s less intuitive, and might even run slower):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S + 'head!'</strong></code>
+'Codehead!'
+&gt;&gt;&gt; <code><strong>S .__add__('head!')</strong></code>
+'Codehead!'</pre>
+<p>The <code>dir</code> function simply gives methods’ names. To ask what they do, you can pass them to the <code>help</code> function:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>help(S.replace)</strong>  </code>                         <code><em># Or help(str.replace)</em></code>
+Help on built-in function replace:
+replace(old, new, count=-1, /) method of builtins.str instance
+    Return a copy with all occurrences of substring old replaced by new.
+…<code><em>etc</em></code>…</pre>
+<p>Press the <code>Q</code> key to exit a <code>help</code> display in most console windows. <code>help</code> is one of a handful of interfaces to a system of code that ships with Python <a contenteditable="false" data-type="indexterm" data-primary="Pydoc" id="id1755"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="Pydoc" id="id1756"></a>known as <em>Pydoc</em>—a tool for extracting documentation from objects. Later in the book, you’ll see that Pydoc can also render its reports in HTML format for display in a web browser.</p>
+<p>You can also ask for help on an <em>entire string</em> with <code>help(<em>S</em>)</code>, but it may not help: the string’s value is used instead of the string itself, unless it’s empty. To do better, you need to know either the name of the string type, or that the <code>type</code> built-in returns any object’s type as another object: <code>help(str)</code> and <code>help(type(<em>S</em>))</code> both give help for strings but may be more than you want—because they describe every method, <code>help</code> may be best used on specific methods.</p>
+<p>For more info, you can also consult Python’s standard-library reference manual, but <code>dir</code> and <code>help</code> are the first level of documentation in Python, especially when <a contenteditable="false" data-type="indexterm" data-primary="strings" data-secondary="help resources" data-startref="strhpr" id="id1757"></a>working in an interactive REPL. Try them soon on an object near you.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Other Ways to Code Strings"><div class="sect2" id="other_ways_to_code_strings">
+<h2>Other Ways to Code Strings</h2>
+<p>So far, we’ve looked at the string object’s sequence operations and type-specific methods. Python also <a contenteditable="false" data-type="indexterm" data-primary="strings" data-secondary="backslash escape" id="id1758"></a><a contenteditable="false" data-type="indexterm" data-primary="backslash escape sequences" id="id1759"></a>provides a variety of ways for us to code strings, which we’ll explore in greater depth later. For instance, special characters can be represented as <em>backslash escape</em> sequences, which Python displays in <code>\xNN</code> <span class="keep-together">hexadecimal</span> escape notation, unless they stand for printable characters:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S = 'A\nB\tC'</strong></code>            <code><em># Escapes: \n is newline, \t is tab
+</em></code>&gt;&gt;&gt; <code><strong>len(S)</strong></code>                   <code><em># Each stands for just one character
+</em></code>5
+
+&gt;&gt;&gt; <code><strong>S = 'A\0B\0C'</strong></code>            <code><em># \0, a binary zero byte, does not terminate string
+</em></code>&gt;&gt;&gt; <code><strong>len(S)</strong></code>
+5
+&gt;&gt;&gt; <code><strong>S</strong></code>                        <code><em># Nonprintables are displayed as \xNN hex escapes</em></code>
+'A\x00B\x00C'</pre>
+<p>As hinted earlier, Python allows strings to be enclosed in <em>single</em> or <em>double</em> quote <a contenteditable="false" data-type="indexterm" data-primary="strings" data-secondary="quote characters" id="id1760"></a><a contenteditable="false" data-type="indexterm" data-primary="quote characters in strings" id="id1761"></a>characters—they mean the same thing but allow the other type of quote to be embedded without an escape (most programmers prefer single quotes for less clutter, unless they’re pining for other-language pasts). You can also code multiline string literals enclosed in triple quotes (single or double)—when used, all the lines are concatenated together, and newline characters (<code>\n</code>) are added where line breaks appear. This is useful for embedding things like multiline HTML, YAML, or JSON code in a Python script, as well as stubbing out lines of code temporarily—just add three quotes above and below:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>msg = """</strong></code>
+... <code><strong>aaaaaaaaaaaa</strong></code>
+... <code><strong>bbb'''bbb""bbb</strong></code>
+... <code><strong>cccccccc</strong></code>
+... <code><strong>"""</strong></code>
+&gt;&gt;&gt; <code><strong>msg</strong></code>
+'\naaaaaaaaaaaa\nbbb\'\'\'bbb""bbb\ncccccccc\n'</pre>
+<p>Python also supports <a contenteditable="false" data-type="indexterm" data-primary="string literals" data-secondary="backslash escape sequences and" id="id1762"></a>a <em>raw</em> string literal that turns off the backslash escape mechanism. Such literals start with the letter <code>r</code> and are useful for strings like regular-expression patterns, and directory paths on Windows sans doubled-up backslashes (e.g., <code>r'C:\Users\you\code'</code>).</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Unicode Strings"><div class="sect2" id="unicode_strings">
+<h2>Unicode Strings</h2>
+<p>Python’s strings also come with full Unicode support required for processing <em>non-ASCII text</em>. Such text includes characters in non-English languages, as well as <a contenteditable="false" data-type="indexterm" data-primary="strings" data-secondary="Unicode" id="strunc"></a><a contenteditable="false" data-type="indexterm" data-primary="Unicode" data-secondary="strings" id="id1763"></a>symbols and emojis, and is common today in web pages, emails, GUIs, documents, and data. Python’s string objects let you process such text seamlessly: its normal <code>str</code> string handles Unicode text (including ASCII, which is just a simple kind of Unicode); and its <code>bytes</code> string, together with its <code>bytearray</code> mutable cousin used earlier, handles raw byte values (including media and encoded text):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>'hÄck'</strong></code>                   <code><em># Normal str strings are Unicode text</em></code>
+'hÄck'
+&gt;&gt;&gt; <code><strong>b'a\x01c'</strong></code>                <code><em># bytes strings are byte-based data</em></code>
+b'a\x01c'</pre>
+<p>Formally, Python’s byte strings are sequences of <em>8-bit bytes</em> that print with ASCII characters when possible, and its text strings are sequences of <em>Unicode code points</em>—identifying <a contenteditable="false" data-type="indexterm" data-primary="Unicode" data-secondary="strings" data-tertiary="code points" id="id1764"></a>numbers for characters, which print as the usual glyphs we’ve come to know and do not necessarily map to single bytes when stored in memory or encoded in files. In fact, the notion of bytes doesn’t quite apply to Unicode: it includes a host of character code points too large to fit in a byte, and defines encodings for storage and transmission in which characters may be any size at all:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>'Code'</strong></code>                              <code><em># Characters may be any size in memory</em></code>
+'Code'
+&gt;&gt;&gt; <code><strong>'Code'.encode('utf-8')</strong></code>              <code><em># Encoded to 4 bytes in UTF-8 in files</em></code>
+b'Code'
+&gt;&gt;&gt; <code><strong>'Code'.encode('utf-16')</strong></code>             <code><em># But encoded to 10 bytes in UTF-16</em></code>
+b'\xff\xfeC\x00o\x00d\x00e\x00'</pre>
+<p>This is especially true for richer text (<code>ord</code> gives a character’s code point, and <code>hex</code> gives its hexadecimal string):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>hex(ord('<img src="assets/snake_1f40d.png" width="160" height="160"/>'))</strong></code>                      <code><em># Code points too big for a byte</em></code>
+'0x1f40d'
+&gt;&gt;&gt; <code><strong>len('<img src="assets/snake_1f40d.png" width="160" height="160"/>hÄck<img src="assets/clapping-hands_1f44f.png" width="160" height="160"/>')</strong></code>                     <code><em># One character (code point) each</em></code>
+6
+&gt;&gt;&gt; <code><strong>len('<img src="assets/snake_1f40d.png" width="160" height="160"/>hÄck<img src="assets/clapping-hands_1f44f.png" width="160" height="160"/>'.encode('utf-8'))</strong></code>     <code><em># But encoded bytes sizes vary</em></code>
+13
+&gt;&gt;&gt; <code><strong>len('<img src="assets/snake_1f40d.png" width="160" height="160"/>hÄck<img src="assets/clapping-hands_1f44f.png" width="160" height="160"/>'.encode('utf-16'))</strong></code>
+18</pre>
+<p>To code non-ASCII characters <a contenteditable="false" data-type="indexterm" data-primary="strings" data-secondary="text strings" id="id1765"></a><a contenteditable="false" data-type="indexterm" data-primary="text strings" data-secondary="non-ASCII characters" id="id1766"></a>in text strings, use <code>\x</code> hexadecimal escapes; short <code>\u</code> or long <code>\U</code> Unicode escapes; or raw text interpreted per <a contenteditable="false" data-type="indexterm" data-primary="text strings" data-secondary="Unicode code-points" id="id1767"></a><a contenteditable="false" data-type="indexterm" data-primary="Unicode" data-secondary="code-points" id="id1768"></a>source encodings optionally declared in program files when code is read (the default for code is the universal UTF-8). To illustrate, here’s our non-ASCII A-with-diaeresis character <code>Ä</code> coded four ways in Python:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>'h\xc4\u00c4\U000000c4Äck'</strong></code>         <code><em># Coding non-ASCII: hex, short, long, raw</em></code>
+'hÄÄÄÄck'</pre>
+<p>In text strings, all these forms specify Unicode <em>code points</em> that stand for characters. By contrast, byte strings use only <code>\x</code> hexadecimal escapes to embed the values of <em>raw bytes</em>; this isn’t always text, but when it is, it’s the encoded form of text, not its decoded code points, and encoded bytes are the same as code points only for simple text and encodings:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>'\u00A3', '\u00A3'.encode('latin1'), b'\xA3'.decode('latin1')</strong></code>
+('£', b'\xa3', '£')</pre>
+<p>Apart from these string types, Unicode processing often reduces to transferring text data to and from <em>files</em>—which automatically <em>encode</em> text to bytes when stored in a file and <em>decode</em> it to characters (a.k.a. code points) when read back into memory. Once loaded, we usually process text as strings in decoded form only. To make this work, <em>text files</em> implement encodings and accept and return text strings, but <em>binary files</em> instead deal in <code>bytes</code> strings for raw data.</p>
+<p>You’ll meet Unicode again in the files coverage later in this chapter, but we will save the rest of the Unicode story for later in this book. It crops up briefly in Chapters <a data-xrefstyle="select:labelnumber" data-type="xref" href="ch07.html#string_fundamentals">7</a>, <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch09.html#tuplescomma_filescomma_and_everything_e">9</a>, and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch15.html#the_documentation_interlude">15</a>, but for the most part is postponed until this book’s advanced topics part, in <a data-type="xref" href="ch37.html#unicode_and_byte_strings">Chapter 37</a>. Unicode is crucial in many (or most) domains today, but many Python newcomers can get by with just a passing acquaintance until they’ve mastered string basics.</p>
+<p>In addition to its built-in string objects, Python’s standard toolset includes support for text pattern matching with its <code>re</code> module, as well as parsing textual data like JSON, CSV, XML, and HTML. You’ll meet additional examples of some of these tools later in this book, but this tutorial intro has already said enough about strings and must move on.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Lists"><div class="sect1" id="lists-id00067">
+<h1>Lists</h1>
+<p>The Python list object is the most general <em>sequence</em> provided by the language. Lists are positionally ordered collections of arbitrarily typed objects, and they have no fixed size. They are also <em>mutable</em>—unlike strings, lists can be modified in place by assignment to offsets as well as a variety of list method calls. Accordingly, they provide a very flexible tool for representing arbitrary collections—files in a folder, employees in a company, emails in your inbox, and so on.</p>
+<section data-type="sect2" data-pdf-bookmark="Sequence Operations"><div class="sect2" id="sequence_operations-id000109">
+<h2>Sequence Operations</h2>
+<p>Because they are sequences, lists <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="sequence operations" id="id1769"></a><a contenteditable="false" data-type="indexterm" data-primary="sequence operations" data-secondary="lists" id="id1770"></a>support all the sequence operations we discussed for strings; the only difference is that most of them return lists instead of strings. For instance, given a three-item list:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [123, 'text', 1.23]</strong></code>            <code><em># A list of three different-type objects</em></code>
+&gt;&gt;&gt; <code><strong>len(L)</strong></code>                             <code><em># Number of items in the list</em></code>
+3</pre>
+<p>we can index, slice, and so on, just as for strings:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L[0]</strong></code>                               <code><em># Indexing by position (offset)
+</em></code>123
+&gt;&gt;&gt; <code><strong>L[:-1]</strong></code>                            <code> <em># Slicing a list returns a new list</em></code>
+[123, 'text']
+
+&gt;&gt;&gt; <code><strong>L + [4, 5, 6]</strong></code>                      <code><em># Concat/repeat make new lists too</em></code>
+[123, 'text', 1.23, 4, 5, 6]
+&gt;&gt;&gt; <code><strong>L * 2</strong></code>
+[123, 'text', 1.23, 123, 'text', 1.23]
+
+&gt;&gt;&gt; <code><strong>L</strong></code>                                  <code><em># We're not changing the original list</em></code>
+[123, 'text', 1.23]</pre>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Type-Specific Operations"><div class="sect2" id="type_specific_operations">
+<h2>Type-Specific Operations</h2>
+<p>Python’s lists may be <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="type-specific operations" id="lstytp"></a><a contenteditable="false" data-type="indexterm" data-primary="type-specific operations, lists" id="typpls"></a>reminiscent of <em>arrays</em> in other languages, but they tend to be more powerful. For one thing, they have no fixed <em>type</em> constraint—the list we just looked at, for example, contains three objects of completely different types (an integer, a string, and a floating-point number). Further, lists have no fixed <em>size</em>. That is, they can grow and shrink on demand, in response to list-specific operations:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L.append('Py')</strong></code>                     <code><em># Growing: add object at end of list</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[123, 'text', 1.23, 'Py']
+
+&gt;&gt;&gt; <code><strong>L.pop(2)</strong></code>                           <code><em># Shrinking: delete an item in the middle</em></code>
+1.23
+&gt;&gt;&gt; <code><strong>L</strong></code>                                  <code><em># "del L[2]" deletes from a list too</em></code>
+[123, 'text', 'Py']</pre>
+<p>Here, the list <code>append</code> method expands the list’s size and inserts an item at the end; the <code>pop</code> method (or an equivalent <code>del</code> statement) then removes an item at a given offset, causing the list to shrink. Other list methods insert an item at an arbitrary position (<code>insert</code>), remove a given item by value (<code>remove</code>), add multiple items at the end (<code>extend</code>), and more. Because lists are mutable, most list methods also change the list object <em>in place</em>, instead of making a new one:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>M = ['bb', 'aa', 'cc']
+</strong></code>&gt;&gt;&gt; <code><strong>M.sort()
+</strong></code>&gt;&gt;&gt; <code><strong>M</strong></code>
+['aa', 'bb', 'cc']
+&gt;&gt;&gt; <code><strong>M.reverse()
+</strong></code>&gt;&gt;&gt; <code><strong>M</strong></code>
+['cc', 'bb', 'aa']</pre>
+<p>The list <code>sort</code> method here, for example, orders the list in ascending fashion by default, and <code>reverse</code> reverses it; in both cases, the methods modify the list <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="type-specific operations" data-startref="lstytp" id="id1771"></a><a contenteditable="false" data-type="indexterm" data-primary="type-specific operations, lists" data-startref="typpls" id="id1772"></a>directly (though similarly named functions we’ll explore later do not).</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Bounds Checking"><div class="sect2" id="bounds_checking">
+<h2>Bounds Checking</h2>
+<p>Although lists have no fixed size, Python <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="bounds" id="id1773"></a><a contenteditable="false" data-type="indexterm" data-primary="bounds" id="id1774"></a>still doesn’t allow us to reference items that are not present. Indexing off the end of a list is always a mistake, but so is assigning off the end (error messages are condensed here and elsewhere):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L</strong></code>
+[123, 'text', 'Py'] 
+
+&gt;&gt;&gt; <code><strong>L[99]</strong></code>
+IndexError: list index out of range
+
+&gt;&gt;&gt; <code><strong>L[99] = 1</strong></code>
+IndexError: list assignment index out of range</pre>
+<p>This is intentional, as it’s usually an error to try to assign off the end of a list (and a particularly nasty one in the C language, which doesn’t do as much error checking as Python). Rather than silently growing the list in response, Python reports an error. To grow a list, we call list methods such as <code>append</code> instead (or make a new list). Unlike indexing, slicing <em>scales</em> offsets to be in bounds, but this will have to await coverage in the in-depth chapters ahead.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Nesting"><div class="sect2" id="nesting">
+<h2>Nesting</h2>
+<p>One nice feature of Python’s core object <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="nesting" id="lsnst"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="nesting" id="objns"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting objects" id="nstgjb"></a>types is that they support arbitrary <em>nesting</em>—we can nest them in any combination, and as deeply as we like. For example, we can have a list that contains a dictionary, which contains another list, and so on—as deeply and mixed as needed to describe things in our real world.</p>
+<p>An immediate application of this feature is to represent matrixes, or “multidimensional arrays” in Python. A list with nested lists like the following will do the job for basic applications (coding fine print: indentation doesn’t matter in this, Python expressions with unclosed brackets can span multiple lines this way, and some REPLs show “...” continuation-line prompts, which are often omitted in this book for easier copy and paste from emedia):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>M = [[1, 2, 3],</strong></code>               <code><em># A 3 × 3 matrix, as nested lists
+</em></code>         <code><strong>[4, 5, 6],</strong></code>               <code><em># Code can span lines if bracketed
+</em></code>         <code><strong>[7, 8, 9]]</strong></code>
+&gt;&gt;&gt; <code><strong>M</strong></code>
+[[1, 2, 3], [4, 5, 6], [7, 8, 9]]</pre>
+<p>Here, we’ve coded a list that contains three other lists. The effect is to represent a 3 × 3 matrix of numbers. Such a structure can be accessed in a variety of ways:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>M[1]</strong></code>                          <code><em># Get row 2</em></code>
+[4, 5, 6]
+
+&gt;&gt;&gt; <code><strong>M[1][2]</strong></code>                       <code><em># Get row 2, then get item 3 within the row</em></code>
+6</pre>
+<p>The first operation here fetches the entire second row, and the second grabs the third item within that row (it runs left to right, like the earlier string strip and split combo). Stringing together index operations takes us deeper and deeper into our nested-object structure. Tip: this matrix structure works for small-scale tasks, but for more serious number crunching you will probably want to use the open source <em>NumPy</em> extension for Python, which can store and process large matrixes much more efficiently <a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="nesting" data-startref="lsnst" id="id1775"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="nesting" data-startref="objns" id="id1776"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting objects" data-startref="nstgjb" id="id1777"></a>than our nested list structure (and is well out of scope here; see <a data-type="xref" href="ch01.html#a_python_qampersanda_session">Chapter 1</a>).</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Comprehensions"><div class="sect2" id="comprehensions-id00053">
+<h2>Comprehensions</h2>
+<p>In addition to sequence operations <a contenteditable="false" data-type="indexterm" data-primary="list comprehensions" id="lstcph"></a><a contenteditable="false" data-type="indexterm" data-primary="comprehensions" data-secondary="list comprehensions" id="id1778"></a>and list methods, Python includes a more advanced operation known as a <em>list comprehension</em> expression, which turns out to be a powerful way to process structures like our matrix. Suppose, for instance, that we need to extract the second column of the prior section’s matrix. It’s easy to grab rows by simple indexing because the matrix is stored by rows, but it’s almost as easy to get a <em>column</em> with a list comprehension:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>col2 = [row[1] for row in M]</strong></code>             <code><em># Collect the items in column 2
+</em></code>&gt;&gt;&gt; <code><strong>col2</strong></code>
+[2, 5, 8]
+
+&gt;&gt;&gt; <code><strong>M</strong></code>                                        <code><em># The matrix is unchanged</em></code>
+[[1, 2, 3], [4, 5, 6], [7, 8, 9]]</pre>
+<p>List comprehensions are a way to build a new list by running an expression on each item in a sequence, one at a time, from left to right. They are coded in square brackets (to tip you off to the fact that they make a list) and are composed of an expression and a looping construct that share a variable name (<code>row</code>, here). The preceding list comprehension means basically what it says: “Give me <code>row[1]</code> for each row in matrix <code>M</code>, in a new list.” The result is a new list containing column 2 of the matrix.</p>
+<p>List comprehensions can be more complex in practice:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>[row[1] + 1 for row in M]</strong></code>                 <code><em># Add 1 to each item in column 2</em></code>
+[3, 6, 9]
+
+&gt;&gt;&gt; <code><strong>[row[1] for row in M if row[1] % 2 == 0]</strong></code>  <code><em># Filter out odd items (pick evens)
+</em></code>[2, 8]</pre>
+<p>The first operation here, for instance, adds 1 to each item as it is collected, and the second uses an <code>if</code> clause to <em>filter</em> odd numbers out of the result using the <code>%</code> modulus expression (remainder of division). List comprehensions make new lists of results, but they can be used to iterate over any <em>iterable</em> object—a term we’ll flesh out later in this book, but which simply means either a physical sequence or a virtual one that produces its items on request. Here, for instance, we use list comprehensions to step over a hardcoded list of coordinates and a string:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>diag = [M[i][i] for i in [0, 1, 2]]</strong></code>      <code><em># Collect a diagonal from matrix</em></code>
+&gt;&gt;&gt; <code><strong>diag</strong></code>
+[1, 5, 9]
+
+&gt;&gt;&gt; <code><strong>doubles = [c * 2 for c in 'hack']</strong></code>        <code><em># Repeat characters in a string</em></code>
+&gt;&gt;&gt; <code><strong>doubles</strong></code>
+['hh', 'aa', 'cc', 'kk']</pre>
+<p>These expressions can also be used to collect multiple values, as long as we wrap those values in a nested collection. The following illustrates using <code>range</code>—a built-in that generates successive integers and requires a surrounding <code>list</code> to force it to yield all its values for display in the REPL (there’s more on this mystery ahead):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(range(4))</strong></code>                      <code> <em>    # Integers 0..(N-1)</em></code>
+[0, 1, 2, 3]
+&gt;&gt;&gt; <code><strong>list(range(−6, 7, 2))</strong></code>                    <code><em># −6 to +6 by 2
+</em></code>[−6, −4, −2, 0, 2, 4, 6]
+
+&gt;&gt;&gt; <code><strong>[[x ** 2, x ** 3] for x in range(4)]</strong></code>     <code><em># Multiple values, "if" filters</em></code>
+[[0, 0], [1, 1], [4, 8], [9, 27]]
+
+&gt;&gt;&gt; <code><strong>[[x, x // 2, x * 2] for x in range(-6, 7, 2) if x &gt; 0]</strong></code>
+[[2, 1, 4], [4, 2, 8], [6, 3, 12]]</pre>
+<p>As you can probably tell, list comprehensions are too involved to cover more formally in this preview. The main point of this brief introduction is to illustrate that Python includes both simple and advanced tools in its arsenal. List comprehensions are optional, but they can be very useful in practice and often provide a processing speed advantage.</p>
+<p>In fact, comprehension <a contenteditable="false" data-type="indexterm" data-primary="comprehensions" data-secondary="list comprehensions" data-tertiary="syntax" id="id1779"></a>syntax is not just for making lists: enclosing it in <em>parentheses</em> can also be used to create an iterable object known as a <em>generator</em>, which produces results on demand per Python’s <em>iteration protocol</em>—in the following, summing items in a matrix row with the built-in <code>sum</code>, on each call to <code>next</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>M</strong></code>
+[[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+
+&gt;&gt;&gt; <code><strong>G = (sum(row) for row in M)</strong></code>              <code><em># Make a generator of row sums</em></code>
+&gt;&gt;&gt; <code><strong>next(G)</strong></code>                         <code> <em>        # Run the iteration protocol (ahead)</em></code>
+6
+&gt;&gt;&gt; <code><strong>next(G)</strong></code>                                 <code> <em># A new row sum on each call</em></code>
+15
+&gt;&gt;&gt; <code><strong>next(G)       </strong>  </code>                         <code><em># Row 3: 7 + 8 + 9
+</em></code>24</pre>
+<p>And comprehension syntax can also be used to create <em>sets</em> and <em>dictionaries</em> when enclosed in curly braces:</p>
+<pre data-type="programlisting" class="pagebreak-before">&gt;&gt;&gt; <code><strong>{sum(row) for row in M}</strong></code>                  <code><em># Makes an unordered set of row sums</em></code>
+{24, 6, 15}
+
+&gt;&gt;&gt; <code><strong>{i: sum(M[i]) for i in range(3)}</strong></code>         <code><em># Makes key:value table of row sums</em></code>
+{0: 6, 1: 15, 2: 24}</pre>
+<p>But to grasp concepts like the iteration protocol and objects like sets and dictionaries, we must move ahead.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Dictionaries"><div class="sect1" id="dictionaries-id00058">
+<h1>Dictionaries</h1>
+<p>Unlike strings and lists, Python dictionaries are not sequences at all but are instead the only core member of a category <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" id="id1780"></a>known as <em>mappings</em>. Mappings are also collections of other objects, but they store objects by <em>key</em> instead of by relative position. While dictionaries retain the insertion order of their keys today, this may not apply to your goals, and key-to-value mapping remains their main role. Dictionaries are also <em>mutable</em>: like lists, they may be changed in place and can grow and shrink on demand. Also like lists, they are a flexible <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="mutability" id="id1781"></a><a contenteditable="false" data-type="indexterm" data-primary="mutability" data-secondary="dictionaries" id="id1782"></a>tool for coding collections, but their more <em>mnemonic</em> keys are better suited when a collection’s items are named or labeled—as in fields of a database record.</p>
+<section data-type="sect2" data-pdf-bookmark="Mapping Operations"><div class="sect2" id="mapping_operations">
+<h2>Mapping Operations</h2>
+<p>When written as literals, dictionaries <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="operations" data-tertiary="mapping" id="dctoppp"></a><a contenteditable="false" data-type="indexterm" data-primary="operations" data-secondary="mapping" id="opnspp"></a><a contenteditable="false" data-type="indexterm" data-primary="mapping" data-secondary="operations" id="mppprt"></a>are coded in curly braces and consist of a series of “<em>key</em>: <em>value</em>” pairs. Dictionaries are useful anytime we need to associate a set of values with keys—to describe the properties of something. As an example, consider the following three-item dictionary with keys “name,” “job,” and “age,” that record the attributes of a fictitious (and wholly generic and neutral) worker:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = {'name': 'Pat', 'job': 'dev', 'age': 40}</strong></code></pre>
+<p>We can index this dictionary by key to <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="indexing" id="id1783"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionary keys" data-secondary="indexing and" id="id1784"></a>fetch and change its keys’ associated values. The dictionary index operation uses the same syntax as that used for sequences, but the item in the square brackets is a key, not a relative position:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D['name']</strong></code>                       <code><em># Fetch value of key 'name'</em></code>
+'Pat'
+
+&gt;&gt;&gt; <code><strong>D['job'] = 'mgr'</strong>  </code>              <code><em># Change Pat's job description
+</em></code>&gt;&gt;&gt; <code><strong>D</strong></code>
+{'name': 'Pat', 'job': 'mgr', 'age': 40}</pre>
+<p>Although the curly-braces literal form does see use, it is perhaps more common to see dictionaries built up in different ways (after all, it’s rare to know all your program’s data before your program runs). The following code, for example, starts with an empty dictionary and fills it out one key at a time. Unlike out-of-bounds assignments in lists, which are forbidden, assignments to new dictionary keys create those keys:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = {}</strong></code>
+&gt;&gt;&gt; <code><strong>D['name'] = 'Pat'</strong></code>               <code><em># Create keys by assignment</em></code>
+&gt;&gt;&gt; <code><strong>D['job']  = 'dev'</strong></code>
+&gt;&gt;&gt; <code><strong>D['age']  = 40</strong></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'name': 'Pat', 'job': 'dev', 'age': 40}</pre>
+<p>Here, we’re effectively using dictionary keys as field names in a record that describes an imaginary person. In other roles, dictionaries can also be used to replace <em>searching</em> operations—indexing a dictionary by key is often the fastest way to code a search in Python.</p>
+<p>As you’ll learn later, we can also make dictionaries by passing to the <code>dict</code> type name either <em>keyword arguments</em> (a special <code><em>name=value</em></code> syntax in function calls), or the result of <em>zipping</em> together sequences of keys and values obtained at runtime (e.g., from files). Both of the following make the same dictionary as the prior example and its equivalent <code>{}</code> literal form; the first requires string keys but tends to make for less typing (and subjective noise), and the second uses the <code>zip</code> built-in we’ll study later in this part of the book:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>pat1 = dict(name='Pat', job='dev', age=40)</strong></code>                      <code><em># Keywords</em></code>
+&gt;&gt;&gt; <code><strong>pat1</strong></code>
+{'name': 'Pat', 'job': 'dev', 'age': 40}
+
+&gt;&gt;&gt; <code><strong>pat2 = dict(zip(['name', 'job', 'age'], ['Pat', 'dev', 40]))</strong></code>    <code><em># Zipping</em></code>
+&gt;&gt;&gt; <code><strong>pat2</strong></code>
+{'name': 'Pat', 'job': 'dev', 'age': 40}</pre>
+<p>Notice how the left-to-right order of dictionary keys is always the same. Though not sequences, dictionary keys <a contenteditable="false" data-type="indexterm" data-primary="dictionary keys" data-secondary="insertion order" id="id1785"></a>retain their <em>insertion order</em>, even in the presence of changes: the order of keys is the order in which keys were added. This wasn’t the norm until Python 3.7, and prior to this, key order was scrambled and sometimes required separate ordering. The new ordering may be more intuitive and will be assumed in this book but adds a sequence flavor to dictionaries not shared by other nonsequences. Like most mods, it also rewrites history and invalidates Python learning resources that cannot be updated as frequently as Python. Change is almost <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="operations" data-tertiary="mapping" data-startref="dctoppp" id="id1786"></a><a contenteditable="false" data-type="indexterm" data-primary="operations" data-secondary="mapping" data-startref="opnspp" id="id1787"></a><a contenteditable="false" data-type="indexterm" data-primary="mapping" data-secondary="operations" data-startref="mppprt" id="id1788"></a>always a double-edged sword.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Nesting Revisited"><div class="sect2" id="nesting_revisited">
+<h2>Nesting Revisited</h2>
+<p>In the prior example, we used a dictionary <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="nesting" id="dictnst"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="dictionaries" id="nstdct"></a>to describe a hypothetical person, with three keys. Suppose, though, that the information is more complex. Perhaps we need to record a first name and a last name, along with multiple job titles. This leads to another application of Python’s object nesting in action. The following dictionary, coded all at once as a literal, captures more-structured information (again, indentation here and “…” in some REPLs are moot):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>rec = {'name': {'first': 'Pat', 'last': 'Smith'},
+           'jobs': ['dev', 'mgr'],
+           'age':  40.5}</strong></code></pre>
+<p>Here, we again have a three-key dictionary at the top (keys “name,” “jobs,” and “age”), but the values have become more complex: a nested dictionary for the name to support multiple parts, and a nested list for the jobs to support multiple roles and future expansion. We can access the components of this structure much as we did for our list-based matrix earlier, but this time most indexes are dictionary keys, not list offsets:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>rec['name']</strong></code>                         <code><em># 'name' is a nested dictionary</em></code>
+{'first': 'Pat', 'last': 'Smith'}
+
+&gt;&gt;&gt; <code><strong>rec['name']['last']</strong></code>                 <code><em># Index the nested dictionary</em></code>
+'Smith'
+
+&gt;&gt;&gt; <code><strong>rec['jobs']</strong></code>                         <code><em># 'jobs' is a nested list</em></code>
+['dev', 'mgr']
+&gt;&gt;&gt; <code><strong>rec['jobs'][-1]</strong></code>                     <code><em># Index the nested list</em></code>
+'mgr'
+
+&gt;&gt;&gt; <code><strong>rec['jobs'].append('janitor')</strong></code>       <code><em># Expand Pat's job description in place
+</em></code>&gt;&gt;&gt; <code><strong>rec</strong></code>
+{'name': {'first': 'Pat', 'last': 'Smith'}, 'jobs': ['dev', 'mgr', 'janitor'], 'age': 40.5}</pre>
+<p>Notice how the last operation here <em>expands</em> the nested jobs list—because the jobs list is a separate piece of memory from the dictionary that contains it, it can grow and shrink freely (the <code>pop</code> method we met earlier is one way to shrink objects). This may seem quite a trick to readers with backgrounds in more rigid languages, but is natural in Python.</p>
+<p>More fundamentally, this example demos the <em>flexibility</em> of Python’s core object types. As you can see, nesting allows us to build up complex information structures directly and easily. Building a similar structure in a low-level language like C would be tedious and require much more code: we would have to lay out and declare structures and arrays, fill out values, link everything together, and so on. In Python, this is all automatic—running the expression creates the entire nested object structure for us. In fact, this is one of the main benefits of scripting languages like Python.</p>
+<p>Just as importantly, in lower-level languages we <a contenteditable="false" data-type="indexterm" data-primary="object memory" id="id1789"></a><a contenteditable="false" data-type="indexterm" data-primary="memory management" data-secondary="object memory" id="id1790"></a>may have to allocate <em>memory</em> space for objects ahead of time and be careful to release it when we no longer need it. In Python, this is all automatic: object memory is allotted as needed and freed when we lose the last reference to the object—by assigning its variable to something else, for example:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>rec = 0</strong></code>           <code><em># Now the prior object's space is reclaimed</em></code></pre>
+<p>Technically speaking, Python uses a <a contenteditable="false" data-type="indexterm" data-primary="garbage collection" id="id1791"></a>scheme called <em>garbage collection</em> that reclaims unused memory as your program runs and frees you from having to manage such details in your code. In standard Python (a.k.a. CPython) this uses <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="reference counts" id="id1792"></a><a contenteditable="false" data-type="indexterm" data-primary="reference counts" id="id1793"></a>object <em>reference counts</em> primarily, along with a supplemental garbage collector for cycles. We’ll study how this works later in <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>; for now, it’s enough to know that you can use objects freely, while Python handles their memory.</p>
+<p>Watch for a record structure similar to the one we just coded in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch08.html#lists_and_dictionaries">8</a>, <a data-xrefstyle="select:labelnumber" data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">9</a>, and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch27.html#class_coding_basics">27</a>, where we’ll use it to compare and contrast lists, dictionaries, tuples, named tuples, and classes—an array of data structure options with trade-offs we’ll cover in full later. It’s also worth noting that the record structure we used here can be saved in a file with a variety of techniques in Python, including its <code>pickle</code> module and support for language-neutral <em>JSON</em> (a data format that’s strikingly similar <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="nesting" data-startref="dictnst" id="id1794"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="dictionaries" data-startref="nstdct" id="id1795"></a>to Python dictionary objects); more on such tools later in this book.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Missing Keys: if Tests"><div class="sect2" id="missing_keys_if_tests">
+<h2>Missing Keys: if Tests</h2>
+<p>As mappings, dictionaries support <a contenteditable="false" data-type="indexterm" data-primary="dictionary keys" data-secondary="if statements" id="dykyif"></a><a contenteditable="false" data-type="indexterm" data-primary="if statements" data-secondary="dictionary keys" id="ifsttdky"></a>accessing items by key only, with the sorts of operations we’ve just seen. In addition, though, they also support type-specific operations with <em>methods</em> that are useful in a variety of common roles. For example, the dictionary <code>copy</code> and <code>update</code> methods copy a dictionary and merge one into <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="copying" id="id1796"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="updating" id="id1797"></a><a contenteditable="false" data-type="indexterm" data-primary="copy method" id="id1798"></a><a contenteditable="false" data-type="indexterm" data-primary="update method" id="id1799"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="methods" id="id1800"></a>another in place, respectively (the <code>|</code> operator does the same, but makes a new dictionary for its result: it’s just a <code>copy</code> plus an <code>update</code>).</p>
+<p>Dictionary methods also play parts in common key use cases. For instance, while we can assign to a new key to expand a dictionary, fetching a nonexistent key is still a mistake:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = {'a': 1, 'b': 2, 'c': 3}</strong></code>
+&gt;&gt;&gt; <code><strong>D['d'] = 4</strong></code>                        <code><em># Assigning new keys grows dictionaries</em></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'a': 1, 'b': 2, 'c': 3, 'd': 4}
+
+&gt;&gt;&gt; <code><strong>D['e']</strong></code>                            <code><em># Referencing a nonexistent key is an error</em></code>
+…<code><em>error text omitted</em></code>…
+KeyError: 'e'</pre>
+<p>This is what we want—it’s usually a programming error to fetch something that isn’t really there. But in generalized programs, we can’t always know what keys will be present when we write our code. How do we handle such cases and avoid errors? One solution is to test ahead of time. The dictionary <code>in</code> <span class="keep-together">membership</span> expression allows us to query the existence of a key and branch on the result with a Python <code>if</code> statement.</p>
+<p>Which brings us to our <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="compound statements" id="id1801"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" id="id1802"></a>first Python <em>compound statement</em>—one with nested parts. If you’re working along, here are a few practical bits: in the following, press the Enter key twice to run the <code>if</code> interactively after typing its code (an empty line means “go” in most REPLs, as explained in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a>); the prompt changes to a “...” after the first line in some interfaces (as for the earlier multiline dictionaries and lists); and indentation matters this time (for reasons up next):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>'e' in D</strong> </code>                         <code><em># Boolean result: True or False (see ahead)</em></code>
+False
+
+&gt;&gt;&gt; <code><strong>if not 'e' in D:</strong></code>                  <code><em># Python's main selection statement</em></code>
+       <code><strong>print('missing key!')</strong></code>
+
+missing key!</pre>
+<p>This book has more to say about the <code>if</code> statement in later chapters, but its syntax is <a contenteditable="false" data-type="indexterm" data-primary="if statements" data-secondary="syntax" id="id1803"></a>straightforward. It consists of the word <code>if</code>, followed by an expression whose result is interpreted as true or false, followed by a block of code to run if the expression result is true. In its full regalia, the <code>if</code> statement can also have an <code>else</code> clause for the false case, and one or more <code>elif</code> (“else if”) clauses for other tests.</p>
+<p>Functionally, the <code>if</code> is the main <em>selection</em> tool in Python, and how we code most of the logic of choices and decisions in our scripts. It’s joined by its ternary <code>if</code>/<code>else</code> expression cousin you’ll meet in <a contenteditable="false" data-type="indexterm" data-primary="if else expression" id="id1804"></a>a moment, the <code>if</code> comprehension filter lookalike we used earlier, and <a contenteditable="false" data-type="indexterm" data-primary="match statement" id="id1805"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="match statements" id="id1806"></a>the newer <code>match</code> multiple-selection statement you’ll meet later in this book.</p>
+<p>If you’ve used some other programming languages in the past, you might now be wondering how Python knows when the <code>if</code> statement ends. We’ll explore Python’s syntax rules in depth in later chapters, but in short, if you have more than one action to run in a statement block, you simply indent all their statements the same way—which both promotes readable code and reduces the number of characters you have to type. All multiline statements follow this pattern: a header line ending in “:” and a block of (usually) indented code, with no “{}” around blocks, and no “;” required after statements (though fair warning: forgetting the “:” is the most common beginner’s mistake in Python!):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>if not 'e' in D:
+        print('missing')</strong></code>              <code><em># Statement blocks are indented</em></code>
+<code> <strong>       print('no, really...')</strong></code>        <code><em># (Unless they're simple: see ahead)</em></code>
+
+missing
+no, really...</pre>
+<p>Besides the <code>in</code> test, there are a variety of other ways to avoid accessing nonexistent keys in the dictionaries we create: the dictionary <code>get</code> method, which is a conditional index with a default; the <code>if</code>/<code>else</code> ternary (three-part) expression, which is essentially a limited <code>if</code> statement squeezed onto a single line; and the <code>try</code> statement, which is a tool we’ll first use in <a data-type="xref" href="ch10.html#introducing_python_statements">Chapter 10</a> that catches and recovers from errors altogether. Here are the first two in action:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D.get('a', 'missing')</strong></code>             <code><em># Like D['a'] but with a default</em></code>
+1
+&gt;&gt;&gt; <code><strong>D.get('e', 'missing')</strong>   </code>          <code><em># Default returned if absent</em></code>
+'missing'
+
+&gt;&gt;&gt; <code><strong>D['e'] if 'e' in D else 0</strong> </code>        <code><em># if/else ternary expression form</em></code>
+0</pre>
+<p>We’ll save the details on such alternatives <a contenteditable="false" data-type="indexterm" data-primary="dictionary keys" data-secondary="if statements" data-startref="dykyif" id="id1807"></a><a contenteditable="false" data-type="indexterm" data-primary="if statements" data-secondary="dictionary keys" data-startref="ifsttdky" id="id1808"></a>until a later chapter. For now, let’s turn to other dictionary methods’ roles in another common use case.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Item Iteration: for Loops"><div class="sect2" id="item_iteration_for_loops">
+<h2>Item Iteration: for Loops</h2>
+<p>Dictionaries collect a lot of useful info, but <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="iteration" id="dtritt"></a><a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="dictionaries" id="itrdtr"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" id="frlpsoo"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="for loops" id="lppfpp"></a>what do we do if we need to process their items one at a time? As it turns out, dictionaries come with methods designed for the job:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = dict(a=1, b=2, c=3)</strong></code>
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'a': 1, 'b': 2, 'c': 3}
+
+&gt;&gt;&gt; <code><strong>list(D.keys())</strong> </code>                    <code><em># Keys, values, and key/value pairs</em></code>
+['a', 'b', 'c']
+&gt;&gt;&gt; <code><strong>list(D.values())</strong></code>                   <code><em># list forces results genertion</em></code>
+[1, 2, 3]
+&gt;&gt;&gt; <code><strong>list(D.items())</strong></code>
+[('a', 1), ('b', 2), ('c', 3)]</pre>
+<p>As shown, a dictionary’s <code>keys</code>, <code>values</code>, and <code>items</code> methods <a contenteditable="false" data-type="indexterm" data-primary="keys method" id="id1809"></a><a contenteditable="false" data-type="indexterm" data-primary="values method" id="id1810"></a><a contenteditable="false" data-type="indexterm" data-primary="items method" id="id1811"></a>return its keys, values, and key/value pairs (the latter is tuples, up next on this tour). Really, though, these methods all return an object that produces results one at a time, which is why they’ve been wrapped in <code>list</code> calls, as we did for <code>range</code> earlier. This reflects the <em>iteration protocol</em> in Python—a concept we’ll explore in full later, but which boils down to an iterable object, which has an iterator object, which responds to <code>next</code> calls to produce one result at a time:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D.keys()</strong>  </code>                         <code><em># Get an iterable object</em></code>
+dict_keys(['a', 'b', 'c'])
+
+&gt;&gt;&gt; <code><strong>I = iter(D.keys())</strong>  </code>               <code><em># Get an iterator from an iterable</em></code>
+&gt;&gt;&gt; <code><strong>next(I) </strong>  </code>                         <code><em># Get one result at a time from iterator</em></code>
+'a'
+&gt;&gt;&gt; <code><strong>next(I) </strong>  </code>                         <code><em># This is most of the iteration protocol</em></code>
+'b'</pre>
+<p>We used the same <code>next</code> built-in to force results from a generator comprehension earlier, but without the <code>iter</code> step: because generators don’t support multiple scans, they are their own iterators, and <code>iter</code> is a no-op.</p>
+<p>Tools that support this protocol can both save memory and minimize delays, because they don’t produce all their results at once. The iteration protocol works on all sorts of objects in Python, but you can usually forget its details if you use the Python <code>for</code> loop, which runs the iteration protocol automatically to step through items one at a time—both for physical collections like strings and lists, and virtual sequences like generators, <code>range</code>, and <code>keys</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for key in D.keys():</strong></code>               <code><em># Auto run the iteration prototcol</em></code>
+        <code><strong>print(key, '=&gt;', D[key])</strong>  </code>     <code><em># Display multiple items, space between</em></code>
+
+a =&gt; 1
+b =&gt; 2
+c =&gt; 3</pre>
+<p>To code a <code>for</code>, provide a variable (e.g., <code>key</code>) and an iterable object (e.g., <code>D.keys()</code>); for each item in the object, the <code>for</code> assigns the item to the variable and runs the nested (and usually indented) block of <span class="keep-together">code—which</span> uses the variable to refer to the current item each time through. The <code>for</code> is one of the main <em>repetition</em> tools in Python, together with the comprehensions you met earlier, and the more general-purpose <code>while</code> loop you’ll meet later in this book.</p>
+<p>Because dictionary iteration is so common, the <code>for</code>, and similar iteration tools, can also step through keys implicitly, as well as key/value pairs. The following loops, for example, produce the same output as the preceding example; the choice between all these forms is partly a matter of personal preference, though explicit is generally better:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for key in D:</strong>  </code>                    <code><em># Implicit keys() iteration</em></code>
+        <code><strong>print(key, '=&gt;', D[key])</strong></code>
+ 
+&gt;&gt;&gt; <code><strong>for (key, value) in D.items():</strong> </code>    <code><em># Key/value-pair tuples iteration</em></code>
+        <code><strong>print(key, '=&gt;', value)</strong></code></pre>
+<p>The last of these uses something known as <em>tuple assignment</em>, which automatically unpacks items into variables. But to fully understand the sorts of stuff we get back from <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="iteration" data-startref="dtritt" id="id1812"></a><a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="dictionaries" data-startref="itrdtr" id="id1813"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-startref="frlpsoo" id="id1814"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="for loops" data-startref="lppfpp" id="id1815"></a>the dictionary <code>items</code> method, we have to move ahead.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Tuples"><div class="sect1" id="tuples-id00081">
+<h1>Tuples</h1>
+<p>The tuple object (pronounced “toople” or “tuhple,” depending on whom you ask) is roughly like a list that <a contenteditable="false" data-type="indexterm" data-primary="tuples" id="tplst"></a>cannot be changed—tuples are <em>sequences</em>, like lists, but they are <em>immutable</em>, like strings. Functionally, they’re used to represent fixed collections of items: the components of a specific calendar date, for instance. Syntactically, they are normally coded in parentheses instead of square brackets and support arbitrary object types, arbitrary nesting, and the usual sequence operations that we used on strings and lists earlier:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>T = (1, 2, 3, 4)</strong></code>            <code><em># A 4-item tuple</em></code>
+&gt;&gt;&gt; <code><strong>len(T)</strong></code>                      <code><em># Length</em></code>
+4
+
+&gt;&gt;&gt; <code><strong>T + (5, 6)</strong></code>                  <code><em># Concatenation: a new tuple</em></code>
+(1, 2, 3, 4, 5, 6)
+
+&gt;&gt;&gt; <code><strong>T[0], T[1:]</strong></code>                 <code><em># Indexing, slicing, and more</em></code>
+(1, (2, 3, 4))</pre>
+<p>As usual, tuples also have type-specific callable methods, but not nearly as many as lists:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>T.index(4)</strong></code>                  <code><em># Tuple methods: 4 appears at offset 3</em></code>
+3
+&gt;&gt;&gt; <code><strong>T.count(4)</strong></code>                  <code><em># 4 appears once</em></code>
+1</pre>
+<p>The primary distinction for tuples is that they cannot be changed once created. That is, they are <a contenteditable="false" data-type="indexterm" data-primary="immutability" data-secondary="tuples" id="id1816"></a>immutable sequences (quirk: one-item tuples like the one here require a trailing comma to distinguish them from simple expressions):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>T[0] = 2</strong></code>                    <code><em># Tuples are immutable
+</em></code>TypeError: 'tuple' object does not support item assignment
+
+&gt;&gt;&gt; <code><strong>T = (2,) + T[1:]</strong></code>            <code><em># Make a new tuple for a new value
+</em></code>&gt;&gt;&gt; <code><strong>T</strong></code>
+(2, 2, 3, 4)</pre>
+<p class="pagebreak-before">Like lists and dictionaries, tuples support mixed types and nesting, but they don’t grow and shrink like lists and dictionaries because they are immutable:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>T = 'hack', 3.0, [11, 22, 33]</strong></code>
+&gt;&gt;&gt; <code><strong>T</strong></code>
+<code><strong>('hack', 3.0, [11, 22, 33])</strong></code>
+
+&gt;&gt;&gt; <code><strong>T[1]</strong></code>
+3.0
+&gt;&gt;&gt; <code><strong>T[2][1]</strong></code>
+22
+&gt;&gt;&gt; <code><strong>T.append(4)</strong></code>
+AttributeError: 'tuple' object has no attribute 'append'</pre>
+<p>Notice the first line in this: the <em>parentheses</em> enclosing a tuple’s items can often be omitted, as done here. In contexts where commas don’t otherwise matter, the <em>commas</em> are what actually builds a tuple. This also explains why REPLs show results in parentheses when you enter multiple items separated by commas: the input is really a tuple.</p>
+<section data-type="sect2" data-pdf-bookmark="Why Tuples?"><div class="sect2" id="why_tuplesquestion_mark">
+<h2>Why Tuples?</h2>
+<p>So, why have a kind of object that is like a list, but supports fewer operations? Frankly, tuples are not used as often as lists in practice, but their immutability is the whole point. If you pass a collection of objects around your program as a list, it can be changed anywhere; if you use a tuple, it cannot. That is, tuples provide a sort of integrity constraint that is convenient in programs larger than those here. We’ll talk more about tuples later in the book, including an <a contenteditable="false" data-type="indexterm" data-primary="tuples" data-startref="tplst" id="id1817"></a>extension that builds upon them called <em>named tuples</em>. For now, though, let’s move on to this tour’s last major object.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Files"><div class="sect1" id="files-id00060">
+<h1>Files</h1>
+<p>File objects are the main way your Python code will access the content of files on your computer. They can be <a contenteditable="false" data-type="indexterm" data-primary="files" id="id1818"></a>used to read and write text memos, audio clips, Excel documents, saved emails, and whatever else you have stored on your device. Files are a core object type, but they’re something of an oddball—there is no specific literal syntax for creating them. Rather, you create a file object by calling the built-in <code>open</code> function with an external filename, and perhaps more depending on your goals.</p>
+<p>For example, to create a text output file, pass in its name and the <code>'w'</code> processing <a contenteditable="false" data-type="indexterm" data-primary="text output file" id="id1819"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="text output" id="id1820"></a>mode string to <em>write</em> text data; Python automatically makes the newline character <code>\n</code> portable across platforms when it’s transferred to and from files:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>f = open('data.txt', 'w')</strong></code>      <code><em># Open a new file in text-output mode</em></code>
+&gt;&gt;&gt; <code><strong>f.write('Hello\n')</strong></code>             <code><em># Write strings of characters to it</em></code>
+6
+&gt;&gt;&gt; <code><strong>f.write('world!\n')</strong></code>            <code><em># Return number of items written</em></code>
+7
+&gt;&gt;&gt; <code><strong>f.close()</strong></code>                      <code><em># Close to flush output buffers to disk</em></code></pre>
+<p>This creates a file in the current directory and writes text to it (the filename can be a full directory path if you need to access a file elsewhere on your device). To read back what you just wrote, reopen the file in <code>'r'</code> processing mode, for <em>reading</em> text input—this is also the default if you omit the mode in the call. Then read the file’s content into a string and access it. A file’s content is always a string in your script, regardless of the type of data the file contains:</p>
+<pre data-type="programlisting" class="pagebreak-before">&gt;&gt;&gt; <code><strong>f = open('data.txt')</strong></code>           <code><em># Open an existing file in text-input mode</em></code>
+&gt;&gt;&gt; <code><strong>text = f.read()</strong></code>                <code><em># Read entire file into a string
+</em></code>&gt;&gt;&gt; <code><strong>text</strong></code>
+'Hello\nworld!\n'
+
+&gt;&gt;&gt; <code><strong>print(text)</strong></code>                    <code><em># print interprets control characters</em></code>
+Hello
+world!
+
+&gt;&gt;&gt; <code><strong>text.split()</strong></code>                   <code><em># File content is always a string</em></code>
+['Hello', 'world!']</pre>
+<p>Other file object methods support additional features we don’t have time to cover here. For instance, file objects provide more ways of reading and writing (<code>read</code> accepts an optional maximum byte/character size, <code>readline</code> reads one line at a time, and so on), as well as other tools (<code>seek</code> moves to a new file position). As you’ll see later, though, the best way to read a text file is usually to not read it at all—files support the <em>iteration protocol</em> <a contenteditable="false" data-type="indexterm" data-primary="iteration" id="id1821"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="iteration" id="id1822"></a>with an iterator that automatically reads line by line in <code>for</code> loops and other contexts:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for line in open('data.txt'):</strong>  </code>     <code><em># Display lines in a file</em></code>
+        <code><strong>print(line.rstrip())</strong> </code>           <code><em># Single spaced (sans \n)</em></code></pre>
+<p>You’ll meet the full set of file methods later in this book, but if you want a quick preview now, run a <code>dir</code> call on any open file and a <code>help</code> on any of the method names that come back, as we learned earlier.</p>
+<section data-type="sect2" data-pdf-bookmark="Unicode and Byte Files"><div class="sect2" id="unicode_and_byte_files">
+<h2>Unicode and Byte Files</h2>
+<p>The prior section’s examples illustrate file basics that suffice for many roles. Technically, though, they <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="Unicode and" id="fluc"></a><a contenteditable="false" data-type="indexterm" data-primary="Unicode" data-secondary="files" id="ucdflw"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="byte files" id="flbyfl"></a><a contenteditable="false" data-type="indexterm" data-primary="byte files" id="byfls"></a>rely on the platform’s Unicode <em>encoding</em> default for the host platform. Python text files always use a Unicode encoding to encode strings on writes and decode them on reads. This is often irrelevant for simple ASCII text data, which usually maps to and from file bytes unchanged. But for richer kinds of data, file interfaces can vary by content type.</p>
+<p>As hinted when we studied Unicode strings earlier, Python draws a sharp distinction between text and binary data in files: <em>text files</em> represent content as normal <code>str</code> strings and perform Unicode encoding and decoding automatically as noted, while <em>binary files</em> represent content as the special <code>bytes</code> string and allow you to access file content unaltered.</p>
+<p>For example, <em>binary files</em> are useful for processing media, accessing data created by C programs, and so on. What you send and receive is the literal content of the file, whether it’s encoded text or a JPEG image. Add a <code>b</code> to the mode to invoke binary (and expect a <code>\r\n</code> instead of <code>\n</code> at the end on Windows, because its newlines vary from Unix):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>bf = open('data.bin', 'wb')</strong></code>
+&gt;&gt;&gt; <code><strong>bf.write(b'h\xFFa\xEEc\xDDk\n')</strong></code>     <code><em># Write binary data in a bytes</em></code>
+8
+&gt;&gt;&gt; <code><strong>bf.close()</strong></code>
+&gt;&gt;&gt; <code><strong>open('data.bin', 'rb').read()</strong>  </code>     <code><em># Read binary data to a bytes</em></code>
+b'h\xffa\xeec\xddk\n'</pre>
+<p class="pagebreak-before">For <em>text files</em>, we can’t really talk about content without also asking, “What kind?”—files may use any Unicode encoding, especially if they came from another platform, or the internet at large. This applies to portable programs too: if you want your code to work across platforms, you should generally make encodings explicit to avoid unpleasant surprises. Luckily, this is easier than it may sound—simply pass in an <code>encoding</code> name to <code>open</code> to force an encoding:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>tf = open('unidata.txt', 'w', encoding='utf-8')</strong></code>
+&gt;&gt;&gt; <code><strong>tf.write('<img src="assets/snake_1f40d.png" width="160" height="160"/>h\u00c4ck<img src="assets/clapping-hands_1f44f.png" width="160" height="160"/>')   </strong>  </code>                         <code><em># Encodes to UTF-8</em></code>
+6
+&gt;&gt;&gt; <code><strong>tf.close()</strong></code></pre>
+<p>If you read with the same encoding (or one that’s compatible), you get back the same text-character code points that you wrote. The encoded bytes on the file are in UTF-8 form, but your code usually doesn’t need to care:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>open('unidata.txt', 'r', encoding='utf-8').read()</strong> </code>     <code><em># Decodes from UTF-8</em></code>
+'<img src="assets/snake_1f40d.png" width="160" height="160"/>hÄck<img src="assets/clapping-hands_1f44f.png" width="160" height="160"/>'
+
+&gt;&gt;&gt; <code><strong>open('unidata.txt', 'rb').read()</strong>   </code>                    <code><em># Raw encoded text</em></code>
+b'\xf0\x9f\x90\x8dh\xc3\x84ck\xf0\x9f\x91\x8f'</pre>
+<p>While files automate most encodings, you can also encode and decode manually if your program gets Unicode data from another source—parsed from an email message or fetched over a network connection, for example:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>'hÄck'.encode('utf-8')</strong></code>
+b'h\xc3\x84ck'
+&gt;&gt;&gt; <code><strong>b'h\xc3\x84ck'.decode('utf-8')</strong></code>
+'hÄck'</pre>
+<p>Python also supports non-ASCII file <em>names</em> (not just content), but it’s largely automatic. For the<a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="Unicode and" data-startref="fluc" id="id1823"></a><a contenteditable="false" data-type="indexterm" data-primary="Unicode" data-secondary="files" data-startref="ucdflw" id="id1824"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="byte files" data-startref="flbyfl" id="id1825"></a><a contenteditable="false" data-type="indexterm" data-primary="byte files" data-startref="byfls" id="id1826"></a> whole story on Unicode in Python, stay tuned for <a data-type="xref" href="ch37.html#unicode_and_byte_strings">Chapter 37</a>.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Other File-Like Tools"><div class="sect2" id="other_file_like_tools">
+<h2>Other File-Like Tools</h2>
+<p>The <code>open</code> function is the <a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="open function" id="id1827"></a><a contenteditable="false" data-type="indexterm" data-primary="open function" id="id1828"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="open" id="id1829"></a>workhorse for most file processing you will do in Python. For more advanced tasks, though, Python comes with additional file-like tools: pipes, FIFOs, sockets, keyed-access files, persistent object shelves, descriptor-based files, relational and object-oriented database interfaces, and more. We won’t cover many of these topics in this language book, but you’ll find them useful once you start programming Python in earnest.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Other Object Types"><div class="sect1" id="other_object_types">
+<h1>Other Object Types</h1>
+<p>Beyond the core object types we’ve seen so far, there are others that get less publicity than their cohorts but are useful in their intended roles nonetheless. Let’s quickly run down some of the stragglers in this category.</p>
+<section data-type="sect2" data-pdf-bookmark="Sets"><div class="sect2" id="sets">
+<h2>Sets</h2>
+<p>Python sets are neither mappings nor <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="sets" id="objst"></a><a contenteditable="false" data-type="indexterm" data-primary="sets" id="stse"></a>sequences; rather, they are unordered collections of immutable (technically, “hashable”) objects, which <a contenteditable="false" data-type="indexterm" data-primary="set function" id="id1830"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="set" id="id1831"></a>store each object just once. You create sets by calling the built-in <code>set</code> function with a sequence or other iterable, or by using a set literal expression, and sets support the usual mathematical set operations:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>X = set('hack')</strong></code>                    <code><em># Sequence =&gt; set</em></code>
+&gt;&gt;&gt; <code><strong>Y = {'a', 'p', 'p'}</strong></code>                <code><em># Set literal</em></code>
+&gt;&gt;&gt; <code><strong>X, Y</strong></code>
+({'c', 'k', 'a', 'h'}, {'p', 'a'})
+
+&gt;&gt;&gt; <code><strong>X &amp; Y, X | Y</strong></code>                       <code><em># Intersection, union</em></code>
+({'a'}, {'p', 'c', 'k', 'h', 'a'})
+
+&gt;&gt;&gt; <code><strong>X - Y, X &gt; Y</strong></code>                       <code><em># Difference, superset</em></code>
+({'c', 'k', 'h'}, False)</pre>
+<p>Even less mathematically inclined programmers often find sets useful for common tasks such as filtering out duplicates, isolating differences, and performing order-neutral equality tests without sorting:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(set([3, 1, 2, 1, 3, 1]))</strong></code>      <code><em># Duplicates removal</em></code>
+[1, 2, 3]
+&gt;&gt;&gt; <code><strong>set('code') - set('hack')</strong></code>          <code><em># Collection difference</em></code>
+{'d', 'o', 'e'}
+&gt;&gt;&gt; <code><strong>set('code') == set('deoc')</strong>  </code>       <code><em># Order-neutral equality</em></code>
+True</pre>
+<p>As you’ll see later in this part of the book, normal sets themselves are mutable and can be changed (with their <code>remove</code> and <code>add</code> methods, for example), though the <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="sets" data-startref="objst" id="id1832"></a><a contenteditable="false" data-type="indexterm" data-primary="sets" data-startref="stse" id="id1833"></a>immutable items within them by definition cannot.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Booleans and None"><div class="sect2" id="booleans_and_none">
+<h2>Booleans and None</h2>
+<p>Python also comes with Booleans, with <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="Booleans" id="id1834"></a><a contenteditable="false" data-type="indexterm" data-primary="Booleans" id="id1835"></a><a contenteditable="false" data-type="indexterm" data-primary="None object" id="id1836"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="None" id="id1837"></a>predefined <code>True</code> and <code>False</code> objects that are essentially just the integers 1 and 0 with custom display logic; as well as a special placeholder object called <code>None</code>, commonly used to initialize names and objects and designate an absence of a result in functions:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>1 &gt; 2, 1 &lt; 2</strong></code>                    <code><em># Booleans</em></code>
+(False, True)
+&gt;&gt;&gt; <code><strong>bool('hack')</strong></code>                    <code><em># All objects have a Boolean value</em></code>
+True                                <code><em># Nonempty means True
+</em></code>
+&gt;&gt;&gt; <code><strong>X = None</strong></code>                        <code><em># None placeholder</em></code>
+&gt;&gt;&gt; <code><strong>print(X)</strong></code>                        <code><em># But None is a thing</em></code>
+None
+&gt;&gt;&gt; <code><strong>L = [None] * 100</strong></code>                <code><em># Initialize a list of 100 Nones</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[None, None, None, None, None, None, None, None, None, None, None, None,
+None, None, None, None, None, None, None, None, …<code><em>etc: a list of 100 Nones</em></code>…]</pre>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Types"><div class="sect2" id="types">
+<h2>Types</h2>
+<p>One last core object merits a <a contenteditable="false" data-type="indexterm" data-primary="type objects" id="ypbjc"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="type objects" id="objypob"></a><a contenteditable="false" data-type="indexterm" data-primary="type function" id="typfct"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="type" id="fctntyp"></a>callout here. The <em>type</em> object, returned by the <code>type</code> built-in function, is an object that gives the type of another object. We used it earlier when exploring the <code>help</code> function, but here’s its actual result:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2, 3]</strong></code>
+&gt;&gt;&gt; <code><strong>type(L)</strong></code>                         <code><em># The type of a list object</em></code>
+&lt;class 'list'&gt;
+&gt;&gt;&gt; <code><strong>type(type(L))</strong></code>                   <code><em># Even types are objects!</em></code>
+&lt;class 'type'&gt;</pre>
+<p>Besides allowing you to explore your objects interactively, the <code>type</code> object in its most practical application allows code to check the types of the objects it processes. In fact, there are at least three ways to do so in a Python script:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>type(L) == type([])</strong></code>             <code><em># Type testing, if you must…</em></code>
+True                                <code><em># Using a real object</em></code>
+
+&gt;&gt;&gt; <code><strong>type(L) == list</strong></code>                 <code><em># Using a type name</em></code>
+True
+
+&gt;&gt;&gt; <code><strong>isinstance(L, list)</strong></code>             <code><em># The object-oriented way</em></code>
+True</pre>
+<p>But now that this book has shown you all these ways to do type testing, it’s required by Python law to tell you that doing so is almost always the wrong thing to do in a Python program (and often a sign of an ex-Java programmer first starting to use Python!). The reason won’t become completely clear until later in the book when we start writing larger code units like functions, but it’s a—and perhaps <em>the</em>—core Python concept. By checking for specific types in your code, you effectively break its flexibility: you limit it to working on just one type. Without such checks, your code may be able to work on a whole range of types automatically.</p>
+<p>This is part of the <em>polymorphism</em> <a contenteditable="false" data-type="indexterm" data-primary="polymorphism" id="id1838"></a>mentioned earlier, and it stems from Python’s lack of type declarations. As you’ll learn more when we step up to coding functions and classes, in Python, we code to object <em>interfaces</em> (operations supported), not to types. That is, we care what an object <em>does</em>, not what it <em>is</em>. Not caring about specific types means that code can be applied to many of them: any object with a compatible interface will work, regardless of its specific type. Although type checking is supported—and even required in some rare cases—you’ll see that it’s not usually the “Pythonic” way of thinking. In fact, you’ll probably <a contenteditable="false" data-type="indexterm" data-primary="type objects" data-startref="ypbjc" id="id1839"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="type objects" data-startref="objypob" id="id1840"></a><a contenteditable="false" data-type="indexterm" data-primary="type function" data-startref="typfct" id="id1841"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="type" data-startref="fctntyp" id="id1842"></a>find that polymorphism is the key to using Python well.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Type Hinting"><div class="sect2" id="type_hinting">
+<h2>Type Hinting</h2>
+<p>That being said, Python has slowly <a contenteditable="false" data-type="indexterm" data-primary="type hinting" id="id1843"></a><a contenteditable="false" data-type="indexterm" data-primary="TypeScript" id="id1844"></a>accumulated a type-declaration facility known as <em>type hinting</em>, based originally on its earlier function annotations and inspired by the <em>TypeScript</em> dialect of JavaScript. With these syntax and module extensions, it is possible to name expected object types of function arguments and results, attributes in class-based objects, and even simple variables in Python code, and these hints may be used by external type checkers like <em>mypy</em>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x: int = 1</strong> </code>          <code><em># Optional hint: x might be an integer</em></code>
+&gt;&gt;&gt; <code><strong>x = 'anything'</strong>  </code>     <code><em># But it doesn't have to be!</em></code></pre>
+<p>Importantly, though, Python type hinting is meant only for documentation and use by third-party tools. The Python language <em>does not itself mandate or use type declarations</em> and has no plans to ever do so. Hence, type hinting by most measures is largely academic, no more useful than in-program comments, and oddly contrary to Python’s core ideas. The fact that it was nevertheless elevated to language syntax and complex subdomain arguably does a disservice to Python learners and users alike. Especially for beginners, this is an optional and peripheral topic that’s best deferred until you master the flexibility of Python’s dynamic typing. We’ll study it only briefly in this book, in <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>.</p>
+<p>To be sure, type hinting does not mean that Python is no longer dynamically typed. Indeed, a statically typed Python that requires type declarations would not be a Python at all! Some programmers accustomed to restrictive languages may regrettably code Python type hints anyhow as a hard-to-break habit (or misguided display of prowess), but good programmers focus instead on Python’s polymorphism. As you’ll find, it’s how to code Python in Python.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="User-Defined Objects"><div class="sect2" id="user_defined_objects">
+<h2>User-Defined Objects</h2>
+<p>We won’t study <em>object-oriented programming</em> (OOP) in Python and its <code>class</code> statement until <a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="class statement" id="id1845"></a><a contenteditable="false" data-type="indexterm" data-primary="class statement" id="id1846"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="class" id="id1847"></a>later in this book. In abstract terms, though, classes define new types of objects that extend the core set, so they merit a passing glance here. Suppose, for example, that you wish to have a kind of object that models workers in a company. Although there is no such specific core object type in Python (it’s not an HR language, after all), a user-defined class might fit the bill:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <strong>class Worker:</strong>
+        …<em>stay tuned for Part VI</em>…</pre>
+<p>Most of this code is omitted because it wouldn’t make much sense at this point in the book, but such a class might define <em>attributes</em> of workers like <code>name</code> and <code>pay</code>, as well as <em>behavior</em> coded as custom methods. Calling the class would generate objects that are instances of our new type, and the class’s methods would process them:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>sue = Worker('Sue Jones', 60000)</strong></code>        <code> <em># Make two new objects</em></code> 
+&gt;&gt;&gt; <code><strong>bob = Worker('Bob Smith', 50000)</strong></code>         <code><em># Each has a name and pay</em></code>
+&gt;&gt;&gt; <code><strong>sue.lastName()</strong></code>                           <code><em># Call a method to process sue</em></code>
+'Jones'
+&gt;&gt;&gt; <code><strong>bob.lastName()</strong></code>                           <code><em># Call a method to process bob</em></code>
+'Smith'
+&gt;&gt;&gt; <code><strong>sue.giveRaise(.10)</strong></code>                       <code><em># Update sue's pay</em></code>
+&gt;&gt;&gt; <code><strong>sue.pay       </strong>  </code>                         <code><em># Display sue's pay</em></code>
+66000.0</pre>
+<p>This is called <em>object-oriented</em>, because there is always an implied subject in functions within a <a contenteditable="false" data-type="indexterm" data-primary="object-oriented, definition" id="id1848"></a>class. Class-based objects ultimately use built-in objects internally, and we can always describe things like workers with Python’s built-in objects instead, as we did with dictionaries and lists earlier. Classes, though, implement operations with meaningful names, add structure to your code, and come with inheritance mechanisms that lend themselves to customization by <em>extension</em>. In OOP, we strive to extend software by writing new classes, not by changing what already works.</p>
+<p>All of which is well beyond the bounds of this object preview, though, so we must stop short here. For full disclosure on user-defined object types coded with classes, you’ll have to read on. Because classes build upon other tools in Python, they are one of the major destinations of this book’s journey.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="And Everything Else"><div class="sect2" id="and_everything_else">
+<h2>And Everything Else</h2>
+<p>As mentioned earlier, everything you can process in a Python script is a type of object, so our object-type tour is necessarily incomplete. However, even though everything in Python is an “object,” not everything is considered a part of Python’s <em>core</em> toolset. Other object types in Python either are related to program execution (like functions, modules, classes, and compiled code), or are implemented by imported module functions, not language syntax. The latter of these also tend to have application-specific roles—text patterns, database interfaces, network connections, and so on.</p>
+<p>Moreover, keep in mind that the objects we’ve met here are <em>objects</em>, but not necessarily <em>object-oriented</em>—a concept that usually requires the Python <code>class</code> statement, which you’ll meet again later in this book. Still, Python’s core objects are the workhorses of all Python scripts you’re likely to meet and are often the basis of larger noncore objects.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00014">
+<h1>Chapter Summary</h1>
+<p>And that’s a wrap for our object tour. This chapter has previewed Python’s core object types and the sorts of operations we can apply to them. We’ve studied generic operations that work on many object types (sequence operations such as indexing and slicing, for example), as well as type-specific operations available as method calls (string splits and list appends, for instance). We’ve also defined some key terms, such as immutability, sequences, and polymorphism.</p>
+<p>Along the way, we’ve learned that Python’s core object types are more flexible and powerful than what is available in lower-level languages. For instance, Python’s lists and dictionaries can nest, grow and shrink, and contain objects of any type, and their space is automatically created and cleaned up as you go. We’ve also glimpsed the ways that strings and files work hand in hand to support binary and text data, peeked at the iteration protocol and OOP, discussed the perils of type hinting, and introduced the <code>if</code> and <code>for</code> statements we’ll be using ahead.</p>
+<p>This chapter skipped many of the details in order to provide a first tour, so you shouldn’t expect all of this chapter to have made sense yet. In the next few chapters, we’ll start to dig deeper, taking a second pass over Python’s object types that will fill in details omitted here and give you a deeper understanding. We’ll start off the next chapter with an in-depth look at Python numbers. First, though, here is another quiz to review.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000127">
+<h1>Test Your Knowledge: Quiz</h1>
+<p>We’ll explore the concepts introduced in this chapter in more detail in upcoming chapters, so we’ll just cover the big ideas here:</p>
+<ol>
+<li><p>Name four of Python’s core object types.</p></li>
+<li><p>Why are they called “core” object types?</p></li>
+<li><p>What does “immutable” mean, and which three of Python’s object types are considered immutable?</p></li>
+<li><p>What does “sequence” mean, which objects fall into this category, and how is “iterable” related?</p></li>
+<li><p>What does “mapping” mean, and which core object type is a mapping?</p></li>
+<li><p>What is “polymorphism,” and why should you care?</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000126">
+<h1>Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>Numbers, strings, lists, dictionaries, tuples, files, and sets are generally considered to be the <a contenteditable="false" data-type="indexterm" data-primary="object types" id="id1849"></a><a contenteditable="false" data-type="indexterm" data-primary="numbers" id="id1850"></a><a contenteditable="false" data-type="indexterm" data-primary="strings" id="id1851"></a><a contenteditable="false" data-type="indexterm" data-primary="lists" id="id1852"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" id="id1853"></a><a contenteditable="false" data-type="indexterm" data-primary="tuples" id="id1854"></a><a contenteditable="false" data-type="indexterm" data-primary="files" id="id1855"></a><a contenteditable="false" data-type="indexterm" data-primary="sets" id="id1856"></a>core object types. Booleans, <code>None</code>, and types themselves are classified this way as well. Some of these types are really categories: there are multiple number <a contenteditable="false" data-type="indexterm" data-primary="numbers" data-secondary="types" id="id1857"></a><a contenteditable="false" data-type="indexterm" data-primary="integers" id="id1858"></a><a contenteditable="false" data-type="indexterm" data-primary="floating point numbers" id="id1859"></a><a contenteditable="false" data-type="indexterm" data-primary="complex numbers" id="id1860"></a><a contenteditable="false" data-type="indexterm" data-primary="fractions" id="id1861"></a><a contenteditable="false" data-type="indexterm" data-primary="decimals" id="id1862"></a>types (integer, floating point, complex, fraction, and decimal) and multiple string types (text strings, byte strings, and mutable byte strings).</p></li>
+<li><p>They are known as “core” object types because they are part of the Python language itself and are always available. To create other objects, you generally must call functions in imported modules. Most of the core objects have specific syntax for generating their objects: <code>'hack'</code>, for example, is an expression that makes a string and determines the set of operations that can be applied to it. Because of this, core objects are hardwired into Python’s syntax. In contrast, you must call the built-in <code>open</code> function to create a file object, even though this is usually considered a core object type too.</p></li>
+<li><p>An “immutable” object is an object <a contenteditable="false" data-type="indexterm" data-primary="immutability" id="id1863"></a>that cannot be changed after it is created. Numbers, strings, and tuples in Python fall into this category. While you cannot change an immutable object in place, you can always make a new one by running an expression. <code>bytearrays</code> offer mutability for strings, but they only apply directly to text if it’s a simple 8-bit kind (e.g., ASCII).</p></li>
+<li><p>A “sequence” is a positionally ordered collection of objects. Strings, lists, and tuples are all sequences <a contenteditable="false" data-type="indexterm" data-primary="sequences" id="id1864"></a>in Python. They share common sequence operations, such as indexing, concatenation, and slicing, but also have type-specific method calls. The related term “iterable” means either a physical sequence, or a virtual one that produces its items on request. Sequences are iterable, but so are generators, files, results of functions like <code>range</code>, and the dictionary object (which produces its keys when iterated, just like its <code>keys</code> method).</p></li>
+<li><p>The term “mapping” denotes an <a contenteditable="false" data-type="indexterm" data-primary="mapping" id="id1865"></a>object that maps keys to associated values. Python’s dictionary is the only mapping among its core object types. Mappings retain insertion order (as of Python 3.7), and support access to data stored by key, plus type-specific method calls that enable key tests, iteration, and more.</p></li>
+<li><p>“Polymorphism” means that the meaning of <a contenteditable="false" data-type="indexterm" data-primary="polymorphism" id="id1866"></a>an operation (like a <code>+</code>) depends on the objects being operated on. This turns out to be a key idea (and perhaps the largest) behind using Python well—not constraining code to specific types makes that code automatically applicable to many types. This becomes more obvious when coding functions and classes in Python. While Python today has type hinting, it’s not used by Python itself and is meant only for documentation and tools.</p></li>
+</ol>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>

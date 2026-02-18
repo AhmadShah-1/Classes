@@ -1,0 +1,629 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 24. Module Packages"><div class="chapter" id="module_packages">
+<h1><span class="label">Chapter 24. </span>Module Packages</h1>
+<p>So far, when we’ve imported modules, we’ve been loading <em>files</em>. This represents typical module usage, and it’s probably the technique you’ll use for most imports you’ll code, especially early in your Python career. The module import story, though, is richer than implied up to this point. This chapter extends it to present module <em>packages</em>—collections of module files that normally correspond to <em>folders</em> (a.k.a. <em>directories</em>) on your device. It covers four topics:</p>
+<ul>
+<li><p>Package imports, which give part of a <a contenteditable="false" data-type="indexterm" data-primary="import models" data-secondary="packages" id="immdpg"></a><a contenteditable="false" data-type="indexterm" data-primary="module packages" data-see="packages" id="id3515"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="packages" id="id3516"></a><a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="imports" id="id3517"></a>folder path leading to a file</p></li>
+<li><p>Packages themselves, which organize <a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="folder bundles" id="id3518"></a><a contenteditable="false" data-type="indexterm" data-primary="folders" data-secondary="packages" id="id3519"></a>modules into folder bundles</p></li>
+<li><p>Package-relative imports, which use <a contenteditable="false" data-type="indexterm" data-primary="package-relative imports" id="id3520"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="package-relative" id="id3521"></a>dots within a package to limit search</p></li>
+<li><p>Namespace packages, which build a <a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="namespace packages" id="id3522"></a><a contenteditable="false" data-type="indexterm" data-primary="namespace packages" id="id3523"></a>package that may span multiple folders</p></li>
+</ul>
+<p>As you’ll find, a package import turns a folder on your computer into another Python namespace, with attributes corresponding to the module files and subfolders that the folder contains. As you’ll also learn, package imports are sometimes required to resolve ambiguity when multiple program files of the same name are installed on a device.</p>
+<p>Packages are a somewhat advanced topic, which many readers can defer until they gain experience with file-based modules. That said, packages provide an easy way to organize code files that avoids same-name conflicts and is employed by many standard-library and third-party tools that you’ll be using. While packages, like much in Python, have grown convoluted over time, a basic knowledge of their usage can be beneficial to most Python learners.</p>
+<section data-type="sect1" data-pdf-bookmark="Using Packages"><div class="sect1" id="using_packages">
+<h1>Using Packages</h1>
+<p>To load items in a package folder, you’ll use the normal import statements and tools we’ve already met, but provide a path of names that reflects a path of nested folders. Let’s get started with this user-guide side of the packages story.</p>
+<section data-type="sect2" data-pdf-bookmark="Package Imports"><div class="sect2" id="package_imports">
+<h2>Package Imports</h2>
+<p>Coding package imports is <a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="packages" id="id3524"></a><a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="imports" id="id3525"></a>straightforward. In all the places where you have been naming a simple <em>file</em> in your import operations, you can instead list a <em>path</em> of names separated by periods. For instance, this works in an <code>import</code> statement:</p>
+<pre data-type="programlisting">import dir1.dir2.mod</pre>
+<p>The same goes for <code>from</code> statements:</p>
+<pre data-type="programlisting">from dir1.dir2.mod import var</pre>
+<p>And this also applies to already-imported items in <code>reload</code> calls:</p>
+<pre data-type="programlisting">from importlib import reload
+reload(dir1.dir2.mod)</pre>
+<p>The “dotted path” in these contexts is <a contenteditable="false" data-type="indexterm" data-primary="dotted-path syntax, packages" id="id3526"></a><a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="dotted-path syntax" id="id3527"></a><a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="dotted-path" id="id3528"></a><a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="imports" data-tertiary="folder hierarchies" id="id3529"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="packages" data-tertiary="folder hierarchies" id="id3530"></a><a contenteditable="false" data-type="indexterm" data-primary="folder hierarchies, package imports" id="id3531"></a>assumed to correspond to a path through the <em>folder hierarchy</em> on your device, leading to the module file <em>mod.py</em>, or other component with basename <em>mod</em> (as we’ve seen, it might also be a bytecode file, C extension module, or other). Most importantly here, the preceding paths indicate that on your device there is a directory <em>dir1</em>, which has a subdirectory <em>dir2</em>, which contains a module file <em>mod.py</em> (or similar).</p>
+<p>Furthermore, these paths imply that <em>dir1</em> resides within some <em>container</em> directory <em>dir0</em>, which is a part of the normal module search path. In other words, these imports and reloads imply a directory structure that looks something like this on Unix and Windows, respectively:</p>
+<pre data-type="programlisting">dir0/dir1/dir2/mod.py            <code><em># Or mod.pyc, mod.so, etc.</em></code>
+dir0\dir1\dir2\mod.py            <code><em># Ditto, on Windows</em></code></pre>
+<p>The container directory <em>dir0</em> needs to be added to your module search path unless it’s an automatic part of that path, exactly as if <em>dir1</em> were a simple module file.</p>
+<p>More formally, the leftmost component in a package import path is <em>relative to</em> (located in) a directory included in the <code>sys.path</code> module search-path list we explored in <a data-type="xref" href="ch22.html#modules_the_big_picture">Chapter 22</a>. From there down, though, the import statements in your script explicitly give the directory paths leading to modules in packages.</p>
+<p>The dotted-path syntax of packages is platform neutral, but also reflects the fact that folder paths in import statements become nested objects: <code>dir1.dir2.mod</code> traverses three module <em>objects</em> after an import. This syntax also explains why Python complains about a file not being a package if you forget to omit the <em>.py</em> extension in <a contenteditable="false" data-type="indexterm" data-primary="import models" data-secondary="packages" data-startref="immdpg" id="id3532"></a>import statements: it’s taken to mean a package import!</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Packages and the Module Search Path"><div class="sect2" id="packages_and_the_module_search_path">
+<h2>Packages and the Module Search Path</h2>
+<p>If you use this feature, keep in mind that <a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="module search path and" id="id3533"></a><a contenteditable="false" data-type="indexterm" data-primary="searches" data-secondary="packages" id="id3534"></a><a contenteditable="false" data-type="indexterm" data-primary="module search path" data-secondary="packages" id="id3535"></a><a contenteditable="false" data-type="indexterm" data-primary="import models" data-secondary="packages" data-tertiary="module searches" id="immpkmdsr"></a>the directory paths in your import statements can be only <em>variables</em> separated by <em>periods</em>. You cannot use any platform-specific path syntax in your import statements, such as <code>C:\dir1</code>, <code>/Users/me/dir1</code>,  or <code>../dir1</code>—these do not work syntactically. Instead, use any such platform-specific syntax in your module search path settings to name the directories <em>containing</em> your packages.</p>
+<p>For instance, in the prior example, <em>dir0</em>—the directory name you add to your module search path—can be an arbitrarily long and platform-specific directory path leading up to <em>dir1</em>. You cannot use an invalid statement like this:</p>
+<pre data-type="programlisting">import C:\Users\me\mycode\dir1\dir2\mod      <code><em># Error: illegal syntax (Windows)</em></code>
+import /Users/me/mycode/dir1/dir2/mod        <code><em># Ditto, on Unix</em></code></pre>
+<p>But you can add a path like <em>C:\Users\me\mycode</em> or <em>/Users/me/mycode</em> to either your <code>PYTHONPATH</code> environment variable, a strategically placed <em>.pth</em> file, or <code>sys.path</code> itself in manual code, and then say this in your script:</p>
+<pre data-type="programlisting">import dir1.dir2.mod                         <code><em># OK: variables and periods</em></code></pre>
+<p>In effect, entries on the module search path provide platform-specific directory <em>prefixes</em>, which lead to the leftmost names of package paths in <code>import</code> and <code>from</code> statements. These import statements themselves provide the remainder of the directory path in a platform-neutral fashion.</p>
+<p>As for simple file imports, you do not need to add the <em>container</em> directory to your module search path if it’s already there. Per <a data-type="xref" href="ch22.html#modules_the_big_picture">Chapter 22</a>, the search path automatically includes the “home” directory (where you’re working in a REPL, or the container of a launched program’s top-level file), along with the standard library’s containers, and the <em>site-packages</em> third-party install root. While none of these components require search-path mods, your module search path must include all the <a contenteditable="false" data-type="indexterm" data-primary="import models" data-secondary="packages" data-tertiary="module searches" data-startref="immpkmdsr" id="id3536"></a>directories containing <em>leftmost</em> components in your code’s package-import statements.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Creating Packages"><div class="sect1" id="creating_packages">
+<h1>Creating Packages</h1>
+<p>To make packages of your own, you’ll bundle <a contenteditable="false" data-type="indexterm" data-primary="import models" data-secondary="packages" data-tertiary="package creation" id="immpcrtn"></a>module files and nested folders in a package folder. A package folder can also optionally contain an <em>__init__.py</em> file run on first import, and a <em>__main__.py</em> file run when the entire package folder is run as a bundle. The following sections demo what this looks like in code, one step at a time.</p>
+<section data-type="sect2" data-pdf-bookmark="Basic Package Structure"><div class="sect2" id="basic_package_structure">
+<h2>Basic Package Structure</h2>
+<p>In their simplest form, packages are <a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="folders" data-tertiary="nesting" id="id3537"></a><a contenteditable="false" data-type="indexterm" data-primary="folders" data-secondary="packages" data-tertiary="nesting" id="id3538"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="package folders" id="id3539"></a>just folders containing normal module files, and perhaps nested subfolders of the same. Let’s set one up as a demo. The following uses indentation to represent the folder nesting we’ll be using in this and the following sections:</p>
+<pre data-type="programlisting"><code><em>dir0</em></code>/                        <code><em># Container listed on module search path
+</em></code>    dir1/                    <code><em># Package root folder dir1
+</em></code>        mod.py               <code><em># Module file dir1.mod in package</em></code>
+        dir2/                <code><em># Nested package folder dir1.dir2</em></code>
+            mod.py           <code><em># Module dir1.dir2.mod in package</em></code></pre>
+<p>These nested folders can be created in file explorers, or with the following commands on most platforms; use backslashes on Windows, or simply use this Chapter’s folder in the examples package, which has prebuilt the structure:</p>
+<pre data-type="programlisting">$ <code><strong>mkdir dir1</strong></code>
+$ <code><strong>mkdir dir1/dir2</strong>  </code>          <code><em># Use backward slashes on Windows</em></code></pre>
+<p>Admin note: the names of package folders, like <a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="folders" data-tertiary="names" id="id3540"></a><a contenteditable="false" data-type="indexterm" data-primary="folders" data-secondary="packages" data-tertiary="names" id="id3541"></a>those of simple module files, must follow the rules for <em>variable</em> names because they become variables where imported. See <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a> for a refresher on the constraints, but in short, use letters, digits, and underscores, and avoid reserved words.</p>
+<p>Now, add the nested module files listed in Examples <a data-type="xref" data-xrefstyle="select:labelnumber" href="#example_twofour_onedot_dironesolidusmo">24-1</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="#example_twofour_twodot_dironesolidusdir">24-2</a>. Their top-level code runs on first import and creates attributes as usual, and their titles give their paths (using just Unix forward-slash separators for brevity).</p>
+<div data-type="example" class="pagebreak-before less_space" id="example_twofour_onedot_dironesolidusmo">
+<h5><span class="label">Example 24-1. </span>dir1/mod.py</h5>
+<pre data-type="programlisting">var = 'hack'
+print('Loading dir1.mod')</pre>
+</div>
+<div data-type="example" id="example_twofour_twodot_dironesolidusdir">
+<h5><span class="label">Example 24-2. </span>dir1/dir2/mod.py</h5>
+<pre data-type="programlisting">var = 'code'
+print('Loading dir1.dir2.mod')</pre>
+</div>
+<section data-type="sect3" data-pdf-bookmark="Using the basic package"><div class="sect3" id="using_the_basic_package">
+<h3>Using the basic package</h3>
+<p>To use our module package, import its <a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="imports" data-tertiary="modules" id="pkmdpr"></a><a contenteditable="false" data-type="indexterm" data-primary="dotted-path syntax, packages" data-secondary="module import" id="id3542"></a><a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="dotted-path syntax" data-tertiary="module import" id="id3543"></a><a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="dotted-path" id="id3544"></a>modules from a REPL or another file just as you would for a simple <em>.py</em> file, but use dots to specify the path below the <em>dir0</em> folder in the search path—which is the current directory in a REPL:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>import dir1.mod</strong>  </code>                    <code><em># Package paths in import</em></code>
+Loading dir1.mod
+&gt;&gt;&gt; <code><strong>dir1.mod.var</strong></code>                         <code><em># Module code run on import</em></code>
+'hack'
+
+&gt;&gt;&gt; <code><strong>import dir1.dir2.mod</strong>  </code>               <code><em># A further-nested path</em></code>
+Loading dir1.dir2.mod
+&gt;&gt;&gt; <code><strong>dir1.dir2.mod.var</strong></code>                    <code><em># Repeat path to get item at end</em></code>
+'code'</pre>
+<p>As for simple top-level modules, the code of modules nested in a package is run only when first <span class="keep-together">imported</span>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import dir1.mod</strong>  </code>                    <code><em># No-op if already imported</em></code>
+&gt;&gt;&gt; <code><strong>import dir1.dir2.mod</strong></code></pre>
+<p>And you generally must <em>import</em> a nested module in order to use its attributes—because modules corresponding <a contenteditable="false" data-type="indexterm" data-primary="nested modules" id="id3545"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="nested, attributes" id="id3546"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="nested modules" id="id3547"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="nested modules, attributes" id="id3548"></a>to folders don’t go back to the filesystem on attribute fetches, it’s not enough to import just a root folder:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>import dir1</strong> </code>                         <code><em># Gets dir1, nothing below it</em></code>
+&gt;&gt;&gt; <code><strong>dir1.dir2.mod.var</strong></code>
+AttributeError: module 'dir1' has no attribute 'dir2'
+
+$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>import dir1.dir2</strong></code>
+&gt;&gt;&gt; <code><strong>dir1.dir2.mod.var</strong></code>
+AttributeError: module 'dir1.dir2' has no attribute 'mod'
+
+$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>import dir1.dir2.mod</strong>  </code>               <code><em># List full path to target</em></code>
+Loading dir1.dir2.mod
+&gt;&gt;&gt; <code><strong>dir1.dir2.mod.var</strong></code>
+'code'</pre>
+<p>All this works the same in the <code>from</code> statement—which, as we’ve seen, is really just <code>import</code> with <a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="packages" data-tertiary="from statement" id="id3549"></a><a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="imports" data-tertiary="from statement" id="id3550"></a>an extra copy of names. Again, though, we must list a folder by its path in an import statement to be able to access its contents, and the paths listed in imports are taken literally, not fetched from variables:</p>
+<pre data-type="programlisting" class="pagebreak-before">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>from dir1.mod import var</strong>   </code>          <code><em># Package paths in from</em></code>
+Loading dir1.mod
+&gt;&gt;&gt; <code><strong>var       </strong>  </code>                         <code><em># Don't repeat path to item</em></code>
+'hack'
+
+&gt;&gt;&gt; <code><strong>from dir1.dir2.mod import var</strong></code>
+Loading dir1.dir2.mod
+&gt;&gt;&gt; <code><strong>var</strong></code>
+'code'
+
+&gt;&gt;&gt; <code><strong>from dir1 import dir2</strong> </code>               <code><em># Paths taken literally</em></code>
+&gt;&gt;&gt; <code><strong>from dir2 import mod</strong>  </code>               <code><em># Not from variable values</em></code>
+ModuleNotFoundError: No module named 'dir2'</pre>
+<p>One potential advantage of <code>from</code> here is that it avoids <em>repeating</em> a package path every time an item in a package is used. With <code>import</code>, you generally must repeat the full path each time, but <code>from</code> lets you code the path just once, and use the simple name fetched from it everywhere; this is especially useful if the package’s directory structure later changes (as software is wont to do):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import dir1.dir2.mod</strong>  </code>               <code><em># import requires paths</em></code>
+&gt;&gt;&gt; <code><strong>dir1.dir2.mod.var</strong></code>
+'code'
+
+&gt;&gt;&gt; <code><strong>from dir1.dir2.mod import var</strong>   </code>     <code><em># from can shorten paths</em></code>
+&gt;&gt;&gt; <code><strong>var</strong></code>
+'code'
+&gt;&gt;&gt; <code><strong>from dir1.dir2 import mod</strong>  </code>          <code><em># And avoids repeating them</em></code>
+&gt;&gt;&gt; <code><strong>mod.var</strong></code>
+'code'
+
+&gt;&gt;&gt; <code><strong>import dir1.dir2.mod as mod</strong></code>          <code><em># Though "as" can too</em></code>
+&gt;&gt;&gt; <code><strong>mod.var</strong></code>
+'code'</pre>
+<p>As the last example shows, though, the <code>as</code> extension introduced in the preceding chapter can shorten up paths the same way as <code>from</code>—as can a simple manual reassignment, which <a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="imports" data-tertiary="modules" data-startref="pkmdpr" id="id3551"></a>the <code>as</code> sugarcoats (more on <code>as</code> in the next chapter).</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Package __init__.py Files"><div class="sect2" id="package_init_dotpy_files">
+<h2>Package __init__.py Files</h2>
+<p>If you need to run setup code when a <a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="__init__.py file" data-secondary-sortas="init" id="pkpyf"></a><a contenteditable="false" data-type="indexterm" data-primary="__init__.py files" data-primary-sortas="init.py files" id="itpyit"></a>package folder is imported, put it in a file named <em>__init__.py</em> and store it in the package’s folder. Python will automatically run this file’s code the first time the package is imported during a program run (or REPL session). Here’s how this augments our package’s structure:</p>
+<pre data-type="programlisting"><code><em>dir0</em></code>/                       
+    dir1/
+        <code><strong>__init__.py</strong></code>          <code><em># Run on first import of dir1</em></code>
+        mod__.py
+        dir2/
+            <code><strong>__init__.py</strong></code>      <code><em># Run on first import of dir1.dir2
+</em></code>            mod.py</pre>
+<p>The new <em>__init__.py</em> files are listed in Examples <a data-type="xref" data-xrefstyle="select:labelnumber" href="#example_twofour_threedot_dironesolidus">24-3</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="#example_twofour_fourdot_dironesolidusdi">24-4</a>.</p>
+<div data-type="example" class="pagebreak-before" id="example_twofour_threedot_dironesolidus">
+<h5 class="less_space"><span class="label">Example 24-3. </span>dir1/__init__.py</h5>
+<pre data-type="programlisting">var = 'Python'
+print('Running dir1.__init__.py')</pre>
+</div>
+<div data-type="example" id="example_twofour_fourdot_dironesolidusdi">
+<h5><span class="label">Example 24-4. </span>dir1/dir2/__init__.py</h5>
+<pre data-type="programlisting">var = 3.12
+print('Running dir1.dir2.__init__.py')</pre>
+</div>
+<section data-type="sect3" data-pdf-bookmark="Using the updated package"><div class="sect3" id="using_the_updated_package-id00084">
+<h3>Using the updated package</h3>
+<p>These special <em>__init__.py</em> files are optional in each folder of a package. Because they are run on the first import of or through a folder level, though, they provide a natural hook for kicking off package-specific initializations (hence their abbreviated names). In fact, their assignments serve to initialize the <em>namespace</em> that corresponds to a folder on your device—as for files, they create attributes of the package’s module object:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>import dir1.dir2.mod</strong>  </code>               <code><em># Runs all __init__.py files</em></code>
+Running dir1.__init__.py
+Running dir1.dir2.__init__.py
+Loading dir1.dir2.mod
+&gt;&gt;&gt; <code><strong>dir1.var  </strong>  </code>                         <code><em># Name in __init__.py's namespace</em></code>
+'Python'
+&gt;&gt;&gt; <code><strong>dir1.dir2.var</strong></code>
+3.12
+&gt;&gt;&gt; <code><strong>dir1.dir2.mod.var</strong></code>                    <code><em># Name in nested mod.py namespace</em></code>
+'code'</pre>
+<p>Technically speaking, packages with <em>__init__.py</em> files are called “regular” packages, and those without <a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="regular packages" id="id3552"></a><a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="namespace packages" id="id3553"></a><a contenteditable="false" data-type="indexterm" data-primary="namespace packages" id="id3554"></a>them are called “namespace” packages, and the demo was a single-folder “namespace” package until adding <em>__init__.py</em> made it “regular.” We’ll get into the details behind this distinction later, but apart from the fact that “regular” packages have precedence during module search, the difference is mostly a historical artifact today, and won’t matter in most roles. Of course, <em>__init__.py</em> files can also do more than print beacons; we’ll also explore their roles later in this chapter.</p>
+<p>As noted earlier, <code>reload</code> works with package paths too, if you’ve already imported the paths in question. Continuing the prior REPL session:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from importlib import reload</strong></code>
+&gt;&gt;&gt;<code> <strong>reload(dir1)</strong></code>
+Running dir1.__init__.py
+&lt;module 'dir1' from '/…/LP6E/Chapter24/dir1/__init__.py'&gt;
+
+&gt;&gt;&gt; <code><strong>reload(dir1.dir2)</strong></code>
+Running dir1.dir2.__init__.py
+&lt;module 'dir1.dir2' from '/…/LP6E/Chapter24/dir1/dir2/__init__.py'&gt;
+ 
+&gt;&gt;&gt; <code><strong>reload(dir1.dir2.mod)</strong></code>
+Loading dir1.dir2.mod
+&lt;module 'dir1.dir2.mod' from '/…/LP6E/Chapter24/dir1/dir2/mod.py'&gt;</pre>
+<p>Notice from the initialization prints that this call reloads just the <em>single</em> module on the right end of the path. To do better, we’ll code a reloader tool in the next chapter that, given <a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="__init__.py file" data-secondary-sortas="init" data-startref="pkpyf" id="id3555"></a><a contenteditable="false" data-type="indexterm" data-primary="__init__.py files" data-primary-sortas="init.py files" data-startref="itpyit" id="id3556"></a>a package root, can load all the items on a package path like this, one at a time; See <a data-type="xref" href="ch25.html#example_transitive_module_reloads">“Example: Transitive Module Reloads”</a>.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Package __main__.py Files"><div class="sect2" id="package_main_dotpy_files">
+<h2>Package __main__.py Files</h2>
+<p>Finally, if you want a package’s users <a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="__main__.py file" data-secondary-sortas="main" id="pkmpyf"></a><a contenteditable="false" data-type="indexterm" data-primary="__main__.py files" data-primary-sortas="main" id="mnpyfs"></a>to be able to run the package as though it were a program or script, add <em>__main__.py</em> files to each folder where you wish to support this mode; Python will automatically run these files each time their container folder is launched like a program. Here’s how this last bit augments our package’s structure:</p>
+<pre data-type="programlisting"><code><em>dir0</em></code>/                       
+    dir1/
+        <code><strong>__main__.py</strong></code>          <code><em># Run whenever dir1 bundle is run</em></code>
+        __init__.py
+        mod__.py
+        dir2/
+            <code><strong>__main__.py</strong></code>      <code><em># Run whenever dir1.dir2 bundle is run</em></code>
+            __init__.py 
+            mod.py</pre>
+<p>The added <em>__main__.py</em> files are listed in Examples <a data-type="xref" data-xrefstyle="select:labelnumber" href="#example_twofour_fivedot_dironesolidus">24-5</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="#example_twofour_sixdot_dironesolidusdir">24-6</a>; they’re simple so we can focus on packages.</p>
+<div data-type="example" id="example_twofour_fivedot_dironesolidus">
+<h5><span class="label">Example 24-5. </span>dir1/__main__.py</h5>
+<pre data-type="programlisting">print('Executing dir1.__main__.py')</pre>
+</div>
+<div data-type="example" id="example_twofour_sixdot_dironesolidusdir">
+<h5><span class="label">Example 24-6. </span>dir1/dir2/__main__.py</h5>
+<pre data-type="programlisting">print('Executing dir1.dir2.__main__.py')</pre>
+</div>
+<section data-type="sect3" data-pdf-bookmark="Using the updated package"><div class="sect3" id="using_the_updated_package-id000118">
+<h3>Using the updated package</h3>
+<p>When present, <em>__main__.py</em> files are automatically run for a variety of launch options, including direct console command lines that name the containing package folder—which need not be on the module search path in this mode:</p>
+<pre data-type="programlisting">$ <code><strong>python3 dir1</strong>  </code>                         <code><em># Runs __main__.py (not __init__.py)</em></code>
+Executing dir1.__main__.py
+$ <code><strong>python3 dir1/dir2</strong></code>
+Executing dir1.dir2.__main__.py
+$ <code><strong>python3 dir1/dir2/mod.py</strong></code>               <code><em># Runs nested mod.py</em></code>
+Loading dir1.dir2.mod</pre>
+<p>Package <em>__main__.py</em> files are also run for the Python <code>-m</code> mode, which, as we’ve seen, locates an item on the module search path and runs it as a top-level script. Unlike direct console command lines, this mode kicks off the full package-import machinery and runs any <em>__init__.py</em> files along the path, but requires the package to be on the search path:</p>
+<pre data-type="programlisting">$ <code><strong>python3 -m dir1</strong></code>                        <code><em># Runs both __init__.py and __main__.py</em></code>
+Running dir1.__init__.py
+Executing dir1.__main__.py
+$ <code><strong>python3 -m dir1.dir2</strong></code>                   <code><em># And package must be on search path</em></code>
+Running dir1.__init__.py
+Running dir1.dir2.__init__.py
+Executing dir1.dir2.__main__.py
+$ <code><strong>python3 -m dir1.dir2.mod</strong></code>               <code><em># Runs mod.py, and parents' __init__.py</em></code>
+Running dir1.__init__.py
+Running dir1.dir2.__init__.py
+Loading dir1.dir2.mod</pre>
+<p>This is similar in spirit to app “bundles” on macOS and smartphones, which are really folders but can be run as an executable item. The roles for <em>__main__.py</em> files are many, but they’re often used to provide a command-line interface to a package of tools. This way, you can import the package to use its tools in another program, but also launch it as a whole to use the tools in a standalone program. This file might also be used to host test code for the package.</p>
+<p>A <em>__main__.py</em> file is also run if located in a <em>ZIP file</em> on the search path. As noted earlier, ZIP files are treated like a normal folder if encountered during a module search, but see Python’s docs for more on this option.</p>
+<p>One subtlety here: intrapackage (same-package) imports in <em>__main__.py</em> may need to use the package-relative <code>from .</code> syntax we’ll study ahead when run by the <code>-m</code> argument only. This syntax fails for launches from direct command lines, so you may need to choose a launch mode to support when a <em>__main__.py</em> requires same-package imports. As you’ll find, code that wants to support both package and <a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="__main__.py file" data-secondary-sortas="main" data-startref="pkmpyf" id="id3557"></a><a contenteditable="false" data-type="indexterm" data-primary="__main__.py files" data-primary-sortas="main" data-startref="mnpyfs" id="id3558"></a><a contenteditable="false" data-type="indexterm" data-primary="import models" data-secondary="packages" data-tertiary="package creation" data-startref="immpcrtn" id="id3559"></a>program usage may solve this dilemma with full-path imports.</p>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Why Packages?"><div class="sect1" id="why_packagesquestion_mark">
+<h1>Why Packages?</h1>
+<p>Now that you’ve seen how to use and create packages, you might be wondering why in the world anyone would <a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="benefits" id="pckgbnf"></a>go to all the bother. It’s a valid question. In truth, and despite what you may have heard, packages are completely optional: they are probably overkill early in your coding journey, and even later, you can write amazing programs without them.</p>
+<p>In general, though, packages are useful to know about because they help make names unique in both larger programs and libraries published for others to use. By organizing your code as a package folder, you can be fairly sure that the names of its files won’t clash with those of other software on hosting devices. This is the same namespace-segregation role that file-based modules and local scopes in functions play, but extended to the filesystem: because references to your package are qualified by the name of the package’s folder, there’s less risk of same-name collisions.</p>
+<p>In addition, packages can make imports more descriptive, ease the task of tracking down the locations of variables in code files, and simplify your module search-path settings. The only time package imports are actually <em>required</em>, however, is to resolve ambiguities that may arise when multiple programs with same-named files are installed on the same machine. This is something of an install issue, but it can also become a concern in general practice—especially given the tendency of developers to use simple and similar names for module files.</p>
+<p>To help you better understand why all these benefits matter, let’s take a brief detour into the land of the abstract.</p>
+<section data-type="sect2" data-pdf-bookmark="A Tale of Two Systems"><div class="sect2" id="a_tale_of_two_systems">
+<h2>A Tale of Two Systems</h2>
+<p>To illustrate the roles of packages, suppose that a programmer develops a Python program that contains a file called <em>utilities.py</em> for common utility code, and a top-level file named <em>main.py</em> that users launch to start the program. All over this program, its files say <code>import utilities</code> to load and use the common code. When the program is installed, it unpacks all its files into a single directory named <em>system1</em> on the target machine that looks like this:</p>
+<pre class="pagebreak-before" data-type="programlisting">system1/
+    utilities.py        <code><em># Common utility functions, classes</em></code>
+    main.py             <code><em># Launch this to start the program</em></code>
+    other.py            <code><em># Import utilities to load my tools</em></code></pre>
+<p>Now, suppose that a second programmer develops a different program with files also called <em>utilities.py</em> and <em>main.py</em>, and again uses <code>import utilities</code> throughout the program to load its own common code file. When this second system is fetched and installed on the same computer as the first system, its files will unpack into a new directory called <em>system2</em> on the host—ensuring that they do not overwrite same-named files from the first system:</p>
+<pre data-type="programlisting">system2/
+    utilities.py        <code><em># Common utilities</em></code>
+    main.py             <code><em># Launch this to run</em></code>
+    other.py            <code><em># Imports utilities</em></code></pre>
+<p>So far, there’s no problem: both systems can coexist and run on the same computer. In fact, you won’t even need to configure the module search path to use these programs on your computer—because Python always searches the home directory first (that is, the directory containing the top-level file), imports in either system’s files will automatically see all the files in that system’s own directory. For instance, if you run <em>system1/main.py</em>, all imports will search <em>system1</em> first. Similarly, if you launch <em>system2/main.py</em>, <em>system2</em> will be searched first instead. Remember, module search path settings are only needed to import across directory boundaries.</p>
+<p>However, suppose that after you’ve installed these two programs on your machine, you decide that you’d like to use some of the code in each of the <em>utilities.py</em> files in a system of your own. It’s common utility code, after all, and Python code by nature “wants” to be reused. In this case, you’d like to be able to say the following from code that you’re writing in a third directory to load one of the two files:</p>
+<pre data-type="programlisting">import utilities
+utilities.func('hack')</pre>
+<p>Now the problem starts to materialize. To make this work at all, you’ll have to set the module search path to include the directories containing the <em>utilities.py</em> files. But which directory do you put first in the path—<em>system1</em> or <em>system2</em>?</p>
+<p>The issue here is the <em>linear</em> nature of the <code>sys.path</code> search path. It is always scanned from left to right, so no matter how long you ponder this dilemma, you will always get just one <em>utilities.py</em>—from the directory listed <em>first</em> (leftmost) on the search path. As is, you’ll never be able to import this file from the other directory at all.</p>
+<p>You could try changing <code>sys.path</code> within your script before each import operation, but that’s both extra work and error-prone. And changing <code>PYTHONPATH</code> before each Python program run is too tedious, and won’t allow you to use <em>both</em> versions in a single file in an event. By default, you’re stuck.</p>
+<p>This is the issue that packages actually fix. Rather than installing programs in independent directories listed on the module search path directly and individually, you can package and install them as <em>subdirectories</em> under a common root. For instance, you might organize all the code in this example as an install hierarchy that looks like this:</p>
+<pre class="pagebreak-before" data-type="programlisting"><code><strong>root</strong></code>/
+    system1/
+        utilities.py
+        main.py
+        other.py
+    system2/
+        utilities.py
+        main.py
+        other.py
+    mycode/                     <code><em># Here or elsewhere</em></code>
+        myfile.py               <code><em># Your new code here</em></code></pre>
+<p>Now, add just the common <em>root</em> directory to your search path. If your code’s imports are all relative to this common root, you can import <em>either</em> system’s utility file with a package import—the enclosing directory name makes the path (and hence, the module reference) unique. In fact, you can import <em>both</em> utility files in the same module, if you use an <code>import</code> statement and repeat the full path each time you reference the utility modules:</p>
+<pre data-type="programlisting">import <code><strong>system1</strong></code>.utilities                <code><em># Import from one package
+</em></code>import <code><strong>system2</strong></code>.utilities                <code><em># Import from another</em></code>
+
+<code><strong>system1</strong></code>.utilities.function('hack')      <code><em># And use names from either</em></code>
+<code><strong>system2</strong></code>.utilities.function('code')      <code><em># Or both!</em></code></pre>
+<p>In short, the names of the enclosing directories here make the module references unique.</p>
+<p>Note that you have to use <code>import</code> instead of <code>from</code> with packages only if you need to access the <em>same</em> attribute name in two or more paths. If the name of the called function here were different in each path, you could use <code>from</code> statements to avoid repeating the full package path whenever you call one of the functions, as described earlier; as also mentioned, the <code>as</code> extension in <code>import</code> and <code>from</code> can be used to provide unique synonyms too.</p>
+<p>Technically, in this case, the <em>mycode</em> folder doesn’t have to be under <em>root</em>—just the packages of code from which you will import. Because you never know when your own modules might be useful in other programs, though, placing them under the common root directory, too, may avoid similar name-collision problems in the future.</p>
+<p>Importantly, <em>path configuration</em> also becomes simple if you’re careful to unpack all your Python systems under a common root like this; you’ll only need to add the common root directory once. Moreover, both of the two original systems’ imports will keep working unchanged. Because their <em>home</em> directories are searched first, the addition of the common root on the search path is irrelevant to code in <em>system1</em> and <em>system2</em>; they can keep saying just <code>import utilities</code> and expect to find their own files when run as programs. As you’ll see ahead, though, if they are <em>also</em> used as packages, they may need to use <code>from .</code> package-relative imports (and <em>main.py</em> could be <em>__main__.py</em>).</p>
+<p>Finally, keep in mind that even if you never create packages of your own, you’ll probably use standard-library and third-party tools that do. As a random sample of standard-library packages:</p>
+<pre data-type="programlisting">from email.message import Message                    <code><em># Email parsing/construction</em></code>
+from tkinter.filedialog import askopenfilename       <code><em># Portable GUI toolkit</em></code>
+from http.server import CGIHTTPRequestHandler        <code><em># Web-server utilities (till Python 3.15?)</em></code></pre>
+<p>By bundling their code in a package, such tools become more self-contained, and avoid name conflicts. Whether you opt to <a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="benefits" data-startref="pckgbnf" id="id3560"></a>do the same for your own code is up to you, but the next few sections dig deeper for if and when you opt-in.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="The Roles of __init__.py Files"><div class="sect1" id="the_roles_of_init_dotpy_files">
+<h1>The Roles of __init__.py Files</h1>
+<p>Now that we’ve seen the basics and <a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="__init__.py file" data-secondary-sortas="init" id="id3561"></a><a contenteditable="false" data-type="indexterm" data-primary="__init__.py files" data-primary-sortas="init.py files" id="id3562"></a>addressed the why of packages, let’s explore some of the details behind their usage. The <em>__init__.py</em> files in our opening demo were simple, but these files can contain arbitrary Python code, just like normal module files. Their names are special because their code is run automatically the first time a Python program imports a directory, and thus serves primarily as a hook for performing initialization steps required by the package. These files can also be completely empty, though, and sometimes have additional roles.</p>
+<p>Specifically, the <em>__init__.py</em> file serves as a hook for package initialization-time actions, generates a module namespace for a directory, declares a directory as a “normal” Python package, and implements the behavior of <code>from *</code> statements when used for folders in package imports:</p>
+<dl>
+<dt>Package initialization</dt>
+<dd>The first time a Python program imports <a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="__init__.py files" data-tertiary="initialization" data-secondary-sortas="init" id="id3563"></a><a contenteditable="false" data-type="indexterm" data-primary="__init__.py files" data-secondary="package initialization" data-primary-sortas="init.py files" id="id3564"></a><a contenteditable="false" data-type="indexterm" data-primary="import models" data-secondary="packages" data-tertiary="package initialization" id="immpinz"></a>through a directory, it automatically runs all the code in the directory’s <em>__init__.py</em> file. Because of that, these files are a natural place to put code to initialize the state required by files in a package. For instance, a package might use its initialization file to create required data files, open connections to databases, and so on. Typically, <em>__init__.py</em> files are not meant to be useful if executed directly (that’s what <em>__main__.py</em> is for); instead, they are run automatically when a package is first imported for use elsewhere.</dd>
+<dt>Module namespace initialization</dt>
+<dd>As noted earlier, in the package import <a contenteditable="false" data-type="indexterm" data-primary="__init__.py files" data-secondary="module namespace initialization" data-primary-sortas="init.py files" id="id3565"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="namespaces" data-tertiary="initialization" id="id3566"></a><a contenteditable="false" data-type="indexterm" data-primary="namespaces" data-secondary="modules" data-tertiary="__init__.py files" data-tertiary-sortas="init" id="id3567"></a>model, the directory paths in your script become real nested object paths after an import. For instance, after an import in the preceding demo, the expression <code>dir1.dir2</code> works and returns a module object whose namespace contains all the names assigned by <em>dir2</em>’s <em>__init__.py</em> initialization file. The variable assignments in such files provide attribute namespaces for module objects created for folders, which have no real associated module file, and would otherwise have no place to define names.</dd>
+<dt>Package indicator for search</dt>
+<dd>Package <em>__init__.py</em> files are <a contenteditable="false" data-type="indexterm" data-primary="__init__.py files" data-secondary="searches" data-primary-sortas="init.py files" id="id3568"></a><a contenteditable="false" data-type="indexterm" data-primary="searches" data-secondary="__init__.py files" data-secondary-sortas="init" id="id3569"></a>also partly present to declare that a directory is a Python package. In this role, these files serve to prevent directories with common names from unintentionally hiding true modules that appear later on the module search path. Without this safeguard, Python might pick a directory that has nothing to do with your code, just because it appears nested in an earlier directory on the search path. As you’ll see later, the generalizations added for namespace packages subsume some of this role algorithmically, by scanning ahead on the search path to find later items before settling on simple folders. Package <em>__init__.py</em> files, though, still give a package higher priority than a same-name folder elsewhere on the search path.</dd>
+<dt><code>from *</code> statement behavior</dt>
+<dd>As an advanced feature, a list of name <a contenteditable="false" data-type="indexterm" data-primary="__init__.py files" data-secondary="from * statement" data-primary-sortas="init.py files" id="id3570"></a><a contenteditable="false" data-type="indexterm" data-primary="from * statement" data-secondary="__init__.py files" data-secondary-sortas="init" id="id3571"></a>strings named <code>__all__</code> at the top level of an <em>__init__.py</em> file defines what is exported for the <code>from *</code> statement form. Specifically, the <code>__all__</code> list in an <em>__init__.py</em> file is taken to be the names of nested submodules that should be automatically imported when <code>from *</code> is used on the package directory itself. If <code>__all__</code> is not set, the <code>from *</code> does not automatically load submodules nested in the package directory; instead, it loads just names defined by assignments in the directory’s <em>__init__.py</em> file, including any submodules explicitly imported by code in this file. For instance, <code>from submodule import X</code> in a directory’s <em>__init__.py</em> makes the name <code>X</code> available in that directory’s namespace without an <code>__all__</code>.</dd>
+</dl>
+<p>You’ll see an example of the <code>__all__</code> list later, and more coverage of it in <a data-type="xref" href="ch25.html#module_odds_and_ends">Chapter 25</a> where you’ll find that it also serves to declare <code>from *</code> exports of simple file-based modules, not <a contenteditable="false" data-type="indexterm" data-primary="data hiding" id="id3572"></a>just packages, and is part of the larger topic of <em>data hiding</em>. You can also simply leave <em>__init__.py</em> files empty to give your package precedence over <em>namespace</em> packages during an import search, but to understand why that matters, we need to move ahead.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Classes conflation caution</em>: As a preview, package <em>__init__.py</em> files are not the same as <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="conflation" id="id3573"></a>the class <code>__init__</code> constructor methods you’ll meet in the next part of this book. The former are files of code run when imports first step through a package folder in a program run, while <a contenteditable="false" data-type="indexterm" data-primary="import models" data-secondary="packages" data-tertiary="package initialization" data-startref="immpinz" id="id3574"></a>the latter are functions called whenever an instance is created. Both have initialization roles and are optional, but they are otherwise very different—despite their names.</p>
+</div>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Package-Relative Imports"><div class="sect1" id="package_relative_imports">
+<h1>Package-Relative Imports</h1>
+<p>The coverage of package imports so far <a contenteditable="false" data-type="indexterm" data-primary="import models" data-secondary="package-relative imports" id="impmpkl"></a>has focused on importing package files from <em>outside</em> the package. Within the package itself, imports of same-package files can use the same full path syntax as imports from outside the package—and as you’ll see, sometimes should. However, files within a package can also make use of <em>intrapackage</em> syntax that makes imports <em>relative</em> to the package itself, and can ensure that imports in a package load the package’s own files.</p>
+<section data-type="sect2" data-pdf-bookmark="Relative and Absolute Imports"><div class="sect2" id="relative_and_absolute_imports">
+<h2>Relative and Absolute Imports</h2>
+<p>The code behind this is straightforward. Imports <a contenteditable="false" data-type="indexterm" data-primary="package-relative imports" data-secondary="relative" id="prlprlt"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="package-relative" data-tertiary="relative" id="ipprlv"></a><a contenteditable="false" data-type="indexterm" data-primary="relative imports" id="id3575"></a>run by files used as part of a package can use special syntax like the following, which works only in files used as package components, and only in <code>from</code> statements, not <code>import</code>:</p>
+<pre data-type="programlisting">from . import module           <code><em># Import a module in this package (only)</em></code>
+from .module import name       <code><em># Import a name from a module in this package</em></code>
+from .. import module          <code><em># Import a module sibling of the parent folder</em></code>
+from ..module import name<code> <em>     # Import a name from a parent-sibling module</em></code></pre>
+<p>This syntax wouldn’t make sense in <code>import</code>, because that statement assigns modules to simple names, not paths. In a <code>from</code>, though, when the source of the import begins with (or is only) dots like this, the import is known as <em>relative</em>—it identifies an item relative to the folder of the enclosing package itself.</p>
+<p>This name comes from the similarity to relative <em>filename</em> paths, which reference a file per the current working directory (CWD), as covered in <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a>. Much as in filenames, “.” means the immediately enclosing package folder, and “..” means its parent folder another level up (and each additional dot means one level higher, though this is rarely used). Here, though, the effect names an item relative to an importer’s package, not a content file relative to the CWD.</p>
+<p>Importantly, relative imports within a package search <em>only</em> the referenced package: they never check the folders listed in <code>sys.path</code> as normal imports do (and skip the built-in and frozen modules precheck). Moreover, relative-import syntax can be used <em>only</em> when a file is being utilized as part of a package, and fails otherwise. This has consequences both good and bad that we’ll explore in a moment.</p>
+<p>Imports in files being used as part of a package can still be coded without dots as usual, in both <code>import</code> and <code>from</code>:</p>
+<pre data-type="programlisting">import module                  <code><em># Import a module from a folder in sys.path</em></code>
+from module import name        <code><em># Import a name from the same</em></code></pre>
+<p>Sans leading periods like this, an import is known as <em>absolute</em>—it identifies an item that’s located <a contenteditable="false" data-type="indexterm" data-primary="package-relative imports" data-secondary="absolute" id="id3576"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="package-relative" data-tertiary="absolute" id="id3577"></a><a contenteditable="false" data-type="indexterm" data-primary="absolute imports" id="id3578"></a>in a folder listed in <code>sys.path</code>. This is the normal behavior of imports in Python, and there’s really nothing “absolute” about it per the filename analogy (absolute filename paths give a complete filesystem path). In fact, these “absolute” imports are really <em>relative</em> to an entry in the module search path, but we’re stuck with the terminology today.</p>
+<p>Also importantly, absolute <a contenteditable="false" data-type="indexterm" data-primary="package-relative imports" data-secondary="absolute" id="id3579"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="package-relative" data-tertiary="absolute" id="id3580"></a><a contenteditable="false" data-type="indexterm" data-primary="absolute imports" id="id3581"></a>imports within a package do <em>not</em> automatically check the package itself: they skip the package and move right to a search of folders on <code>sys.path</code>. As we’ve seen, <code>sys.path</code> may include the package’s folder anyhow, by virtue of the REPL’s CWD or the home folder of the top-level script, and PYTHONPATH or other settings. By themselves, though, absolute imports don’t check the package for imports run in package files.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Relative-Import Rationales and Trade-Offs"><div class="sect2" id="relative_import_rationales_and_trade_of">
+<h2>Relative-Import Rationales and Trade-Offs</h2>
+<p>So why the dots? In short, relative imports allow a package to ensure that its imports will load its <em>own</em> modules. Because relative imports search <em>only</em> the package itself, they won’t <a contenteditable="false" data-type="indexterm" data-primary="dotted-path syntax, packages" data-secondary="relative imports" id="id3582"></a><a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="dotted-path syntax" data-tertiary="relative imports" id="id3583"></a><a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="dotted-path" data-tertiary="relative imports" id="id3584"></a>inadvertently load a same-named but unrelated module elsewhere on the host that happens to be accessible through <code>sys.path</code>.  This in turn makes the package more self-contained: without relative imports, such an unrelated module might break the package’s code; with them, packages are less reliant on client search-path settings that they cannot predict or control.</p>
+<p>The downside is that this model is an <em>all-or-nothing</em> proposition. You essentially must choose a mode for your files—package or program. Relative imports give visibility to the package itself, but cannot be used in nonpackage mode, and absolute imports can be used in nonpackage mode, but do not give visibility to the package itself. This combination seems a catch-22 that limits your code’s utility.</p>
+<p>That being said, if you’re coding a library of tools, this may be a nonissue: you can adopt relative imports throughout your package, and provide a <em>__main__.py</em> file to run the package as a program with the <code>-m</code> switch. If you’re writing a more traditional folder of code that you want to use arbitrarily, though, your options appear to be limited.</p>
+<p>One easy solution to this dilemma is to simply <em>avoid</em> relative imports altogether, and use full, explicit, and “absolute” package-import paths everywhere in your code. That is, use imports that list the path to the desired item from and including the package’s root folder itself:</p>
+<pre data-type="programlisting">import package.module                <code><em># Import a module in this package</em></code>
+from package import module           <code><em># Same as: from . import module</em></code>
+form package.module import name      <code><em># Same as: from .module import name</em></code></pre>
+<p>For this to work, the package’s root folder must reside in a folder listed on <code>sys.path</code>, but this will be the <em>normal</em> case—there’s no way for clients to import the package’s code otherwise. This also doesn’t directly support exotic imports like “..” parent siblings, but these seem likely to be rare (e.g., only one standard-library tool uses them today).</p>
+<p>With this nonrelative equivalence, code folders can be used more flexibly, and both direct command lines and the <code>-m</code> module-mode switch can be used to launch files in the package as programs. The next section shows how.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Package-Relative Imports in Action"><div class="sect2" id="package_relative_imports_in_action">
+<h2>Package-Relative Imports in Action</h2>
+<p>To demo all of the foregoing points, let’s return to the simple package we coded at the start of this chapter. As you’ll recall, its <em>__main__.py</em> file is run automatically when the folder is run as a bundle, but it will also play the role of any top-level file in the folder launched as a script. When we last met this file, it simply contained a print; here’s a refresher of the last-known state of the files we’ll be using here so you don’t have to flip back:</p>
+<pre data-type="programlisting"><code><em># prior dir1/mod.py</em></code>
+var = 'hack'
+print('Loading dir1.mod')
+
+<code><em># prior dir1/__main__.py</em></code>
+print('Executing dir1.__main__.py')</pre>
+<section data-type="sect3" data-pdf-bookmark="The normal-import warm-up"><div class="sect3" id="the_normal_import_warm_up">
+<h3>The normal-import warm-up</h3>
+<p>This <em>__main__.py</em> worked as advertised, but things get more complicated if a file run as a top-level script tries to import another module in its own package folder—as in the rewrite of <a data-type="xref" href="#example_twofour_sevendot_dironesolidus">Example 24-7</a>.</p>
+<div data-type="example" id="example_twofour_sevendot_dironesolidus">
+<h5><span class="label">Example 24-7. </span>dir1/__main__.py (modified)</h5>
+<pre data-type="programlisting">import mod
+print('Executing dir1.__main__.py:', mod.var.upper())</pre>
+</div>
+<p>Coded this way, the file can be run with a direct command line (and both as a folder and a script), but <em>not</em> with Python’s <code>-m</code> module-mode switch, which brings the package machinery online (notice the <em>__init__.py</em> output in this mode):</p>
+<pre data-type="programlisting">$ <code><strong>python3 dir1   </strong>  </code>                         <code><em># Launch with a direct command line</em></code>
+Loading dir1.mod
+Executing dir1.__main__.py: HACK
+$ <code><strong>python3 dir1/__main__.py</strong>   </code>               <code><em># As folder bundle or explicit file</em></code>
+Loading dir1.mod
+Executing dir1.__main__.py: HACK
+
+$ <code><strong>python3 -m dir1</strong>  </code>                         <code><em># Launch with Python -m module switch</em></code>
+Running dir1.__init__.py
+ModuleNotFoundError: No module named 'mod'
+$ <code><strong>python3 -m dir1.__main__</strong>  </code>                <code><em># As package root or explicit module</em></code>
+Running dir1.__init__.py
+ModuleNotFoundError: No module named 'mod'</pre>
+<p>The first two commands in this work because <em>__main__.py</em> is run as a normal, nonpackage program, and finds its imported sibling per the “home” entry on <code>sys.path</code>, the top-level file’s own folder. The problem with the last two commands is that they use the file as part of a package: the <code>import mod</code> in <em>__main__.py</em> is then interpreted as an <em>absolute</em> import—which <em>skips</em> the enclosing package. Hence the fails.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="The relative-import adventure"><div class="sect3" id="the_relative_import_adventure">
+<h3>The relative-import adventure</h3>
+<p>Our first reaction might be to add <em>relative</em> imports to appease the package system—as in <a data-type="xref" href="#example_twofour_eightdot_dironesolidus">Example 24-8</a>.</p>
+<div data-type="example" id="example_twofour_eightdot_dironesolidus">
+<h5><span class="label">Example 24-8. </span>dir1/__main__.py (modified)</h5>
+<pre data-type="programlisting">from . import mod
+print('Executing dir1.__main__.py:', mod.var.upper())</pre>
+</div>
+<p>Coded this way, we’ve fixed <code>-m</code> usage, but <em>broken</em> direct command lines:</p>
+<pre class="pagebreak-before" data-type="programlisting">$ <code><strong>python3 -m dir1</strong></code>
+Running dir1.__init__.py
+Loading dir1.mod
+Executing dir1.__main__.py: HACK
+$ <code><strong>python3 -m dir1.__main__</strong></code>
+Running dir1.__init__.py
+Loading dir1.mod
+Executing dir1.__main__.py: HACK
+
+$ <code><strong>python3 dir1</strong></code>
+ImportError: attempted relative import with no known parent package
+$ <code><strong>python3 dir1/__main__.py</strong></code>
+ImportError: attempted relative import with no known parent package</pre>
+<p>The first two commands in this work because <code>-m</code> invokes package behavior, which enables the relative “.” import syntax that searches the package and finds the target module. The problem with the last two commands is that Python doesn’t allow relative imports to be used in nonpackage mode—which dooms these runs from the start, regardless of search-path settings. Hence the fails.</p>
+<p>Under this regime, then, it would seem we must <em>choose</em> package or nonpackage roles for our code.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="The absolute-import solution"><div class="sect3" id="the_absolute_import_solution">
+<h3>The absolute-import solution</h3>
+<p>As noted, though, an easy way out of this constraint is to use normal package imports that explicitly spell out absolute import paths (which, again, are actually relative to <code>sys.path</code>) from the package <span class="keep-together">root—as</span> in <a data-type="xref" href="#example_twofour_ninedot_dironesolidus">Example 24-9</a>.</p>
+<div data-type="example" id="example_twofour_ninedot_dironesolidus">
+<h5><span class="label">Example 24-9. </span>dir1/__main__.py (modified)</h5>
+<pre data-type="programlisting">import dir1.mod
+print('Executing dir1.__main__.py:', dir1.mod.var.upper())</pre>
+</div>
+<p>As also noted, the package root, <code>dir1</code>, will normally be on <code>sys.path</code>, because that’s the only way to use its code from outside the package (clients must import with paths that start at the <code>dir1</code> package root too).</p>
+<p>To demo here, we’ll add the package root explicitly using a relative—in <em>filesystem</em> terms—path of “.” for the current directory (in typical use, this might instead be an absolute path, or Python’s automatic <span class="keep-together"><em>site-packages</em></span> root of installed packages). We must set this here because the top-level file’s “home” on the search path in direct-command mode is one level <em>below</em> the package root, and both direct-command and <code>-m</code> modes need access to the package root in general:</p>
+<pre data-type="programlisting">$ <code><strong>export PYTHONPATH=.</strong></code>                   <code><em># Or similar outside Unix: see Chapter 22</em></code>
+$ <code><strong>python3 dir1</strong></code>
+Running dir1.__init__.py
+Loading dir1.mod
+Executing dir1.__main__.py: HACK
+$ <code><strong>python3 dir1/__main__.py</strong></code>
+Running dir1.__init__.py
+Loading dir1.mod
+Executing dir1.__main__.py: HACK
+
+$ <code><strong>python3 -m dir1</strong>   </code>                    <code><em># Both usage modes work, sans "." imports</em></code>
+Running dir1.__init__.py
+Loading dir1.mod
+Executing dir1.__main__.py: HACK
+$ <code><strong>python3 -m dir1.__main__</strong></code>
+Running dir1.__init__.py
+Loading dir1.mod
+Executing dir1.__main__.py: HACK</pre>
+<p>Now launches by <em>both</em> direct command lines and the <code>-m</code> switch work, because we’re not using a tool that limits the utility of our code to just one mode. The end result is <em>dual-mode</em> code—it can be used as both program and package.</p>
+<p>If you’d rather not repeat import paths at each item reference, both launch modes also work if we code <em>__main__.py</em> in any of these ways (test on your own to verify; this is just import norms at work):</p>
+<pre data-type="programlisting">import dir1.mod as mod
+print('Executing dir1.__main__.py:', mod.var.upper())
+
+from dir1 import mod
+print('Executing dir1.__main__.py:', mod.var.upper())
+
+from dir1.mod import var
+print('Executing dir1.__main__.py:', var.upper())</pre>
+<p>For more fun, you can also use a <code>from *</code> in this scheme, if you add an <code>__all__</code> to the package root’s initialization file (subject to all the standard disclaimers about the evils of <code>from *</code> outlined in <span class="keep-together"><a data-type="xref" href="ch23.html#module_coding_basics">Chapter 23</a></span>):</p>
+<pre data-type="programlisting"><code><em># dir1/__init__.py</em></code>
+__all__ = ['mod']
+
+<code><em># dir1/__main__.py</em></code>
+from dir1 import *
+print('Executing dir1.__main__.py:', mod.var.upper())</pre>
+<p>Again, if you’re sure that your code will only ever be used as part of a package, you could use relative imports in all of its files to access same-package modules. Moreover, the absolute-path solution arrived at here could be applied <em>only</em> for files meant to be lunched as top-level <em>scripts</em>; other files only imported can use package-relative imports.</p>
+<p>In both cases, relative imports come with the advantage that a same-named module earlier on <code>sys.path</code> won’t accidentally override a crucial module in the package. But they also limit a file to package-only roles; if you want package files to support <em>both</em> launches and imports, relative imports are not your best option.</p>
+<p>It should also be noted that we’re skipping some details here for space. For one, <code>-m</code> mode unusually also checks the CWD for absolute imports, making the demo’s <code>PYTHONPATH</code> setting optional for this mode and demo only. For another, some other resources suggest that relative-import failures in scripts stem from their name <code>'__main__'</code>, but files run with <code>-m</code> have the same name and employ other protocols that are too obscure to cover here.</p>
+<p>Because package-relative imports are both prone to change and mostly meant for programmers building large-scale libraries of code for others to use, this Python-learners text will defer to Python’s docs for further details. Modules are feature-rich tools, to say the least, but the good news is that namespace packages—the topic of the next and final section of this chapter—do not add any new syntax, but simply allow a module to <a contenteditable="false" data-type="indexterm" data-primary="package-relative imports" data-secondary="relative" data-startref="prlprlt" id="id3585"></a>span folders. To see how, let’s move on.</p>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Namespace Packages"><div class="sect1" id="namespace_packages">
+<h1>Namespace Packages</h1>
+<p>Now that you’ve learned all about <a contenteditable="false" data-type="indexterm" data-primary="namespace packages" id="nmsppg"></a><a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="namespace packages" id="pckgnmck"></a><a contenteditable="false" data-type="indexterm" data-primary="import models" data-secondary="namespace packages" id="impmdnmpk"></a>package and package-relative imports, there’s one last package-related subject to cover. The evolutionary path of modules in Python eventually led to what are known as <em>namespace packages</em>—packages that may be composed of one or more folders located on different parts of the module search path.</p>
+<p>While packages split across folders are probably atypical in the wild, the generalizations added to support namespace packages in the import-search <em>algorithm</em> (procedure) also allow for packages without <em>__init__.py</em> files in general. Since this revised algorithm is now just <em>the</em> import search, namespace packages are something of an incidental topic.</p>
+<p>To understand namespace packages’ place in the broader modules picture, though, as well as the changes they ushered in, we need a quick history lesson.</p>
+<section data-type="sect2" data-pdf-bookmark="Python Import Models"><div class="sect2" id="python_import_models">
+<h2>Python Import Models</h2>
+<p>All told, Python has four distinct import schemes. The following enumerates them from original to newest, with representative but incomplete examples (as we’ve seen, <code>from</code> also allows a <code>*</code> wildcard and <code>reload</code> reloads any module passed to it, but these are just add-on topics):</p>
+<dl>
+<dt>Basic modules</dt>
+<dd><p>The original model, used to <a contenteditable="false" data-type="indexterm" data-primary="import models" data-secondary="modules" id="id3586"></a>import files and their contents, relative to the <code>sys.path</code> module search path:</p>
+<pre data-type="programlisting">import <code><em>module</em></code>
+from <code><em>module</em></code> import <code><em>name</em></code></pre></dd>
+<dt>Basic packages</dt>
+<dd><p>The original package model used <a contenteditable="false" data-type="indexterm" data-primary="import models" data-secondary="packages" id="id3587"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="packages" id="id3588"></a><a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="imports" id="id3589"></a>to import from folder paths relative to the <code>sys.path</code> search path, where each package is contained in a single directory that has an <em>__init__.py</em> file:</p>
+<pre data-type="programlisting">import <code><em>folder</em></code>.<code><em>folder</em></code>.<code><em>module</em></code>
+from <code><em>folder</em></code>.<code><em>module</em></code> import <code><em>name</em></code></pre></dd>
+<dt>Package-relative imports</dt>
+<dd><p>The model used for <a contenteditable="false" data-type="indexterm" data-primary="import models" data-secondary="package-relative imports" data-startref="impmpkl" id="id3590"></a><a contenteditable="false" data-type="indexterm" data-primary="package-relative imports" data-secondary="relative" id="id3591"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="package-relative" data-tertiary="relative" data-startref="ipprlv" id="id3592"></a><a contenteditable="false" data-type="indexterm" data-primary="relative imports" id="id3593"></a>intrapackage (same-package) imports of the prior section, with its relative and absolute lookup rules for imports with and without leading dots, respectively:</p>
+<pre data-type="programlisting">from . import <code><em>module</em></code>
+from .<code><em>module</em></code> import <code><em>name</em></code></pre></dd>
+<dt>Namespace packages</dt>
+<dd><p>The newest package model, which is still relative to <code>sys.path</code>, but allows packages to span multiple directories, and removes the requirement that packages must define <em>__init__.py</em> files:</p>
+<pre data-type="programlisting">import <code><em>anyfolder</em></code>.<code><em>anyfolder</em></code>.<code><em>module</em></code>
+from <code><em>anyfolder</em></code> import <code><em>name</em></code></pre></dd>
+</dl>
+<p>The first two of these models are self-contained, but the third tightens up the search order and extends syntax for same-package imports, and the fourth upends some of the notions and requirements of the prior package model. In fact, Python now formally defines two flavors of packages:</p>
+<ul>
+<li><p>The original model, now known as <em>regular packages</em></p></li>
+<li><p>The alternative model, known as <em>namespace packages</em></p></li>
+</ul>
+<p>The original and alternative package models are not mutually exclusive and can be used simultaneously in the same program. In fact, the namespace package model works as something of a <em>fallback option</em>, recognized only if basic modules and regular packages of the same name are not present on the module search path. Despite their showy title, namespace packages are really just a mutation of import search, as the following sections explain.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Namespace-Package Rationales"><div class="sect2" id="namespace_package_rationales">
+<h2>Namespace-Package Rationales</h2>
+<p>First off, it’s important to know that a namespace package is not fundamentally different from a regular package: it is just a different way of creating packages. Moreover, they are still relative to <code>sys.path</code> at the top level: the leftmost component of a dotted namespace-package path must still be located in an entry on the normal module search path.</p>
+<p>In terms of physical structure, though, regular and namespace packages have notable differences. Regular packages have an <em>__init__.py</em> file that is run automatically, and they reside in a single directory. Namespace packages, by contrast, cannot contain an <em>__init__.py</em>, and may or may not span multiple directories collected at import time. Because the presence of <em>__init__.py</em> differentiates package type, <em>none</em> of the directories that make up a namespace package can have this file, but the content nested within each of them is treated as a single composite package.</p>
+<p>The <em>rationale</em> for namespace packages is rooted in package <em>installation</em> goals that may seem obscure unless you are responsible for such tasks. In short, though, they resolve a potential for collision of multiple <em>__init__.py</em> files when package parts are merged, by removing this file completely. Moreover, by providing standard support for packages that can be split across multiple directories and located in multiple <code>sys.path</code> entries, namespace packages both enhance install flexibility and replace multiple incompatible solutions that had arisen to address this goal.</p>
+<p>Though split-folder packages have some narrow roles, average Python users will probably find namespace packages’ biggest benefit to be that they remove the requirement for package <em>__init__.py</em> initialization files, and thus allow any directory of code to be used as an importable package. To see how, let’s move on to the nitty-gritty of import search.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="The Module Search Algorithm"><div class="sect2" id="the_module_search_algorithm">
+<h2>The Module Search Algorithm</h2>
+<p>To understand the way that namespace packages <a contenteditable="false" data-type="indexterm" data-primary="import models" data-secondary="namespace packages" data-tertiary="module searches" id="imnmkms"></a><a contenteditable="false" data-type="indexterm" data-primary="namespace packages" data-secondary="module searches" id="nmpkmds"></a><a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="namespace packages" data-tertiary="module searches" id="pknmpmd"></a>change and extend import search, we have to look under the hood to see how the import operation works.</p>
+<p>As we’ve seen, Python fulfills imports by searching for a name among a set of candidate folders. For the <em>leftmost</em> components of imports, the set of candidates is all the directories listed on the <code>sys.path</code> module search path. For components of packages either nested in <em>package</em> imports or named in <em>relative</em> imports, the set of candidates is just the package itself. While package folders have just one instance of a given name, search paths may have many.</p>
+<p>The way the import search selects items from these candidates is subtler than implied so far. For each <code><em>directory</em></code> in an import search’s set of candidates, Python tests for a variety of matches to an imported <code><em>name</em></code>, in the following order (using Unix / for folder separators and {…} to mean a choice):</p>
+<ol>
+<li><p>If <code><em>directory</em>/<em>name</em>/__init__.py</code> is found, a regular package is imported and returned.</p></li>
+<li><p>If <code><em>directory</em>/<em>name</em>.</code>{<code>py</code>, <code>pyc</code>, or other module extension} is found, a simple module is imported and returned.</p></li>
+<li><p>If <code><em>directory</em>/<em>name</em></code> is found and is a directory, it is recorded and the scan continues with the next directory in the search’s set of candidates.</p></li>
+<li><p>If none of the above was found, the scan continues with the next directory in the search’s set of candidates.</p></li>
+</ol>
+<p>If this search’s candidate scan completes without returning a regular package or module by steps 1 or 2, and at least one directory was recorded by step 3, then a <em>namespace package</em> is created and returned. Else an error is reported.</p>
+<p>The creation of the namespace package happens immediately and is not deferred until a lower-level import occurs. The new namespace package is a module object that does not have a <code>__file__</code> attribute, but has a <code>__path__</code> set to an iterable of the directory path strings that were found and recorded during the candidates scan by step 3.</p>
+<p>This <code>__path__</code> attribute is then used as the set of candidates for later and deeper accesses, to search the one or more component folders of the namespace package. That is, each recorded entry on a namespace package’s <code>__path__</code> is searched whenever further-nested items are requested, instead of the sole directory of a regular package.</p>
+<p>Viewed another way, the <code>__path__</code> attribute of a namespace package serves the same role for lower-level components that <code>sys.path</code> does at the top for the leftmost component of package import paths; it becomes the “parent” search path for accessing lower items using the same four-step procedure just sketched.</p>
+<p>The net result is that a namespace package is a sort of <em>virtual concatenation</em> of directories located on one or more search candidates. Once a namespace package is created, though, there is no functional difference between it and a regular package; it supports everything we’ve learned for regular packages, including package-relative import syntax.</p>
+<p>Importantly, because a <em>single directory</em> lacking an <em>__init__.py</em> but nested in a search-candidate folder is classified as a namespace package by this algorithm’s step 3, any such directory qualifies as a package. The only operational difference between such a single folder and a regular package folder is that the former has lower <em>search precedence</em>: both same-named folders with an <em>__init__.py</em> and simple modules anywhere in a search path are chosen first by steps 1 and 2.</p>
+<p>In other words, although the mods made to support namespace packages make <em>__init__.py</em> files optional in package folders, adding one, even if empty, ensures that a package will be selected instead of a same-named folder later on a search path (it may also boost import speed by ending search-path scans at step 1, but this is a one-time event). Whether this, or the other roles of <em>__init__.py</em> we met earlier, <a contenteditable="false" data-type="indexterm" data-primary="import models" data-secondary="namespace packages" data-tertiary="module searches" data-startref="imnmkms" id="id3594"></a><a contenteditable="false" data-type="indexterm" data-primary="namespace packages" data-secondary="module searches" data-startref="nmpkmds" id="id3595"></a><a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="namespace packages" data-tertiary="module searches" data-startref="pknmpmd" id="id3596"></a>warrants including this file will naturally depend on your goals.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Namespace Packages in Action"><div class="sect2" id="namespace_packages_in_action">
+<h2>Namespace Packages in Action</h2>
+<p>Technically, we’ve already seen namespace packages at work: the opening step of the demo at the start of this chapter made <em>single-folder</em> namespace packages because its folders didn’t yet have <em>__init__.py</em> files. Again, any folder nested in a <code>sys.path</code> search-path folder qualifies as a package, as long as it’s not hidden by a same-named “regular” package with <em>__init__.py</em> or a simple module elsewhere on the path.</p>
+<p>To see the grander folder-concatenation effect of “virtual” namespace packages work, let’s work through a quick demo. To begin, make two modules in a nested directory structure that has subdirectories named <code>sub</code> located in different parent directories, <code>part1</code> and <code>part2</code>—like this in indentation notation meant to represent nesting:</p>
+<pre data-type="programlisting">ns/
+    part1/
+        sub/
+            mod1.py
+    part2/
+        sub/
+            mod2.py</pre>
+<p>Note that there are no <em>__init__.py</em> files here—as noted earlier, these files cannot be used in namespace packages, as this is their chief differentiation from regular, single-folder packages. We can create this demo’s folders with console commands like the following; translate <code>/</code> to <code>\</code> and omit the <code>-p</code> on Windows, or use a file explorer or the prebuilt folders in the examples package if you prefer:</p>
+<pre data-type="programlisting">$ <code><strong>mkdir -p ns/part1/sub</strong></code>       <code><em># Two subdirs of same name in different dirs</em></code>
+$ <code><strong>mkdir -p ns/part2/sub</strong></code>       <code><em># And similar on Windows</em></code></pre>
+<p>The modules at the end of these paths are coded in Examples <a data-type="xref" data-xrefstyle="select:labelnumber" href="#example_twofour_onezerodot_nssoliduspar">24-10</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="#example_twofour_oneonedot_nssoliduspart">24-11</a> to simply print on imports as a trace.</p>
+<div data-type="example" id="example_twofour_onezerodot_nssoliduspar">
+<h5><span class="label">Example 24-10. </span>ns/part1/sub/mod1.py</h5>
+<pre data-type="programlisting">print('Loading ns/part1/sub/mod1')</pre>
+</div>
+<div data-type="example" id="example_twofour_oneonedot_nssoliduspart">
+<h5><span class="label">Example 24-11. </span>ns/part2/sub/mod2.py</h5>
+<pre data-type="programlisting">print('Loading ns/part2/sub/mod2')</pre>
+</div>
+<p>Now, if we add <em>both</em> <code>part1</code> and <code>part2</code> to the module search path, <code>sub</code> becomes a namespace package spanning both folders, with the two module files available under that name even though they live in separate physical directories. Here’s the path-setting command on Unix (for Windows, use <code>set</code> and <code>:</code>, and see <a data-type="xref" href="ch22.html#modules_the_big_picture">Chapter 22</a> for more tips); this uses paths relative to the CWD, but in practice would more likely list two full, absolute paths instead:</p>
+<pre data-type="programlisting">$ <code><strong>export PYTHONPATH=ns/part1:ns/part2</strong></code></pre>
+<p>When imported directly, the namespace package is the <em>virtual concatenation</em> of its individual directory components, and allows further nested parts to be accessed through its single, composite name with normal imports (as usual, paths have been shortened here for space with “…” and line breaks were added for fit):</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>import sub
+</strong></code>&gt;&gt;&gt; <code><strong>sub</strong></code>                                 <code><em># Namespace packages: nested search paths</em></code>
+&lt;module 'sub' (namespace) from 
+['/…/LP6E/Chapter24/ns/part1/sub', '/…/LP6E/Chapter24/ns/part2/sub']&gt;
+
+&gt;&gt;&gt; <code><strong>from sub import mod1</strong></code>
+Loading ns/part1/sub/mod1
+&gt;&gt;&gt; <code><strong>import sub.mod2</strong></code>                     <code><em># Content from two different directories</em></code>
+Loading ns/part2/sub/mod2
+
+&gt;&gt;&gt; <code><strong>mod1</strong></code>
+&lt;module 'sub.mod1' from '/…/LP6E/Chapter24/ns/part1/sub/mod1.py'&gt;
+&gt;&gt;&gt; <code><strong>sub.mod2</strong></code>
+&lt;module 'sub.mod2' from '/…/LP6E/Chapter24/ns/part2/sub/mod2.py'&gt;</pre>
+<p>This split-folder package also works if we import through the namespace package name <em>immediately</em>—because the namespace package is made when first reached, the timing of path extensions is irrelevant:</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>import sub.mod1</strong></code>
+Loading ns/part1/sub/mod1
+&gt;&gt;&gt; <code><strong>import sub.mod2</strong></code>                     <code><em># One package spanning two directories</em></code>
+Loading ns/part2/sub/mod2
+
+&gt;&gt;&gt; <code><strong>sub.mod1</strong></code>
+&lt;module 'sub.mod1' from '/…/LP6E/Chapter24/ns/part1/sub/mod1.py'&gt;
+&gt;&gt;&gt; <code><strong>sub.mod2</strong></code>
+&lt;module 'sub.mod2' from '/…/LP6E/Chapter24/ns/part2/sub/mod2.py'&gt;
+
+&gt;&gt;&gt; <code><strong>sub</strong></code>
+&lt;module 'sub' (namespace) from 
+['/…/LP6E/Chapter24/ns/part1/sub', '/…/LP6E/Chapter24/ns/part2/sub']&gt;
+&gt;&gt;&gt; <code><strong>sub.__path__</strong></code>
+_NamespacePath(
+['/…/LP6E/Chapter24/ns/part1/sub', '/…/LP6E/Chapter24/ns/part2/sub'])</pre>
+<p>Interestingly, <em>relative imports</em> work in namespace packages too, if we add one as in <a data-type="xref" href="#example_twofour_onetwodot_nssoliduspart">Example 24-12</a>.</p>
+<div data-type="example" id="example_twofour_onetwodot_nssoliduspart">
+<h5><span class="label">Example 24-12. </span>ns/part1/sub/mod1.py (modified)</h5>
+<pre data-type="programlisting">from . import mod2
+print('Loading ns/part1/sub/mod1')</pre>
+</div>
+<p>The added package-relative import statement references a file in the package—even though the referenced file resides in a <em>different directory</em>:</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>import sub.mod1</strong></code>                     <code><em># Relative import of mod2 in another dir</em></code>
+Loading ns/part2/sub/mod2
+Loading ns/part1/sub/mod1 
+&gt;&gt;&gt; <code><strong>import sub.mod2</strong></code>                     <code><em># Already imported by mod1.py: not rerun</em></code>
+&gt;&gt;&gt; <code><strong>sub.mod2</strong></code>
+&lt;module 'sub.mod2' from '/…/LP6E/Chapter24/ns/part2/sub/mod2.py'&gt;</pre>
+<p>As you can see, namespace packages are like ordinary single-directory packages in every way, except for having a split physical storage. By extension, this is why code folders without <em>__init__.py</em> files are exactly like regular packages, but with no initialization logic to be run; they’re just an instance of namespace packages with a single directory.</p>
+<p>Like package-relative imports, this book is also going to defer to Python’s manuals for more details on this subject. Namespace packages are a potentially useful tool, but most Python learners are probably better served by first mastering packages that map to real <a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="namespace packages" data-startref="pckgnmck" id="id3597"></a><a contenteditable="false" data-type="indexterm" data-primary="namespace packages" data-startref="nmspcg" id="id3598"></a><a contenteditable="false" data-type="indexterm" data-primary="import models" data-secondary="namespace packages" data-startref="impmdnmpk" id="id3599"></a>folders, before tackling those that are spread virtually across a host’s directories.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00035">
+<h1>Chapter Summary</h1>
+<p>This chapter introduced Python’s <em>package import</em> model—an optional but useful way to explicitly list part of the directory path leading up to modules. Package imports are still relative to a directory on your module search path, but your script gives the rest of the path to the module explicitly. Packages may be built with a simple folder and can make imports more meaningful, simplify import search-path settings, and resolve ambiguities when there is more than one module of the same name—the name of the enclosing directory makes them unique.</p>
+<p>Because it’s relevant only to code in packages, we also explored <em>relative imports</em>: a way for imports in package files to select modules in the same package explicitly using leading dots in <code>from</code>, instead of relying on a search in the host. Finally, we surveyed <em>namespace packages</em>: a tool that allows a package to span multiple directories as a fallback option of import searches, and make initialization files optional in single-folder packages.</p>
+<p>The next chapter surveys a handful of both common and advanced module-related topics, such as the <code>__name__</code> usage mode variable, the <code>__getattr__</code> attribute hook, and name-string imports, and codes useful module tools along the way. As usual, though, let’s close out this chapter first with a short quiz to review what you’ve learned here.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000169">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>What is the purpose of an <em>__init__.py</em> file in a module package directory?</p></li>
+<li><p>How can you avoid repeating the full package path every time you reference a package’s content?</p></li>
+<li><p>Which directories require <em>__init__.py</em> files?</p></li>
+<li><p>When must you use <code>import</code> instead of <code>from</code> with packages?</p></li>
+<li><p>What is the difference between <code>from pkg import name</code> and <code>from . import name</code>?</p></li>
+<li><p>What is a namespace package?</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000168">
+<h1>Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>The <em>__init__.py</em> file serves to declare and initialize a regular module package; Python automatically runs its code the first time you import through a directory in a process. Its assigned variables become the attributes of the module object created in memory to correspond to that directory. It’s optional for package folders but gives a folder search precedence over other folders of the same name that don’t have this file.</p></li>
+<li><p>Use the <code>from</code> statement with a package to copy names out of the package directly, or use the <code>as</code> extension with the <code>import</code> statement to rename the path to a shorter synonym. In both cases, the path is listed in only one place, in the <code>from</code> or <code>import</code> statement.</p></li>
+<li><p>Trick question! These files used to be required for packages in earlier Pythons but became optional with accommodations for namespace packages in the module search algorithm. As noted in answer 1, though, these folders still have valid, if optional, roles, including boosting a folder’s import-search precedence.</p></li>
+<li><p>You must use <code>import</code> instead of <code>from</code> with packages only if you need to access the <em>same name</em> defined in more than one path. With <code>import</code>, the path makes the references unique, but <code>from</code> allows only one version of any given name (unless you also use the <code>as</code> extension to rename uniquely).</p></li>
+<li><p>The <code>from pkg import name</code> is an <em>absolute</em> import—the search for <code>pkg</code> skips an enclosing package and then tries the “absolute” directories in <code>sys.path</code>. A statement <code>from . import name</code>, on the other hand, is a <em>relative</em> import—<code>name</code> is looked up relative to the package in which this statement is contained, only.</p></li>
+<li class="pagebreak-before"><p>A <em>namespace package</em> is an extension to the import model that corresponds to one or more directories that do not have <em>__init__.py</em> files. When Python finds these during an import search and does not find a simple module or regular package first, it creates a namespace package that is the virtual concatenation of all found directories having the requested module name. Further nested components are looked up in all the namespace package’s directories. The effect is similar to a regular package, but content may be split across multiple directories.</p></li>
+</ol>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>

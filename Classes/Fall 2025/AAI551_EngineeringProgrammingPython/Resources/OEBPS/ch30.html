@@ -1,0 +1,1543 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 30. Operator Overloading"><div class="chapter" id="operator_overloading-id000103">
+<h1><span class="label">Chapter 30. </span>Operator Overloading</h1>
+<p>This chapter continues our in-depth survey of class mechanics by focusing on operator overloading. We looked briefly at operator overloading in prior chapters. Here, we’ll fill in more details and explore a handful of commonly used overloading methods, most of which we haven’t yet encountered. Although we don’t have space to demonstrate each of the many operator-overloading methods available, those we will code here are a representative sample large enough to uncover the possibilities of this Python class feature.</p>
+<section data-type="sect1" data-pdf-bookmark="The Basics"><div class="sect1" id="the_basics-id00078">
+<h1>The Basics</h1>
+<p>Really “operator overloading” simply<a contenteditable="false" data-type="indexterm" data-primary="operator overloading" id="id3954"></a> means <em>intercepting</em> built-in operations in a class’s methods—Python automatically invokes your methods when instances of the class appear in built-in operations, and your method’s return value becomes the result of the corresponding operation. Here’s a review of the key ideas behind overloading:</p>
+<ul>
+<li><p>Operator overloading lets classes intercept normal Python operations.</p></li>
+<li><p>Classes can overload all Python built-in expression operators.</p></li>
+<li><p>Classes can also overload other built-in operations such as printing, function calls, and attribute access.</p></li>
+<li><p>Overloading is implemented by providing specially named methods in a class.</p></li>
+<li><p>Python predefines the special method names that correspond to built-in operations.</p></li>
+</ul>
+<p>In other words, when methods of predefined special names are provided in a class, Python automatically calls them when instances of the class appear in their associated built-in operations or expressions. Your class provides the behavior of the corresponding operation for instance objects created from it.</p>
+<p>As you’ve learned, operator-overloading methods are never required and generally don’t have defaults (apart from a handful that all classes get from the implied <code>object</code> root class). If you don’t code or inherit an overloading method, it just means that your class does not support the corresponding operation. When used, though, these methods allow classes to emulate the interfaces of built-in objects, which makes them consistent, and compatible with more code.</p>
+<section data-type="sect2" data-pdf-bookmark="Constructors and Expressions: __init__ and __sub__"><div class="sect2" id="constructors_and_expressions_init_a">
+<h2>Constructors and Expressions: __init__ and __sub__</h2>
+<p>As a warm-up, consider the simple class in <a data-type="xref" href="#example_threezero_onedot_numberdotpy">Example 30-1</a>: its <code>Number</code> class, coded <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="constructors" id="id3955"></a><a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="expressions" id="id3956"></a><a contenteditable="false" data-type="indexterm" data-primary="constructors" data-secondary="operator overload" id="id3957"></a><a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="operator overload" id="id3958"></a><a contenteditable="false" data-type="indexterm" data-primary="__init__ method" data-secondary="operator overload and" data-primary-sortas="init method" id="id3959"></a><a contenteditable="false" data-type="indexterm" data-primary="__sub__ method, operator overloading" data-primary-sortas="sub method, operator overloading" id="id3960"></a>in module file <em>number.py</em>, provides a method to intercept instance construction (<code>__init__</code>), as well as one for catching subtraction expressions (<code>__sub__</code>). Special methods like these are the hooks that let you tie into built-in operations.</p>
+<div data-type="example" id="example_threezero_onedot_numberdotpy">
+<h5><span class="label">Example 30-1. </span>number.py</h5>
+<pre data-type="programlisting">class Number:
+    def __init__(self, start):                  <code><em># On Number(start)</em></code>
+        self.data = start
+    def __sub__(self, other):                   <code><em># On instance - other</em></code>
+        return Number(self.data - other)        <code><em># Result is a new instance</em></code></pre>
+</div>
+<p>As we’ve already learned, the <code>__init__</code> constructor method seen in this code is the most commonly used operator-overloading method in Python; it’s present in most classes and used to initialize the newly created instance object using any arguments passed to the class name. The <code>__sub__</code> method plays the binary-operator role that <code>__add__</code> did in <a data-type="xref" href="ch27.html#class_coding_basics">Chapter 27</a>’s introduction, intercepting subtraction expressions and returning a new instance of the class as its result (and running <code>__init__</code> along the way):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from number import Number</strong></code>                   <code><em># Fetch class from module</em></code>
+&gt;&gt;&gt; <code><strong>X = Number(5)</strong></code>                               <code><em># Number.__init__(X, 5)</em></code>
+&gt;&gt;&gt; <code><strong>Y = X - 2</strong></code>                                   <code><em># Number.__sub__(X, 2)</em></code>
+&gt;&gt;&gt; <code><strong>Y.data</strong></code>                                      <code><em># Y is new Number instance</em></code>
+3</pre>
+<p>We’ve already studied <code>__init__</code> and basic binary operators like <code>__sub__</code> in some depth, so we won’t rehash their usage further here. In this chapter, we will tour some other tools available in this domain and look at example code that applies them in common use cases.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Construction convolution</em>: Technically, <a contenteditable="false" data-type="indexterm" data-primary="constructor convolution" id="id3961"></a>instance creation first triggers the <code>__new__</code> method, which creates and returns the new instance object, which is then passed into <code>__init__</code> for initialization. Since <code>__new__</code> has a built-in implementation and is redefined in only very limited roles, though, nearly all Python classes initialize by defining an <code>__init__</code> method. We’ll explore one use case for <code>__new__</code> when we study <em>metaclasses</em> in <a data-type="xref" href="ch40.html#metaclasses_and_inheritance">Chapter 40</a>; though rare, it is sometimes also used to customize creation of instances of immutable types.</p>
+</div>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Common Operator-Overloading Methods"><div class="sect2" id="common_operator_overloading-id00052">
+<h2>Common Operator-Overloading Methods</h2>
+<p>Just about everything <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="methods" id="opovmt"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="operator overloading" id="mthpvld"></a>you can do to built-in objects such as integers and lists has a corresponding specially named method for overloading in classes. <a data-type="xref" href="#common_operator_overloading-id00086">Table 30-1</a> lists a few of the most common; there are many more. In fact, many overloading methods come in multiple versions (e.g., <code>__add__</code>, <code>__radd__</code>, and <code>__iadd__</code> for addition), which is one reason there are so many. See the Python language reference manual for an exhaustive list of the special method names available.</p>
+<table class="border pagebreak-before less_space" id="common_operator_overloading-id00086">
+<caption><span class="label">Table 30-1. </span>Common operator-overloading methods</caption>
+<thead>
+<tr>
+<th>Method</th>
+<th>Implements</th>
+<th>Called for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>__init__</code></td>
+<td>Constructor</td>
+<td>Object creation: <code>X = Class(args)</code></td>
+</tr>
+<tr>
+<td><code>__del__</code></td>
+<td>Destructor</td>
+<td>Object reclamation of <code>X</code></td>
+</tr>
+<tr>
+<td><code>__add__</code></td>
+<td>Operator <code>+</code> (among others)</td>
+<td><code>X + Y</code>, <code>X += Y</code> if no <code>__iadd__</code></td>
+</tr>
+<tr>
+<td><code>__or__</code></td>
+<td>Operator <code>|</code> (bitwise OR)</td>
+<td><code>X | Y</code>, <code>X |= Y</code> if no <code>__ior__</code></td>
+</tr>
+<tr>
+<td><code>__repr__</code>, <code>__str__</code></td>
+<td>Printing, conversions</td>
+<td><code>print(X)</code>, <code>X</code>, <code>repr(X)</code>, <code>str(X)</code>, <code>f'{X!r}'</code></td>
+</tr>
+<tr>
+<td><code>__call__</code></td>
+<td>Function calls</td>
+<td><code>X(*pargs, **kargs)</code></td>
+</tr>
+<tr>
+<td><code>__getattr__</code></td>
+<td>Attribute fetch</td>
+<td><code>X.undefined</code></td>
+</tr>
+<tr>
+<td><code>__setattr__</code></td>
+<td>Attribute assignment</td>
+<td><code>X.any = value</code></td>
+</tr>
+<tr>
+<td><code>__delattr__</code></td>
+<td>Attribute deletion</td>
+<td><code>del X.any</code></td>
+</tr>
+<tr>
+<td><code>__getattribute__</code></td>
+<td>Attribute fetch</td>
+<td><code>X.any</code></td>
+</tr>
+<tr>
+<td><code>__getitem__</code></td>
+<td>Indexing, slicing, iteration</td>
+<td><code>X[i]</code>, <code>X[i:j]</code>, <code>for</code> and other iterations if no <code>__iter__</code></td>
+</tr>
+<tr>
+<td><code>__setitem__</code></td>
+<td>Index and slice assignment</td>
+<td><code>X[i] = value</code>,<br/> 
+<code>X[i:j] = iterable</code></td>
+</tr>
+<tr>
+<td><code>__delitem__</code></td>
+<td>Index and slice deletion</td>
+<td><code>del X[i]</code>, <code>del X[i:j]</code></td>
+</tr>
+<tr>
+<td><code>__len__</code></td>
+<td>Length</td>
+<td><code>len(X)</code>, truth tests if no <code>__bool__</code></td>
+</tr>
+<tr>
+<td><code>__bool__</code></td>
+<td>Boolean tests</td>
+<td><code>bool(X)</code>, truth tests</td>
+</tr>
+<tr>
+<td><code>__lt__</code>, <code>__gt__</code>,<br/> 
+<code>__le__</code>, <code>__ge__</code>,<br/> 
+<code>__eq__</code>, <code>__ne__</code></td>
+<td>Comparisons</td>
+<td><code>X &lt; Y</code>, <code>X &gt; Y</code>, <br/>
+<code>X &lt;= Y</code>, <code>X &gt;= Y</code>, <br/>
+<code>X == Y</code>,<code> X != Y</code></td>
+</tr>
+<tr>
+<td><code>__radd__</code></td>
+<td>Right-side operators</td>
+<td><code>other + X</code></td>
+</tr>
+<tr>
+<td><code>__iadd__</code></td>
+<td>In-place augmented operators</td>
+<td><code>X += Y</code> (or else <code>__add__</code>)</td>
+</tr>
+<tr>
+<td><code>__iter__</code>, <code>__next__</code></td>
+<td>Iteration tools</td>
+<td><code>I=iter(X)</code>, <code>next(I)</code>, <code>for</code> and other iterations, <code>in</code> if no <span class="keep-together"><code>__contains__</code></span></td>
+</tr>
+<tr>
+<td><code>__contains__</code></td>
+<td>Membership test</td>
+<td><code>item in X</code></td>
+</tr>
+<tr>
+<td><code>__index__</code></td>
+<td>Integer value</td>
+<td><code>hex(X)</code>, <code>bin(X)</code>, <code>oct(X)</code>, <code>O[X]</code>, <code>O[X:]</code> </td>
+</tr>
+<tr>
+<td><code>__enter__</code>, <code>__exit__</code></td>
+<td>Context manager (<a data-type="xref" href="ch34.html#exception_coding_details">Chapter 34</a>)</td>
+<td><code>with obj as var:</code></td>
+</tr>
+<tr>
+<td><code>__get__</code>, <code>__set__</code>, <code>__delete__</code></td>
+<td>Descriptor attributes (<a data-type="xref" href="ch38.html#managed_attributes">Chapter 38</a>)</td>
+<td><code>X.attr</code>, <code>X.attr = value</code>, 
+<code>del X.attr</code></td>
+</tr>
+<tr>
+<td><code>__new__</code></td>
+<td>Creation (<a data-type="xref" href="ch40.html#metaclasses_and_inheritance">Chapter 40</a>)</td>
+<td>Object creation, before <code>__init__</code></td>
+</tr>
+</tbody>
+</table>
+<p>All overloading methods have names that start and end with two <em>underscores</em> to keep them distinct from other names you define in your classes. The mappings from special method names to expressions or operations are <em>predefined</em> by the Python language and documented in full in its standard language manual. For example, the name <code>__add__</code> always maps to <code>+</code> expressions by Python language definition, regardless of what an <code>__add__</code> method’s code actually does; it’s largely just a dispatch mechanism.</p>
+<p>Operator-overloading methods <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="operator-overloading methods" id="id3962"></a>may be <em>inherited</em> from superclasses if not defined, just like any other methods. Operator-overloading methods are also all <em>optional</em>—if you don’t code or inherit one, that operation is simply unsupported by your class, and attempting it will raise an exception. Some built-in operations, like printing, have defaults inherited from the implied <code>object</code> root class, but most built-ins fail for class instances if no corresponding operator-overloading method is present.</p>
+<p class="pagebreak-before">As we go along here, keep in mind that most overloading methods are used only in advanced programs that require objects to behave like built-ins, though the <code>__init__</code> constructor we’ve already met tends to appear in most classes. With that qualifier, let’s explore some of the additional methods in <a data-type="xref" href="#common_operator_overloading-id00086">Table 30-1</a> by example.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Measure twice, post once</em>: Although expressions trigger operator methods, be careful not to assume that there is a speed advantage to cutting out the middleperson and calling the operator method directly. In fact, calling the operator method directly might <em>be twice as slow</em>, presumably because of the overhead of a function call, which Python avoids or optimizes in built-in cases.</p>
+<p>Here’s the story for <code>len</code> and <code>__len__</code> using <a data-type="xref" href="ch21.html#the_benchmarking_interlude">Chapter 21</a>’s timing techniques on Python 3.12 and macOS. Calling <code>__len__</code> directly takes twice as long (and has since Python 2.X):</p>
+<pre data-type="programlisting">$ <code><strong>python3 -m timeit -n 10000 -r 10 \</strong></code>
+<code> <strong>            -s "L = list(range(100))" "x = L.__len__()"</strong></code>
+10000 loops, best of 10: 53.4 nsec per loop
+
+$ <code><strong>python3 -m timeit -n 10000 -r 10 \</strong></code>
+<code> <strong>            -s "L = list(range(100))" "x = len(L)"</strong></code>
+10000 loops, best of 10: 25.3 nsec per loop</pre>
+<p>This is not as contrived as it may seem—recommendations for using the slower alternative in the name <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="methods" data-startref="opovmt" id="id3963"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="operator overloading" data-startref="mthpvld" id="id3964"></a>of speed have been known to crop up in venues that shall remain nameless here.</p>
+</div>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Indexing and Slicing: __getitem__ and __setitem__"><div class="sect1" id="indexing_and_slicing_getitem_and">
+<h1>Indexing and Slicing: __getitem__ and __setitem__</h1>
+<p>Our first new method set allows your classes to mimic some of the behaviors of sequences and mappings. If defined <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="instance indexing" id="opovidx"></a><a contenteditable="false" data-type="indexterm" data-primary="instances" data-secondary="indexing" data-tertiary="operator overloading" id="isidxopov"></a><a contenteditable="false" data-type="indexterm" data-primary="indexing" data-secondary="instances" data-tertiary="operator overloading" id="idxsoov"></a><a contenteditable="false" data-type="indexterm" data-primary="__getitem__ method" data-primary-sortas="getitem method" id="id3965"></a><a contenteditable="false" data-type="indexterm" data-primary="__setitem__ method" data-primary-sortas="setitem method" id="id3966"></a>in a class (or inherited by it), the <code>__getitem__</code> method is called automatically for instance-indexing operations. When an instance <code>X</code> appears in an indexing expression like <code>X[i]</code>, Python calls the <code>__getitem__</code> method inherited by the instance, passing <code>X</code> to the first argument and the index <code>i</code> in brackets to the second argument.</p>
+<p>For example, the following class returns the square of an index value—atypical perhaps but illustrative of the mechanism in general:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Indexer:
+        def __getitem__(self, index):
+            return index ** 2
+</strong></code>
+&gt;&gt;&gt; <code><strong>X = Indexer()
+</strong></code>&gt;&gt;&gt; <code><strong>X[2]</strong></code>                                <code><em># X[i] calls X.__getitem__(i)</em></code>
+4
+
+&gt;&gt;&gt; <code><strong>for i in range(5):
+        print(X[i], end=' ')</strong></code>            <code><em># Runs __getitem__(X, i) each time</em></code>
+
+0 1 4 9 16</pre>
+<p>It’s up to your class to define what this expression means, though it should generally imitate a sequence index or mapping key fetch; returning the index squared as done here works but probably won’t qualify as “best practice.”</p>
+<section data-type="sect2" data-pdf-bookmark="Intercepting Slices"><div class="sect2" id="intercepting_slices">
+<h2>Intercepting Slices</h2>
+<p>Surprisingly, in addition to <a contenteditable="false" data-type="indexterm" data-primary="slice expressions" id="slcxpss"></a><a contenteditable="false" data-type="indexterm" data-primary="__getitem__ method" data-primary-sortas="getitem method" data-secondary="slice expressions" id="gttmslx"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__getitem__" data-secondary-sortas="getitem" id="mtdgttem"></a>indexing, <code>__getitem__</code> is also called for <em>slice expressions</em>. Formally speaking, built-in object types handle slicing the same way. For example, the following demos slicing at work on a built-in list, using upper and lower bounds, omitted parts, and a stride (see <a data-type="xref" href="ch07.html#string_fundamentals">Chapter 7</a> if you need a refresher on slicing):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [5, 6, 7, 8, 9]
+</strong></code>&gt;&gt;&gt; <code><strong>L[2:4]</strong></code>                              <code><em># Slice with slice syntax: 2..(4-1)</em></code>
+[7, 8]
+&gt;&gt;&gt; <code><strong>L[1:]</strong></code>
+[6, 7, 8, 9]
+&gt;&gt;&gt; <code><strong>L[:-1]</strong></code>
+[5, 6, 7, 8]
+&gt;&gt;&gt; <code><strong>L[::2]</strong></code>
+[5, 7, 9]</pre>
+<p>Really, though, slicing bounds are <a contenteditable="false" data-type="indexterm" data-primary="slice objects" id="id3967"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="slice objects" id="id3968"></a>bundled up into a <em>slice object</em> and passed to the list’s implementation of indexing. In fact, you can always pass a slice object manually—slice syntax is mostly syntactic sugar for indexing with a slice object:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L[slice(2, 4)]</strong></code>                      <code><em># Slice with slice objects</em></code>
+[7, 8]
+&gt;&gt;&gt; <code><strong>L[slice(1, None)]</strong></code>
+[6, 7, 8, 9]
+&gt;&gt;&gt; <code><strong>L[slice(None, -1)]</strong></code>
+[5, 6, 7, 8]
+&gt;&gt;&gt; <code><strong>L[slice(None, None, 2)]</strong></code>
+[5, 7, 9]</pre>
+<p>This matters in classes with a <code>__getitem__</code> method—this method will be called <em>both</em> for basic indexing (with an index or key) and for slicing (with a slice object). Our previous class won’t handle slicing because its math assumes integer indexes are passed, but the following class will. When called for indexing, the argument is an integer as before:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Indexer:
+        def __init__(self, data):</strong></code>
+            <code><strong>self.data = data
+        def __getitem__(self, index):</strong></code>    <code><em># Called for index or slice</em></code>
+            <code><strong>print('getitem:', index)
+            return self.data[index]</strong></code>      <code><em># Perform index or slice</em></code>
+
+&gt;&gt;&gt; <code><strong>X = Indexer([5, 6, 7, 8, 9])
+</strong></code>&gt;&gt;&gt; <code><strong>X[0]</strong></code>                                 <code><em># Indexing sends __getitem__ an integer</em></code>
+getitem: 0
+5
+&gt;&gt;&gt; <code><strong>X[1]</strong></code>
+getitem: 1
+6
+&gt;&gt;&gt; <code><strong>X[-1]</strong></code>
+getitem: −1
+9</pre>
+<p>When called for <em>slicing</em>, though, the method receives a slice object, which is simply passed along to the embedded list indexer in a new index expression:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>X[2:4]</strong></code>                             <code><em># Slicing sends __getitem__ a slice object</em></code>
+getitem: slice(2, 4, None)
+[7, 8]
+&gt;&gt;&gt; <code><strong>X[1:]</strong></code>
+getitem: slice(1, None, None)
+[6, 7, 8, 9]
+&gt;&gt;&gt; <code><strong>X[:-1]</strong></code>
+getitem: slice(None, −1, None)
+[5, 6, 7, 8]
+&gt;&gt;&gt; <code><strong>X[::2]</strong></code>
+getitem: slice(None, None, 2)
+[5, 7, 9]</pre>
+<p>Where needed, <code>__getitem__</code> can test the type of its argument, and extract slice object bounds—slice objects have attributes <code>start</code>, <code>stop</code>, and <code>step</code>, any of which can be <code>None</code> if omitted:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Indexer:
+        def __getitem__(self, index):
+            if isinstance(index, int):</strong></code>               <code><em># Test usage mode</em></code>
+                <code><strong>print('indexing', index)
+            else:
+                print('slicing', index.start, index.stop, index.step)
+
+</strong></code>&gt;&gt;&gt; <code><strong>X = Indexer()
+</strong></code>&gt;&gt;&gt; <code><strong>X[99]</strong></code>
+indexing 99
+&gt;&gt;&gt; <code><strong>X[1:99:2]</strong></code>
+slicing 1 99 2
+&gt;&gt;&gt; <code><strong>X[1:]</strong></code>
+slicing 1 None None</pre>
+<p>Run a <code>help(slice)</code> in a REPL for more <a contenteditable="false" data-type="indexterm" data-primary="slice expressions" data-startref="slcxpss" id="id3969"></a><a contenteditable="false" data-type="indexterm" data-primary="__getitem__ method" data-primary-sortas="getitem method" data-secondary="slice expressions" data-startref="gttmslx" id="id3970"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__getitem__" data-secondary-sortas="getitem" data-startref="mtdgttem" id="id3971"></a>info on this very special-case built-in object type, and see the section “Membership: __contains__, __iter__, and __getitem__” for another example of slice interception at work.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Intercepting Item Assignments"><div class="sect2" id="intercepting_item_assignments">
+<h2>Intercepting Item Assignments</h2>
+<p>If used, the <code>__setitem__</code> index <a contenteditable="false" data-type="indexterm" data-primary="__setitem__ method" data-primary-sortas="setitem method" id="id3972"></a><a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="__setitem__ method" data-secondary-sortas="setitem method" id="id3973"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__setitem__" id="setitem"></a>assignment method similarly intercepts both index and slice assignments—it receives a slice object for the latter, which may be passed along in another index assignment or used directly in the same way:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class IndexSetter:</strong></code>
+<code> <strong>       def __init__(self, data):</strong></code>
+<code> <strong>           self.data = data</strong></code>
+<code> <strong>       def __setitem__(self, index, value):</strong></code>    <code><em># Catch index or slice assignment</em></code>
+<code> <strong>           print('setitem:', index)</strong></code>
+<code> <strong>           self.data[index] = value</strong>  </code>          <code><em># Assign index or slice</em></code>
+
+&gt;&gt;&gt; <code><strong>X = IndexSetter([5, 6, 7, 8, 9])</strong></code>
+&gt;&gt;&gt; <code><strong>X[0] = 555</strong></code>
+setitem: 0
+&gt;&gt;&gt; <code><strong>X[-2:] = [888, 999, 111]</strong></code>
+setitem: slice(-2, None, None)
+
+&gt;&gt;&gt; <code><strong>X.data</strong></code>
+[555, 6, 7, 888, 999, 111]</pre>
+<p>In fact, <code>__getitem__</code> may be called automatically in even more contexts than indexing and slicing—it’s also <a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="__getitem__ method" data-secondary-sortas="getitem method" id="id3974"></a><a contenteditable="false" data-type="indexterm" data-primary="__getitem__ method" data-secondary="iteration and" data-primary-sortas="getitem method" id="id3975"></a>an <em>iteration</em> fallback option, as you’ll see in a moment. First, though, let’s clear up a potential point of confusion in this category.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="But __index__ Means As-Integer"><div class="sect2" id="but_index_means_as_integer">
+<h2>But __index__ Means As-Integer</h2>
+<p>Don’t mistake the (perhaps unfortunately named) <code>__index__</code> method for <code>__getitem__</code> index <a contenteditable="false" data-type="indexterm" data-primary="__index__ method" data-primary-sortas="index method" id="ixmixm"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__index__" data-secondary-sortas="index" id="mtdxx"></a><a contenteditable="false" data-type="indexterm" data-primary="integers" data-secondary="__index__ method" data-secondary-sortas="index method" id="id3976"></a>interception. The <code>__index__</code> method returns an <em>integer value</em> for an instance when one is needed—and in retrospect, might have been better named <code>__<em>asindex</em>__</code>. For example, it’s used by built-ins that convert to digit strings:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class C:
+        def __index__(self):
+            return 255
+</strong></code>
+&gt;&gt;&gt; <code><strong>X = C()
+</strong></code>&gt;&gt;&gt; <code><strong>hex(X)</strong> </code>              <code><em># Integer value</em></code>
+'0xff'
+&gt;&gt;&gt; <code><strong>bin(X)</strong></code>
+'0b11111111'
+&gt;&gt;&gt; <code><strong>oct(X)</strong></code>
+'0o377'</pre>
+<p>Although this method does not intercept instance indexing like <code>__getitem__</code>, it is also used in contexts that require an integer—including indexing and slicing:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>eds = [f'LP{i}e' for i in range(256)]</strong></code>
+&gt;&gt;&gt; <code><strong>eds[255]</strong></code>
+'LP255e'
+&gt;&gt;&gt; <code><strong>X = C()
+</strong></code>&gt;&gt;&gt; <code><strong>eds[X]</strong> </code>              <code><em># As index (not X[i]!)</em></code>
+'LP255e'
+&gt;&gt;&gt; <code><strong>eds[X:]</strong></code>              <code><em># As index (not X[i:]!)</em></code>
+['LP255e']</pre>
+<p>Though arguably misnamed, there is a rich history of former methods that <code>__index__</code> subsumes, which we’ll mercifully omit here. The <code>__getitem__</code> method also subsumes former <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="instance indexing" data-startref="opovidx" id="id3977"></a><a contenteditable="false" data-type="indexterm" data-primary="instances" data-secondary="indexing" data-tertiary="operator overloading" data-startref="isidxopov" id="id3978"></a><a contenteditable="false" data-type="indexterm" data-primary="indexing" data-secondary="instances" data-tertiary="operator overloading" data-startref="idxsoov" id="id3979"></a>tools but retains a fallback role up next.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Index Iteration: __getitem__"><div class="sect1" id="index_iteration_getitem">
+<h1>Index Iteration: __getitem__</h1>
+<p>Our next hook isn’t always obvious to <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="index iteration" id="opovldxt"></a><a contenteditable="false" data-type="indexterm" data-primary="indexing" data-secondary="instances" data-tertiary="iteration, __getitem__" id="ixtgtt"></a><a contenteditable="false" data-type="indexterm" data-primary="instances" data-secondary="indexing" data-tertiary="iteration" id="stdxtt"></a><a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="instance indexing, __getitem__" id="ittdxgtm"></a><a contenteditable="false" data-type="indexterm" data-primary="__getitem__ method" data-secondary="iteration" data-primary-sortas="getitem method" id="gttmtrg"></a>beginners but turns out to be surprisingly useful. In the absence of the more specific iteration methods we’ll get to in the next section, the <code>for</code> statement works by repeatedly indexing an object from zero to higher indexes, until an out-of-bounds <code>IndexError</code> exception is detected. Because of that, <code>__getitem__</code> also turns out to be one way to overload <em>iteration</em> in Python—if only this method is defined, <code>for</code> loops call the class’s <code>__getitem__</code> each time through, with successively higher offsets.</p>
+<p>It’s a case of “code one, get one free”—any built-in <a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="__getitem__ method" data-secondary-sortas="getitem method" id="id3980"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="for loops" data-tertiary="__getitem__" data-tertiary-sortas="getitem" id="id3981"></a>or user-defined object that responds to indexing also responds to <code>for</code> loop iteration:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class StepperIndex:
+        def __getitem__(self, i):
+            return self.data[i]
+</strong></code>
+&gt;&gt;&gt; <code><strong>X = StepperIndex()</strong></code>                <code><em># X is a StepperIndex object</em></code>
+&gt;&gt;&gt; <code><strong>X.data = 'hack'
+</strong></code>&gt;&gt;&gt;<code><strong>
+</strong></code>&gt;&gt;&gt; <code><strong>X[1]</strong></code>                              <code><em># Indexing calls __getitem__</em></code>
+'a'
+&gt;&gt;&gt; <code><strong>for item in X:</strong></code>                    <code><em># for loops call __getitem__</em></code>
+        <code><strong>print(item, end=' ')</strong></code>          <code><em># for indexes items 0..N
+</em></code>
+h a c k</pre>
+<p>In fact, it’s really a case of “code one, get a bunch free.” Any class that supports <code>for</code> loops automatically supports all <em>iteration tools</em> in Python, many of which we’ve explored in earlier chapters (e.g., iteration tools were presented in <a data-type="xref" href="ch14.html#iterations_and_comprehensions">Chapter 14</a>). For instance, the <code>in</code> membership test, list comprehensions, the <code>map</code> built-in, list and tuple assignments, and some type constructors will also call <code>__getitem__</code> automatically to iterate if it’s defined:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>'k' in X</strong></code>                          <code><em># All call __getitem__ too</em></code>
+True
+
+&gt;&gt;&gt; <code><strong>[c for c in X]</strong></code>                    <code><em># Comprehension</em></code>
+['h', 'a', 'c', 'k']
+
+&gt;&gt;&gt; <code><strong>list(map(str.upper, X))</strong></code>           <code><em># map calls</em></code>
+['H', 'A', 'C', 'K']
+
+&gt;&gt;&gt; <code><strong>(a, b, c, d) = X</strong></code>                  <code><em># Sequence assignments</em></code>
+&gt;&gt;&gt; <code><strong>a, d</strong></code>
+('h', 'k')
+
+&gt;&gt;&gt; <code><strong>list(X), tuple(X), ''.join(X)</strong></code>     <code><em># And so on...</em></code>
+(['h', 'a', 'c', 'k'], ('h', 'a', 'c', 'k'), 'hack') 
+
+&gt;&gt;&gt; <code><strong>X</strong></code>
+&lt;__main__.StepperIndex object at 0x10c4bcc20&gt;</pre>
+<p>In practice, this technique can be used to create objects that provide a sequence interface and to add logic to built-in sequence type operations; we’ll revisit this idea when <a contenteditable="false" data-type="indexterm" data-primary="indexing" data-secondary="instances" data-tertiary="iteration, __getitem__" data-startref="ixtgtt" id="id3982"></a><a contenteditable="false" data-type="indexterm" data-primary="instances" data-secondary="indexing" data-tertiary="iteration" data-startref="stdxtt" id="id3983"></a><a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="instance indexing, __getitem__" data-startref="ittdxgtm" id="id3984"></a><a contenteditable="false" data-type="indexterm" data-primary="__getitem__ method" data-secondary="iteration" data-primary-sortas="getitem method" data-startref="gttmtrg" id="id3985"></a><a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="index iteration" data-startref="opovldxt" id="id3986"></a>extending built-in types in <span class="keep-together"><a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a></span>.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Iterable Objects: __iter__ and __next__"><div class="sect1" id="iterable_objects_iter_and_next">
+<h1>Iterable Objects: __iter__ and __next__</h1>
+<p>Although the <code>__getitem__</code> technique of the prior section works, it’s really just a legacy fallback for iteration. Today, all iteration tools in Python will try the <code>__iter__</code> method first before trying <code>__getitem__</code>. That is, they prefer the <em>iteration protocol</em> we learned about in <a data-type="xref" href="ch14.html#iterations_and_comprehensions">Chapter 14</a> over repeatedly indexing an object; only if the object does not <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="iterable objects" id="opldtbj"></a><a contenteditable="false" data-type="indexterm" data-primary="iterable objects" id="id3987"></a><a contenteditable="false" data-type="indexterm" data-primary="__iter__ method" data-primary-sortas="iter method" id="id3988"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__iter__" data-secondary-sortas="iter" id="id3989"></a><a contenteditable="false" data-type="indexterm" data-primary="__next__ method" data-primary-sortas="next method" id="id3990"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__next__" data-secondary-sortas="next" id="id3991"></a><a contenteditable="false" data-type="indexterm" data-primary="iteration protocol" id="id3992"></a>support the iteration protocol is indexing attempted instead. Generally speaking, you should prefer <code>__iter__</code> too—it supports general iteration tools better than <span class="keep-together"><code>__getitem__</code></span> can.</p>
+<p>For a review of this model’s essentials, see <a data-type="xref" href="ch14.html#the_iteration_protocolcomma_used_by_for">Figure 14-1</a> in <a data-type="xref" href="ch14.html#iterations_and_comprehensions">Chapter 14</a>. In brief, iteration tools work by running an <em>iterable</em> object’s <code>__iter__</code> method to fetch an <em>iterator</em> object. If this works as planned, Python then repeatedly calls this iterator object’s <code>__next__</code> method to produce items until it raises a <code>StopIteration</code> exception. Built-in functions <code>iter</code> and <code>next</code> are also available as a conveniences for manual iterations—<code>iter(X)</code> is the same as <code>X.__iter__()</code> and <code>next(I)</code> is the same as <code>I.__next__()</code>, and Python internals may vary.</p>
+<p>This iterable-object interface is given priority and attempted first. Only if no such <code>__iter__</code> method is <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="iterable objects" data-startref="opldtbj" id="id3993"></a>found, Python falls back on the <code>__getitem__</code> scheme and repeatedly indexes by offsets as before until an <code>IndexError</code> exception is raised.</p>
+<section data-type="sect2" data-pdf-bookmark="User-Defined Iterables"><div class="sect2" id="user_defined_iterables">
+<h2>User-Defined Iterables</h2>
+<p>In the <code>__iter__</code> scheme, classes <a contenteditable="false" data-type="indexterm" data-primary="user-defined iterables" id="udftmt"></a><a contenteditable="false" data-type="indexterm" data-primary="iterables" data-secondary="user-defined" data-tertiary="__iter__ method" data-tertiary-sortas="iter method" id="itudfmth"></a><a contenteditable="false" data-type="indexterm" data-primary="__iter__ method" data-primary-sortas="iter method" data-secondary="user-defined iterables" id="itmudft"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__iter__" data-secondary-sortas="iter" id="mdtre"></a><a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="iterable objects" data-tertiary="user-defined iterables" id="opvtjud"></a>implement user-defined iterables by simply implementing the iteration protocol introduced in <a data-type="xref" href="ch14.html#iterations_and_comprehensions">Chapter 14</a> and elaborated in <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a>. For example, the code in <a data-type="xref" href="#example_threezero_twodot_squaresdotpy">Example 30-2</a> uses a class to define a user-defined iterable that generates squares on demand, instead of all at once.</p>
+<div data-type="example" id="example_threezero_twodot_squaresdotpy">
+<h5><span class="label">Example 30-2. </span>squares.py</h5>
+<pre data-type="programlisting">class Squares:
+    def __init__(self, start, stop):    <code><em># Save state when created</em></code>
+        self.value = start - 1
+        self.stop  = stop
+
+    def __iter__(self):                 <code><em># Return iterator object</em></code>
+        return self                     <code><em># Also called by iter() built-in</em></code>
+
+    def __next__(self):                 <code><em># Return a square on each iteration</em></code>
+        if self.value == self.stop:     <code><em># Also called by next() built-in</em></code>
+            raise StopIteration
+        self.value += 1
+        return self.value ** 2</pre>
+</div>
+<p>When imported, its instances can appear in iteration tools just like built-ins:</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>from squares import Squares
+</strong></code>&gt;&gt;&gt; <code><strong>for i in Squares(1, 5):</strong></code>             <code><em># for calls __iter__</em></code>
+        <code><strong>print(i, end=' ')</strong></code>               <code><em># Each iteration calls __next__</em></code>
+
+1 4 9 16 25</pre>
+<p>Here, the iterator object returned by <code>__iter__</code> is simply the instance <code>self</code> because the <code>__next__</code> method is part of this class itself. In more complex scenarios, the iterator object may be defined as a separate class and object with its own state information to support multiple active iterations over the same instance data (we’ll code an example of this in a moment).</p>
+<p>The end of the iteration is signaled with a Python <code>raise</code> statement—introduced in <a data-type="xref" href="ch29.html#class_coding_details">Chapter 29</a> and covered in full in the next part of this book, but which simply raises an exception as if Python itself had done so. Because of all this, manual iterations work the same on user-defined iterables as they do on built-in objects:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>X = Squares(1, 5)</strong></code>                   <code><em># Iterate manually: what loops do</em></code>
+&gt;&gt;&gt; <code><strong>I = iter(X)</strong></code>                         <code><em># iter calls __iter__</em></code>
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>                             <code><em># next calls __next__</em></code>
+1
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>
+4
+…<code><em>more omitted</em></code>…
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>
+25
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>                             <code><em># Can catch this in try statement</em></code>
+StopIteration</pre>
+<p>An equivalent coding of this iterable with <code>__getitem__</code> might be less natural because the <code>for</code> would then iterate through all offsets zero and higher; the offsets passed in would be only indirectly related to the range of values produced (<code>0…N</code> would need to map to <code>start…stop</code>). Because <code>__iter__</code> objects retain explicitly managed state between <code>next</code> calls, they can be more general than <code>__getitem__</code>.</p>
+<p>On the other hand, iterables based on <code>__iter__</code> can sometimes be more complex and less functional than those based on <code>__getitem__</code>. They are really designed for iteration, not random indexing—in fact, they don’t overload the indexing expression at all, though you can collect their items in a sequence such as a list to enable other operations:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>X = Squares(1, 5)
+</strong></code>&gt;&gt;&gt; <code><strong>X[1]</strong></code>
+TypeError: 'Squares' object is not subscriptable
+&gt;&gt;&gt; <code><strong>list(X)[1]</strong></code>
+4</pre>
+<section data-type="sect3" data-pdf-bookmark="Single versus multiple scans"><div class="sect3" id="single_versus_multiple_scans">
+<h3>Single versus multiple scans</h3>
+<p>The <code>__iter__</code> scheme is also <a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="single-scan" id="id3994"></a><a contenteditable="false" data-type="indexterm" data-primary="single-scan iteration" id="id3995"></a>the implementation for all the other iteration tools we saw in action for the <code>__getitem__</code> method—membership tests, type constructors, sequence assignment, and so on. Unlike our prior <code>__getitem__</code> example, though, we also need to be aware that a class’s <code>__iter__</code> may be designed for a <em>single traversal</em> only, not many. Classes can choose either behavior explicitly in their code.</p>
+<p>For example, because the current <code>Squares</code> class’s <code>__iter__</code> always returns <code>self</code> with just one copy of iteration state, it is a <em>single-scan</em> iteration; once you’ve iterated over an instance of that class, it’s empty. Calling <code>__iter__</code> again on the same instance returns <code>self</code> again—in whatever state it may have been left. As coded, you generally need to make a new iterable instance object for each new iteration:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>X = Squares(1, 5)</strong></code>                   <code><em># Make an iterable with state</em></code>
+&gt;&gt;&gt; <code><strong>[n for n in X]</strong></code>                      <code><em># Exhausts items: __iter__ returns self</em></code>
+[1, 4, 9, 16, 25]
+&gt;&gt;&gt; <code><strong>[n for n in X]</strong></code>                      <code><em># Now it's empty: __iter__ returns same self</em></code>
+[]
+
+&gt;&gt;&gt; <code><strong>[n for n in Squares(1, 5)]</strong></code>          <code><em># Make a new iterable object</em></code>
+[1, 4, 9, 16, 25]
+&gt;&gt;&gt; <code><strong>list(Squares(1, 3))</strong></code>                 <code><em># A new object for each new __iter__ call</em></code>
+[1, 4, 9]</pre>
+<p>To support multiple iterations more directly, we could also recode this example with an extra class or other technique, as we will in a moment. As is, though, by creating a <em>new instance</em> for each iteration, you get a fresh copy of iteration state:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>36 in Squares(1, 10)</strong></code>                <code><em># Other iteration tools</em></code>
+True
+&gt;&gt;&gt; <code><strong>a, b, c = Squares(1, 3)</strong></code>             <code><em># Each calls __iter__ and then __next__</em></code>
+&gt;&gt;&gt; <code><strong>a, b, c</strong></code>
+(1, 4, 9)
+&gt;&gt;&gt; <code><strong>':'.join(map(str, Squares(1, 5)))</strong></code>
+'1:4:9:16:25'</pre>
+<p>Just like single-scan built-ins such as <code>map</code>, converting to a <em>list</em> supports multiple scans as well but adds time and space performance costs, which may or may not be significant to a given program:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>X = Squares(1, 5)
+</strong></code>&gt;&gt;&gt; <code><strong>tuple(X), tuple(X)</strong></code>                  <code><em># Iterator exhausted in second tuple()</em></code>
+((1, 4, 9, 16, 25), ())
+
+&gt;&gt;&gt; <code><strong>X = list(Squares(1, 5))
+</strong></code>&gt;&gt;&gt; <code><strong>tuple(X), tuple(X)</strong></code>
+((1, 4, 9, 16, 25), (1, 4, 9, 16, 25))</pre>
+<p>We’ll improve this to support multiple scans more directly ahead after a bit of compare and contrast.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Classes versus generators"><div class="sect3" id="classes_versus_generators">
+<h3>Classes versus generators</h3>
+<p>Notice that the <code>Squares</code> iterable of <a data-type="xref" href="#example_threezero_twodot_squaresdotpy">Example 30-2</a> that we’ve been using so far would <a contenteditable="false" data-type="indexterm" data-primary="iterable objects" data-secondary="generator functions" id="id3996"></a><a contenteditable="false" data-type="indexterm" data-primary="generator functions" data-secondary="iterable objects" id="id3997"></a>probably be simpler if it was coded with <em>generator functions or expressions</em>—tools introduced in <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a> that automatically produce iterable objects and retain local variable state between iterations:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def gsquares(start, stop):</strong></code>                   <code><em># Generator function</em></code>
+<code> <strong>       for i in range(start, stop + 1):
+            yield i ** 2
+</strong></code>
+&gt;&gt;&gt; <code><strong>for i in gsquares(1, 5):
+        print(i, end=' ')</strong></code>
+
+1 4 9 16 25
+
+&gt;&gt;&gt; <code><strong>for i in (x ** 2 for x in range(1, 6)):</strong> </code>     <code><em># Generator expression</em></code>
+<code> <strong>       print(i, end=' ')</strong></code>
+
+1 4 9 16 25</pre>
+<p>Unlike classes, generator functions and expressions implicitly save their state and create the methods required to conform to the <em>iteration protocol</em>—with obvious advantages in code conciseness for simpler examples like these. That is, generators’ automatic and implicit <code>__iter__</code> and <code>__next__</code> suffice here.</p>
+<p>On the other hand, the class’s more explicit attributes and methods, extra structure, inheritance hierarchies, and support for multiple behaviors may be better suited for richer use cases.</p>
+<p>Of course, for this artificial example, you could in fact skip both techniques and simply use a <code>for</code> loop, <code>map</code>, or a list comprehension to build the list all at once. Barring performance data to the contrary, the best and fastest way to accomplish a task in Python is often also the simplest:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>[x ** 2 for x in range(1, 6)]</strong></code>
+[1, 4, 9, 16, 25]</pre>
+<p>That said, classes are better at modeling more complex iterations, especially when they can benefit from the assets of classes in general. An iterable that produces items in a complex database or web service result, for example, might be able to take fuller <a contenteditable="false" data-type="indexterm" data-primary="iterables" data-secondary="user-defined" data-tertiary="__iter__ method" data-tertiary-sortas="iter method" data-startref="itudfmth" id="id3998"></a><a contenteditable="false" data-type="indexterm" data-primary="__iter__ method" data-primary-sortas="iter method" data-secondary="user-defined iterables" data-startref="itmudft" id="id3999"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__iter__" data-secondary-sortas="iter" data-startref="mdtre" id="id4000"></a><a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="iterable objects" data-tertiary="user-defined iterables" data-startref="opvtjud" id="id4001"></a>advantage of classes—and leverage more flexible coding structures like that of the next section.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Multiple Iterators on One Object"><div class="sect2" id="multiple_iterators_on_one_object">
+<h2>Multiple Iterators on One Object</h2>
+<p>Earlier, it was mentioned in passing <a contenteditable="false" data-type="indexterm" data-primary="iterator objects, multiple iterations" id="itbjlptr"></a><a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="multiple iterations" id="itrtmptr"></a><a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="iterable objects" data-tertiary="multiple" id="opvtjmpt"></a>that the <em>iterator</em> object (with a <code>__next__</code>) produced by an iterable may be defined as a separate class with its own state information to more directly support multiple active iterations over the same data. To understand this better, consider what happens when we step across a built-in type like a string:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>S = 'ace'
+</strong></code>&gt;&gt;&gt; <code><strong>for x in S:
+        for y in S:
+            print(x + y, end=' ')</strong></code>
+
+aa ac ae ca cc ce ea ec ee</pre>
+<p>Here, the outer loop grabs an iterator from the string by calling <code>iter</code>, and each nested loop does the same to get an independent iterator. Because each active iterator has its own state information, each loop can maintain its own position in the string, regardless of any other active loops. Moreover, we’re not required to make a new string or convert to a list each time; the single string object itself supports multiple scans.</p>
+<p>We saw related examples earlier, in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch14.html#iterations_and_comprehensions">14</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch20.html#comprehensions_and_generations">20</a>. For instance, generator functions and expressions, as well as built-ins like <code>map</code> and <code>zip</code>, proved to be single-iterator objects, thus supporting a single active scan. By contrast, the <code>range</code> built-in, and other built-in types like lists, support multiple active iterators with independent positions.</p>
+<p>When we code user-defined iterables with classes, it’s up to us to decide whether we will support a single active iteration or many. To achieve the multiple-iterator effect, <code>__iter__</code> simply needs to define a new stateful object for the iterator instead of returning <code>self</code> for each iterator request.</p>
+<p>For example, the class <code>SkipObject</code> in <a data-type="xref" href="#example_threezero_threedot_skipperdotpy">Example 30-3</a> defines an iterable object that skips every other item on iterations. Because its iterator object is created anew from a supplemental class for each iteration, it supports multiple active loops directly.</p>
+<div data-type="example" id="example_threezero_threedot_skipperdotpy">
+<h5><span class="label">Example 30-3. </span>skipper.py</h5>
+<pre data-type="programlisting">class SkipObject:
+    def __init__(self, wrapped):                  <code><em># Save item to be used</em></code>
+        self.wrapped = wrapped
+
+    def __iter__(self):
+        return SkipIterator(self.wrapped)         <code><em># New iterator each time</em></code>
+
+class SkipIterator:
+    def __init__(self, wrapped):
+        self.wrapped = wrapped                    <code><em># Iterator state information</em></code>
+        self.offset  = 0
+
+    def __next__(self):
+        if self.offset &gt;= len(self.wrapped):      <code><em># Terminate iterations</em></code>
+            raise StopIteration
+        else:
+            item = self.wrapped[self.offset]      <code><em># else return and skip</em></code>
+            self.offset += 2
+            return item
+
+if __name__ == '__main__':
+    alpha = 'abcdef'
+    skipper = SkipObject(alpha)                   <code><em># Make container object</em></code>
+    I = iter(skipper)                             <code><em># Make an iterator on it
+</em></code>    print(next(I), next(I), next(I))              <code><em># Visit offsets 0, 2, 4</em></code>
+
+    for x in skipper:                <code><em># for calls __iter__ automatically</em></code>
+        for y in skipper:            <code><em># Nested fors call __iter__ again each time</em></code>
+            print(x + y, end=' ')    <code><em># Each iterator has its own state, offset</em></code></pre>
+</div>
+<p>When run, this example works like the earlier nested loops with built-in strings. Each active loop has its own position in the string because each obtains an independent iterator object that records its own state information:</p>
+<pre data-type="programlisting">$ <code><strong>python3 skipper.py</strong></code>
+a c e
+aa ac ae ca cc ce ea ec ee</pre>
+<p>By contrast, our earlier <code>Squares</code> class of <a data-type="xref" href="#example_threezero_twodot_squaresdotpy">Example 30-2</a> supports just one active iteration unless we call <code>Squares</code> again in nested loops to obtain new objects (else the outer <code>for</code> loop would run just once). Here, there is <a contenteditable="false" data-type="indexterm" data-primary="iterator objects, multiple iterations" data-startref="itbjlptr" id="id4002"></a><a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="multiple iterations" data-startref="itrtmptr" id="id4003"></a>just one <code>SkipObject</code> iterable, with multiple iterator objects created from it.</p>
+<section data-type="sect3" data-pdf-bookmark="Classes versus slices"><div class="sect3" id="classes_versus_slices">
+<h3>Classes versus slices</h3>
+<p>As before, we could achieve similar <a contenteditable="false" data-type="indexterm" data-primary="slices" id="id4004"></a>results with built-in tools—for example, slicing with a third bound to skip items:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S = 'abcdef'
+</strong></code>&gt;&gt;&gt; <code><strong>for x in S[::2]:
+        for y in S[::2]:</strong></code>             <code><em># New objects on each iteration</em></code>
+            <code><strong>print(x + y, end=' ')</strong></code>
+
+aa ac ae ca cc ce ea ec ee</pre>
+<p>This isn’t quite the same, though, for two reasons. First, each slice expression here will <em>physically store</em> the result list all at once in memory; iterables, on the other hand, produce just one value at a time, which can save substantial space and startup time for large result lists.</p>
+<p>Second, slices produce <em>new objects</em>, so we’re not really iterating over the same object in multiple places here. To be closer to the class, we would need to make a single object to step across by slicing ahead of time:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S = 'abcdef'</strong></code>
+&gt;&gt;&gt; <code><strong>S = S[::2]</strong></code>
+&gt;&gt;&gt; <code><strong>S</strong></code>
+'ace'
+&gt;&gt;&gt; <code><strong>for x in S:
+        for y in S:</strong></code>                  <code><em># Same object, new iterators</em></code>
+            <code><strong>print(x + y, end=' ')</strong></code>
+
+aa ac ae ca cc ce ea ec ee</pre>
+<p>This is more similar to our class-based solution, but it still stores the slice result in memory all at once (there is no generator form of built-in slicing today), and it’s only equivalent for this particular case of skipping every other item.</p>
+<p>Because user-defined iterables coded with classes can do anything a class can do, they are much more general than this example may imply. Though such generality is not required in all applications, user-defined iterables are a powerful tool—they allow us to make arbitrary objects look and feel like the other sequences and iterables we have met in this book. We could use this technique with a database object, for example, to <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="iterable objects" data-tertiary="multiple" data-startref="opvtjmpt" id="id4005"></a>support iterations over large database fetches, with multiple cursors into the same query result.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" class="pagebreak-before" data-pdf-bookmark="Coding Alternative: __iter__ Plus yield"><div class="sect2" id="coding_alternative_iter_plus_yield">
+<h2 class="less_space">Coding Alternative: __iter__ Plus yield</h2>
+<p>Now for something more implicit—but potentially useful nonetheless. In some applications, it’s possible to <a contenteditable="false" data-type="indexterm" data-primary="iterables" data-secondary="user-defined" data-tertiary="yield function" id="itbudygf"></a><a contenteditable="false" data-type="indexterm" data-primary="yield function, generator objects" id="ylfgbj"></a><a contenteditable="false" data-type="indexterm" data-primary="generator objects" id="gntobj"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="generator objects" id="gnrbjc"></a><a contenteditable="false" data-type="indexterm" data-primary="__iter__ method" data-secondary="yield function and" data-primary-sortas="iter method" id="trmyfc"></a>minimize coding requirements for user-defined iterables by <em>combining</em> the <code>__iter__</code> method we’re exploring here and the <code>yield</code> generator function statement we studied in <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a>. Because generator functions <em>automatically</em> save local-variable state and create required iterator methods, they fit this role well and complement the state retention and other utility we get from classes.</p>
+<p>As a quick review, recall that any function that contains a <code>yield</code> statement is turned into a generator function. When called, it returns a new <em>generator object</em> with automatic retention of local scope and code position; an automatically created <code>__iter__</code> method that simply returns itself; and an automatically created <code>__next__</code> method that starts the function or resumes it where it last left off:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def gen(x):
+       for i in range(x): yield i ** 2
+</strong></code>
+&gt;&gt;&gt; <code><strong>G = gen(5)</strong></code>               <code><em># Create a generator with __iter__ and __next__</em></code>
+&gt;&gt;&gt; <code><strong>G.__iter__() is G</strong></code>        <code><em># Both methods exist on the same object</em></code>
+True
+&gt;&gt;&gt; <code><strong>I = iter(G)</strong></code>              <code><em># Runs __iter__: generator returns itself</em></code>
+&gt;&gt;&gt; <code><strong>next(I), next(I)</strong></code>         <code><em># Runs __next__</em></code>
+(0, 1)
+&gt;&gt;&gt; <code><strong>list(gen(5))</strong></code>             <code><em># Iteration tools automatically run iter and next</em></code>
+[0, 1, 4, 9, 16]</pre>
+<p>This is still true even if the generator function with a <code>yield</code> happens to be a <em>method</em> named <code>__iter__</code> . Whenever invoked by an iteration tool, such a method will return a new <em>generator</em> object with the requisite <code>__next__</code>. As an added bonus, generator functions coded as methods in classes have access to saved state in <em>both</em> instance attributes and local-scope variables.</p>
+<p>For example, the class in <a data-type="xref" href="#example_threezero_fourdot_squares_yield">Example 30-4</a> is equivalent to the initial <code>Squares</code> user-defined iterable we coded earlier in <a data-type="xref" href="#example_threezero_twodot_squaresdotpy">Example 30-2</a>, but noticeably shorter (4 lines, for anyone counting).</p>
+<div data-type="example" id="example_threezero_fourdot_squares_yield">
+<h5><span class="label">Example 30-4. </span>squares_yield.py</h5>
+<pre data-type="programlisting">class Squares:                                 <code><em># __iter__ + yield generator</em></code>
+    def __init__(self, start, stop):           <code><em># __next__ is automatic/implied</em></code>
+        self.start = start
+        self.stop  = stop
+
+    def __iter__(self):
+        for value in range(self.start, self.stop + 1):
+            yield value ** 2</pre>
+</div>
+<p>As before, <code>for</code> loops and other iteration tools iterate through instances of this class automatically:</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>from squares_yield import Squares
+</strong></code>&gt;&gt;&gt; <code><strong>for i in Squares(1, 5): print(i, end=' ')</strong> </code>     <code><em># Runs __iter__, then __next__</em></code>
+
+1 4 9 16 25</pre>
+<p>And as always, we can also look under the hood to see how this actually works in iteration tools like <code>for</code>. Running our class instance through <code>iter</code> obtains the result of calling <code>__iter__</code> as usual. In this case, though, the result is a generator object with an automatically created <code>__next__</code> of the same sort we always get when calling a generator function that contains a <code>yield</code>. The only difference here is that the generator function is automatically called on <code>iter</code>. Invoking the result object’s <code>next</code> interface produces results on demand:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S = Squares(1, 5)</strong></code>          <code><em># Runs __init__: class saves instance state</em></code>
+&gt;&gt;&gt; <code><strong>S</strong></code>
+&lt;squares_yield.Squares object at 0x109e30b90&gt; 
+
+&gt;&gt;&gt; <code><strong>I = iter(S)</strong></code>                <code><em># Runs __iter__: returns a generator</em></code>
+&gt;&gt;&gt; <code><strong>I</strong></code>
+&lt;generator object Squares.__iter__ at 0x109ecb3e0&gt;
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>
+1
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>                    <code><em># Runs generator's __next__</em></code>
+4
+…<code><em>etc</em></code>…
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>                    <code><em># Generator has both instance and local scope state</em></code>
+StopIteration</pre>
+<p>It may also help to notice that we could name the generator method something other than <code>__iter__</code> and call manually to iterate—<code>Squares(…).gen()</code>, for example. Using the <code>__iter__</code> name invoked automatically by iteration tools simply skips a manual attribute fetch and call step. <a data-type="xref" href="#example_threezero_fivedot_squares_yield">Example 30-5</a> demos the idea.</p>
+<div data-type="example" id="example_threezero_fivedot_squares_yield">
+<h5><span class="label">Example 30-5. </span>squares_yield_manual.py</h5>
+<pre data-type="programlisting">import squares_yield                      <code><em># Reuse prior example's __init__</em></code>
+
+class Squares(squares_yield.Squares):     <code><em># Non __iter__ equivalent</em></code> 
+    def gen(self):
+        for value in range(self.start, self.stop + 1):
+            yield value ** 2</pre>
+</div>
+<p>The example also imports <a data-type="xref" href="#example_threezero_fourdot_squares_yield">Example 30-4</a> to inherit its constructor. When run, its results are the same, but we must call the <code>gen</code> method explicitly to fetch an iterable—a step that <code>__iter__</code> automates and obviates:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>from squares_yield_manual import Squares
+</strong></code>&gt;&gt;&gt; <code><strong>for i in Squares(1, 5).gen(): print(i, end=' ')</strong></code>
+…<code><em>same results</em></code>…
+
+&gt;&gt;&gt; <code><strong>S = Squares(1, 5)
+</strong></code>&gt;&gt;&gt; <code><strong>I = iter(S.gen())</strong></code>          <code><em># Call generator manually for iterable/iterator</em></code>
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>
+…<code><em>same results</em></code>…</pre>
+<p>Coding the generator as <code>__iter__</code> instead cuts out the middleperson in your code, though both schemes ultimately wind up creating a new generator object for each iteration:</p>
+<ul>
+<li><p>With <code>__iter__</code>, iteration triggers <code>__iter__</code>, which returns a new generator with <code>__next__</code>.</p></li>
+<li><p>Without <code>__iter__</code>, your code calls to make a generator, which returns itself for <code>__iter__</code>.</p></li>
+</ul>
+<p>See <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a> for more on <code>yield</code> and generators if this is puzzling, and compare it with the more explicit <code>__next__</code> version in <a data-type="xref" href="#example_threezero_twodot_squaresdotpy">Example 30-2</a> earlier. If you do, you’ll notice that the <em>squares_yield.py</em> version is 4 lines shorter (7 versus 11, not counting whitespace). In a sense, this scheme reduces class coding requirements much like the closure functions of <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>, but in this case does so with a <em>combination</em> of functional and OOP techniques instead of an alternative to classes. For example, the generator method still leverages <code>self</code> attributes.</p>
+<p>This may also seem like one too many levels of <em>magic</em> to some observers—it relies on both the iteration protocol and the object creation of generators, both of which are highly implicit (in contradiction of longstanding Python goals). Opinions aside, it’s important to understand the non-<code>yield</code> flavor of class iterables too, because it’s explicit, general, and sometimes broader in scope.</p>
+<p>Still, the <code>__iter__</code>/<code>yield</code> technique may prove effective in cases where it applies. It also comes with a substantial advantage—as the next section explains.</p>
+<section data-type="sect3" data-pdf-bookmark="Multiple iterators with yield"><div class="sect3" id="multiple_iterators_with_yield">
+<h3>Multiple iterators with yield</h3>
+<p>Besides its code conciseness, the user-defined class iterable of the prior section based upon the <code>__iter__</code>/<code>yield</code> combination has an important added bonus—it also supports <em>multiple active iterators</em> automatically. This naturally follows from the fact that each call to <code>__iter__</code> is a new call to a generator function, which returns a new generator with its own copy of the local scope for state retention. Using <a data-type="xref" href="#example_threezero_fourdot_squares_yield">Example 30-4</a> again:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>from squares_yield import Squares</strong>   <em># Using the __iter__/yield Squares
+</em></code>&gt;&gt;&gt; <code><strong>S = Squares(1, 5)
+</strong></code>&gt;&gt;&gt; <code><strong>I = iter(S)
+</strong></code>&gt;&gt;&gt; <code><strong>next(I); next(I)</strong></code>
+1
+4
+&gt;&gt;&gt; <code><strong>K = iter(S)</strong></code>                        <code> <em># With yield, multiple iterators automatic</em></code>
+&gt;&gt;&gt; <code><strong>next(K)</strong></code>
+1
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>                             <code><em># I is independent of K: own local state</em></code>
+9</pre>
+<p>Although generator functions are single-scan iterables by nature, the implicit calls to <code>__iter__</code> in iteration tools make new generators supporting new independent scans:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S = Squares(1, 3)
+</strong></code>&gt;&gt;&gt; <code><strong>for i in S:</strong></code>                         <code><em># Each "for" calls __iter__</em></code>
+        <code><strong>for j in S:</strong></code>
+<code> <strong>           print(f'{i}:{j}', end=' ')</strong></code>
+
+1:1 1:4 1:9 4:1 4:4 4:9 9:1 9:4 9:9</pre>
+<p>To do the same without <code>yield</code> requires a supplemental class that stores iterator state explicitly and manually, using techniques of the preceding section. Per <a data-type="xref" href="#example_threezero_sixdot_squares_nonyie">Example 30-6</a>, this grows to 15 lines: 8 more than with <code>yield</code>.</p>
+<div data-type="example" id="example_threezero_sixdot_squares_nonyie">
+<h5><span class="label">Example 30-6. </span>squares_nonyield.py</h5>
+<pre data-type="programlisting">class Squares:
+    def __init__(self, start, stop):                 <code><em># Non-yield generator</em></code>
+        self.start = start                          <code> <em># Multiscans: extra object</em></code>
+        self.stop  = stop
+
+    def __iter__(self):
+        return SquaresIter(self.start, self.stop)
+
+class SquaresIter:
+    def __init__(self, start, stop):
+        self.value = start - 1
+        self.stop  = stop
+
+    def __next__(self):
+        if self.value == self.stop:
+            raise StopIteration
+        self.value += 1
+        return self.value ** 2</pre>
+</div>
+<p>This works the same as the <code>yield</code> multiscan version, but with more—and more explicit—code:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>from squares_nonyield import Squares
+</strong></code>&gt;&gt;&gt; <code><strong>for i in Squares(1, 5): print(i, end=' ')</strong></code>
+
+1 4 9 16 25
+
+&gt;&gt;&gt; <code><strong>S = Squares(1, 5)
+</strong></code>&gt;&gt;&gt; <code><strong>I = iter(S)
+</strong></code>&gt;&gt;&gt; <code><strong>next(I); next(I)</strong></code>
+1
+4
+&gt;&gt;&gt; <code><strong>K = iter(S)</strong></code>                          <code><em># Multiple iterators without yield</em></code>
+&gt;&gt;&gt; <code><strong>next(K)</strong></code>
+1
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>
+9
+
+&gt;&gt;&gt; <code><strong>S = Squares(1, 3)
+</strong></code>&gt;&gt;&gt; <code><strong>for i in S:</strong></code>                          <code><em># Each "for" calls __iter__</em></code>
+        <code><strong>for j in S:</strong></code>
+<code> <strong>           print(f'{i}:{j}', end=' ')</strong></code>
+
+1:1 1:4 1:9 4:1 4:4 4:9 9:1 9:4 9:9</pre>
+<p>Finally, the generator-based approach could similarly remove the need for an extra iterator class in the prior item-skipper example, <em>skipper.py</em> of <a data-type="xref" href="#example_threezero_threedot_skipperdotpy">Example 30-3</a>, thanks to its automatic methods and local variable state retention. <a data-type="xref" href="#example_threezero_sevendot_skipper_yiel">Example 30-7</a> codes the mod, which checks in at 9 lines versus the original’s 16, sans the original’s self-test.</p>
+<div data-type="example" id="example_threezero_sevendot_skipper_yiel">
+<h5><span class="label">Example 30-7. </span>skipper_yield.py</h5>
+<pre data-type="programlisting">class SkipObject:                           <code><em># Another __iter__ + yield generator</em></code>
+    def __init__(self, wrapped):            <code><em># Instance scope retained normally</em></code>
+        self.wrapped = wrapped              <code><em># Local scope state saved auto</em></code>
+
+    def __iter__(self):
+        offset = 0
+        while offset &lt; len(self.wrapped):
+            item = self.wrapped[offset]
+            offset += 2
+            yield item</pre>
+</div>
+<p>This works the same as the non-<code>yield</code> multiscan version, but with less—and less explicit—code:</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>from skipper_yield import SkipObject
+</strong></code>&gt;&gt;&gt; <code><strong>skipper = SkipObject('abcdef')
+</strong></code>&gt;&gt;&gt; <code><strong>I = iter(skipper)
+</strong></code>&gt;&gt;&gt; <code><strong>next(I); next(I); next(I)</strong></code>
+'a'
+'c'
+'e'
+&gt;&gt;&gt; <code><strong>for x in skipper:</strong> </code>              <code><em># Each "for" calls __iter__: new auto generator</em></code>
+        <code><strong>for y in skipper:
+            print(x + y, end=' ')</strong></code>
+
+aa ac ae ca cc ce ea ec ee</pre>
+<p>Of course, these are all artificial examples <a contenteditable="false" data-type="indexterm" data-primary="iterables" data-secondary="user-defined" data-tertiary="yield function" data-startref="itbudygf" id="id4006"></a><a contenteditable="false" data-type="indexterm" data-primary="user-defined iterables" data-startref="udftmt" id="id4007"></a><a contenteditable="false" data-type="indexterm" data-primary="yield function, generator objects" data-startref="ylfgbj" id="id4008"></a><a contenteditable="false" data-type="indexterm" data-primary="generator objects" data-startref="gntobj" id="id4009"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="generator objects" data-startref="gnrbjc" id="id4010"></a><a contenteditable="false" data-type="indexterm" data-primary="__iter__ method" data-secondary="yield function and" data-primary-sortas="iter method" data-startref="trmyfc" id="id4011"></a>that could be replaced with simpler tools like comprehensions, and their code may or may not scale up in kind to more realistic tasks. Study these alternatives to see how they compare. As so often in programming, the best tool for the job will likely be the best tool for your job.</p>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Membership: __contains__, __iter__, and __getitem__"><div class="sect1" id="membership_contains_comma_iter_co">
+<h1>Membership: __contains__, __iter__, and __getitem__</h1>
+<p>The iteration story is even richer than told thus far. Operator overloading is often <em>layered</em>: classes may <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="fallback options" id="opldfckp"></a><a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="__contains__ method" data-secondary-sortas="contains method" id="pvlcthd"></a><a contenteditable="false" data-type="indexterm" data-primary="__contains__ method" data-primary-sortas="contains method" id="cntnthd"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__contains__" data-secondary-sortas="contains" id="mgdctn"></a>provide specific methods or more general alternatives used as fallback options. We’ve already seen this for general iteration (<code>__iter__</code> or else <code>__getitem__</code>), and will encounter another example ahead when we meet Boolean values.</p>
+<p>Also in the iterations domain, classes can implement the <code>in</code> membership operator as an iteration, using either the <code>__iter__</code> or <code>__getitem__</code> methods. To support more specific membership, though, classes may code a <code>__contains__</code> method—when present, this method is preferred over <code>__iter__</code>, which is preferred over <code>__getitem__</code>. The <code>__contains__</code> method should define membership as applying to keys for a <em>mapping</em> (and can use quick lookups) and as a search for <em>sequences</em>.</p>
+<p>Consider the class <code>Iters</code> in <a data-type="xref" href="#example_threezero_eightdot_containsdotp">Example 30-8</a>. It codes all three methods and tests membership and various iteration tools applied to an instance. To demo, its methods print trace messages when called, its self-test code cycles through tests coded with <code>match</code> to call them out, and its methods’ traces show up before those of its tests.</p>
+<div data-type="example" id="example_threezero_eightdot_containsdotp">
+<h5><span class="label">Example 30-8. </span>contains.py</h5>
+<pre data-type="programlisting">def trace(msg, end=''):
+    print(f'{msg} ', end=end)                 <code><em># print sans newline</em></code>
+
+class Iters:
+    def __init__(self, value):
+        self.data = value
+
+    def __getitem__(self, i):                 <code><em># Fallback for iteration</em></code>
+        trace(f'@get[{i}]')                   <code><em># Also for index, slice</em></code>
+        return self.data[i]
+
+    def __iter__(self):                       <code><em># Preferred for iteration</em></code>
+        trace('@iter')                        <code><em># Allows only one active iterator</em></code>
+        self.ix = 0
+        return self
+
+    def __next__(self):
+        trace('@next')
+        if self.ix == len(self.data): raise StopIteration
+        item = self.data[self.ix]
+        self.ix += 1
+        return item
+
+    def __contains__(self, x):                <code><em># Preferred for 'in' membership</em></code>
+        trace('@contains')
+        return x in self.data
+
+def self_test(Iters):
+    X = Iters([1, 2, 3, 4])                            <code><em># Make one instance</em></code>
+    tests = 'In', 'For', 'Comp', 'Map', 'Manual'
+    for test in tests:
+        trace(test.ljust(max(map(len, tests)) + 1))
+        match test:
+            case 'In':
+                trace(3 in X)                          <code><em># Membership</em></code>
+            case 'For':
+                for i in X:                            <code><em># for-loop iteration</em></code>
+                    trace(i, end='| ')
+            case 'Comp':
+                trace([i ** 2 for i in X])             <code><em># Other Iteration tools</em></code>
+            case 'Map':
+                trace(list(map(bin, X)))
+            case 'Manual':
+                I = iter(X)                            <code><em># Manual iteration</em></code>
+                while True:
+                    try:
+                        trace(next(I), end='| ')
+                    except StopIteration:
+                        break
+        print()
+
+if __name__ == '__main__': self_test(Iters)            <code><em># Test Iters here</em></code></pre>
+</div>
+<p>As is, the class in this file has an <code>__iter__</code> that supports only a single active scan at any point in time (e.g., nested loops won’t work) because each iteration attempt resets the scan cursor to the front. Now that you know about <code>yield</code> in iteration methods, you should be able to tell that <a data-type="xref" href="#example_threezero_ninedot_contains_yiel">Example 30-9</a> is equivalent but allows multiple active scans—and judge for yourself whether its more implicit nature is worth the nested-scan support (and 5 lines shaved).</p>
+<div data-type="example" id="example_threezero_ninedot_contains_yiel">
+<h5><span class="label">Example 30-9. </span>contains-yield.py</h5>
+<pre data-type="programlisting">from contains import *
+
+class ItersYield(Iters):
+    def __iter__(self):                    <code><em># Preferred for iteration
+</em></code>        trace('@iter @next')               <code><em># Allows multiple active iterators</em></code>
+        for x in self.data:                <code><em># Implicit generator alternative</em></code>
+            yield x
+            trace('@next')
+
+if __name__ == '__main__': self_test(ItersYield)      <code><em># Test Iters here</em></code></pre>
+</div>
+<p>When either version of this file runs, its output is as follows—the specific <code>__contains__</code> intercepts membership, the general <code>__iter__</code> catches other iteration tools such that <code>__next__</code> (whether explicitly coded or implied by <code>yield</code>) is called repeatedly, and <code>__getitem__</code> is never called:</p>
+<pre data-type="programlisting">$ <code><strong>python3 contains.py</strong></code>
+In      @contains True
+For     @iter @next 1 | @next 2 | @next 3 | @next 4 | @next
+Comp    @iter @next @next @next @next @next [1, 4, 9, 16]
+Map     @iter @next @next @next @next @next ['0b1', '0b10', '0b11', '0b100']
+Manual  @iter @next 1 | @next 2 | @next 3 | @next 4 | @next</pre>
+<p>Watch, though, what happens to this code’s output if we comment out its <code>__contains__</code> method—membership is now routed to the general <code>__iter__</code> instead (add triple quotes above and below the method to test live):</p>
+<pre data-type="programlisting">$ <code><strong>python3 contains.py</strong></code>
+In      <code><strong>@iter @next @next @next True</strong></code>
+For     @iter @next 1 | @next 2 | @next 3 | @next 4 | @next
+Comp    @iter @next @next @next @next @next [1, 4, 9, 16]
+Map     @iter @next @next @next @next @next ['0b1', '0b10', '0b11', '0b100']
+Manual  @iter @next 1 | @next 2 | @next 3 | @next 4 | @next</pre>
+<p>And finally, here is the output if <em>both</em> <code>__contains__</code> and <code>__iter__</code> are commented out—the indexing <code>__getitem__</code> fallback is called with successively higher indexes until it raises <code>IndexError</code>, for membership and other iteration tools:</p>
+<pre data-type="programlisting">$ <code><strong>python3 contains.py</strong></code>
+In      @get[0] @get[1] @get[2] True
+For     @get[0] 1 | @get[1] 2 | @get[2] 3 | @get[3] 4 | @get[4]
+Comp    @get[0] @get[1] @get[2] @get[3] @get[4] [1, 4, 9, 16]
+Map     @get[0] @get[1] @get[2] @get[3] @get[4] ['0b1', '0b10', '0b11', '0b100']
+Manual  @get[0] 1 | @get[1] 2 | @get[2] 3 | @get[3] 4 | @get[4]</pre>
+<p>As we’ve seen, the <code>__getitem__</code> method does other work too: besides iterations, it also intercepts explicit indexing as well as slicing. Slice expressions trigger <code>__getitem__</code> with a slice object containing bounds, both for built-in types and user-defined classes, so slicing is automatic in our class. With <code>__iter__</code> enabled or not:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>from contains import Iters
+</strong></code>&gt;&gt;&gt; <code><strong>X = Iters('hack')</strong></code>
+&gt;&gt;&gt; <code><strong>X[0]</strong></code>                             <code><em># Indexing: __getitem__(0)</em></code>
+@get[0] 'h' 
+
+&gt;&gt;&gt; <code><strong>X[1:]</strong></code>                            <code><em># Slicing: __getitem__(slice(…))</em></code>
+@get[slice(1, None, None)] 'ack'
+&gt;&gt;&gt; <code><strong>X[:-1]</strong></code>
+@get[slice(None, -1, None)] 'hac'</pre>
+<p>Iterations, though, are more selective—we get the first of the following if <code>__iter__</code> is still commented out and the second if it’s not (be sure to restart or <code>reload</code> after the file mod either way):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(X)</strong></code> 
+@get[0] @get[1] @get[2] @get[3] @get[4] ['h', 'a', 'c', 'k']
+
+&gt;&gt;&gt; <code><strong>list(X)</strong></code>
+@iter @next @next @next @next @next ['h', 'a', 'c', 'k']</pre>
+<p>In more realistic iteration use cases that are not sequence-oriented, though, the <code>__iter__</code> method may be easier to write since it must not manage an integer index, and <code>__contains__</code> allows for membership optimization as a special case. While iteration is a rich topic, it’s time to move on to the next <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="fallback options" data-startref="opldfckp" id="id4012"></a><a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="__contains__ method" data-secondary-sortas="contains method" data-startref="pvlcthd" id="id4013"></a><a contenteditable="false" data-type="indexterm" data-primary="__contains__ method" data-primary-sortas="contains method" data-startref="cntnthd" id="id4014"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__contains__" data-secondary-sortas="contains" data-startref="mgdctn" id="id4015"></a>stop on our overloading tour.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Attribute Access: __getattr__ and __setattr__"><div class="sect1" id="attribute_access_getattr_and_seta">
+<h1>Attribute Access: __getattr__ and __setattr__</h1>
+<p>In Python, classes can also intercept basic <em>attribute</em> access (a.k.a. qualification) when needed or useful. Specifically, for an <code><em>object</em></code> created from a class, the dot operator expression <code><em>object</em>.<em>attribute</em></code> can be implemented by your code too, for reference, assignment, and deletion contexts. We explored a limited example in this category which rerouted attribute fetches in the tutorial of <a data-type="xref" href="ch28.html#a_more_realistic_example">Chapter 28</a>, but will review and expand on the topic here.</p>
+<section data-type="sect2" data-pdf-bookmark="Attribute Reference"><div class="sect2" id="attribute_reference">
+<h2>Attribute Reference</h2>
+<p>The <code>__getattr__</code> method <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="attributes" data-tertiary="references" id="id4016"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="reference interception" id="id4017"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="__getattr__ method" data-secondary-sortas="getattr method" id="id4018"></a><a contenteditable="false" data-type="indexterm" data-primary="__getattr__ method" data-primary-sortas="getattr method" id="id4019"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__getattr__" data-secondary-sortas="getattr" id="id4020"></a>intercepts attribute references. It’s called with the attribute name as a string whenever you try to qualify an instance with an <em>undefined</em> (nonexistent) attribute name. It is <em>not</em> called if Python can find the attribute using its inheritance tree search procedure.</p>
+<p>Because of its behavior, <code>__getattr__</code> is useful as a hook for responding to attribute requests in a generic fashion. It’s commonly used to delegate calls to embedded (or “wrapped”) objects from a proxy controller object—of the sort introduced in <a data-type="xref" href="ch28.html#a_more_realistic_example">Chapter 28</a>’s introduction to <em>delegation</em>. This method can also be used to adapt classes to an interface or add <em>accessors</em> for data attributes after the fact—logic in a method that validates or computes an attribute after it’s already being used with simple dot notation (possibly after a rename of the original).</p>
+<p>The basic mechanism underlying these goals is straightforward—the following class catches attribute references, computing the value for one dynamically, and triggering an error for others unsupported with the <code>raise</code> statement described earlier in this chapter for iterators (and again, fully covered in <a data-type="xref" href="part07.html#exceptions">Part VII</a>):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Empty:
+        def __getattr__(self, attrname):</strong></code>           <code><em># On self.undefined</em></code>
+            <code><strong>if attrname == 'age':
+                return 40
+            else:
+                raise AttributeError(attrname)
+</strong></code>
+&gt;&gt;&gt; <code><strong>X = Empty()
+</strong></code>&gt;&gt;&gt; <code><strong>X.age</strong>   </code>               <code><em># Becomes X.__getattr__('age')</em></code>
+40
+&gt;&gt;&gt; <code><strong>X.name</strong>  </code>               <code><em># Unsupported attribute</em></code>
+…<code><em>error text omitted</em></code>…
+AttributeError: name</pre>
+<p>Here, the <code>Empty</code> class and its instance <code>X</code> have no real attributes of their own, so the access to <code>X.age</code> gets routed to the <code>__getattr__</code> method; <code>self</code> is assigned the instance (<code>X</code>), and <code>attrname</code> is assigned the undefined attribute name string (<code>'age'</code>). The class makes <code>age</code> look like a real attribute by returning a real value as the result of the <code>X.age</code> qualification expression (<code>40</code>). In effect, <code>age</code> becomes a <em>dynamically computed</em> attribute—its value is formed by running code, not fetching an object.</p>
+<p>For attributes that the class doesn’t know how to handle, <code>__getattr__</code> raises the built-in <code>Attribute ​Er⁠ror</code> exception to tell Python that these are bona fide undefined names; asking for <code>X.name</code> triggers the error. You’ll see <code>__getattr__</code> again when we explore delegation and properties at work in the next two chapters; let’s move on to related tools here.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Attribute Assignment and Deletion"><div class="sect2" id="attribute_assignment_and_deletion">
+<h2>Attribute Assignment and Deletion</h2>
+<p>In the same department, the <code>__setattr__</code> intercepts <em>all</em> attribute assignments. If this method <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="attributes" data-tertiary="assignment" id="prvtbsm"></a><a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="attributes" data-tertiary="deleting" id="pvbdte"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="assignment" id="ttrssg"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="deleting" id="gbdgd"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="__setattr__ method" data-secondary-sortas="setattr method" id="atbtrm"></a><a contenteditable="false" data-type="indexterm" data-primary="__setattr__ method" data-primary-sortas="setattr method" id="setterdh"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__setattr__" data-secondary-sortas="setattr" id="mdettra"></a>is defined or inherited, <code>self.<em>attr</em> = <em>value</em></code> becomes <code>self.__setattr__('<em>attr</em>', <em>value</em>)</code>. Like <code>__getattr__</code>, this allows your class to catch attribute changes and validate or transform as desired.</p>
+<p>This method is a bit trickier to use, though, because assigning to any <code>self</code> attributes within <code>__setattr__</code> calls <code>__setattr__</code> again, potentially causing an infinite <em>recursion loop</em> (and a fairly quick stack overflow exception!). In fact, this applies to all <code>self</code> attribute assignments anywhere in the class—all are routed to <code>__setattr__</code>, even those in other methods, and those to names other than that which may have triggered <code>__setattr__</code> in the first place. So be warned: this catches <em>all</em> attribute assignments.</p>
+<p>If you wish to use this method, you can avoid loops by coding instance attribute assignments as assignments to attribute dictionary keys. That is, use <code>self.__dict__['name'] = x</code>, not <code>self.name = x</code>; because you’re not assigning to <code>__dict__</code> itself, this avoids the loop:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Accesscontrol:
+        def __setattr__(self, attr, value):
+            if attr == 'age':
+                self.__dict__[attr] = value + 10</strong></code>      <code><em># Not self.name=val or setattr</em></code>
+            <code><strong>else:
+                raise AttributeError(attr + ' not allowed')</strong></code>
+
+&gt;&gt;&gt; <code><strong>X = Accesscontrol()
+</strong></code>&gt;&gt;&gt; <code><strong>X.age = 40</strong></code>                <code><em># Becomes X.__setattr__('age', 40)</em></code>
+&gt;&gt;&gt; <code><strong>X.age</strong> </code>                    <code><em># Found in __dict__ as usual</em></code>
+50
+&gt;&gt;&gt; <code><strong>X.name = 'Pat'</strong>  </code>          <code><em># Unsupported attribute</em></code>
+…<code><em>text omitted</em></code>…
+AttributeError: name not allowed</pre>
+<p>If you change the <code>__dict__</code> assignment within this class to either of the following, it triggers the infinite recursion loop and exception—both dot notation and its <code>setattr</code> built-in function equivalent (the assignment analog of <code>getattr</code>) fail when <code>age</code> is assigned outside the class:</p>
+<pre data-type="programlisting">self.age = value + 10                            <code><em># Loops!</em></code>
+setattr(self, attr, value + 10)                  <code><em># Loops! (attr is 'age')</em></code></pre>
+<p>An assignment to any other <code>self</code> attribute within the class triggers a recursive <code>__setattr__</code> call too, though in this class ends less dramatically in the manual <code>AttributeError</code> exception:</p>
+<pre data-type="programlisting">self.other = 99                                  <code><em># Recurs + fails, but doesn't loop</em></code></pre>
+<p>It’s also possible to avoid recursive loops in a class that uses <code>__setattr__</code> by <em>rerouting</em> any attribute assignments to a higher superclass with a call, instead of assigning keys in <code>__dict__</code>:</p>
+<pre data-type="programlisting">object.__setattr__(self, attr, value + 10)       <code><em># OK: doesn't loop (preview)</em></code></pre>
+<p>This uses an explicit-class call to the implied <code>object</code> superclass above all topmost classes (and has a <code>super().__setattr__(…)</code> equivalent sans <code>self</code> per the sidebar <a data-type="xref" href="ch28.html#the_super_alternative">“The super Alternative”</a>). In fact, this alternative may be <em>required</em> in some classes per the upcoming note, though this is rare in practice.</p>
+<p>A third attribute-management method, <code>__delattr__</code>, is passed the attribute name string and invoked on all attribute deletions (i.e., <code>del object.attr</code>). Like <code>__setattr__</code>, it must avoid recursive loops by running attribute deletions within the class using <code>__dict__</code>, or rerouting them to a superclass.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Attribute outliers</em>: Preceding chapters mentioned that attributes coded with advanced class tools such as <em>slots</em> and <em>properties</em> are not physically stored in the instance’s <code>__dict__</code> namespace dictionary—and <em>slots</em> may even preclude a <code>__dict__</code> altogether. As noted, <code>dir</code> and <code>getattr</code> might be needed for listing and fetching attributes in classes using these tools, but assignment is similarly impacted: to support <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="attributes" data-tertiary="assignment" data-startref="prvtbsm" id="id4021"></a><a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="attributes" data-tertiary="deleting" data-startref="pvbdte" id="id4022"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="assignment" data-startref="ttrssg" id="id4023"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="deleting" data-startref="gbdgd" id="id4024"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="__setattr__ method" data-secondary-sortas="setattr method" data-startref="atbtrm" id="id4025"></a><a contenteditable="false" data-type="indexterm" data-primary="__setattr__ method" data-primary-sortas="setattr method" data-startref="setterdh" id="id4026"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__setattr__" data-secondary-sortas="setattr" data-startref="mdettra" id="id4027"></a>such “virtual” attributes, <code>__setattr__</code> may need to use the <code>object.__setattr__</code> scheme shown here, not <code>self.__dict__</code> indexing. You’ll learn much more about these attribute tools in upcoming chapters.</p>
+</div>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Other Attribute-Management Tools"><div class="sect2" id="other_attribute_management_tools">
+<h2>Other Attribute-Management Tools</h2>
+<p>The three attribute-access overloading methods we’ve met so far allow you to control or specialize access to attributes in your objects. They tend to play highly specialized roles, some of which we’ll explore later in this book. For another example of <code>__getattr__</code> at work, see <a data-type="xref" href="ch28.html#a_more_realistic_example">Chapter 28</a>’s <span class="keep-together"><em>person-composite.py</em></span> (<a data-type="xref" href="ch28.html#example_twoeight_oneonedot_person_compo">Example 28-11</a>).</p>
+<p>And for future reference, keep in mind that there are other ways to manage attribute access in Python:</p>
+<ul>
+<li><p>The <code>__getattribute__</code> method intercepts <em>all</em> attribute fetches, not just those that are undefined; like <code>__setattr__</code>, it must avoid loops for other attribute fetches in the class, usually with <code>object</code> rerouting.</p></li>
+<li><p>The <code>property</code> built-in function allows us to associate methods with fetch and set operations on a <em>specific</em> class attribute; it cannot catch accesses generically but can define what some do.</p></li>
+<li><p><em>Descriptors</em> provide a protocol for associating <code>__get__</code> and <code>__set__</code> methods of a class with accesses to a <em>specific</em> instance or class attribute; they are as focused as <code>property</code> and, in fact, are used to implement it.</p></li>
+<li><p><em>Slots</em> attributes are declared in classes but create implicit storage in each instance; if present, generic tools may need to list, fetch, and assign with schemes described in the preceding note.</p></li>
+</ul>
+<p>Because these are all advanced tools that are not of interest to every Python programmer, we’ll defer the details of other attribute-management techniques until <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>, and await their focused coverage in <a data-type="xref" href="ch38.html#managed_attributes">Chapter 38</a>.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Emulating Privacy for Instance Attributes: Part 1"><div class="sect2" id="emulating_privacy_for_instance_attribut">
+<h2>Emulating Privacy for Instance Attributes: Part 1</h2>
+<p>As another use case for attribute tools, the <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="attribute privacy" id="oocpvym"></a><a contenteditable="false" data-type="indexterm" data-primary="instances" data-secondary="attribute privacy" id="isctbvye"></a>code in <a data-type="xref" href="#example_threezero_onezerodot_privatezer">Example 30-10</a>—file <em>private0.py</em>—generalizes the previous example, to allow each subclass to have its own list of private names that cannot be <em>assigned</em> to its instances (and raises a built-in exception with <code>raise</code>, which you’ll have to take on faith until <a data-type="xref" href="part07.html#exceptions">Part VII</a>).</p>
+<div data-type="example" id="example_threezero_onezerodot_privatezer">
+<h5><span class="label">Example 30-10. </span>private0.py</h5>
+<pre data-type="programlisting">class Privacy:
+    def __setattr__(self, attr, value):             <code><em># On self.attr = value
+</em></code>        if attr in self.privates:
+            raise NameError(f'{attr!r} for {self}') 
+        else:
+            self.__dict__[attr] = value             <code><em># Avoid loops by using dict key</em></code>
+
+class Test1(Privacy):
+    privates = ['age']
+
+class Test2(Privacy):
+    privates = ['name', 'pay']
+    def __init__(self):
+        self.__dict__['name'] = 'Pat'               <code><em># To do better, see Chapter 39
+</em></code>
+if __name__ == '__main__':
+    x = Test1()
+    x.name = 'Sue'      <code><em># Works</em></code>
+    print(x.name)
+   #x.age = 40          <code><em># Fails</em></code>
+
+    y = Test2()
+    y.age = 30          <code><em># Works</em></code>
+    print(y.age)
+   #y.name = 'Bob'      <code><em># Fails</em></code></pre>
+</div>
+<p>This is a first-cut solution for an implementation of <em>attribute privacy</em> in Python—disallowing changes to attribute names outside a class. Although Python doesn’t support private declarations per se, techniques like this can emulate much of their purpose.</p>
+<p>This particular attempt, though, is a partial—and even clumsy—solution. To make it more effective, we must augment it to allow classes to set their private attributes more naturally, without having to go through <code>__dict__</code> each time, as the constructor must do here to avoid triggering <code>__setattr__</code> and an exception. A better and more complete approach might require a wrapper (“proxy”) class to check for private attribute accesses made outside the class only and a <code>__getattr__</code> to validate attribute fetches too.</p>
+<p>We’ll postpone a more complete solution to attribute privacy until <a data-type="xref" href="ch39.html#decorators">Chapter 39</a>, where we’ll use <em>class decorators</em> to intercept and validate attributes more generally. Even though privacy can be emulated this way, though, it almost never is in practice. Python programmers are able to write large OOP frameworks and applications without private declarations—an interesting finding about access controls in general that is beyond the scope of our purposes here.</p>
+<p>Still, catching attribute references and assignments is generally a useful technique; it supports <em>delegation</em>, a design technique that allows controller objects to wrap up embedded objects, add new behaviors, and route other operations back to the wrapped objects. Because they involve design topics, we’ll revisit delegation and wrapper <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="attribute privacy" data-startref="oocpvym" id="id4028"></a><a contenteditable="false" data-type="indexterm" data-primary="instances" data-secondary="attribute privacy" data-startref="isctbvye" id="id4029"></a>classes in the next chapter. Here, it’s time to move ahead in the operator overloading domain.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="String Representation: __repr__ and __str__"><div class="sect1" id="string_representation_repr_and_st">
+<h1>String Representation: __repr__ and __str__</h1>
+<p>Our next methods deal with display formats—a topic we’ve already explored in prior chapters but will <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="display formats" id="orvlpyf"></a><a contenteditable="false" data-type="indexterm" data-primary="string representation methods" id="sgrprm"></a><a contenteditable="false" data-type="indexterm" data-primary="string formatting" data-secondary="__str__ method" data-secondary-sortas="str method" id="sgfmmd"></a><a contenteditable="false" data-type="indexterm" data-primary="string formatting" data-secondary="__repr__ method" data-secondary-sortas="repr method" id="sgfrprm"></a>summarize and formalize here. To serve as a guinea pig, the following codes the <code>__init__</code> constructor and the <code>__add__</code> overload method, both of which we’ve already seen (<code>+</code> is an in-place operation here, just to show that it can be; this may be better coded as a named method per <a data-type="xref" href="ch27.html#class_coding_basics">Chapter 27</a>, or the in-place <code>__iadd__</code> covered ahead). As we’ve learned, the default display of instance objects for a class like this is neither generally useful nor aesthetically pretty:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class adder:
+        def __init__(self, value=0):
+            self.data = value</strong></code>                    <code><em># Initialize data</em></code>
+        <code><strong>def __add__(self, other):
+            self.data += other</strong></code>                   <code><em># Add other in place
+</em></code>
+&gt;&gt;&gt; <code><strong>x = adder()</strong></code>                                  <code><em># Default displays:</em></code>
+&gt;&gt;&gt; <code><strong>print(x)          </strong>  </code>                         <code><em># str or else repr</em></code>
+&lt;__main__.adder object at 0x106110c80&gt; 
+&gt;&gt;&gt; <code><strong>x                 </strong>  </code>                         <code><em># repr
+</em></code>&lt;__main__.adder object at 0x106110c80&gt;</pre>
+<p>But coding or inheriting string <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="string representation methods" id="id4030"></a><a contenteditable="false" data-type="indexterm" data-primary="__repr__ method" data-primary-sortas="repr method" id="id4031"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__repr__" data-secondary-sortas="repr" id="id4032"></a>representation methods allows us to customize the display—as in the following, which defines a <code>__repr__</code> method in a subclass that returns a string representation for its instances:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class addrepr(adder):</strong></code>                        <code><em># Inherit __init__, __add__</em></code>
+        <code><strong>def __repr__(self):</strong></code>                      <code><em># Add string representation</em></code>
+            <code><strong>return f'addrepr({self.data})'</strong>  </code>     <code><em># Convert to as-code string
+</em></code>
+&gt;&gt;&gt; <code><strong>x = addrepr(2)</strong></code>                              
+&gt;&gt;&gt; <code><strong>x + 1</strong></code>                           
+&gt;&gt;&gt; <code><strong>x</strong></code>                                    <code><em># Runs __repr__</em></code>
+addrepr(3)
+&gt;&gt;&gt; <code><strong>print(x)</strong></code>                             <code><em># Runs __repr__
+</em></code>addrepr(3)
+&gt;&gt;&gt; <code><strong>str(x), repr(x)</strong></code>                      <code><em># Runs __repr__ for both
+</em></code>('addrepr(3)', 'addrepr(3)')</pre>
+<p>If defined, <code>__repr__</code> (or its close relative, <code>__str__</code>) is called automatically when class instances are printed or converted to strings. These methods allow you to define a better display format for your objects than the default instance display. Here, <code>__repr__</code> uses basic string formatting to convert the managed <code>self.data</code> object to a more human-friendly string for display.</p>
+<section data-type="sect2" data-pdf-bookmark="Why Two Display Methods?"><div class="sect2" id="why_two_display_methodsquestion_mark">
+<h2>Why Two Display Methods?</h2>
+<p>So far, this section has largely been review. But while these methods are generally straightforward <a contenteditable="false" data-type="indexterm" data-primary="__str__ method" data-primary-sortas="str method" id="strmod"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__str__" data-secondary-sortas="str" id="mdtsrt"></a>to use, their roles and behavior have some subtle implications for both design and coding. In particular, Python provides its two display methods to support alternative displays for different audiences:</p>
+<ul>
+<li><p><code>__str__</code> is tried first for the <code>print</code> operation and the <code>str</code> built-in function (the internal equivalent of which <code>print</code> runs). It generally should return a <em>user-friendly</em> display.</p></li>
+<li><p><code>__repr__</code> is used in all other contexts: for interactive echoes, the <code>repr</code> function, and nested appearances, as well as by <code>print</code> and <code>str</code> if no <code>__str__</code> is present. It should generally return an <em>as-code</em> string that could be used to re-create the object or a <em>detailed</em> display for developers.</p></li>
+</ul>
+<p>That is, <code>__repr__</code> is used everywhere, except by <code>print</code> and <code>str</code> when a <code>__str__</code> is defined. This means you can code a <code>__repr__</code> to define a single display format used everywhere and may code a <code>__str__</code> to either support <code>print</code> and <code>str</code> exclusively or to provide an alternative display for them.</p>
+<p>General tools may also prefer <code>__str__</code> to leave other classes the option of adding an alternative <code>__repr__</code> display for use in other contexts, as long as <code>print</code> and <code>str</code> displays suffice for the tool. Conversely, a general tool that codes a <code>__repr__</code> still leaves clients the option of adding alternative displays with a <code>__str__</code> for <code>print</code> and <code>str</code>. In other words, if you code either, the other is available for an additional display. In cases where the choice isn’t clear, use <code>__str__</code> for higher-level displays and <code>__repr__</code> for lower-level displays and all-inclusive roles.</p>
+<p>Let’s write some code to illustrate these two methods’ distinctions in more concrete terms. The prior example in this section showed how <code>__repr__</code> is used as the fallback option in many contexts. However, while printing falls back on <code>__repr__</code> if no <code>__str__</code> is defined, the inverse is not true—other contexts, such as interactive echoes, use <code>__repr__</code> only and don’t try <code>__str__</code> at all:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class addstr(adder):
+        def __str__(self):</strong></code>                       <code><em># __str__ but no __repr__</em></code>
+            <code><strong>return f'[Value: {self.data}]'</strong>  </code>     <code><em># Convert to nice string</em></code>
+
+&gt;&gt;&gt; <code><strong>x = addstr(3)
+</strong></code>&gt;&gt;&gt; <code><strong>x + 1
+</strong></code>&gt;&gt;&gt; <code><strong>x</strong> </code>                                           <code><em># Default __repr__ (in object)</em></code>
+&lt;__main__.addstr object at 0x106111b20&gt; 
+&gt;&gt;&gt; <code><strong>print(x)</strong></code>                                     <code><em># Runs __str__ (in addstr)</em></code>
+[Value: 4]
+&gt;&gt;&gt; <code><strong>str(x), repr(x)</strong></code>
+('[Value: 4]', '&lt;__main__.addstr object at 0x106111b20&gt;')</pre>
+<p>Because of this, <code>__repr__</code> may be best if you want a <em>single</em> display for all contexts. By defining <em>both</em> methods, though, you can support different displays in different contexts—for example, a class’s end-user display with <code>__str__</code>, and a class’s developer display with <code>__repr__</code>. In effect, <code>__str__</code> simply overrides <code>__repr__</code> for more user-friendly display contexts:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class addboth(adder):
+        def __str__(self):
+            return f'[Value: {self.data}]'</strong>  </code>     <code><em># User-friendly string</em></code>
+        <code><strong>def __repr__(self):
+            return f'addboth({self.data})'</strong></code>       <code><em># As-code string</em></code>
+
+&gt;&gt;&gt; <code><strong>x = addboth(4)
+</strong></code>&gt;&gt;&gt; <code><strong>x + 1</strong></code>
+&gt;&gt;&gt; <code><strong>x</strong> </code>                                           <code><em># Runs __repr__</em></code>
+addboth(5)
+&gt;&gt;&gt; <code><strong>print(x)</strong></code>                                     <code><em># Runs __str__</em></code>
+[Value: 5]
+&gt;&gt;&gt; <code><strong>str(x), repr(x)</strong></code>
+('[Value: 5]', 'addboth(5)')</pre>
+<p><em>Bonus</em>: your classes’ <code>__str__</code> and <code>__repr__</code> are also run automatically by all three <em>string-formatting</em> tools of <a data-type="xref" href="ch07.html#string_fundamentals">Chapter 7</a>. This may not be a shocker, given these tools are defined to work like <code>str</code> and <code>repr</code> in this role, but display overloading is not just about REPL echoes and <code>print</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>f'{x!s} {x!r}',  '{!s} {!r}'.format(x, x),  '%s %r' % (x, x)</strong></code>
+('[Value: 5] addboth(5)', '[Value: 5] addboth(5)', '[Value: 5] addboth(5)')</pre>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Display Usage Notes"><div class="sect2" id="display_usage_notes">
+<h2>Display Usage Notes</h2>
+<p>Though generally simple to use, three points regarding these display methods are worth calling out here. First, keep in mind that <code>__str__</code> and <code>__repr__</code> must both return <em>strings</em>; other result types are not converted and raise errors, so be sure to run them through a to-string converter (e.g., <code>str</code> or <code>f'…'</code>) if needed.</p>
+<p>Second, depending on a container’s string-conversion logic, the user-friendly display of <code>__str__</code> might only apply when objects appear at the top level of a print operation; objects <em>nested</em> in larger objects might still print with their <code>__repr__</code> or its default. The following illustrates both of these points:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>class Printer:
+        def __init__(self, val):
+            self.val = val
+        def __str__(self):</strong></code>                  <code><em># Used for instance itself</em></code>
+            <code><strong>return str(self.val)</strong></code>            <code><em># Convert to a string result</em></code>
+
+&gt;&gt;&gt; <code><strong>objs = [Printer(2), Printer(3)]</strong></code>
+&gt;&gt;&gt; <code><strong>for x in objs: print(x)</strong></code>                 <code><em># __str__ run when instance printed</em></code>
+                                            <code><em># But not when instance is in a list!</em></code>
+2
+3
+&gt;&gt;&gt; <code><strong>print(objs)</strong></code>
+[&lt;__main__.Printer object at 0x106110c80&gt;, &lt;__main__.Printer object at 0x1060d2570&gt;]
+&gt;&gt;&gt; <code><strong>objs</strong></code>
+[&lt;__main__.Printer object at 0x106110c80&gt;, &lt;__main__.Printer object at 0x1060d2570&gt;]</pre>
+<p>To ensure that a custom display is run in all contexts regardless of the container, code <code>__repr__</code>, not <code>__str__</code>; the former is run in all cases if the latter doesn’t apply, including nested appearances:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Printer:
+        def __init__(self, val):
+            self.val = val
+        def __repr__(self):</strong></code>                 <code><em># __repr__ used by print if no __str__</em></code>
+            <code><strong>return str(self.val)</strong></code>            <code><em># __repr__ used if echoed or nested</em></code>
+
+&gt;&gt;&gt; <code><strong>objs = [Printer(2), Printer(3)]
+</strong></code>&gt;&gt;&gt; <code><strong>for x in objs: print(x)</strong></code>                 <code><em># No __str__: runs __repr__
+</em></code>
+2
+3
+&gt;&gt;&gt; <code><strong>print(objs)</strong></code>                             <code><em># Runs __repr__, not __str__</em></code>
+[2, 3]
+&gt;&gt;&gt; <code><strong>objs</strong></code>
+[2, 3]</pre>
+<p>Third, and perhaps most subtle, the display methods also have the potential to trigger infinite <em>recursion loops</em> in rare contexts—because some objects’ displays include displays of other objects, it’s not impossible that a display may trigger a display of an object being displayed, and thus loop. This is rare and obscure enough to skip here but watch for an example of this looping potential to appear for these methods in a note near the end of the next chapter about its <em>listinherited.py</em> class of <a data-type="xref" href="ch31.html#example_threeone_onetwodot_listinherite">Example 31-12</a>, where <code>__repr__</code> can loop.</p>
+<p>In practice, <code>__str__</code> and its more inclusive relative, <code>__repr__</code>, seem to be the second most commonly used operator-overloading methods in Python scripts, behind <code>__init__</code>. Anytime you can print an object and see a custom display, one of these <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="display formats" data-startref="orvlpyf" id="id4033"></a><a contenteditable="false" data-type="indexterm" data-primary="string representation methods" data-startref="sgrprm" id="id4034"></a><a contenteditable="false" data-type="indexterm" data-primary="__str__ method" data-primary-sortas="str method" data-startref="strmod" id="id4035"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__str__" data-secondary-sortas="str" data-startref="mdtsrt" id="id4036"></a><a contenteditable="false" data-type="indexterm" data-primary="string formatting" data-secondary="__str__ method" data-secondary-sortas="str method" data-startref="sgfmmd" id="id4037"></a><a contenteditable="false" data-type="indexterm" data-primary="string formatting" data-secondary="__repr__ method" data-secondary-sortas="repr method" data-startref="sgfrprm" id="id4038"></a>two tools is probably in use. For additional examples of these tools at work and the design trade-offs they imply, see <a data-type="xref" href="ch28.html#a_more_realistic_example">Chapter 28</a>’s case study and <a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a>’s class-lister mix-ins, as well as their role in <a data-type="xref" href="ch35.html#exception_objects">Chapter 35</a>’s exception classes, where <code>__str__</code> is required over <code>__repr__</code>.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Right-Side and In-Place Ops: __radd__ and __iadd__"><div class="sect1" id="right_side_and_in_place_ops_radd_an">
+<h1>Right-Side and In-Place Ops: __radd__ and __iadd__</h1>
+<p>Our next group of overloading methods extends the functionality of binary operator methods such as <code>__add__</code> and <code>__sub__</code> (called for <code>+</code> and <code>–</code>), which we’ve already seen. As mentioned earlier, part of the reason there are so many operator-overloading methods is that they come in multiple flavors—for every binary expression, we can implement a <em>left</em>, <em>right</em>, and <em>in-place</em> variant. Though defaults are also applied if you don’t code all three, your objects’ roles dictate how many variants you’ll need to code.</p>
+<section data-type="sect2" data-pdf-bookmark="Right-Side Addition"><div class="sect2" id="right_side_addition">
+<h2>Right-Side Addition</h2>
+<p>For instance, the <code>__add__</code> methods <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="__radd__ method" data-secondary-sortas="radd method" id="id4039"></a><a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="right-side addition" id="pvorghdd"></a><a contenteditable="false" data-type="indexterm" data-primary="__radd__ method" data-primary-sortas="radd method" id="id4040"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__radd__" data-secondary-sortas="radd" id="id4041"></a>coded so far technically do not support the use of instance objects on the <em>right</em> side of the <code>+</code> operator:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Adder:
+       def __init__(self, value=0):
+           self.data = value
+       def __add__(self, other):
+           return self.data + other
+</strong></code>
+&gt;&gt;&gt; <code><strong>x = Adder(5)
+</strong></code>&gt;&gt;&gt; <code><strong>x + 2</strong></code>
+7
+&gt;&gt;&gt; <code><strong>2 + x</strong></code>
+TypeError: unsupported operand type(s) for +: 'int' and 'Adder'</pre>
+<p>To implement more general expressions and hence support <em>commutative</em>-style operators, code the <code>__radd__</code> method as well. Python calls <code>__radd__</code> only when the object on the right side of the <code>+</code> is your class instance, but the object on the left is not an instance of your class. The <code>__add__</code> method for the object on the left is called instead in all other cases. As a demo, consider the class in <a data-type="xref" href="#example_threezero_oneonedot_commuterdot">Example 30-11</a> (which we’ll be adding to in a moment).</p>
+<div data-type="example" id="example_threezero_oneonedot_commuterdot">
+<h5><span class="label">Example 30-11. </span>commuter.py (start)</h5>
+<pre data-type="programlisting">class Commuter1:
+    def __init__(self, val):
+        self.val = val
+
+    def __add__(self, other):
+        print('add', self.val, other)
+        return self.val + other
+
+    def __radd__(self, other):
+        print('radd', self.val, other)
+        return other + self.val</pre>
+</div>
+<p>Because this defines both left- and right-side overloads for <code>+</code>, instances can appear on either side, or both:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from commuter import Commuter1
+</strong></code>&gt;&gt;&gt; <code><strong>x = Commuter1(88)
+</strong></code>&gt;&gt;&gt; <code><strong>y = Commuter1(99)
+</strong></code>
+&gt;&gt;&gt; <code><strong>x + 1</strong></code>                      <code><em># __add__: instance + noninstance</em></code>
+add 88 1
+89
+&gt;&gt;&gt; <code><strong>1 + y</strong></code>                      <code><em># __radd__: noninstance + instance</em></code>
+radd 99 1
+100
+&gt;&gt;&gt; <code><strong>x + y</strong></code>                      <code><em># __add__: instance + instance =&gt; triggers __radd__</em></code>
+add 88 &lt;commuter.Commuter1 object at 0x1011b63f0&gt;
+radd 99 88
+187</pre>
+<p>Notice how the order is reversed in <code>__radd__</code>: <code>self</code> is really on the right of the <code>+</code>, and <code>other</code> is on the left. Also note that <code>x</code> and <code>y</code> are instances of the same class here; when instances of different classes appear mixed in an expression, Python prefers the class of the one on the left. When we add the two instances of this class together, Python runs <code>__add__</code>, which in turn triggers <code>__radd__</code> by simplifying the left operand and re-adding.</p>
+<section data-type="sect3" data-pdf-bookmark="Reusing __add__ in __radd__"><div class="sect3" id="reusing_add_in_radd">
+<h3>Reusing __add__ in __radd__</h3>
+<p>For truly commutative operations that do <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="__radd__ method" data-secondary-sortas="radd method" data-tertiary="__add__ reuse" data-tertiary-sortas="add reuse" id="id4042"></a><a contenteditable="false" data-type="indexterm" data-primary="__radd__ method" data-primary-sortas="radd method" data-secondary="__add__ reuse" data-secondary-sortas="add reuse" id="id4043"></a>not require special-casing by position, it is also sometimes sufficient to reuse <code>__add__</code> for <code>__radd__</code>, either by calling <code>__add__</code> directly; by swapping order and re-adding to trigger <code>__add__</code> indirectly; or by simply assigning <code>__radd__</code> to be an alias for <code>__add__</code> at the top level of the <code>class</code> statement (i.e., in the class’s scope). The alternatives in <a data-type="xref" href="#example_threezero_onetwodot_commuterdot">Example 30-12</a> implement all three of these schemes and return the same results as the original—though the last saves an extra call or dispatch and hence may be quicker (in all, <code>__radd__</code> is run when <code>self</code> is on the right side of a <code>+</code>).</p>
+<div data-type="example" id="example_threezero_onetwodot_commuterdot">
+<h5><span class="label">Example 30-12. </span>commuter.py (continued)</h5>
+<pre data-type="programlisting">class Commuter2:
+    def __init__(self, val):
+        self.val = val
+
+    def __add__(self, other):
+        print('add', self.val, other)
+        return self.val + other
+
+    <code><strong>def __radd__(self, other):
+        return self.__add__(other)</strong></code>              <code><em># Call __add__ explicitly</em></code>
+
+class Commuter3:
+    def __init__(self, val):
+        self.val = val
+
+    def __add__(self, other):
+        print('add', self.val, other)
+        return self.val + other
+
+    <code><strong>def __radd__(self, other):
+        return self + other</strong></code>                     <code><em># Swap order and re-add</em></code>
+
+class Commuter4:
+    def __init__(self, val):
+        self.val = val
+
+    def __add__(self, other):
+        print('add', self.val, other)
+        return self.val + other
+
+    <code><strong>__radd__ = __add__</strong></code>                          <code><em># Alias: cut out the middleperson</em></code></pre>
+</div>
+<p>In all these, right-side instance appearances trigger the single, shared <code>__add__</code> method, passing the right operand to <code>self</code>, to be treated the same as a left-side appearance. Run these on your own for more insight; their names differ, but their usage and returned values are the same as the original <code>Commuter1</code> of <a data-type="xref" href="#example_threezero_oneonedot_commuterdot">Example 30-11</a>.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Propagating class type"><div class="sect3" id="propagating_class_type">
+<h3>Propagating class type</h3>
+<p>In more realistic classes where the class <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="class type propagation" id="pdfyppp"></a>type may need to be propagated in results, things can become trickier: type testing may be required to tell whether it’s safe to convert and thus avoid nesting. For instance, without the built-in <code>isinstance</code> test in <a data-type="xref" href="#example_threezero_onethreedot_commuterd">Example 30-13</a>, we could wind up with a <code>Commuter5</code> whose <code>val</code> is another <code>Commuter5</code> when two instances are added and <code>__add__</code> triggers <code>__radd__</code>.</p>
+<div data-type="example" id="example_threezero_onethreedot_commuterd">
+<h5><span class="label">Example 30-13. </span>commuter.py (continued)</h5>
+<pre data-type="programlisting">class Commuter5:                               <code> <em># Propagate class type in results</em></code>
+    def __init__(self, val):
+        self.val = val
+
+    def __add__(self, other):
+        if isinstance(other, Commuter5):        <code><em># Type test to avoid object nesting</em></code>
+            other = other.val
+        return Commuter5(self.val + other)      <code><em># Else + result is another Commuter</em></code>
+
+    def __radd__(self, other):
+        return Commuter5(other + self.val)
+
+    def __repr__(self):
+        return f'Commuter5({self.val})'</pre>
+</div>
+<p>When this version is run, <code>+</code> results retain the <code>Commuter5</code> type for future operations:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from commuter import Commuter5
+</strong></code>&gt;&gt;&gt; <code><strong>x = Commuter5(88)
+</strong></code>&gt;&gt;&gt; <code><strong>y = Commuter5(99)</strong></code>
+
+&gt;&gt;&gt; <code><strong>x</strong></code>
+Commuter5(88)
+&gt;&gt;&gt; <code><strong>x + 1</strong>  </code>                    <code><em># Result is another Commuter instance</em></code>
+Commuter5(89)
+&gt;&gt;&gt;<code> <strong>1 + y</strong></code>
+Commuter5(100) 
+
+&gt;&gt;&gt; <code><strong>z = x + y</strong> </code>                 <code><em># Not nested: doesn't recur to __radd__</em></code>
+&gt;&gt;&gt; <code><strong>z</strong></code>
+Commuter5(187)
+&gt;&gt;&gt; <code><strong>z + 10</strong></code>
+Commuter5(197)
+&gt;&gt;&gt; <code><strong>z + z</strong></code>
+Commuter5(374)
+&gt;&gt;&gt; <code><strong>z + z + 1</strong></code>
+Commuter5(375)</pre>
+<p>The need for the <code>isinstance</code> type test here is very subtle—uncomment, run, and trace to see why it’s required. If you do, you’ll see that the last part of the preceding test winds up differing and nesting objects—which still do the math correctly but kick off pointless recursive calls to simplify their values and extra constructor calls to build results:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>z = x + y</strong> </code>                 <code><em># With isinstance test+action commented-out</em></code>       
+&gt;&gt;&gt; <code><strong>z</strong></code>
+Commuter5(Commuter5(187))
+&gt;&gt;&gt; <code><strong>z + 10</strong></code>
+Commuter5(Commuter5(197))
+&gt;&gt;&gt; <code><strong>z + z</strong></code>
+Commuter5(Commuter5(Commuter5(Commuter5(374))))
+&gt;&gt;&gt; <code><strong>z + z + 1</strong></code>
+Commuter5(Commuter5(Commuter5(Commuter5(375))))</pre>
+<p>Another way out of this dilemma is to test and simplify in the <em>constructor</em> instead, per <a data-type="xref" href="#example_threezero_onefourdot_commuterdo">Example 30-14</a>.</p>
+<div data-type="example" id="example_threezero_onefourdot_commuterdo">
+<h5><span class="label">Example 30-14. </span>commuter.py (continued)</h5>
+<pre data-type="programlisting">class Commuter6:                                <code><em># Propagate class type in results</em></code>
+    def __init__(self, val):
+        if isinstance(val, Commuter6):          <code><em># Type test to avoid object nesting</em></code>
+            self.val = val.val
+        else:
+            self.val = val
+
+    def __add__(self, other):
+        return Commuter6(self.val + other)
+
+    def __radd__(self, other):
+        return Commuter6(other + self.val)
+
+    def __repr__(self):
+        return f'Commuter6({self.val})'</pre>
+</div>
+<p>This last version works the same as the non-nesting <code>Commuter5</code>. To test all of this section’s classes, the rest of <em>commuter.py</em> in <a data-type="xref" href="#example_threezero_onefivedot_commuterdo">Example 30-15</a> looks and runs like this—like functions, classes can again be used in tuples naturally because they are first-class objects.</p>
+<div data-type="example" id="example_threezero_onefivedot_commuterdo">
+<h5><span class="label">Example 30-15. </span>commuter.py (conclusion)</h5>
+<pre data-type="programlisting">if __name__ == '__main__':
+    for klass in (Commuter1, Commuter2, Commuter3, Commuter4, Commuter5, Commuter6):
+        print('-' * 50)
+        x = klass(88)
+        y = klass(99)
+        print(x + 1)
+        print(1 + y)
+        print(x + y)
+
+$ <code><strong>python3 commuter.py</strong></code>
+--------------------------------------------------
+add 88 1
+89
+radd 99 1
+100
+add 88 &lt;__main__.Commuter1 object at 0x101edc2f0&gt;
+radd 99 88
+187
+--------------------------------------------------
+…<code><em>etc</em></code>…
+--------------------------------------------------
+Commuter6(89)
+Commuter6(100)
+Commuter6(187)</pre>
+</div>
+<p>Experiment with these classes on your own for more insight. Aliasing <code>__radd__</code> to <code>__add__</code> in <span class="keep-together"><code>Commuter5</code></span> and <code>Commuter6</code>, for example, works and saves a line but doesn’t prevent object nesting without these classes’ <code>isinstance</code> tests. See also Python’s manuals for a discussion of other options in this domain; for example, classes may also return the special <code>NotImplemented</code> object for unsupported operands to influence method <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="class type propagation" data-startref="pdfyppp" id="id4044"></a><a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="right-side addition" data-startref="pvorghdd" id="id4045"></a>selection (this is treated as though the method were not defined—and differs from the prior chapter’s <code>NotImplementedError</code>).</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="In-Place Addition"><div class="sect2" id="in_place_addition">
+<h2>In-Place Addition</h2>
+<p>To also implement <code>+=</code> in-place augmented <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="__iadd__ method" data-secondary-sortas="iadd method" id="id4046"></a><a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="in-place addition" id="id4047"></a><a contenteditable="false" data-type="indexterm" data-primary="__iadd__ method" data-primary-sortas="iadd method" id="id4048"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__iadd__" data-secondary-sortas="iadd" id="id4049"></a>addition, code either an <code>__iadd__</code> or an <code>__add__</code>. The latter is used if the former is absent. In fact, the prior section’s <code>Commuter</code> classes already support <code>+=</code> for this reason—Python runs <code>__add__</code> and assigns the result manually. The <code>__iadd__</code> method, though, allows for more efficient in-place changes to be coded where applicable; its return value is assigned to the target on the left of the <code>+=</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Number:
+        def __init__(self, val):
+            self.val = val
+        def __iadd__(self, other):</strong></code>             <code><em># __iadd__ explicit: x += y</em></code>
+            <code><strong>self.val += other</strong></code>                  <code><em># Usually returns self</em></code>
+            <code><strong>return self</strong></code>                        <code><em># Else None is returned+assigned</em></code>
+
+&gt;&gt;&gt; <code><strong>x = Number(5)
+</strong></code>&gt;&gt;&gt; <code><strong>x += 1
+</strong></code>&gt;&gt;&gt; <code><strong>x += 1
+</strong></code>&gt;&gt;&gt; <code><strong>x.val</strong></code>
+7</pre>
+<p>For mutable objects, this method can often specialize for quicker in-place changes:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>y = Number([1])</strong></code>                            <code><em># In-place change faster than +</em></code>
+&gt;&gt;&gt; <code><strong>y += [2]
+</strong></code>&gt;&gt;&gt; <code><strong>y += [3]
+</strong></code>&gt;&gt;&gt; <code><strong>y.val</strong></code>
+[1, 2, 3]</pre>
+<p>The normal <code>__add__</code> method is run as a fallback, but may not be able to optimize in-place cases:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Number:
+        def __init__(self, val):
+            self.val = val
+        def __add__(self, other):</strong></code>              <code><em># __add__ fallback: x = (x + y)</em></code>
+            <code><strong>return Number(self.val + other)</strong></code>    <code><em># Propagates class type
+</em></code>
+&gt;&gt;&gt; <code><strong>x = Number(5)
+</strong></code>&gt;&gt;&gt; <code><strong>x += 1</strong></code>
+&gt;&gt;&gt; <code><strong>x += 1</strong></code>                                     <code><em># And += does concatenation here</em></code>
+&gt;&gt;&gt; <code><strong>x.val</strong></code>
+7</pre>
+<p>Though we’ve focused on <code>+</code> here, keep in mind that <em>every</em> binary operator has similar right-side and in-place overloading methods that work the same (e.g., <code>__mul__</code>, <code>__rmul__</code>, and <code>__imul__</code>). Still, these methods tend to be uncommon in practice; you only code right-side methods for either-side roles and in-place methods for code economy or speed—and only if you need to support such operators at all. For instance, a <code>Vector</code> class may use these tools, but a <code>Button</code> class probably would not. Button presses, though, may run the next section’s method.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Call Expressions: __call__"><div class="sect1" id="call_expressions_call">
+<h1>Call Expressions: __call__</h1>
+<p>On to our next overloading method: the <code>__call__</code> method is called when your instance is called. No, this isn’t <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="call expressions" id="opcxpo"></a><a contenteditable="false" data-type="indexterm" data-primary="call expressions, methods" data-secondary="operator overloading" id="cxmpvl"></a><a contenteditable="false" data-type="indexterm" data-primary="__call__ method" data-primary-sortas="call method" id="cllmthd"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__call__" data-secondary-sortas="call" id="mthcll"></a>a circular definition—if defined, Python runs a <code>__call__</code> method for function-call expressions applied to your instances, passing along whatever positional or keyword arguments were sent. This allows instances to conform to a function-based API:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Callee:
+        def __call__(self, *pargs, **kargs):</strong></code>       <code><em># Intercept instance calls</em></code>
+            <code><strong>print(f'Called: {pargs=} {kargs=}')</strong></code>    <code><em># Accept arbitrary arguments</em></code>
+
+&gt;&gt;&gt; <code><strong>C = Callee()
+</strong></code>&gt;&gt;&gt; <code><strong>C(1, 2, 3)</strong></code>                                    <code> <em># C is a "callable" object</em></code>
+Called: pargs=(1, 2, 3) kargs={}
+&gt;&gt;&gt; <code><strong>C(1, 2, 3, x=4, y=5)</strong></code>
+Called: pargs=(1, 2, 3) kargs={'x': 4, 'y': 5}</pre>
+<p>More formally, all the argument-passing modes we explored in <a data-type="xref" href="ch18.html#arguments">Chapter 18</a> are supported by the <code>__call__</code> method—whatever is passed to the instance is passed to this method, along with the usual implied instance argument <code>self</code>. For example, the method definitions:</p>
+<pre data-type="programlisting">class C:
+    def __call__(self, a, b, c=5, d=6): ...        <code><em># Normals and defaults</em></code>
+
+class C:
+    def __call__(self, *pargs, **kargs): ...       <code><em># Collect arbitrary arguments
+</em></code>
+class C:
+    def __call__(self, *pargs, d=6, **kargs): ...  <code><em># 3.X keyword-only argument</em></code></pre>
+<p>all match all the following instance calls after assigning <code>X</code> to <code>C()</code>:</p>
+<pre data-type="programlisting">X(1, 2)                                            <code><em># Omit defaults</em></code>
+X(1, 2, 3, 4)                                     <code> <em># Positionals</em></code>
+X(a=1, b=2, d=4)                                   <code><em># Keywords</em></code>
+X(*[1, 2], **dict(c=3, d=4))                       <code><em># Unpack arbitrary arguments</em></code>
+X(1, *(2,), c=3, **dict(d=4))                     <code> <em># Mixed modes</em></code></pre>
+<p>See <a data-type="xref" href="ch18.html#arguments">Chapter 18</a> for a refresher on function arguments. The net effect is that classes and instances with a <code>__call__</code> support the exact same argument syntax and semantics as normal functions and methods.</p>
+<p>Intercepting call expression like this allows class instances to emulate the look and feel of things like functions, but also retain state information for use during calls. The following, for example, defines callable objects with per-call info specified by explicit attribute assignments:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Prod:
+        def __init__(self, value):</strong></code>                <code> <em># Accept just one argument</em></code>
+            <code><strong>self.value = value
+        def __call__(self, other):
+            return self.value * other</strong></code>
+
+&gt;&gt;&gt; <code><strong>x = Prod(2)</strong></code>                                    <code><em># "Remembers" 2 in state</em></code>
+&gt;&gt;&gt; <code><strong>x(3)</strong></code>                                          <code> <em># 3 (passed) * 2 (state)</em></code>
+6
+&gt;&gt;&gt; <code><strong>x(4)</strong></code>
+8</pre>
+<p>In this example, the <code>__call__</code> may seem a bit gratuitous at first glance. A simple method can provide similar utility:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Prod:
+        def __init__(self, value):
+            self.value = value
+        def comp(self, other):
+            return self.value * other
+</strong></code>
+&gt;&gt;&gt; <code><strong>x = Prod(3)
+</strong></code>&gt;&gt;&gt; <code><strong>x.comp(3)</strong></code>
+9</pre>
+<p>However, <code>__call__</code> can become more beneficial when using APIs (i.e., libraries) that expect functions—it allows us to code objects that conform to an expected function-call interface but also retain state information and other class assets such as inheritance. In fact, it may be the third most commonly used operator-overloading method, behind the <code>__init__</code> constructor and the <code>__str__</code> and <code>__repr__</code> display-format alternatives (qualitatively speaking).</p>
+<section data-type="sect2" data-pdf-bookmark="Function Interfaces and Callback-Based Code"><div class="sect2" id="function_interfaces_and_callback_based">
+<h2>Function Interfaces and Callback-Based Code</h2>
+<p>As an example, Python’s <code>tkinter</code> GUI module lets you register functions as event handlers (a.k.a. <em>callbacks</em>)—when events occur, <code>tkinter</code> calls <a contenteditable="false" data-type="indexterm" data-primary="callbacks" id="cllbxs"></a><a contenteditable="false" data-type="indexterm" data-primary="function calls" data-secondary="interfaces" id="fclltrf"></a><a contenteditable="false" data-type="indexterm" data-primary="state" data-secondary="event handlers" id="id4050"></a>the registered objects. If you want an event handler to retain state between events, you can register a class <em>instance</em> that conforms to the expected interface with <code>__call__</code>. <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>’s <em>closure functions</em> can achieve similar effects but don’t provide as much support for multiple operations or customization.</p>
+<p>To demo the concept, here’s a hypothetical example of <code>__call__</code> applied to the GUI domain. The following class defines an object that supports a function-call interface but also has state information that remembers the color a button should change to when it is later pressed:</p>
+<pre data-type="programlisting">class Callback:
+    def __init__(self, color):               <code><em># Function + state information
+</em></code>        self.color = color
+    def __call__(self):                      <code><em># Support calls with no arguments</em></code>
+        print('turn', self.color)</pre>
+<p>In the context of a GUI, we can register instances of this class as event handlers for buttons, even though the GUI expects to be able to invoke event handlers as simple functions with no arguments:</p>
+<pre data-type="programlisting">cb1 = Callback('blue')                       <code><em># Remember blue</em></code>
+cb2 = Callback('green')                      <code><em># Remember green</em></code>
+
+B1 = Button(command=cb1)                     <code><em># Register handlers</em></code>
+B2 = Button(command=cb2)</pre>
+<p>When the button is later pressed, the instance object is called as a simple function with no arguments, exactly like in the following calls. Because it retains state as instance attributes, though, it remembers what to do—it becomes a <em>stateful function</em> object:</p>
+<pre data-type="programlisting">cb1()                                        <code><em># On event: prints 'turn blue'</em></code>
+cb2()                                        <code><em># On event: prints 'turn green'</em></code></pre>
+<p>In fact, some consider such classes to be the best way to retain state information in the Python language. With OOP, the state remembered is made explicit with attribute assignments. This is different than other state retention techniques (e.g., global variables, enclosing function scope references, and default mutable arguments), which rely on more limited or implicit behavior. Moreover, the added structure and customization in classes goes beyond state retention.</p>
+<p>On the other hand, tools such as <a contenteditable="false" data-type="indexterm" data-primary="closure functions" id="id4051"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="closure functions" id="id4052"></a>closure functions are useful in basic state retention roles too, and the <code>nonlocal</code> statement makes enclosing scopes a viable alternative in more programs. We’ll revisit such trade-offs when we start coding substantial decorators in <a data-type="xref" href="ch39.html#decorators">Chapter 39</a>, but here’s a quick <em>closure</em> <span class="keep-together">equivalent</span>:</p>
+<pre class="pagebreak-before" data-type="programlisting">def callback(color):                         <code><em># Enclosing scope versus attrs
+</em></code>    def oncall():
+        print('turn', color)
+    return oncall
+
+cb3 = callback('yellow')                     <code><em># Handler to be registered</em></code>
+cb3()                                        <code><em># On event: prints 'turn yellow'</em></code></pre>
+<p>Before we move on, there are <a contenteditable="false" data-type="indexterm" data-primary="callback functions" data-secondary="lambda functions" id="id4053"></a><a contenteditable="false" data-type="indexterm" data-primary="lambda functions" data-secondary="callbacks" id="id4054"></a>two other ways that Python programmers sometimes tie information to a callback function like this. One option is to use default arguments in <code>lambda</code> functions:</p>
+<pre data-type="programlisting">cb4 = (lambda color='red':                   <code><em># Defaults retain state too</em></code>
+           print('turn', color))<code> <em>            # lambda defers code till call</em></code>
+cb4()                                        <code><em># On event: prints 'turn red'</em></code></pre>
+<p>The other is to use <em>bound methods</em> of a class—covered in the next chapter but simple enough to <a contenteditable="false" data-type="indexterm" data-primary="bound methods" data-secondary="callback functions" id="id4055"></a><a contenteditable="false" data-type="indexterm" data-primary="callback functions" data-secondary="bound methods" id="id4056"></a>preview here. A bound-method object is created for instance methods referenced but not called and remembers both the instance and the referenced function. This object may therefore be called later as a simple function without an instance:</p>
+<pre data-type="programlisting">class Callback:
+    def __init__(self, color):              <code> <em># Class with state information</em></code>
+        self.color = color
+    def changeColor(self):                   <code><em># A normally named method</em></code>
+        print('turn', self.color)
+
+cb1 = Callback('blue')
+cb2 = Callback('yellow')
+
+B1 = Button(command=cb1.changeColor)         <code><em># Bound method: reference, not call</em></code>
+B2 = Button(command=cb2.changeColor)         <code><em># Remembers instance + function pair</em></code></pre>
+<p>In this case, when this button is later pressed it’s as if the GUI does the following, which invokes the instance’s <code>changeColor</code> method to process the <code>cb1</code> object’s state information instead of calling the instance itself:</p>
+<pre data-type="programlisting">cb1 = Callback('blue')
+cmd = cb1.changeColor                        <code><em># Registered event handler</em></code>
+cmd()                                       <code> <em># On event: prints 'turn blue'</em></code></pre>
+<p>Note that a <code>lambda</code> is not required here unless extra arguments must be passed, because a bound method reference by itself already <em>defers</em> a call until later. This technique doesn’t require overloading calls with <code>__call__</code>, but either scheme may be preferred for a given program. Again, watch for more about bound methods in the next chapter.</p>
+<p>You’ll also see another <code>__call__</code> example in <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>, where we will use it to implement a function decorator—a callable object often used to add a layer of logic on top of an embedded function. Because <code>__call__</code> allows us to attach state information to a callable object, it’s a natural implementation technique for a function that must <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="call expressions" data-startref="opcxpo" id="id4057"></a><a contenteditable="false" data-type="indexterm" data-primary="call expressions, methods" data-secondary="operator overloading" data-startref="cxmpvl" id="id4058"></a><a contenteditable="false" data-type="indexterm" data-primary="__call__ method" data-primary-sortas="call method" data-startref="cllmthd" id="id4059"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__call__" data-secondary-sortas="call" data-startref="mthcll" id="id4060"></a><a contenteditable="false" data-type="indexterm" data-primary="callbacks" data-startref="cllbxs" id="id4061"></a><a contenteditable="false" data-type="indexterm" data-primary="function calls" data-secondary="interfaces" data-startref="fclltrf" id="id4062"></a>remember to call another function when called itself. For more <code>__call__</code> examples, also watch for the more advanced decorators and metaclasses of Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch39.html#decorators">39</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch40.html#metaclasses_and_inheritance">40</a>.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Comparisons: __lt__, __gt__, and Others"><div class="sect1" id="comparisons_lt_comma_gt_comma_and">
+<h1>Comparisons: __lt__, __gt__, and Others</h1>
+<p>Our next batch of overloading methods supports <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="object comparisons" id="oooprs"></a><a contenteditable="false" data-type="indexterm" data-primary="comparison operators" id="id4063"></a><a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="comparison operators" id="id4064"></a><a contenteditable="false" data-type="indexterm" data-primary="__lt__ method" data-primary-sortas="lt method" id="ltmeth"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__lt__" data-secondary-sortas="lt" id="mhltlt"></a><a contenteditable="false" data-type="indexterm" data-primary="__gt__ method" data-primary-sortas="gt method" id="gtthdom"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__gt__" data-secondary-sortas="gt" id="medttg"></a>object comparisons. As suggested in <a data-type="xref" href="#common_operator_overloading-id00086">Table 30-1</a>, classes can define methods to catch all six comparison operators: <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>, <code>==</code>, and <code>!=</code>. These methods are generally straightforward to use, but keep the following qualifications in mind:</p>
+<ul>
+<li><p>Unlike the <code>__add__</code>/<code>__radd__</code> pairings discussed earlier, there are no <em>right-side</em> variants of comparison methods. Instead, reflective methods are used when only one operand supports comparison (e.g., <code>__lt__</code> and <code>__gt__</code> are each other’s reflection).</p></li>
+<li><p>There are no implicit <em>relationships</em> among the comparison operators. The truth of <code>==</code> does not imply that <code>!=</code> is false, for example, so both <code>__eq__</code> and <code>__ne__</code> should be defined to ensure that both operators behave correctly.</p></li>
+</ul>
+<p>We don’t have space for an in-depth exploration of comparison methods, but as a quick introduction, consider the following class and tests:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Vetter:</strong></code>
+<code> <strong>       data = 'hack'</strong></code>
+<code> <strong>       def __gt__(self, other):</strong></code>
+<code> <strong>           print(f'gt: {self=} {other=}')</strong></code>
+<code> <strong>           return self.data &gt; other</strong></code>
+<code> <strong>       def __lt__(self, other):</strong></code>
+<code> <strong>           print(f'lt: {self=} {other=}')</strong></code>
+<code> <strong>           return self.data &lt; other</strong></code>
+ 
+&gt;&gt;&gt; <code><strong>X = Vetter()</strong></code>
+&gt;&gt;&gt; <code><strong>X &gt; 'code', X &lt; 'code'</strong></code>
+gt: self=&lt;__main__.Vetter object at 0x10898f650&gt; other='code'
+lt: self=&lt;__main__.Vetter object at 0x10898f650&gt; other='code'
+(True, False)
+
+&gt;&gt;&gt; <code><strong>'code' &lt; X, 'code' &gt; X</strong></code>
+gt: self=&lt;__main__.Vetter object at 0x10898f650&gt; other='code'
+lt: self=&lt;__main__.Vetter object at 0x10898f650&gt; other='code'
+(True, False)
+
+&gt;&gt;&gt; <code><strong>X &lt; X</strong></code>
+lt: self=&lt;__main__.Vetter object at 0x10898f650&gt; other=&lt;__main__.Vetter …<code><em>etc</em></code>…&gt;
+gt: self=&lt;__main__.Vetter object at 0x10898f650&gt; other='hack'
+False</pre>
+<p>When run, the class’s methods intercept and implement comparison expressions as noted by their trace outputs. Importantly, <code>__lt__</code> is also used for <em>sorts</em>—both the list method and built-in function:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Order:</strong></code>
+<code> <strong>       def __init__(self, data):</strong></code>
+<code> <strong>           self.data = data</strong></code>
+<code> <strong>       def __lt__(self, other):</strong></code>
+<code> <strong>           return self.data &lt; other.data</strong></code>
+<code> <strong>       def __repr__(self):</strong></code>
+<code> <strong>           return f'Order({self.data})'</strong></code>
+ 
+&gt;&gt;&gt; <code><strong>sorted(Order(i) for i in [3, 1, 4, 2])</strong></code>
+[Order(1), Order(2), Order(3), Order(4)]</pre>
+<p>Consult Python’s manuals for more details in this category. As you’ll find there, the <code>__eq__</code> method run for value equality is coupled with the <code>__hash__</code> method run for as-key and set-object roles (in ways that should send most readers screaming into the night); and comparison methods can also return <span class="keep-together"><code>NotImplemented</code></span> for unsupported arguments (but again, not <code>NotImplementedError</code>, an exception <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="object comparisons" data-startref="oooprs" id="id4065"></a><a contenteditable="false" data-type="indexterm" data-primary="__lt__ method" data-primary-sortas="lt method" data-startref="ltmeth" id="id4066"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__lt__" data-secondary-sortas="lt" data-startref="mhltlt" id="id4067"></a><a contenteditable="false" data-type="indexterm" data-primary="__gt__ method" data-primary-sortas="gt method" data-startref="gtthdom" id="id4068"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__gt__" data-secondary-sortas="gt" data-startref="medttg" id="id4069"></a>with a similar name but very different roles).</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Boolean Tests: __bool__ and __len__"><div class="sect1" id="boolean_tests_bool_and_len">
+<h1>Boolean Tests: __bool__ and __len__</h1>
+<p>The next set of methods is truly useful (pun intended). As you’ve learned, every object is inherently true or <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="Boolean tests" id="id4070"></a><a contenteditable="false" data-type="indexterm" data-primary="Boolean values" id="id4071"></a><a contenteditable="false" data-type="indexterm" data-primary="__bool__ method" data-primary-sortas="bool method" id="id4072"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__bool__" data-secondary-sortas="bool" id="id4073"></a>false in Python. When you code classes, you can define what this means for your objects by coding methods that give the <code>True</code> or <code>False</code> values of instances on request.</p>
+<p>In Boolean contexts, Python first tries <code>__bool__</code> to obtain a direct Boolean value; if that method is missing, Python tries <code>__len__</code> to infer a truth value from the object’s length—a length of zero means empty, which is always false. The first of these generally uses object state or other information to produce a Boolean result:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Truth:
+       def __bool__(self): return True</strong></code>
+
+&gt;&gt;&gt; <code><strong>X = Truth()
+</strong></code>&gt;&gt;&gt; <code><strong>if X: print('yes!')</strong></code>
+
+yes!
+
+&gt;&gt;&gt; <code><strong>class Truth:
+       def __bool__(self): return False
+</strong></code>
+&gt;&gt;&gt; <code><strong>X = Truth()
+</strong></code>&gt;&gt;&gt; <code><strong>bool(X)</strong></code>
+False</pre>
+<p>If this method is missing, Python falls back on length because a nonempty object is considered true. That is, a nonzero length is taken to mean the object is true, and a zero length means it is false—just as for built-in objects:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Truth:
+       def __len__(self): return 0</strong>  </code>          <code><em># Empty means false too
+</em></code>
+&gt;&gt;&gt; <code><strong>X = Truth()
+</strong></code>&gt;&gt;&gt; <code><strong>if not X: print('no!')</strong></code>
+
+no!</pre>
+<p>If <em>both</em> methods are present Python prefers <code>__bool__</code> over <code>__len__</code>, because it is more specific:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Truth:
+       def __bool__(self): return True</strong>   </code>     <code><em># Preferred over length
+</em></code>       <code><strong>def __len__(self): return 0</strong></code>            <code><em># Object length: fallback</em></code>
+
+&gt;&gt;&gt; <code><strong>if Truth(): print('yes!')</strong></code>
+
+yes!</pre>
+<p>If <em>neither</em> truth method is defined, the object is vacuously considered true (though any existential implications of this are strictly out of scope here):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Truth:
+        pass
+</strong></code>
+&gt;&gt;&gt; <code><strong>X = Truth()
+</strong></code>&gt;&gt;&gt; <code><strong>bool(X)</strong></code>
+True</pre>
+<p>But now that we’ve managed to cross over into the realm of philosophy, let’s move on to look at one last overloading context: <em>object demise</em>.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Object Destruction: __del__"><div class="sect1" id="object_destruction_del">
+<h1>Object Destruction: __del__</h1>
+<p>It’s time to close out this chapter—and learn how to do the same for our class objects. You’ve seen <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="destructors" id="povodestr"></a><a contenteditable="false" data-type="indexterm" data-primary="destructors" id="dstrrsc"></a><a contenteditable="false" data-type="indexterm" data-primary="__del__ method" data-primary-sortas="del method" id="dlthdo"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__del__" data-secondary-sortas="del" id="thdled"></a>how the <code>__init__</code> <em>constructor</em> is called whenever an instance is generated (and noted how <code>__new__</code> is run first to make the object). Its counterpart, the <em>destructor</em> (less commonly known as <em>finalizer</em>) method <code>__del__</code>, is run automatically when an instance’s space is being reclaimed (i.e., at garbage-collection time):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Life:
+        def __init__(self, name):
+            print('Hello', name)
+            self.name = name
+        def live(self):
+            print(self.name + '...')
+        def __del__(self):
+            print('Goodbye', self.name)
+</strong></code>
+&gt;&gt;&gt; <code><strong>pat = Life('Pat')</strong></code>
+Hello Pat
+&gt;&gt;&gt; <code><strong>pat.live()</strong></code>
+Pat...
+&gt;&gt;&gt; <code><strong>pat = 'end'</strong></code>
+Goodbye Pat<strong></strong></pre>
+<p>Here, when <code>pat</code> is assigned a string at the end, we lose the last reference to the <code>Life</code> instance and so trigger its destructor method. This works, and it may be useful for implementing some cleanup activities, such as terminating a server connection. However, destructors are not as commonly used in Python as in some OOP languages, for a number of reasons that the next section describes.</p>
+<section data-type="sect2" data-pdf-bookmark="Destructor Usage Notes"><div class="sect2" id="destructor_usage_notes">
+<h2>Destructor Usage Notes</h2>
+<p>The destructor method works as documented, but it has some well-known caveats and a few outright dark corners that make it somewhat rare to see in Python code:</p>
+<dl>
+<dt>Need</dt><dd><p>For one thing, destructors may not be as useful in Python as they are in some other OOP languages. Because Python automatically reclaims all <em>memory space</em> held by an instance when the instance is reclaimed, destructors are not necessary for space management. In the current CPython implementation of Python, you also don’t need to close <em>file objects</em> held by the instance in destructors because they are automatically closed when reclaimed. As mentioned in <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a>, though, it’s still sometimes best to run file close methods anyhow because this autoclose behavior may vary in alternative Python implementations.</p></dd>
+<dt>Predictability</dt><dd><p>For another, you cannot always easily predict when an instance will be reclaimed. In some cases, there may be lingering references to your objects in system tables that prevent destructors from running when your program expects them to be triggered. Python also does not guarantee that destructor methods will be called for objects that still exist when the interpreter exits.</p></dd>
+<dt>Exceptions</dt><dd><p>In fact, <code>__del__</code> can be tricky to use for even more subtle reasons. Exceptions raised within it, for example, simply print a warning message to <code>sys.stderr</code> (the standard error stream) rather than triggering an exception event, because of the unpredictable context under which it is run by the garbage collector—it’s not always possible to know where such an exception should be delivered.</p></dd>
+<dt class="pagebreak-before">Cycles</dt><dd><p>In addition, cyclic (a.k.a. circular) references among objects may prevent garbage collection from happening when you expect it to. An optional cycle detector, enabled by default, can automatically collect such objects eventually (including objects with <code>__del__</code> methods, as of Python 3.4). Since this is relatively obscure, we’ll ignore further details here; see Python’s standard manuals’ coverage of both <code>__del__</code> and the <code>gc</code> garbage collector module for more information.</p></dd>
+</dl>
+<p>Because of these downsides, it’s often better to code termination activities in an explicitly called method (e.g., <code>shutdown</code>). As described in the next part of the book, the <code>try</code>/<code>finally</code> statement also supports termination actions, as does the <code>with</code> statement for objects that support <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="destructors" data-startref="povodestr" id="id4074"></a><a contenteditable="false" data-type="indexterm" data-primary="__del__ method" data-primary-sortas="del method" data-startref="dlthdo" id="id4075"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__del__" data-secondary-sortas="del" data-startref="thdled" id="id4076"></a>its context-manager model.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00041">
+<h1>Chapter Summary</h1>
+<p>That’s as many overloading examples as we have space for here. Most of the other operator-overloading methods work similarly to the ones we’ve explored, and all are just hooks for intercepting built-in type operations. Some overloading methods, for example, have unique argument lists or return values, but the general usage pattern is the same. You’ll see a few others in action later in the book:</p>
+<ul>
+<li><p><a data-type="xref" href="ch34.html#exception_coding_details">Chapter 34</a> uses <code>__enter__</code> and <code>__exit__</code> in <code>with</code> statement context managers.</p></li>
+<li><p><a data-type="xref" href="ch38.html#managed_attributes">Chapter 38</a> uses the <code>__get__</code> and <code>__set__</code> class descriptor fetch/set methods.</p></li>
+<li><p><a data-type="xref" href="ch40.html#metaclasses_and_inheritance">Chapter 40</a> uses the <code>__new__</code> object creation method in the context of metaclasses.</p></li>
+</ul>
+<p>In addition, some of the methods we’ve studied here, such as <code>__call__</code> and <code>__str__</code>, will be employed by later examples in this book. For complete coverage, though, it must defer to other documentation sources—see Python’s language manual or other reference resources for details on additional overloading methods.</p>
+<p>In the next chapter, we leave the realm of class mechanics behind to explore <em>design</em>—the ways that classes are commonly used and combined to optimize code reuse. After that, we’ll survey a gumbo of advanced class topics and move on to exceptions, the last core subject of this book. Before you read on, though, take a moment to work through the chapter quiz below to review the concepts we’ve covered here.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000181">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>What two operator-overloading methods can you use to support iteration in your classes?</p></li>
+<li><p>What two operator-overloading methods handle printing, and in what contexts?</p></li>
+<li><p>How can you intercept slice operations in a class?</p></li>
+<li><p>How can you catch in-place addition in a class?</p></li>
+<li><p>When should you provide operator overloading?</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" class="pagebreak-before" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000180">
+<h1 class="less_space">Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>Classes can support iteration by defining (or inheriting) <code>__getitem__</code> or <code>__iter__</code>. In all iteration tools, Python tries to use <code>__iter__</code> first, which returns an object that supports the iteration protocol with a <code>__next__</code> method: if no <code>__iter__</code> is found by inheritance search, Python falls back on the <code>__getitem__</code> indexing method, which is called repeatedly, with successively higher indexes. If used, the <code>yield</code> statement can create the <code>__next__</code> method automatically.</p></li>
+<li><p>The <code>__str__</code> and <code>__repr__</code> methods implement object print displays. The former is called by the <code>print</code> and <code>str</code> built-in functions; the latter is called by <code>print</code> and <code>str</code> if there is no <code>__str__</code>, and always by the <code>repr</code> built-in, interactive echoes, and nested appearances. That is, <code>__repr__</code> is used everywhere, except by <code>print</code> and <code>str</code> when a <code>__str__</code> is defined. A <code>__str__</code> is usually used for user-friendly displays; <code>__repr__</code> gives extra details or the object’s as-code form. String formatting runs these methods too.</p></li>
+<li><p>Slicing is caught by the <code>__getitem__</code> indexing method: it is called with a <code>slices</code> object instead of a simple integer index, and slice objects may be passed on or inspected as needed.</p></li>
+<li><p>In-place addition tries <code>__iadd__</code> first, and <code>__add__</code> with an assignment second. The same policy holds true for all binary operators. The <code>__radd__</code> method is also available for right-side addition.</p></li>
+<li><p>When a class naturally matches, or needs to emulate, a built-in type’s interfaces. For example, collections might imitate sequence or mapping interfaces, and callables might be coded for use with an API that expects a function. You generally shouldn’t implement expression operators if they don’t naturally map to your objects naturally and logically, though—use normally named methods instead.</p></li>
+</ol>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>

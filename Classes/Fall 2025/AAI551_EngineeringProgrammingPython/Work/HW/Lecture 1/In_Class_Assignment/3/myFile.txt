@@ -1,0 +1,2 @@
+I love Python 
+It is more user-friendly than other programming languages

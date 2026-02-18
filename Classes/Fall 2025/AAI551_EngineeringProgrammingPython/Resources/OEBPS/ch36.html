@@ -1,0 +1,537 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 36. Exception Odds and Ends"><div class="chapter" id="exception_odds_and_ends">
+<h1><span class="label">Chapter 36. </span>Exception Odds and Ends</h1>
+<p>This chapter rounds out this part of the book with the usual collection of stray topics, common-usage examples, and design concepts, followed by this part’s gotchas and exercises. Because this chapter also closes out the fundamentals portion of the book at large, it includes a brief overview of concepts and development tools to help as you make the transition from Python language beginner to Python application developer.</p>
+<section data-type="sect1" data-pdf-bookmark="Nesting Exception Handlers"><div class="sect1" id="nesting_exception_handlers">
+<h1>Nesting Exception Handlers</h1>
+<p>Most of our examples so far have used only a single <code>try</code> to catch exceptions, but what happens <a contenteditable="false" data-type="indexterm" data-primary="exception handlers" data-secondary="nesting" id="id4484"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="exception handlers" id="id4485"></a><a contenteditable="false" data-type="indexterm" data-primary="try statement" data-secondary="nesting" id="trystnst"></a>if one <code>try</code> is physically nested inside another? For that matter, what does it mean if a <code>try</code> calls a function that runs another <code>try</code>? Technically, <code>try</code> statements can nest in terms of both syntax and the runtime control flow through your code. This was mentioned earlier in brief but merits clarification here.</p>
+<p>Both of these cases can be understood if you realize that Python <em>stacks</em> <code>try</code> statements at runtime. When an exception is raised, Python returns to the most recently entered <code>try</code> statement with a matching <code>except</code> clause. Because each <code>try</code> statement leaves a marker on the top of a LIFO stack, Python can jump back to earlier <code>try</code>s by inspecting the stacked markers. This nesting of active handlers is what we mean when we talk about propagating exceptions up to “higher” handlers—such handlers are simply <code>try</code> statements entered <em>earlier</em> in the program’s execution flow.</p>
+<p><a data-type="xref" href="#nested_trysolidusexcept_combinations">Figure 36-1</a> illustrates what occurs when <code>try</code> statements with <code>except</code> clauses nest at runtime. The amount of code that goes into a <code>try</code> block can be substantial, and it may contain function calls that invoke other code watching for the same exceptions. When an exception is eventually raised, Python jumps back to the most recently entered <code>try</code> statement that names that exception, runs that statement’s <code>except</code> clause, and then resumes execution after that <code>try</code>.</p>
+<figure><div id="nested_trysolidusexcept_combinations" class="figure">
+<img src="assets/lpy6_3601.png" alt="" width="1285" height="345"/>
+<h6><span class="label">Figure 36-1. </span>Nested <code>try</code>/<code>except</code> combinations</h6>
+</div></figure>
+<p>Once the exception is caught, its life is over—control does not jump back to <em>all</em> matching <code>try</code>s that name the exception; only the first (i.e., most recent) one is given the opportunity to handle it. In <a data-type="xref" href="#nested_trysolidusexcept_combinations">Figure 36-1</a>, for instance, the <code>raise</code> statement in the function <code>func2</code> sends control back to the handler in <code>func1</code>, and then the program continues within <code>func1</code>.</p>
+<p>By contrast, when <code>try</code> statements that contain only <code>finally</code> clauses are nested, <em>each</em> <code>finally</code> block is run in turn when an exception occurs—Python continues propagating the exception up to other <code>try</code>s, and eventually perhaps to the top-level default handler (the standard error-message printer). As <a data-type="xref" href="#nested_trysolidusfinally_combinations">Figure 36-2</a> illustrates, the <code>finally</code> clauses do not kill the exception—they just specify code to be run on the way out of each <code>try</code> during the exception propagation process. If there are <a contenteditable="false" data-type="indexterm" data-primary="try statement" data-secondary="nesting" data-startref="trystnst" id="id4486"></a>many <code>try</code>/<code>finally</code> combos active when an exception occurs, they will <em>all</em> be run unless an <code>except</code> clause catches the exception somewhere along the way.</p>
+<figure><div id="nested_trysolidusfinally_combinations" class="figure">
+<img src="assets/lpy6_3602.png" alt="" width="1420" height="340"/>
+<h6><span class="label">Figure 36-2. </span>Nested <code>try</code>/<code>finally</code> combinations</h6>
+</div></figure>
+<p>In other words, where the program goes when an exception is raised depends entirely upon <em>where it has been</em>—it’s a function of the runtime flow of control through the script, not just its syntax. The propagation of an exception essentially proceeds backward through time to <code>try</code> statements that have been entered but not yet exited. This propagation stops as soon as control is unwound to a matching <code>except</code> clause, but not as it passes through <code>finally</code> clauses on the way.</p>
+<p>The prior chapter’s <code>except*</code> clauses don’t change this story—if they consume every exception in the raised group, the aggregate exception ends in the <code>try</code> as usual. As we saw, unmatched <code>except</code>s are reraised after the <code>except*</code> clauses have their chance and are propagated on to other <code>try</code> statements or the top-level handler, but this is not fundamentally different from exceptions unmatched by an <code>except</code>.</p>
+<section data-type="sect2" data-pdf-bookmark="Example: Control-Flow Nesting"><div class="sect2" id="example_control_flow_nesting">
+<h2>Example: Control-Flow Nesting</h2>
+<p>Let’s turn to examples to make this nesting <a contenteditable="false" data-type="indexterm" data-primary="exception handlers" data-secondary="nesting" data-tertiary="control-flow" id="xpnctrf"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="exception handlers" data-tertiary="control-flow" id="nsxcphcw"></a><a contenteditable="false" data-type="indexterm" data-primary="control-nesting, exception handlers" id="cnschd"></a>concept more concrete. The module file in <a data-type="xref" href="#example_threesix_onedot_nested_exc_norm">Example 36-1</a> defines three functions: <code>action1</code> wraps a call to <code>action2</code> in a <code>try</code> handler, <code>action2</code> does likewise for a call to <code>action3</code>, and <code>action3</code> is coded to trigger a built-in <code>TypeError</code> exception (you can’t add numbers and sequences).</p>
+<div data-type="example" id="example_threesix_onedot_nested_exc_norm">
+<h5><span class="label">Example 36-1. </span>nested_exc_normal.py</h5>
+<pre data-type="programlisting">def action3():
+    print(1 + [])              <code><em># Generate TypeError
+</em></code>
+def action2():
+    try:                       <code><em># Most recent matching try</em></code>
+        action3()
+    except TypeError:          
+        print('Inner try')     <code><em># Match kills the exception</em></code>
+        raise                  <code><em># Unless manually reraised</em></code>
+
+def action1():
+    try:
+        action2()
+    except TypeError:
+        print('Outer try')     <code><em># Run only if action2 reraises</em></code>
+
+if __name__ == '__main__': action1()</pre>
+</div>
+<p>Notice, though, that when <code>action3</code> triggers the exception, there will be <em>two</em> active <code>try</code> statements—the older one in <code>action1</code> and the newer one in <code>action2</code>. Python picks and runs just the most recent <code>try</code> with a matching <code>except</code>—which in this case is the <code>try</code> inside <code>action2</code>. In this demo, <code>action2</code> also manually reraises the <code>TypeError</code> with <code>raise</code> to trigger the <code>try</code> in <code>action1</code>, but the exception would otherwise die in <code>action2</code>:</p>
+<pre data-type="programlisting">$ <code><strong>python3 nested_exc_normal.py</strong></code>
+Inner try
+Outer try</pre>
+<p>The same happens for an <a contenteditable="false" data-type="indexterm" data-primary="exception groups" data-secondary="nesting" id="id4487"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="exception groups" id="id4488"></a>exception <em>group</em>, though the exception doesn’t die until the entire group has been matched. In <a data-type="xref" href="#example_threesix_twodot_nested_exc_grou">Example 36-2</a>, for instance, <code>action2</code> picks off <code>IndexError</code>, <code>action1</code> consumes <span class="keep-together"><code>TypeError</code></span>, and <code>SyntaxError</code> propagates to the top-level default handler (or an earlier matching <code>try</code>, if one had been run).</p>
+<div data-type="example" id="example_threesix_twodot_nested_exc_grou">
+<h5><span class="label">Example 36-2. </span>nested_exc_group.py</h5>
+<pre data-type="programlisting">def action3():
+    raise ExceptionGroup('Nest*', [IndexError(1), TypeError(2), SyntaxError(3)])
+
+def action2():
+    try:
+        action3()
+    except* IndexError:        <code><em># Consume matches, rest propagate</em></code>
+        print('Got IE')
+
+def action1():
+    try:
+        action2()
+    except* TypeError:         <code><em># Consume matches, rest propagate</em></code>
+        print('Got TE')
+
+if __name__ == '__main__': action1()</pre>
+</div>
+<p>When run, each function’s <code>try</code> consumes exceptions it matches, and the top-level handler prints an error message for the last remaining unmatched item in the group:</p>
+<pre data-type="programlisting">$ <code><strong>python3 nested_exc_group.py</strong></code> 
+Got IE
+Got TE
+  + Exception Group Traceback (most recent call last):
+  …<code><em>etc</em></code>…
+  | ExceptionGroup: Nest* (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | SyntaxError: 3
+    +------------------------------------</pre>
+<p>Whether groups or individual exceptions are raised, the place where an exception winds up jumping to depends on the control flow through the program at runtime. Because of this, to know where you will go, you need to know where you’ve been. In other words, routing <a contenteditable="false" data-type="indexterm" data-primary="exception handlers" data-secondary="nesting" data-tertiary="control-flow" data-startref="xpnctrf" id="id4489"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="exception handlers" data-tertiary="control-flow" data-startref="nsxcphcw" id="id4490"></a><a contenteditable="false" data-type="indexterm" data-primary="control-nesting, exception handlers" data-startref="cnschd" id="id4491"></a>for exceptions nested at runtime is more a function of control flow than of statement syntax. That said, we can also nest exception handlers syntactically—an equivalent case we turn to next.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Example: Syntactic Nesting"><div class="sect2" id="example_syntactic_nesting">
+<h2>Example: Syntactic Nesting</h2>
+<p>As discussed when we studied clause <a contenteditable="false" data-type="indexterm" data-primary="exception handlers" data-secondary="nesting" data-tertiary="syntactic nesting" id="xcpdnytt"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="exception handlers" data-tertiary="syntactic nesting" id="ntxchyn"></a><a contenteditable="false" data-type="indexterm" data-primary="syntactic nesting, exception handlers" id="ynsscph"></a>combinations of the <code>try</code> statement in <a data-type="xref" href="ch34.html#exception_coding_details">Chapter 34</a>, it is also possible to nest <code>try</code> statements syntactically by their position in your source code:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from nested_exc_normal import action3</strong></code>
+
+&gt;&gt;&gt; <code><strong>try:</strong></code>
+...     <code><strong>try:</strong></code>
+...         <code><strong>action3()</strong></code>
+...     <code><strong>except TypeError:</strong>  </code>      <code><em># Most-recent matching try</em></code>
+...         <code><strong>print('Inner try')</strong></code>
+...         <code><strong>raise</strong></code>
+... <code><strong>except TypeError:</strong></code>            <code><em># Here, only if nested handler reraises</em></code>
+...     <code><strong>print('Outer try')</strong></code>
+... 
+Inner try
+Outer try</pre>
+<p>Really, though, this code just sets up the same handler-nesting structure as, and behaves identically to, the <code>try</code> statements in <a data-type="xref" href="#example_threesix_onedot_nested_exc_norm">Example 36-1</a>. In fact, syntactic nesting works just like the cases sketched in Figures <a data-type="xref" data-xrefstyle="select:labelnumber" href="#nested_trysolidusexcept_combinations">36-1</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="#nested_trysolidusfinally_combinations">36-2</a>. The only difference is that the nested handlers are physically embedded in a <code>try</code> block, not coded elsewhere in functions that are called from the <code>try</code> block. For example, nested <code>finally</code> handlers all fire on an exception, whether they are nested syntactically or by means of the runtime flow through physically separated parts of your code:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>try:</strong></code>
+...     <code><strong>try:</strong></code>
+...         <code><strong>action3()</strong></code>
+...     <code><strong>finally:</strong></code>
+...         <code><strong>print('Inner try')</strong></code>
+... <code><strong>finally:</strong></code>
+...     <code><strong>print('Outer try')</strong></code>
+...
+Inner try
+Outer try
+Traceback (most recent call last):
+…<code><em>etc</em></code>…
+TypeError: unsupported operand type(s) for +: 'int' and 'list'</pre>
+<p>See <a data-type="xref" href="#nested_trysolidusfinally_combinations">Figure 36-2</a> for a graphic illustration of this code’s operation; the effect is the same, but the function logic has been <em>inlined</em> as nested statements here. As a more comprehensive example of syntactic nesting at work, consider the file listed in <a data-type="xref" href="#example_threesix_threedot_except_finall">Example 36-3</a>.</p>
+<div data-type="example" id="example_threesix_threedot_except_finall">
+<h5><span class="label">Example 36-3. </span>except-finally.py</h5>
+<pre data-type="programlisting">def raise1():  raise IndexError
+def noraise(): return
+def raise2():  raise SyntaxError
+
+for func in (raise1, noraise, raise2):
+    print(f'&lt;{func.__name__}&gt;')
+    try:
+        try:
+            func()
+        except IndexError:
+            print('caught IndexError')
+    finally:
+        print('finally run')
+    print('...')</pre>
+</div>
+<p>This code catches an exception if a matching one is raised and performs a <code>finally</code> termination-time action regardless of whether an exception occurs. This may take a few moments to digest, but the effect is the same as combining an <code>except</code> and a <code>finally</code> clause in a single <code>try</code> statement:</p>
+<pre data-type="programlisting">$ <code><strong>python3 except-finally.py</strong></code>
+&lt;raise1&gt;
+caught IndexError
+finally run
+...
+&lt;noraise&gt;
+finally run
+...
+&lt;raise2&gt;
+finally run
+Traceback (most recent call last):
+…<code><em>etc</em></code>…
+SyntaxError: None</pre>
+<p>As we saw in <a data-type="xref" href="ch34.html#exception_coding_details">Chapter 34</a>, <code>except</code> and <code>finally</code> clauses can be mixed in the same <code>try</code> statement. While this, along with multiple <code>except</code> clauses, makes the syntactic nesting shown in this section largely academic, the equivalent <a contenteditable="false" data-type="indexterm" data-primary="exception handlers" data-secondary="nesting" data-tertiary="syntactic nesting" data-startref="xcpdnytt" id="id4492"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="exception handlers" data-tertiary="syntactic nesting" data-startref="ntxchyn" id="id4493"></a><a contenteditable="false" data-type="indexterm" data-primary="syntactic nesting, exception handlers" data-startref="ynsscph" id="id4494"></a>runtime nesting is common in larger Python programs. Moreover, syntactic nesting can make the disjoint roles of <code>except</code> and <code>finally</code> explicit and might be useful for implementing alternative exception-handling behaviors.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Exception Idioms"><div class="sect1" id="exception_idioms">
+<h1>Exception Idioms</h1>
+<p>We’ve seen the mechanics behind exceptions. Now, let’s survey the ways they are typically used. Some of these are reviews of roles we’ve explored in earlier chapters, collected here as part of a referable set.</p>
+<section data-type="sect2" data-pdf-bookmark="Breaking Out of Multiple Nested Loops: “go to”"><div class="sect2" id="breaking_out_of_multiple_nested_loops_q">
+<h2>Breaking Out of Multiple Nested Loops: “go to”</h2>
+<p>As mentioned at the start of <a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="loops, multiple" id="nslplpl"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="nested, multiple" id="lpsnsplt"></a>this part of the book, exceptions can often be used to serve the same roles as other languages’ “go-to” statements to implement more arbitrary control transfers. Exceptions, however, provide a more structured option that localizes the jump to a specific block of nested code.</p>
+<p>In this role, <code>raise</code> is like “go to,” and <code>except</code> clauses and exception names <a contenteditable="false" data-type="indexterm" data-primary="raise statement" id="id4495"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="raise" id="id4496"></a><a contenteditable="false" data-type="indexterm" data-primary="exceptions" data-secondary="raise statement" id="id4497"></a>take the place of program labels. You can only jump out of code wrapped in a <code>try</code> this way, but that’s a crucial feature—truly arbitrary “go to” statements can make code extraordinarily difficult to understand and maintain (“spaghetti code” in developer lingo).</p>
+<p>For example, Python’s <code>break</code> statement exits just the single closest enclosing loop, but we can always use exceptions to break out of more than one loop level if needed, as in <a data-type="xref" href="#example_threesix_fourdot_breakerdotpy">Example 36-4</a>.</p>
+<div data-type="example" id="example_threesix_fourdot_breakerdotpy">
+<h5><span class="label">Example 36-4. </span>breaker.py</h5>
+<pre data-type="programlisting">class Exitloop(Exception): pass
+
+try:
+    while True:
+        while True:
+            for i in range(10):
+                 if i &gt; 3: raise Exitloop          <code><em># break exits just one level</em></code>
+                 print('loop3: %s' % i)            <code><em># raise can exit many</em></code> 
+            print('loop2')
+        print('loop1')
+except Exitloop:
+    print('continuing')                            <code><em># Or just pass, to move on</em></code>
+
+print(f'{i=}')                                     <code><em># Loop variable not undone</em></code></pre>
+</div>
+<p>When run, the <code>raise</code> in the <code>for</code> breaks out of three nested loops immediately:</p>
+<pre data-type="programlisting">$ <code><strong>python3 breaker.py</strong></code>
+loop3: 0
+loop3: 1
+loop3: 2
+loop3: 3
+continuing
+i=4</pre>
+<p>If you change the <code>raise</code> in this to <code>break</code>, you’ll get an infinite loop because you’ll break only out of the most deeply nested <code>for</code> loop, and wind up in the second-level <code>while</code> loop nesting. The code would then print “loop2” and start the <code>for</code> again. Make the mod to see for yourself—but get ready to type Ctrl+C to stop the code!</p>
+<p>Also, notice that variable <code>i</code> is still what it was in <code>for</code> after the <code>try</code> statement exits. As previously noted, variable assignments made in a <code>try</code> are not undone in general, though as we’ve seen, exception instance variables listed in <code>except</code> clause as headers are localized to that clause, and the local variables of any functions that are exited as a result of a <code>raise</code> are discarded. Technically, active functions’ local variables are popped off the call stack, and the objects they reference <a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="loops, multiple" data-startref="nslplpl" id="id4498"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="nested, multiple" data-startref="lpsnsplt" id="id4499"></a>may be garbage-collected as a result, but this is an automatic step.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Exceptions Aren’t Always Errors"><div class="sect2" id="exceptions_arenapostrophet_always_error">
+<h2>Exceptions Aren’t Always Errors</h2>
+<p>In Python, all errors are exceptions, but <a contenteditable="false" data-type="indexterm" data-primary="exceptions" data-secondary="as signals" data-secondary-sortas="signals" id="xcggsl"></a>not all exceptions are errors. For instance, we saw in <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a> that file object read methods return an empty string at the end of a file. In contrast, the built-in <code>input</code> function—which we first met in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a> and deployed in an interactive loop in <a data-type="xref" href="ch10.html#introducing_python_statements">Chapter 10</a>—reads a line of text from the standard input stream, <code>sys.stdin</code>, on each call and raises the built-in <code>EOFError</code> at end-of-file.</p>
+<p>Unlike file methods, this function does not return an empty string—an empty string from <code>input</code> means an empty line. Despite its name, though, the <code>EOFError</code> exception is just a <em>signal</em> in this context, not an error. Because of this behavior, unless the end-of-file should terminate a script, <code>input</code> often appears wrapped in a <code>try</code> handler and nested in a loop, as in the following code:</p>
+<pre data-type="programlisting">while True:
+    try:
+        line = input()           <code><em># Read line from stdin</em></code>
+    except EOFError:
+        break                    <code><em># Exit loop at end-of-file</em></code>
+    else:
+        …<code><em>process next line here</em></code>…</pre>
+<p>Several other built-in exceptions are similarly signals, not errors—for example, calling <code>sys.exit()</code> and pressing Ctrl+C on your keyboard raise <code>SystemExit</code> and <code>KeyboardInterrupt</code>, respectively.</p>
+<p>Python also has a set of built-in exceptions that represent <em>warnings</em> rather than errors; some of these are used to signal the use of deprecated (soon to be phased out) language features. See the standard-library manual’s description of built-in exceptions for more information, and consult the <code>warnings</code> module’s <a contenteditable="false" data-type="indexterm" data-primary="exceptions" data-secondary="as signals" data-secondary-sortas="signals" data-startref="xcggsl" id="id4500"></a>documentation for more on exceptions raised as warnings.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Functions Can Signal Conditions with raise"><div class="sect2" id="functions_can_signal_conditions_with_ra">
+<h2>Functions Can Signal Conditions with raise</h2>
+<p>User-defined exceptions <a contenteditable="false" data-type="indexterm" data-primary="exception handlers" data-secondary="try/except/else" id="xpxpels"></a><a contenteditable="false" data-type="indexterm" data-primary="user-defined exceptions, nonerror conditions" id="id4501"></a><a contenteditable="false" data-type="indexterm" data-primary="exceptions" data-secondary="user-defined" data-tertiary="nonerror conditions" id="id4502"></a>can also signal nonerror conditions. For instance, a search routine can be coded to raise an exception when a match is found instead of returning a status flag for the caller to interpret. In the following abstract code, the <code>try</code>/<code>except</code>/<code>else</code> exception handler does the work of an <code>if</code>/<code>else</code> return-value tester:</p>
+<pre data-type="programlisting">class Found(Exception): pass
+
+def searcher():
+    if …<code><em>success</em></code>…:
+        raise Found()            <code><em># Raise exceptions instead of returning flags</em></code>
+    else:
+        return
+
+try:
+    searcher()
+except Found:                    <code><em># Exception if item was found</em></code>
+    …<code><em>success</em></code>…
+else:                            <code><em># else returned: not found
+</em></code>    …<code><em>failure</em></code>…</pre>
+<p>More generally, such a coding structure may also be useful for any function that cannot return a <em>sentinel value</em> to designate success or failure. In a widely applicable function, for instance, if all objects are potentially valid return values, it’s impossible for any return value to signal a failure condition. Exceptions provide a way to signal results without a return value:</p>
+<pre data-type="programlisting">class Failure(Exception): pass
+
+def searcher():
+    if …<code><em>success</em></code>…:
+        return <code><em>founditem</em></code>
+    else:
+        raise Failure()
+
+try:
+    item = searcher()
+except Failure:
+    …<code><em>not found</em></code>…
+else:
+    …<code><em>use item here</em></code>…</pre>
+<p>Because Python is dynamically typed and polymorphic to the core, exceptions, rather than sentinel return <a contenteditable="false" data-type="indexterm" data-primary="exception handlers" data-secondary="try/except/else" data-startref="xpxpels" id="id4503"></a>values, are the generally preferred way to signal such conditions.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Closing Files and Server Connections"><div class="sect2" id="closing_files_and_server_connections">
+<h2>Closing Files and Server Connections</h2>
+<p>We encountered examples in this <a contenteditable="false" data-type="indexterm" data-primary="exceptions" data-secondary="file closing" id="id4504"></a><a contenteditable="false" data-type="indexterm" data-primary="exceptions" data-secondary="connection closure" id="id4505"></a>category in <a data-type="xref" href="ch34.html#exception_coding_details">Chapter 34</a>. As a review, exception processing tools are also commonly used to ensure that system resources are finalized, regardless of whether an error occurs during processing or not.</p>
+<p>For example, some servers require connections to be closed in order to terminate a session. Similarly, output files may require close calls to flush their buffers to disk for waiting consumers; input files may consume file descriptors if not closed; and CPython closes open files when garbage-collecting them, but this isn’t always predictable or reliable.</p>
+<p>As we saw in <a data-type="xref" href="ch34.html#exception_coding_details">Chapter 34</a>, the most general and explicit way to guarantee termination actions for a specific block of code is the <code>try</code>/<code>finally</code> combination:</p>
+<pre data-type="programlisting">myfile = open('somefile', 'w')
+try:
+    …<code><em>process myfile</em></code>…
+finally:
+    myfile.close()</pre>
+<p>As we also saw, some objects make this potentially easier by providing <em>context managers</em> that terminate or close resources for us automatically when run by the <code>with</code> statement:</p>
+<pre data-type="programlisting">with open('somefile', 'w') as myfile:
+    …<code><em>process myfile</em></code>…</pre>
+<p>If you want to know which option is better, flip back to <a data-type="xref" href="ch34.html#the_termination_handlers_shoot_out">“The Termination-Handlers Shoot-Out”</a>—and draw your own conclusions.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Debugging with Outer try Statements"><div class="sect2" id="debugging_with_outer_try_statements">
+<h2>Debugging with Outer try Statements</h2>
+<p>You can also make use of exception handlers <a contenteditable="false" data-type="indexterm" data-primary="exceptions" data-secondary="try statement" data-tertiary="debugging and" id="xpytbgg"></a><a contenteditable="false" data-type="indexterm" data-primary="debugging" data-secondary="try statement" id="dbgytt"></a><a contenteditable="false" data-type="indexterm" data-primary="try statement" data-secondary="debugging" id="rysbgg"></a>to replace Python’s default top-level exception-handling behavior. By wrapping an entire program (or a call to it) in an outer <code>try</code> in your top-level code, you can catch any exception that may occur while your program runs, thereby subverting the default program termination.</p>
+<p>In the following, the empty <code>except</code> clause catches any uncaught exception raised while the program runs. To get hold of the actual exception that occurred in this mode, fetch the <code>exc_info</code> function call result from the built-in <code>sys</code> module; it returns a tuple whose first two items contain the currently handled exception’s class and the instance object raised (more on <code>sys.exc_info</code> in a moment):</p>
+<pre data-type="programlisting">try:
+    …<code><em>run program</em></code>…
+except:                         <code><em># All uncaught exceptions come here
+</em></code>    import sys
+    print('uncaught!', sys.exc_info()[0], sys.exc_info()[1])</pre>
+<p>This structure is commonly used during development to keep programs active even after errors occur. It’s also used when testing other program code, as described in the next section: coded within a loop, this structure allows you to run additional tests without <a contenteditable="false" data-type="indexterm" data-primary="exceptions" data-secondary="try statement" data-tertiary="debugging and" data-startref="xpytbgg" id="id4506"></a><a contenteditable="false" data-type="indexterm" data-primary="debugging" data-secondary="try statement" data-startref="dbgytt" id="id4507"></a><a contenteditable="false" data-type="indexterm" data-primary="try statement" data-secondary="debugging" data-startref="rysbgg" id="id4508"></a>having to restart.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Running In-Process Tests"><div class="sect2" id="running_in_process_tests">
+<h2>Running In-Process Tests</h2>
+<p>Some of the coding patterns we’ve just seen <a contenteditable="false" data-type="indexterm" data-primary="exceptions" data-secondary="tests, in-process" id="id4509"></a><a contenteditable="false" data-type="indexterm" data-primary="testing" data-secondary="in-process tests, exceptions" id="id4510"></a>can be combined in a test-driver script that tests other code imported and run within the same process (i.e., program run). The following partial and abstract code sketches the general model:</p>
+<pre data-type="programlisting">import sys
+log = open('testlog', 'a')
+from testapi import moreTests, runNextTest, testName
+def testdriver():
+    while <code><em>moreTests</em></code>():
+        try:
+            <code><em>runNextTest</em></code>()
+        except:
+            print('FAILED', <code><em>testName</em></code>(), sys.exc_info()[:2], file=log)
+        else:
+            print('PASSED', <code><em>testName</em></code>(), file=log)
+testdriver()</pre>
+<p>The <code>testdriver</code> function <a contenteditable="false" data-type="indexterm" data-primary="testdriver function" id="id4511"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="testdriver" id="id4512"></a>here cycles through a series of test calls. Because an uncaught exception in any of them would normally kill this test driver, tests are wrapped in a <code>try</code> to continue the testing process if a test fails. The empty <code>except</code> catches any uncaught exception generated by a test case and uses <code>sys.exc_info</code> to log the exception to a file. The <code>else</code> clause is run when no exception occurs—the test success case.</p>
+<p>Such boilerplate code is typical of systems that test imported functions, modules, and classes. In practice, though, testing can be much more sophisticated. For instance, to test <em>external programs</em>, you could instead check status codes or outputs generated by program-launching tools such as <code>os.system</code> and <code>os.popen</code>, which were used earlier in this book and are covered in Python’s standard-library manual. Such tools do not generally raise exceptions for errors in the external programs—in fact, the test cases may run in parallel with the test driver.</p>
+<p>At the end of this chapter, we’ll also briefly explore more complete testing frameworks provided by Python, such as <code>doctest</code> and PyUnit, which provide tools for comparing expected outputs with actual results.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="More on sys.exc_info"><div class="sect2" id="more_on_sysdotexc_info">
+<h2>More on sys.exc_info</h2>
+<p>The <code>sys.exc_info</code> result used in the last two sections allows an exception handler to generically gain access <a contenteditable="false" data-type="indexterm" data-primary="exception handlers" data-secondary="sys.exc_info" id="pxchysc"></a><a contenteditable="false" data-type="indexterm" data-primary="sys.exc_info" id="sysxfoi"></a>to the exception being handled. This is especially useful when using the empty <code>except</code> clause to catch everything blindly because it allows you to determine what was raised:</p>
+<pre data-type="programlisting">try:
+    …
+except:
+    <code><em># sys.exc_info()[0:2] are the exception class and instance</em></code></pre>
+<p class="pagebreak-before">If no exception is being handled, this call returns a tuple containing three <code>None</code> values. Otherwise, the values returned are <code>(<em>type</em>, <em>value</em>, <em>traceback</em>)</code>, where:</p>
+<ul>
+<li><p><code><em>type</em></code> is the class of the exception being handled.</p></li>
+<li><p><code><em>value</em></code> is the class instance that was raised.</p></li>
+<li><p><code><em>traceback</em></code> is a traceback object that represents the call stack at the point where the exception originally occurred, and may be used by the <code>traceback</code> module to generate error messages.</p></li>
+</ul>
+<p>As we saw in <a data-type="xref" href="ch35.html#exception_objects">Chapter 35</a>, <code>sys.exc_info</code> can also sometimes be useful to determine the specific exception type when catching exception category superclasses. As we’ve also learned, though, because in this case you can also get the exception type by fetching the <code>__class__</code> attribute or <code>type</code> result of the instance obtained with the <code>as</code> clause, <code>sys.exc_info</code> is rarely useful outside the empty <code>except</code>:</p>
+<pre data-type="programlisting">try:
+    …
+except <code><em>General</em></code> as <code><em>instance</em></code>:
+    <code><em># instance.__class__ or type(instance) is the exception class</em></code>
+    <code><em># but instance.method() does the right thing for this instance</em></code></pre>
+<p>As we’ve seen, using <code>Exception</code> for the <code><em>General</em></code> exception name here would catch all nonexit exceptions; it’s similar to an empty <code>except</code> but less extreme and still gives access to the exception instance and its class. Even so, leveraging <em>polymorphism</em> by calling the instance’s <em>methods</em> is often a better approach than testing exception types.</p>
+<section data-type="sect3" data-pdf-bookmark="The sys.exception alternative—and diss"><div class="sect3" id="the_sysdotexception_alternativeem_dasha">
+<h3>The sys.exception alternative—and diss</h3>
+<p>As yet another option, a new call added in Python 3.11, <code>sys.exception</code>, returns <em>just</em> the exception instance raised—the same object assigned to the variable listed after <code>as</code> in <code>except</code> clauses, and equivalent to the second item in the <code>sys.exc_info</code> result (i.e., <code>sys.exc_info()[1]</code>). Hence, the following work the same in a <code>try</code>:</p>
+<pre data-type="programlisting">except …:
+    print('uncaught!', sys.exc_info()[0], sys.exc_info()[1])
+
+except …:
+    print('uncaught!', type(sys.exception()), sys.exception())</pre>
+<p>More generally, there are now <em>three</em> ways to obtain the same information about a caught exception in <code>try</code> (two of which in the following are nested in a tuple to match <code>exc_info</code> and display with <code>repr</code> instead of <code>str</code>):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class E(Exception): pass</strong></code>
+... 
+&gt;&gt;&gt; <code><strong>try:</strong></code>
+...     <code><strong>raise E('info')</strong></code>
+... <code><strong>except E as X:</strong></code>
+...     <code><strong>print((type(X), X))</strong></code>
+...     <code><strong>print(sys.exc_info()[:2])</strong></code>
+...     <code><strong>print((type(sys.exception()), sys.exception()))</strong></code>
+... 
+(&lt;class '__main__.E'&gt;, E('info'))
+(&lt;class '__main__.E'&gt;, E('info'))
+(&lt;class '__main__.E'&gt;, E('info'))</pre>
+<p>When using <code>sys.exception</code>, the exception class is available from the instance via <code>__class__</code> or <code>type</code> (as shown), and the traceback is normally present in the exception instance’s <code>__traceback__</code> object. Though largely trivial, the new call avoids an index or slice when only the instance is needed.</p>
+<p>Less pleasantly, with the addition of <code>sys.exception</code>, the <code>sys.exc_info</code> call has also been branded “old-style” in Python’s docs, but doing this for the sake of a redundant call added just over a year ago seems both opinionated and divisive—if not software ageism. Naturally, you’re welcome and encouraged to use either call in your code, but this book generally recommends tools that are <a contenteditable="false" data-type="indexterm" data-primary="exception handlers" data-secondary="sys.exc_info" data-startref="pxchysc" id="id4513"></a><a contenteditable="false" data-type="indexterm" data-primary="sys.exc_info" data-startref="sysxfoi" id="id4514"></a>traditional, common, and inclusive.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Displaying Errors and Tracebacks"><div class="sect2" id="displaying_errors_and_tracebacks">
+<h2>Displaying Errors and Tracebacks</h2>
+<p>Finally, the exception traceback object available in the prior section’s <code>sys.exc_info</code> data is <a contenteditable="false" data-type="indexterm" data-primary="exceptions" data-secondary="traceback object" id="id4515"></a><a contenteditable="false" data-type="indexterm" data-primary="traceback object" id="id4516"></a><a contenteditable="false" data-type="indexterm" data-primary="exceptions" data-secondary="error messages" id="id4517"></a><a contenteditable="false" data-type="indexterm" data-primary="error messages" id="id4518"></a>also used by the standard library’s <code>traceback</code> module to generate the standard error message and stack display manually. This module has a handful of interfaces that support wide customization, which we don’t have space to cover usefully here, but the basics are simple. Consider the (judgmentally named) file in <a data-type="xref" href="#example_threesix_fivedot_badlydotpy">Example 36-5</a>, <em>badly.py</em>.</p>
+<div data-type="example" id="example_threesix_fivedot_badlydotpy">
+<h5><span class="label">Example 36-5. </span>badly.py</h5>
+<pre data-type="programlisting">import traceback
+
+def inverse(x):
+    return 1 / x
+
+try:
+    inverse(0)
+except Exception:
+    traceback.print_exc(file=open('badly.txt', 'w'))
+print('Bye')</pre>
+</div>
+<p>This code uses the <code>print_exc</code> convenience function in the <code>traceback</code> module, which internally uses <code>sys.exc_info</code> data (technically, it was changed to use the <code>sys.exception</code> component as part of the prior section’s subjective purge). When run, the script prints the standard error message to a file—useful in programs that need to catch errors but still record them in full (again, <code>type</code> is the Windows equivalent of Unix <code>cat</code> here):</p>
+<pre data-type="programlisting">$ <code><strong>python3 badly.py</strong></code>
+Bye
+
+$ <code><strong>cat badly.txt</strong></code>
+Traceback (most recent call last):
+  File "/…/LP6E/Chapter36/badly.py", line 7, in &lt;module&gt;
+    inverse(0)
+  File "/…/LP6E/Chapter36/badly.py", line 4, in inverse
+    return 1 / x
+           ~~^~~
+ZeroDivisionError: division by zero</pre>
+<p>For much more on traceback objects, the <code>traceback</code> module that uses them, and related topics, consult your favorite Python reference resources.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Exception Design Tips and Gotchas"><div class="sect1" id="exception_design_tips_and_gotchas">
+<h1>Exception Design Tips and Gotchas</h1>
+<p>This chapter is lumping design tips and gotchas together because it turns out that the most common exception gotchas stem from design issues. By and large, exceptions are easy to use in Python. The real art behind them is in deciding how specific or general your <code>except</code> clauses should be and how much code to wrap up in <code>try</code> statements. Let’s address the latter of these choices first.</p>
+<section data-type="sect2" data-pdf-bookmark="What Should Be Wrapped"><div class="sect2" id="what_should_be_wrapped">
+<h2>What Should Be Wrapped</h2>
+<p>In principle, you could wrap <a contenteditable="false" data-type="indexterm" data-primary="exceptions" data-secondary="wrappers" id="pexppr"></a><a contenteditable="false" data-type="indexterm" data-primary="wrappers" id="id4519"></a>every statement in your script in its own <code>try</code>, but that would just be silly (the <code>try</code> statements would then need to be wrapped in <code>try</code> statements!). What to wrap is really a design issue that goes beyond the language itself, and it will become more apparent with use. But as a summary, here are a few rules of thumb:</p>
+<ul>
+<li><p>Operations that commonly fail should generally be wrapped in <code>try</code> statements. For example, operations that interface with system state (file opens, socket calls, and the like) are prime candidates for <code>try</code>.</p></li>
+<li><p>Unless they should fail—in a simple script, you may <em>want</em> failures to kill your program instead of being caught and ignored, especially if the failure is a showstopper. Failures in Python normally generate useful error messages instead of hard crashes, and this is the best outcome some programs could hope for.</p></li>
+<li><p>Cleanup actions that must be run regardless of exception outcomes should generally be run with a <code>try</code>/<code>finally</code> combination unless a context manager is available as a <code>with</code> option.</p></li>
+<li><p>Wrapping the <em>call</em> to a function in a single <code>try</code> statement often makes for less code than wrapping operations in the function itself. That way, all exceptions in the function percolate up to the single <code>try</code> around the call.</p></li>
+</ul>
+<p>The types of programs you write will probably influence the amount of exception handling you code as well. Servers, test runners, and GUIs, for instance, must generally catch and recover from exceptions. Simpler one-shot scripts, though, will often ignore exception handling completely because failure at any step requires shutdown.</p>
+<p>In all cases, keep in mind that failures in Python normally generate useful error messages instead of hard crashes. Even without <code>try</code>, this is often a better outcome than some programs could hope for.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Catching Too Much: Avoid Empty except and Exception"><div class="sect2" id="catching_too_much_avoid_empty_except_an">
+<h2>Catching Too Much: Avoid Empty except and Exception</h2>
+<p>As we’ve learned, Python lets <a contenteditable="false" data-type="indexterm" data-primary="exceptions" data-secondary="except clause" id="xcpxcl"></a>us pick and choose which exceptions to catch, but it’s important not to be too inclusive. For example, we’ve seen that an empty <code>except</code> clause catches every exception. That’s easy to code and sometimes desirable, but it may also wind up intercepting an error that’s expected by a <code>try</code> elsewhere:</p>
+<pre data-type="programlisting">def func():
+    try:
+        …                  <code><em># IndexError is raised in here</em></code>
+    except:
+        …                  <code><em># But everything comes here and dies!</em></code>
+
+try:
+    func()
+except IndexError:         <code><em># Exception should be processed here</em></code>
+    …</pre>
+<p>Perhaps worse, such code might also catch unrelated critical exceptions. Even things like memory errors, program typos, iteration stops, keyboard interrupts, and system exits raise exceptions in Python. Unless you’re writing a debugger or similar tool, such exceptions should not usually be intercepted in your code.</p>
+<p>For example, scripts normally exit when control falls off the end of the top-level file, but Python also provides a built-in <code>sys.exit(<em>statuscode</em>)</code> call to allow early terminations. This works by raising a built-in <code>SystemExit</code> exception to end the program so that <code>try</code>/<code>finally</code> handlers run on the way out and tools can intercept the event. Because of this, a <code>try</code> with an empty <code>except</code> might unknowingly prevent an exit, as in <a data-type="xref" href="#example_threesix_sixdot_exiterdotpy">Example 36-6</a>.</p>
+<div data-type="example" id="example_threesix_sixdot_exiterdotpy">
+<h5><span class="label">Example 36-6. </span>exiter.py</h5>
+<pre data-type="programlisting">import sys
+
+def bye():
+    sys.exit(62)           <code><em># Crucial error: abort now!</em></code>
+
+try:
+    bye()
+except:
+    print('Got it')        <code><em># Oops--we ignored the exit</em></code>
+
+print('Continuing...')</pre>
+</div>
+<p>When run, the script happily keeps going after a call to shut it down:</p>
+<pre data-type="programlisting">$ <code><strong>python3 exiter.py</strong></code>
+Got it
+Continuing...</pre>
+<p>You simply might not expect all the kinds of exceptions that could occur during an operation. Per the prior chapter, using the built-in <code>Exception</code> superclass can help because it is not a superclass of <code>SystemExit</code>:</p>
+<pre data-type="programlisting">try:
+    bye()
+except Exception:          <code><em># Won't catch exits, but _will_ catch many others</em></code>
+    …</pre>
+<p>In some cases, though, this scheme is no better than an empty <code>except</code> clause—because <code>Exception</code> is a superclass above all built-in exceptions except system-exit events, it still has the potential to catch exceptions meant for elsewhere in the program. Worse, using <em>either</em> the empty <code>except</code> or <code>Exception</code> will also catch programming errors, which should usually be allowed to pass. In fact, these two techniques can effectively <em>turn off</em> Python’s error-reporting machinery, making it difficult to notice mistakes in your code. Consider this code, for example:</p>
+<pre data-type="programlisting">mydictionary = {…}
+…
+try:
+    x = myditctionary[key]       <code><em># Oops: misspelled name</em></code>
+except:
+    x = None                     <code><em># Assume we got KeyError – only - here</em></code>
+…<code><em>continue here with x</em></code>…</pre>
+<p>The coder here assumes that the only sort of error that can happen when indexing a dictionary is a missing key error. But because the name <code>myditctionary</code> is misspelled, Python raises a <code>NameError</code> instead for the undefined name reference, which the handler will silently catch and ignore. Hence, the event handler will incorrectly fill in a <code>None</code> default for the dictionary access, masking the program error.</p>
+<p>Moreover, catching <code>Exception</code> here will not help—it would have the exact same effect as an empty <code>except</code>, silently filling in a default and hiding an error you will probably want to know about. If this happens in code that is far removed from the place where the fetched values are used, it might make for an interesting debugging task!</p>
+<p>As a rule of thumb, be as <em>specific</em> in your handlers as you can be—empty <code>except</code> clauses and <code>Exception</code> catchers are handy but potentially error-prone. In the last example, for instance, you would be better off listing <code>KeyError</code> in the <code>except</code> to avoid intercepting unrelated events. In simpler scripts, the potential for problems might not be significant enough to outweigh the convenience of a catchall, but in general, general handlers are generally trouble.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>More closers</em>: Python’s <code>atexit</code> standard-library module allows programs to handle program shutdowns without recovery from them, and its <code>sys.excepthook</code> can be used to customize what the top-level exception handler does. A related call, <code>os._exit</code>, ends a program like <code>sys.exit</code>, but via immediate termination—it skips cleanup actions, including any registered with <code>atexit</code>, and cannot be intercepted with <code>try</code>/<code>except</code> or <code>try</code>/<code>finally</code>. It is usually used only in spawned child processes, a topic beyond this book’s scope. See Python’s library <a contenteditable="false" data-type="indexterm" data-primary="exceptions" data-secondary="except clause" data-startref="xcpxcl" id="id4520"></a>manual for more details.</p>
+</div>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Catching Too Little: Use Class-Based Categories"><div class="sect2" id="catching_too_little_use_class_based_cat">
+<h2>Catching Too Little: Use Class-Based Categories</h2>
+<p>Being too specific in exception <a contenteditable="false" data-type="indexterm" data-primary="exceptions" data-secondary="class-based" id="id4521"></a><a contenteditable="false" data-type="indexterm" data-primary="class-based exceptions" id="id4522"></a>handlers can be just as perilous as being too general. When you list specific exceptions in a <code>try</code>, you catch only what you actually list. This isn’t necessarily a bad thing, but if a system evolves to raise other exceptions in the future, you may need to go back and add them to exception lists elsewhere in your code.</p>
+<p>We saw this phenomenon at work in the prior chapter. By way of review, because the following handler is written to treat only <code>MyExcept1</code> and <code>MyExcept2</code> as cases of interest, a future <code>MyExcept3</code> won’t apply:</p>
+<pre data-type="programlisting">try:
+    …
+except (MyExcept1, MyExcept2):    <code><em># Breaks if you add a MyExcept3 later</em></code>
+    …</pre>
+<p>Careful use of class-based exceptions can make this code maintenance trap go away completely. By catching a general superclass, new exceptions don’t imply <code>except</code>-clause changes:</p>
+<pre data-type="programlisting">try:
+    …
+except CommonCategoryName:        <code><em># OK if you add a MyExcept3 subclass later</em></code>
+    …</pre>
+<p>In other words, a little design goes a long way. The moral of the story is to be careful to be neither too general nor too specific in exception handlers and to pick the granularity of your <code>try</code> statement wrappings wisely. Especially in larger systems, exception policies should be a part of the overall design.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Core Language Wrap-Up"><div class="sect1" id="core_language_wrap_up">
+<h1>Core Language Wrap-Up</h1>
+<p><em>Congratulations!</em> This concludes your voyage through the fundamentals of the Python programming language. If you’ve gotten this far, you’ve become a fully operational Python programmer. There’s more optional reading in the advanced topics part ahead described in a moment. In terms of the essentials, though, the Python story—and this book’s main journey—is now complete.</p>
+<p>Along the way, you’ve seen just about everything there is to see in the language itself and in enough depth to apply to most of the code you are likely to encounter in the Python “wild.” You’ve studied built-in types, statements, and exceptions, as well as tools used to build up the larger program units of functions, modules, and classes.</p>
+<p>You’ve also explored important software design issues, the complete OOP paradigm, functional programming tools, program architecture concepts, alternative tool trade-offs, and more—compiling a skill set now qualified to be turned loose on the task of developing real applications.</p>
+<section data-type="sect2" data-pdf-bookmark="The Python Toolset"><div class="sect2" id="the_python_toolset">
+<h2>The Python Toolset</h2>
+<p>From this point forward, your future Python career will largely consist of becoming proficient with the toolset available for application-level Python programming. You’ll find this to be an ongoing task. The standard library, for example, contains hundreds of modules, and the public domain offers still more tools. It’s possible to spend decades seeking proficiency with all these tools—especially as new ones are constantly appearing to address new technologies.</p>
+<p>Speaking generally, Python provides a hierarchy of toolsets:</p>
+<dl>
+<dt>Built-in tools</dt>
+<dd>Built-in types like strings, lists, and <a contenteditable="false" data-type="indexterm" data-primary="toolsets" data-secondary="built-in tools" id="id4523"></a><a contenteditable="false" data-type="indexterm" data-primary="built-in tools" id="id4524"></a>dictionaries make it easy to write simple programs fast.</dd>
+<dt>Python-coded extensions</dt>
+<dd>For more demanding tasks, you can write <a contenteditable="false" data-type="indexterm" data-primary="toolsets" data-secondary="extensions" id="id4525"></a><a contenteditable="false" data-type="indexterm" data-primary="extensions" id="id4526"></a>your own functions, modules, and classes in Python itself.</dd>
+<dt>Other-language extensions</dt>
+<dd>Although we don’t cover this topic in this book, Python can also be extended with code written in an external language like C, C++, or Java.</dd>
+</dl>
+<p>Because Python layers its toolsets, you can decide how deeply your programs need to delve into this hierarchy for any given task—you can use built-ins for simple scripts, add Python-coded extensions for larger systems, and code other extensions for advanced work. We’ve only covered the first two of these categories in this book, and that’s plenty to get you started doing substantial programming in Python.</p>
+<p>Beyond this, there are tools, resources, and precedents for using Python in nearly any computer domain you can imagine. For pointers on where to go next, see <a data-type="xref" href="ch01.html#a_python_qampersanda_session">Chapter 1</a>’s overview of Python applications and users. You’ll likely find that with a powerful open source language like Python, common tasks are often much easier, and even enjoyable, than you might expect.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Development Tools for Larger Projects"><div class="sect2" id="development_tools_for_larger_projects">
+<h2>Development Tools for Larger Projects</h2>
+<p>Most of the examples in this book have been fairly small and self-contained. They were written that way on purpose to help you <a contenteditable="false" data-type="indexterm" data-primary="toolsets" data-secondary="development tools" id="id4527"></a><a contenteditable="false" data-type="indexterm" data-primary="development tools" id="id4528"></a>master the basics. But now that you know all about the core language, it’s time to start learning how to use Python’s built-in and third-party interfaces to do real work.</p>
+<p>In practice, Python programs can become substantially larger than the examples you’ve experimented with so far in this book. Even in Python, <em>thousands</em> of lines of code are not uncommon for nontrivial and useful programs once you add up all the individual modules in the system. Though Python’s basic program structuring tools, such as modules and classes, help much to manage this complexity, other tools can sometimes offer additional support.</p>
+<p>For developing larger systems, you’ll find such support available in both Python and the public domain. You’ve seen some of these in action, and others have been noted in passing. This category morphs constantly, so we can’t get too detailed here, but to help you with your next steps, here is a quick tour and summary of tools in this domain:</p>
+<dl>
+<dt>Documentation tools</dt>
+<dd>PyDoc’s <code>help</code> function and HTML interfaces <a contenteditable="false" data-type="indexterm" data-primary="toolsets" data-secondary="development tools" data-tertiary="documentation tools" id="id4529"></a><a contenteditable="false" data-type="indexterm" data-primary="development tools" data-secondary="documentation tools" id="id4530"></a><a contenteditable="false" data-type="indexterm" data-primary="documentation tools" id="id4531"></a>were introduced in <a data-type="xref" href="ch15.html#the_documentation_interlude">Chapter 15</a>. PyDoc provides a documentation system for your modules and objects, integrates with Python’s docstrings syntax, and is a standard part of the Python system. See Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch15.html#the_documentation_interlude">15</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch04.html#introducing_python_objects">4</a> for more documentation source hints.</dd>
+<dt>Error-checking tools</dt>
+<dd><p>Because Python is such a <a contenteditable="false" data-type="indexterm" data-primary="toolsets" data-secondary="development tools" data-tertiary="error-checking tools" id="id4532"></a><a contenteditable="false" data-type="indexterm" data-primary="development tools" data-secondary="error-checking tools" id="id4533"></a><a contenteditable="false" data-type="indexterm" data-primary="error-checking tools" id="id4534"></a>dynamic language, some programming errors are not reported until your program runs (even syntax errors are not caught until a file is run or imported). This isn’t a big drawback—as with most languages, it just means that you have to test your Python code before shipping it. With Python, you essentially trade a compile phase for an initial testing phase. Furthermore, Python’s dynamic nature, automatic error checking and reporting messages, and exception model make it easier and quicker to find and fix errors than it is in some other languages. Unlike C, for example, Python does not crash completely on errors.</p>
+<p>Still, tools can help here too. As representative examples, the <em>PyChecker</em>, <em>Pylint</em>, and <em>Pyflakes</em> third-party systems provide support for catching common errors before your script runs. They serve similar roles to the <em>lint</em> program in C development. Some Python developers run their code through such tools prior to testing or delivery to catch any lurking potential problems. In fact, it’s not a bad idea to try this when you’re first starting out—some of these tools’ warnings may help you learn to spot and avoid common Python mistakes.</p></dd>
+<dt>Testing tools</dt>
+<dd><p>In <a data-type="xref" href="ch25.html#module_odds_and_ends">Chapter 25</a>, we learned how to add self-test code to a Python file by using the <code>__name__ == '__main__'</code> trick at <a contenteditable="false" data-type="indexterm" data-primary="toolsets" data-secondary="development tools" data-tertiary="testing tools" id="id4535"></a><a contenteditable="false" data-type="indexterm" data-primary="development tools" data-secondary="testing tools" id="id4536"></a><a contenteditable="false" data-type="indexterm" data-primary="testing tools" id="id4537"></a>the bottom of the file—a simple unit-testing protocol. For more advanced testing purposes, Python comes with two testing tools. The first, <em>PyUnit</em> (called <code>unittest</code> in the standard-library manual), provides an object-oriented class framework for specifying and customizing test cases and expected results. It mimics the JUnit framework for Java and is a sophisticated class-based unit testing system.</p>
+<p>The <code>doctest</code> standard-library module provides a second and simpler approach to regression testing based upon Python’s docstrings feature. Roughly, to use <code>doctest</code>, you cut and paste a log of an interactive testing session into the docstrings of your source files. <code>doctest</code> then extracts your docstrings, parses out the test cases and results, and reruns the tests to verify the expected results. See the library manual for more on both testing tools.</p></dd>
+<dt>IDEs</dt>
+<dd>We discussed IDEs for Python briefly in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a>. IDEs such as <em>PyCharm</em> and Python’s own <em>IDLE</em> provide a <a contenteditable="false" data-type="indexterm" data-primary="toolsets" data-secondary="development tools" data-tertiary="IDEs" id="id4538"></a><a contenteditable="false" data-type="indexterm" data-primary="development tools" data-secondary="IDEs" id="id4539"></a><a contenteditable="false" data-type="indexterm" data-primary="IDEs (integrated development environments)" id="id4540"></a>graphical environment for editing, running, debugging, and browsing your Python programs. Some advanced IDEs listed in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a> may support additional development tasks, including source control integration, code refactoring, project management tools, and more. Though aimed at roles other than general software development, <em>Jupyter notebooks</em> may qualify as a kind of IDE too. See <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a>, the text editors page at <em>python.org</em>, and your favorite web search engine for more on available IDEs for Python.</dd>
+<dt>Profilers</dt>
+<dd><p>As we’ve seen, because Python <a contenteditable="false" data-type="indexterm" data-primary="toolsets" data-secondary="development tools" data-tertiary="profilers" id="id4541"></a><a contenteditable="false" data-type="indexterm" data-primary="development tools" data-secondary="profilers" id="id4542"></a><a contenteditable="false" data-type="indexterm" data-primary="profilers" id="id4543"></a>is both dynamic and fluid, intuitions about performance gleaned from experience with other languages usually don’t apply to Python code. To truly isolate performance bottlenecks in your code and compare coding alternatives’ speed, you need to add timing logic with clock tools in the <code>time</code> or <code>timeit</code> modules or run your code under the <code>profile</code> module. We saw examples of the timing modules at work when comparing the speed of iteration tools and Pythons in <a data-type="xref" href="ch21.html#the_benchmarking_interlude">Chapter 21</a>.</p>
+<p>Profiling is often your first optimization step—code for clarity, then profile to isolate bottlenecks, and then time alternative codings of the slow parts of your program. For the second of these steps, <code>profile</code> and its optimized <code>cProfile</code> relative are standard-library modules that implement source code profiling for Python. After running code you provide, they print a report that gives performance statistics too detailed for us to cover here. See Python’s library manual for more on profilers, as well as the <code>pstats</code> module used to analyze results.</p></dd>
+<dt>Debuggers</dt>
+<dd><p>We discussed debugging options both in this <a contenteditable="false" data-type="indexterm" data-primary="toolsets" data-secondary="development tools" data-tertiary="debuggers" id="id4544"></a><a contenteditable="false" data-type="indexterm" data-primary="development tools" data-secondary="debuggers" id="id4545"></a><a contenteditable="false" data-type="indexterm" data-primary="debugging" id="id4546"></a>part and in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a> (see the latter’s sidebar <a data-type="xref" href="ch03.html#debugging_python_code">“Debugging Python Code”</a>). As a review, most development IDEs for Python support GUI-based debugging, and the Python standard library also includes a source code debugger module called <code>pdb</code>. This module provides a command-line interface and works much like common C language debuggers (e.g., <em>dbx</em>, <em>gdb</em>), and is detailed in Python’s library manual.</p>
+<p>Because IDEs such as IDLE also include point-and-click debugging interfaces, <em>pdb</em> is more useful when a GUI isn’t available or when more control is desired. See <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a> for tips on using IDLE’s debugging GUI interfaces. As also noted in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a>, though, neither <em>pdb</em> nor IDEs seem to be used much in practice: most programmers simply either read Python’s error messages or insert <code>print</code> statements to add beacon displays and rerun—not the most high-tech of solutions, perhaps, but the practical tends to win the day in the Python world.</p></dd>
+<dt>Shipping options</dt>
+<dd>In <a data-type="xref" href="ch02.html#standalone_executables">“Standalone Executables”</a>, we surveyed common tools for packaging Python programs. A variety of systems <a contenteditable="false" data-type="indexterm" data-primary="toolsets" data-secondary="development tools" data-tertiary="shipping" id="id4547"></a><a contenteditable="false" data-type="indexterm" data-primary="development tools" data-secondary="shipping" id="id4548"></a><a contenteditable="false" data-type="indexterm" data-primary="shipping" id="id4549"></a>package program bytecode and the Python Virtual Machine into standalone executables, which don’t require that Python be installed on the host machine. In addition, we’ve learned that Python programs may be shipped in their source (<em>.py</em>) or bytecode (<em>.pyc</em>) forms, and <em>.zip</em> files may act like package folders. When your code is ready to go live as an open source tool, also see the web for resources on Python’s <em>pip</em> installer system.</dd>
+<dt>Optimization options</dt>
+<dd><p>When speed counts, there are <a contenteditable="false" data-type="indexterm" data-primary="toolsets" data-secondary="development tools" data-tertiary="optimization" id="id4550"></a><a contenteditable="false" data-type="indexterm" data-primary="development tools" data-secondary="optimization" id="id4551"></a><a contenteditable="false" data-type="indexterm" data-primary="optimization tools" id="id4552"></a>numerous ways to optimize your Python programs, as enumerated in <a data-type="xref" href="ch02.html#how_python_runs_programs">Chapter 2</a>. For instance, the <em>PyPy</em> system demoed in <a data-type="xref" href="ch21.html#the_benchmarking_interlude">Chapter 21</a> provides an automatic speed boost today, and others like <em>Shed Skin</em> and <em>Cython</em> offer different routes to faster programs. Although Python’s <code>-O</code> command-line flag noted in <a data-type="xref" href="ch34.html#exception_coding_details">Chapter 34</a> (and to be deployed in <a data-type="xref" href="ch39.html#decorators">Chapter 39</a>) optimizes bytecode, it yields a very modest performance boost, and is not commonly used except to remove debugging code and <code>assert</code>s.</p>
+<p>Though a last resort, you can also move parts of your program to a compiled language such as C to boost performance; see Python’s manuals for more on C extensions. In addition, Python’s speed tends to improve over time, so upgrading to later releases may boost speed too—once you verify that they are faster for your code, that is (though long since fixed, Python 3.X’s early releases were radically slower than 2.X in some roles).</p></dd>
+<dt>Installation management</dt>
+<dd>If you need to install and segregate multiple sets <a contenteditable="false" data-type="indexterm" data-primary="toolsets" data-secondary="development tools" data-tertiary="installation management" id="id4553"></a><a contenteditable="false" data-type="indexterm" data-primary="development tools" data-secondary="installation management" id="id4554"></a><a contenteditable="false" data-type="indexterm" data-primary="installation management" id="id4555"></a>of Python extensions on your machine, you may also wish to use <em>virtual environments</em>—noted briefly in <a data-type="xref" href="ch22.html#modules_the_big_picture">Chapter 22</a> and implemented by Python’s standard-library module <code>venv</code>. This module allows you to create multiple virtual environments, each of which has its own independent set of Python packages, is contained in a directory, and is activated and deactivated by console commands. When a virtual environment is activated, tools such as <code>pip</code> install Python packages into that environment, and search paths are tailored for that environment’s installs. See Python’s library manual for more info.</dd>
+<dt>Other hints for larger projects</dt>
+<dd>We’ve also studied a variety of core-language topics in this text that may grow more useful once you start coding larger projects. These include module packages (<a data-type="xref" href="ch24.html#module_packages">Chapter 24</a>), exceptions classes (<a data-type="xref" href="ch34.html#exception_coding_details">Chapter 34</a>), pseudoprivate class attributes (<a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a>), documentation strings (<a data-type="xref" href="ch15.html#the_documentation_interlude">Chapter 15</a>), module data hiding (<a data-type="xref" href="ch25.html#module_odds_and_ends">Chapter 25</a>), and all the design and usage guidelines we’ve explored along the way for objects, statements, functions, modules, classes, and exceptions. If you’ve read this far, you’re already well-equipped to level up.</dd>
+</dl>
+<p>To learn about these and many other larger-scale Python development tools, browse the PyPI website, <em>python.org</em>, and the web at large. Applying Python may be a larger topic than learning Python, but it is also one we’ll have to delegate to follow-up resources here.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00047">
+<h1>Chapter Summary</h1>
+<p>This chapter wrapped up the exceptions part of this book with a survey of design concepts, a look at common exception use cases, and a brief summary of commonly used development tools.</p>
+<p>This chapter also wrapped up the core material of this book. At this point, you’ve been exposed to the full subset of Python that most programmers use—and probably much more. In fact, by virtue of reaching these words, you should feel free to consider yourself an <em>official Python programmer</em>. Be sure to pick up a t-shirt or laptop sticker the next time you’re online (and don’t forget to add Python to your résumé the next time you dig it out).</p>
+<p>The next and final part of this book is a collection of chapters dealing with topics that are advanced but still in the core-language category. These chapters are all <em>optional reading</em>, or at least <em>deferrable reading</em>, because not every Python programmer must delve into their subjects, and others can postpone these chapters’ topics until they are needed. Indeed, many of you can stop here and begin exploring Python’s roles in your application domains. Frankly, application libraries tend to be more important in practice than advanced—and, to some, esoteric—language features.</p>
+<p>On the other hand, if you do need to care about things like Unicode or binary data (and you probably do!); have to deal with API-building tools such as descriptors, decorators, and metaclasses; or just want to dig a bit further in general, the next part of the book will help you get started. The larger examples in the final part will also give you a chance to see the concepts you’ve already learned being applied in more realistic ways.</p>
+<p>As this is the end of the core material of this book, though, you get a break on the chapter quiz—just one question this time. As always, be sure to work through this part’s closing exercises to cement what you’ve learned in the past few chapters; because the next part is optional reading, this is the final end-of-part exercises session. If you want to see some examples of how what you’ve learned comes together in real scripts drawn from common applications, be sure to check out the “solution” to this part’s exercise 4 in <a data-type="xref" href="app02.html#appendix_b_solutions_to_end_of_part_exe">Appendix B</a>.</p>
+<p>And if this is where you’ll be disembarking from this book’s voyage, be sure to also see <a data-type="xref" href="ch41.html#encore_print_your_own_completion_certif">“Encore: Print Your Own Completion Certificate!”</a> at the end of <a data-type="xref" href="ch41.html#all_good_things">Chapter 41</a>, the very last chapter in this book (for the sake of readers continuing on to the Advanced Topics part, this chapter won’t spill the beans here).</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000193">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>What’s up with the mouse on the cover of this book?</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000192">
+<h1>Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>OK, this was never mentioned and is hardly a fair question, but for the record: the mouse—really, a wood rat, <em>Neotoma muridae</em>—was chosen for this book’s first edition by its publishing company in the 1990s, based on the fact that this animal is common food for a python. The idea was that the wood rat must learn about the python to avoid being eaten by it. Clever, to be sure, but this also came with a subtler tie-in about <em>Neotoma</em> being pack rats attracted to shiny objects that compulsively collect whatever they come across, which seems an apt metaphor for Python’s history of language-feature accumulation.</p>
+<p>So enjoy the shiny objects, but don’t get eaten by the constricting reptiles along the way.</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Part VII Exercises"><div class="sect1" id="test_your_knowledge_part_vii_exercises">
+<h1>Test Your Knowledge: Part VII Exercises</h1>
+<p>As we’ve reached the end of this part of the book, it’s time for a few exception exercises to give you a chance to practice the basics. Exceptions really are simple tools; if you’re able to work through these exercises, you’ve probably mastered the exceptions domain. See <a data-type="xref" href="app02.html#part_viicomma_exceptions">“Part VII, Exceptions”</a> in <a data-type="xref" href="app02.html#appendix_b_solutions_to_end_of_part_exe">Appendix B</a> for the solutions.</p>
+<ol>
+<li><p><code>try</code><em>/</em><code>except</code>: Write a function called <code>oops</code> that explicitly raises an <code>IndexError</code> exception when called. Then, write another function that calls <code>oops</code> inside a <code>try</code>/<code>except</code> statement to catch the error. What happens if you change <code>oops</code> to raise a <code>KeyError</code> instead of an <code>IndexError</code>? Where do the names <code>KeyError</code> and <code>IndexError</code> come from? (Hint: recall that all unqualified names generally come from one of four scopes.)</p></li>
+<li><p><em>Exception objects and lists</em>: Change the <code>oops</code> function you just wrote to raise an exception you define yourself, called <code>MyError</code>. Identify your exception with a class of your own. Then, extend the <code>try</code> statement in the catcher function to catch this exception and its instance in addition to <code>IndexError</code>, and print the instance you catch.</p></li>
+<li><p><em>Error handling</em>: Write a function called <code>safe(func, *pargs, **kargs)</code> that runs any function with any number of positional and/or keyword arguments by using the <code>*</code> arbitrary arguments header and call syntax, catches any exception raised while the function runs, and prints the exception using the <code>exc_info</code> call in the <code>sys</code> module. Then use your <code>safe</code> function to run your <code>oops</code> function from exercise 1 or 2. Put <code>safe</code> in a module file called <em>exctools.py</em>, and pass it the <code>oops</code> function interactively. What kind of error messages do you get? Finally, expand <code>safe</code> to also print a Python stack trace when an error occurs by calling the built-in <code>print_exc</code> function in the standard-library <code>traceback</code> module; see earlier in this chapter, and consult the Python library reference manual for usage details. We could probably code <code>safe</code> as a <em>function decorator</em> per the Chapter <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch19.html#function_odds_and_ends">19</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch32.html#class_odds_and_ends">32</a> introductions, but we’ll have to move on to the next part of the book to learn fully how (see the solutions for a preview).</p></li>
+<li><p><em>Self-study examples</em>: At the end of <a data-type="xref" href="app02.html#appendix_b_solutions_to_end_of_part_exe">Appendix B</a> in <a data-type="xref" href="app02.html#part_viicomma_exceptions">“Part VII, Exceptions”</a>, this book lists a handful of example scripts developed as group exercises in live Python classes for you to study on your own in conjunction with Python’s standard manual set. These are not described, and they use tools in the Python standard library that you’ll have to research yourself. Still, for many readers, it helps to see how the concepts we’ve discussed in this book come together in real programs. If these pique your interest for more, you can find a wealth of larger and more realistic application-level Python program examples in follow-up books and on the web: pick your domain, and start exploring!</p></li>
+</ol>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>

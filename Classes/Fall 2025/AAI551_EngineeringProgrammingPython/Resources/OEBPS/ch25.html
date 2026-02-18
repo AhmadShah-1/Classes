@@ -1,0 +1,907 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 25. Module Odds and Ends"><div class="chapter" id="module_odds_and_ends">
+<h1><span class="label">Chapter 25. </span>Module Odds and Ends</h1>
+<p>This chapter concludes this part of the book with an assortment of module-related topics—data hiding, the <code>__future__</code> module, the <code>__name__</code> variable, name-string imports, the <code>__gettattr__</code> hook, transitive reloads, and more—along with the usual set of gotchas and exercises related to what we’ve covered in this part of the book. Along the way, we’ll build some useful tools that combine functions and modules. Like functions, modules are more effective when their interfaces are well-defined, so this chapter also briefly reviews module design concepts.</p>
+<p>Though some coverage here might qualify as advanced and optional, this is mostly a miscellany of additional module subjects. Because some of the topics discussed here are very widely used—especially the <code>__name__</code> dual-mode trick—be sure to browse here before moving on to classes in the next part of the book.</p>
+<section data-type="sect1" data-pdf-bookmark="Module Design Concepts"><div class="sect1" id="module_design_concepts">
+<h1>Module Design Concepts</h1>
+<p>First up, some perspective. Like functions, modules <a contenteditable="false" data-type="indexterm" data-primary="design" data-secondary="modules" id="id3600"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="designing" id="id3601"></a>present design trade-offs: you have to think about which functions go in which modules, module communication mechanisms, and so on. All of this will become clearer when you start writing bigger Python systems, but here are a few general ideas to keep in mind:</p>
+<ul>
+<li><p><strong>You’re always in a module in Python.</strong> There’s no way to write code that doesn’t live in some module. As mentioned briefly in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch17.html#scopes">17</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch21.html#the_benchmarking_interlude">21</a>, even code typed at the interactive prompt (a.k.a. REPL) really goes in a built-in module called <code>__main__</code>; the only unique things about the interactive prompt are that code runs and is discarded immediately, and expression results are printed automatically.</p></li>
+<li><p><strong>Minimize module coupling: global variables.</strong> Like functions, modules work best if they’re written to <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="coupling" id="id3602"></a><a contenteditable="false" data-type="indexterm" data-primary="coupling modules" id="id3603"></a>be mostly closed boxes. As a rule of thumb, they should be as independent of global variables used within other modules as possible, except for functions and classes imported from them. The only things a module should share with the outside world are the tools it uses, and the tools it defines.</p></li>
+<li><p><strong>Maximize module cohesion: unified purpose.</strong> Also like functions, you can minimize <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="cohesion" id="id3604"></a>a module’s couplings by maximizing its cohesion. If all the components of a module share a general purpose, they’re less likely to depend on external names.</p></li>
+<li><p><strong>Modules should rarely change other modules’ variables.</strong> We illustrated this with code in <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>, but it’s worth repeating here: it’s perfectly OK to use globals defined in another module (that’s how clients import services, after all), but <em>changing</em> globals in another module is often a symptom of a design problem. There are exceptions, of course, but you should try to communicate results through devices such as function arguments and return values, not cross-module changes. Otherwise, your globals’ values become dependent on the order of arbitrarily remote assignments in other files, and your modules become harder to understand and reuse.</p></li>
+</ul>
+<p>As a summary, <a data-type="xref" href="#module_execution_environment">Figure 25-1</a> sketches the environment in which modules operate. Modules contain variables, functions, and classes, and import other modules for the tools they define. Functions have local variables of their own, as do classes—objects that live within modules and which we’ll begin studying in the next chapter. As we saw in <a data-type="xref" href="part04.html#functions_and_generators">Part IV</a>, functions can nest, too, but all are ultimately contained by modules at the top.</p>
+<figure><div id="module_execution_environment" class="figure">
+<img src="assets/lpy6_2501.png" alt="" width="1198" height="776"/>
+<h6><span class="label">Figure 25-1. </span>Module execution environment</h6>
+</div></figure>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Data Hiding in Modules"><div class="sect1" id="data_hiding_in_modules">
+<h1>Data Hiding in Modules</h1>
+<p>Next, we turn to private matters. As we’ve seen, a Python module exports all the names assigned at the top level of its <a contenteditable="false" data-type="indexterm" data-primary="data hiding" id="id3605"></a>file. There is no syntax for declaring which names should and shouldn’t be visible outside the module. In fact, there’s no way to prevent a client from changing names inside a module if it <span class="keep-together">wants to</span>.</p>
+<p>In Python, data hiding in modules is a <em>convention</em>, not a syntactical constraint. If you want to break a module by trashing its names, you can, but most programmers don’t count this as a life goal. Some purists object to this liberal attitude toward data hiding, claiming that it means Python can’t implement encapsulation. However, encapsulation in Python is more about packaging than about restricting. We’ll expand on this idea in the next part in relation to classes, which also have no privacy syntax but can often emulate its effect in code.</p>
+<section data-type="sect2" data-pdf-bookmark="Minimizing from * Damage: _X and __all__"><div class="sect2" id="minimizing_from_asterisk_damage_x_and">
+<h2>Minimizing from * Damage: _X and __all__</h2>
+<p>That being said, as a limited special case, you can prefix names with a single underscore (e.g., <code>_<em>X</em></code>) to prevent them from being copied out when a client imports a <a contenteditable="false" data-type="indexterm" data-primary="data hiding" data-secondary="_X prefix" data-secondary-sortas="X prefix" id="dhdxxf"></a><a contenteditable="false" data-type="indexterm" data-primary="data hiding" data-secondary="__all__ variable" data-secondary-sortas="all variable" id="dhdavr"></a><a contenteditable="false" data-type="indexterm" data-primary="from * statement" data-secondary="_X prefix" data-secondary-sortas="X prefix" id="fmxfx"></a><a contenteditable="false" data-type="indexterm" data-primary="from * statement" data-secondary="__all__ variable" data-secondary-sortas="all variable" id="fmsavrb"></a><a contenteditable="false" data-type="indexterm" data-primary="_X prefix" data-primary-sortas="X prefix" id="xpfxxpf"></a><a contenteditable="false" data-type="indexterm" data-primary="__all__ variable" data-primary-sortas="all variable" id="allvrbel"></a><a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="__all__" data-secondary-sortas="all" id="vrblla"></a>module’s names with a <code>from *</code> statement. This really is intended only to minimize namespace pollution; because <code>from *</code> copies out all names, the importer may get more than it’s bargained for (including names that overwrite names in the importer). But underscores aren’t “private” declarations: you can still see and change such names with other import forms. <a data-type="xref" href="#example_twofive_onedot_undersdotpy">Example 25-1</a> demos the idea.</p>
+<div data-type="example" id="example_twofive_onedot_undersdotpy">
+<h5><span class="label">Example 25-1. </span>unders.py</h5>
+<pre data-type="programlisting">a, b, _c, _d = 1, 2, 3, 4              <code><em># Control from * exports, take 1</em></code></pre>
+</div>
+<p>When names both with and without underscores are assigned this way, <code>from *</code> can’t see the former, but <code>import</code> and normal <code>from</code> can:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>from unders import *</strong></code>               <code><em># Load non _X names only on from *</em></code>
+&gt;&gt;&gt; <code><strong>a, b</strong></code>
+(1, 2)
+&gt;&gt;&gt; <code><strong>_c</strong></code>
+NameError: name '_c' is not defined. Did you mean: '_'?
+
+&gt;&gt;&gt; <code><strong>from unders import _c</strong></code>              <code><em># But other importers get every name</em></code>
+&gt;&gt;&gt; <code><strong>_c</strong></code>
+3
+&gt;&gt;&gt; <code><strong>import unders</strong></code>
+&gt;&gt;&gt; <code><strong>unders._d</strong></code>
+4</pre>
+<p>Alternatively, you can achieve a hiding effect similar to the <code>_<em>X</em></code> naming convention by assigning a list of variable name strings to the variable <code>__all__</code> at the top level of the module. When this feature is used, the <code>from *</code> statement will copy out <em>only</em> those names listed in the <code>__all__</code> list, though other imports work as before.</p>
+<p>In effect, this is the converse of the <code>_<em>X</em></code> convention: <code>__all__</code> identifies names to be <em>copied</em>, while <code>_<em>X</em></code> identifies names <em>not</em> to be copied. Python looks for an <code>__all__</code> list in the module first, and copies its names irrespective of any underscores; if <code>__all__</code> is not found, <code>from *</code> copies all names without a single leading underscore. To demo, <a data-type="xref" href="#example_twofive_twodot_allsdotpy">Example 25-2</a> uses both name-hiding tools.</p>
+<div data-type="example" id="example_twofive_twodot_allsdotpy">
+<h5><span class="label">Example 25-2. </span>alls.py</h5>
+<pre data-type="programlisting">__all__ = ['a', '_c']                  <code><em># Control from * exports, take 2</em></code>
+a, b, _c, _d = 1, 2, 3, 4              <code><em># __all__ has precedence over _X</em></code></pre>
+</div>
+<p class="pagebreak-before">On imports, <code>from *</code> gets everything in <code>__all__</code>, but no others; other importers again get everything:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>from alls import *</strong></code>                 <code><em># Load __all__ names - only</em></code>
+&gt;&gt;&gt; <code><strong>a, _c   </strong>  </code>                         <code><em># Even if they have underscores</em></code>
+(1, 3)
+&gt;&gt;&gt; <code><strong>b</strong></code>
+NameError: name 'b' is not defined
+
+&gt;&gt;&gt; <code><strong>from alls import a, b, _c, _d</strong></code>      <code><em># But other importers get every name</em></code>
+&gt;&gt;&gt; <code><strong>a, b, _c, _d</strong></code>
+(1, 2, 3, 4)
+
+&gt;&gt;&gt; <code><strong>import alls
+</strong></code>&gt;&gt;&gt; <code><strong>alls.a, alls.b, alls._c, alls._d</strong></code>
+(1, 2, 3, 4)</pre>
+<p>Like the <code>_<em>X</em></code> convention, the <code>__all__</code> list has meaning only to the <code>from *</code> statement form and does not amount to a privacy declaration: other import statements can still access all names, as the last two tests show. Still, module writers can use either technique to implement modules that are well-behaved when used with <code>from *</code>.</p>
+<p>See also the discussion of <code>__all__</code> lists in package <em>__init__.py</em> files in <a data-type="xref" href="ch24.html#module_packages">Chapter 24</a>. In this context, these lists declare nested submodules to be automatically loaded for a <code>from *</code> run on their container. The effect is similar to name hiding in module <a contenteditable="false" data-type="indexterm" data-primary="data hiding" data-secondary="_X prefix" data-secondary-sortas="X prefix" data-startref="dhdxxf" id="id3606"></a><a contenteditable="false" data-type="indexterm" data-primary="data hiding" data-secondary="__all__ variable" data-secondary-sortas="all variable" data-startref="dhdavr" id="id3607"></a><a contenteditable="false" data-type="indexterm" data-primary="from * statement" data-secondary="_X prefix" data-secondary-sortas="X prefix" data-startref="fmxfx" id="id3608"></a><a contenteditable="false" data-type="indexterm" data-primary="from * statement" data-secondary="__all__ variable" data-secondary-sortas="all variable" data-startref="fmsavrb" id="id3609"></a><a contenteditable="false" data-type="indexterm" data-primary="_X prefix" data-primary-sortas="X prefix" data-startref="xpfxxpf" id="id3610"></a><a contenteditable="false" data-type="indexterm" data-primary="__all__ variable" data-primary-sortas="all variable" data-startref="allvrbel" id="id3611"></a><a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="__all__" data-secondary-sortas="all" data-startref="vrblla" id="id3612"></a>files, though packages extend it to apply to the content of a package folder in the filesystem.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Managing Attribute Access: __getattr__ and __dir__"><div class="sect2" id="managing_attribute_access_getattr_a">
+<h2>Managing Attribute Access: __getattr__ and __dir__</h2>
+<p>On the subject of data hiding in modules, Python 3.7 added support for special functions at a <a contenteditable="false" data-type="indexterm" data-primary="data hiding" data-secondary="__getattr__ function" data-secondary-sortas="getattr function" id="dhdgtttt"></a><a contenteditable="false" data-type="indexterm" data-primary="data hiding" data-secondary="__dir__ function" data-secondary-sortas="dir function" id="hddvr"></a>module’s top level that can be used to manage access to a module’s attributes. If defined, a module’s <code>__getattr__</code> function is automatically run when a module attribute is not found, and its <code>__dir__</code> overrides the normal attribute-list fetch run for the <code>dir</code> built-in. These can be used to implement both basic access constraints and arbitrarily dynamic interfaces.</p>
+<p>These functions also shadow same-named tools in <em>classes</em> and are meant in part to obviate a long-standing and obscure trick that reset a module’s object in the <code>sys.modules</code> table to an instance of a <em>class</em> with these same methods. This, of course, means that these functions may make more sense after we study classes in <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a>, but the artificial module in <a data-type="xref" href="#example_twofive_threedot_gamoddotpy">Example 25-3</a> demos the basics.</p>
+<div data-type="example" id="example_twofive_threedot_gamoddotpy">
+<h5><span class="label">Example 25-3. </span>gamod.py</h5>
+<pre data-type="programlisting">var = 2                                   <code><em># Real attribute returned directly</em></code>
+
+def __getattr__(name):                    <code><em># Undefined attr fetches routed here</em></code>
+    print(f'(virtual {name})', end=' ')
+    match name:
+        case 'test':
+            return name * var
+        case 'hack' | 'code':
+            return name.upper()
+        case _:
+            raise AttributeError(f'{name} is undefined')
+
+def __dir__():
+    return ['var', 'test', 'hack', 'code']</pre>
+</div>
+<p>When imported, fetches of real attributes defined in the module work normally (subject to the <code>_<em>X</em></code> and <code>__all__</code> of the prior section for <code>from *</code>), but missing names are routed to <code>__getattr__</code>, which can manage the request. It may also use a <code>raise</code> statement to flag an invalid request with an <em>exception</em>—a topic we’ll study in full later in the book because it’s also dependent on classes today:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import gamod</strong></code>
+&gt;&gt;&gt; <code><strong>gamod.var</strong></code>                  <code><em># Real: __getattr__ not called</em></code>
+2
+&gt;&gt;&gt; <code><strong>gamod.test</strong></code>                 <code><em># Virtual: computed when fetched</em></code>
+(virtual test) 'testtest'
+&gt;&gt;&gt; <code><strong>gamod.hack</strong></code>             
+(virtual hack) 'HACK'
+&gt;&gt;&gt; <code><strong>gamod.nonesuch</strong></code>         
+AttributeError: nonesuch is undefined
+
+&gt;&gt;&gt; <code><strong>dir(gamod)</strong></code>
+['code', 'hack', 'test', 'var']</pre>
+<p>The <code>from</code> statement invokes <code>__getattr__</code> too, though <code>from *</code> requires names to be listed on <code>__all__</code> (you can largely ignore the spurious <code>__path__</code> fetch here, though a <code>__getattr__</code> must accommodate it):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from gamod import code</strong></code>
+(virtual __path__) (virtual code) 
+&gt;&gt;&gt; <code><strong>code</strong></code>
+'CODE'
+&gt;&gt;&gt; <code><strong>from gamod import *</strong></code>
+(virtual __path__) (virtual __all__)
+&gt;&gt;&gt; <code><strong>var</strong></code>
+2
+&gt;&gt;&gt; <code><strong>hack</strong></code>
+NameError: name 'hack' is not defined</pre>
+<p>Importantly, <code>__getattr__</code> is <em>not</em> run for global-scope lookup within the module itself, so in-file undefined names remain undefined. It’s really just for attribute fetches from <em>other</em> modules and does not catch <em>assignments</em> anywhere. For example, the first line of the following added at the bottom of <a data-type="xref" href="#example_twofive_threedot_gamoddotpy">Example 25-3</a> would fail, and the second line run in the REPL would make a new attribute in the module which bypasses <code>__getattr__</code> thereafter:</p>
+<pre data-type="programlisting">print(test)                <code><em># File: does NOT call __getattr__ (raises NameError</em></code>)
+gamod.hack = 'real'        <code><em># REPL: does NOT call __getattr__ (makes attribute)</em></code></pre>
+<p>Although this all works as advertised, it is a tool-builder’s hook, and you’ll have to unearth legitimate use cases. It may be useful in narrow roles, but it also <em>conflates</em> modules with classes and discounts the fact that module learners do not already understand these functions’ origins in classes. This is a regrettably common theme in Python: additions often come with forward dependencies that seem to expect users to already know Python in order to use Python. Python is not just for Python experts, but that’s a message baked into many a mod.</p>
+<p>The good news here may be that a later proposal to add classes’ <code>__setattr__</code> for module-attribute assignment was rejected by Python’s steering committee—though only after allowing <code>__getattr__</code> and <code>__dir__</code> to sneak in. As usual, you should weigh the convolutions of this extension against its real-world <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="data hiding" data-startref="mdldhd" id="id3613"></a><a contenteditable="false" data-type="indexterm" data-primary="data hiding" data-startref="dthdng" id="id3614"></a><a contenteditable="false" data-type="indexterm" data-primary="data hiding" data-secondary="__getattr__ function" data-secondary-sortas="getattr function" data-startref="dhdgtttt" id="id3615"></a><a contenteditable="false" data-type="indexterm" data-primary="data hiding" data-secondary="__dir__ function" data-secondary-sortas="dir function" data-startref="hddvr" id="id3616"></a>applications.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Enabling Language Changes: __future__"><div class="sect1" id="enabling_language_changes_future">
+<h1>Enabling Language Changes: __future__</h1>
+<p>Speaking of changes, Python mods that may break existing code are often introduced gradually. This is not always as “gradual” as it might be, and version 3.0 was a glaring exception (though 2.X was supported for 12 more years after 3.X’s release). Sometimes, though, changes initially appear as optional extensions, which are <a contenteditable="false" data-type="indexterm" data-primary="__future__ import" data-primary-sortas="future import" id="id3617"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="__future__" data-secondary-sortas="future" id="id3618"></a>disabled by default. To enable such an extension in Pythons that predate its official arrival, use a special <code>import</code> statement of this form:</p>
+<pre data-type="programlisting">from __future__ import <code><em>featurename</em></code></pre>
+<p>When coded in a script, this statement must appear as the first executable statement in the file (possibly following a docstring or comment), because it enables special compilation of code on a per-module basis. It’s also possible to submit this statement at the interactive prompt to experiment with upcoming language changes; the feature will then be available for the remainder of the interactive session.</p>
+<p>For example, the prior edition of this book used this statement in Python 2.X to activate 3.X true division of <a data-type="xref" href="ch05.html#numbers_and_expressions">Chapter 5</a>, 3.X <code>print</code> calls of <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>, and 3.X absolute imports for packages of <a data-type="xref" href="ch24.html#module_packages">Chapter 24</a>. Earlier editions used this statement form to demonstrate generator functions, which require a <code>yield</code> that was not yet enabled by default.</p>
+<p>This edition is boldly going forward with the present, but <code>__future__</code> can be used in older Pythons to enable Python 3.7’s <code>StopIteration</code> “bubbling” behavior described at the end of <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a>:</p>
+<pre data-type="programlisting">from __future__ import generator_stop</pre>
+<p>For a list of futurisms you may import and turn on this way, see the Python library manual’s entry for <code>__future__</code>. Per its documentation, none of its feature names will ever be removed, so it’s safe to leave in a <code>__future__</code> import even in code run by a version of Python where the feature is enabled normally. The future does not erase the past.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Dual-Usage Modes: __name__ and __main__"><div class="sect1" id="dual_usage_modes_name_and_main">
+<h1>Dual-Usage Modes: __name__ and __main__</h1>
+<p>Our next module-related trick lets <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="__name__" data-secondary-sortas="name" id="mdlnm"></a><a contenteditable="false" data-type="indexterm" data-primary="__name__ attribute" data-primary-sortas="name attribute" id="namttb"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="__name__" data-secondary-sortas="name" id="attbmn"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="running as standalone script" id="flrsgsc"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="__main__" data-secondary-sortas="main" id="mdlman"></a><a contenteditable="false" data-type="indexterm" data-primary="__main__ attribute" data-primary-sortas="main attribute" id="minattb"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="__main__" data-secondary-sortas="main" id="attamn"></a>you both import a file as a <em>module</em> and run it as a standalone <em>script</em>, a hook that is widely used in Python files. It’s actually so simple that some learners miss the point at first. Each module has a built-in attribute called <code>__name__</code>, which Python creates and assigns automatically as follows:</p>
+<ul>
+<li><p>If the file is being run as a top-level script file, <code>__name__</code> is set to the string <code>'__main__'</code> when it starts.</p></li>
+<li><p>If the file is being imported instead, <code>__name__</code> is set to the module’s name as known by its clients.</p></li>
+</ul>
+<p>The upshot is that a module can test its own <code>__name__</code> to determine whether it’s being run or imported. For example, suppose we create the code file named <em>dualmode.py</em> in <a data-type="xref" href="#example_twofive_fourdot_dualmodedotpy">Example 25-4</a>, with a single function called <code>title</code>.</p>
+<div data-type="example" class="pagebreak-before" id="example_twofive_fourdot_dualmodedotpy">
+<h5 class="less_space"><span class="label">Example 25-4. </span>dualmode.py</h5>
+<pre data-type="programlisting">def title():
+    print('Learning Python, 6E')
+
+if __name__ == '__main__':           <code><em># Only when run
+</em></code>    title()                          <code><em># Not when imported</em></code></pre>
+</div>
+<p>This module defines a function for clients to import and use as usual:</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>import dualmode
+</strong></code>&gt;&gt;&gt; <code><strong>dualmode.title()</strong></code>
+Learning Python, 6E</pre>
+<p>But the module also includes code at the bottom that is set up to call the function automatically when this file is run as a program:</p>
+<pre data-type="programlisting">$ <code><strong>python3 dualmode.py</strong></code>
+Learning Python, 6E</pre>
+<p>In effect, a module’s <code>__name__</code> variable <a contenteditable="false" data-type="indexterm" data-primary="usage mode flags" id="id3619"></a>serves as a <em>usage mode flag</em>, allowing its code to be leveraged as <em>both</em> an importable library and a top-level script. Though simple, you’ll see this hook used in many of the Python program files you are likely to encounter in the wild—both for testing and dual usage.</p>
+<p>For instance, one of the most common ways you’ll see the <code>__name__</code> test applied is for <em>self-test</em> code. In short, you can package code that tests a module’s exports in the module itself by wrapping it in a <code>__name__</code> test at the bottom of the file. This way, you can use the file in clients by <em>importing</em> it, but also test its logic by <em>running</em> it from the system shell or other launching scheme.</p>
+<p>Coding self-test code at the bottom of a file under the <code>__name__</code> test is probably the most common and simplest unit-testing protocol in Python. It’s much more convenient than retyping all your tests at the interactive prompt. (Preview: <a data-type="xref" href="ch36.html#exception_odds_and_ends">Chapter 36</a> will discuss other commonly used options for testing Python code—as you’ll see, the <code>unittest</code> and <code>doctest</code> standard-library modules provide more advanced testing tools.)</p>
+<p>In addition, the <code>__name__</code> trick is also commonly used when you’re writing files that can be useful both as command-line utilities and as tool libraries. For instance, suppose you write a file-finder script in Python. You can get more mileage out of your code if you package it in functions, and add a <code>__name__</code> test in the file to automatically call those functions when the file is run standalone. That way, the script’s code becomes reusable in other programs.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>What’s in a __name__?</em>: Don’t confuse the <code>__main__</code> hook here with the <em>__main__.py</em> file discussed in the prior chapter. That file serves as a script when running an entire package <em>folder</em> as a program, but testing whether <code>__name__</code> is <code>'__main__'</code> is used to give two roles to a single <em>file</em>. Python often conflates the same names for similar but different purposes—see <code>__getattr__</code>!</p>
+</div>
+<section data-type="sect2" data-pdf-bookmark="Example: Unit Tests with __name__"><div class="sect2" id="example_unit_tests_with_name">
+<h2>Example: Unit Tests with __name__</h2>
+<p>In fact, we’ve already seen numerous cases in this book <a contenteditable="false" data-type="indexterm" data-primary="unit testing, __name__ attribute" id="uttnrb"></a>where the <code>__name__</code> check could be useful. As one example, we coded a script in <a data-type="xref" href="ch18.html#arguments">Chapter 18</a> that computed the minimum value from the set of arguments sent—<a data-type="xref" href="ch18.html#example_oneeight_threedot_minmaxdotpy">Example 18-3</a>, whose code is repeated here for ease of reference:</p>
+<pre data-type="programlisting">def minmax(test, *args):
+    res = args[0]
+    for arg in args[1:]:
+        if test(arg, res):
+            res = arg
+    return res
+
+def lessthan(x, y): return x &lt; y
+def grtrthan(x, y): return x &gt; y
+
+print(minmax(lessthan, 4, 2, 1, 5, 6, 3))      <code><em># Self-test code</em></code>
+print(minmax(grtrthan, 4, 2, 1, 5, 6, 3))</pre>
+<p>This script includes self-test code at the bottom, so we can test it without having to retype test code in the REPL each time we run it. The problem with the way it is currently coded, however, is that the output of the self-test call will appear when this file is imported from another file to be used as a tool—not exactly a client-friendly feature! To do better, we can wrap up the self-test call in a <code>__name__</code> check so that it will be launched <em>only</em> when the file is run as a top-level script, not when it is imported. <a data-type="xref" href="#example_twofive_fivedot_minmaxdotpy">Example 25-5</a> lists this new-and-improved version of the module.</p>
+<div data-type="example" id="example_twofive_fivedot_minmaxdotpy">
+<h5><span class="label">Example 25-5. </span>minmax.py</h5>
+<pre data-type="programlisting">print('I am:', __name__)
+
+def minmax(test, *args):
+    res = args[0]
+    for arg in args[1:]:
+        if test(arg, res):
+            res = arg
+    return res
+
+def lessthan(x, y): return x &lt; y
+def grtrthan(x, y): return x &gt; y
+
+if __name__ == '__main__':
+    print(minmax(lessthan, 4, 2, 1, 5, 6, 3))      <code><em># Self-test code</em></code>
+    print(minmax(grtrthan, 4, 2, 1, 5, 6, 3))</pre>
+</div>
+<p>We’re also printing the value of <code>__name__</code> at the top here to trace its value (something you wouldn’t do in a real library module). Python creates and assigns this usage-mode variable as soon as it starts loading a file. When we run this file as a top-level script, its name is set to <code>__main__</code>, so its self-test code kicks in automatically:</p>
+<pre data-type="programlisting">$ <code><strong>python3 minmax.py</strong></code>
+I am: __main__
+1
+6</pre>
+<p>If we import the file, though, its name is not <code>__main__</code>, so we must explicitly call the function to make it run:</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>import minmax</strong></code>
+I am: minmax
+&gt;&gt;&gt; <code><strong>minmax.minmax(minmax.lessthan, *'hack')</strong></code>
+'a'</pre>
+<p>Again, regardless of whether this is used for testing, the net effect is that we get to use our code in <em>two different roles</em>—as a library module of tools, or as an executable program. It’s buy-one-get-one code. You’ll also see programs that route program-mode runs into a module called <code>main</code>:</p>
+<pre data-type="programlisting">def main():
+    …
+if __name__ == '__main__':
+    main()</pre>
+<p>This works, but it’s extra code, and there’s nothing special about a function named <code>main</code> in Python—unlike some other languages, which may be part of the inspiration for this indirection’s appearance in Python code.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Fishing tutorial past</em>: For another example of the <code>__name__ == '__main__'</code> test at work, see the dual-mode script/module <em>formats.py</em> in this book’s examples package. It formats numbers with commas and currency conventions and demos how you can code your own flexible tools instead of relying on built-ins. It didn’t add <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="__name__" data-secondary-sortas="name" data-startref="mdlnm" id="id3620"></a><a contenteditable="false" data-type="indexterm" data-primary="__name__ attribute" data-primary-sortas="name attribute" data-startref="namttb" id="id3621"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="__name__" data-secondary-sortas="name" data-startref="attbmn" id="id3622"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="running as standalone script" data-startref="flrsgsc" id="id3623"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="__main__" data-secondary-sortas="main" data-startref="mdlman" id="id3624"></a><a contenteditable="false" data-type="indexterm" data-primary="__main__ attribute" data-primary-sortas="main attribute" data-startref="minattb" id="id3625"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="__main__" data-secondary-sortas="main" data-startref="attamn" id="id3626"></a><a contenteditable="false" data-type="indexterm" data-primary="unit testing, __name__ attribute" data-startref="uttnrb" id="id3627"></a>much here and was cut in this edition for space, but provides optional self-study code—and underscores that learning to fish generally beats being given one.</p>
+</div>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="The as Extension for import and from"><div class="sect1" id="the_as_extension_for_import_and_from">
+<h1>The as Extension for import and from</h1>
+<p>Next on the tour is a follow-up on a topic <a contenteditable="false" data-type="indexterm" data-primary="import statement" data-secondary="as clause" id="ipsttcl"></a><a contenteditable="false" data-type="indexterm" data-primary="from statement" data-secondary="as clause" id="smsttcls"></a><a contenteditable="false" data-type="indexterm" data-primary="as clause" id="ascls"></a>introduced in <a data-type="xref" href="ch23.html#module_coding_basics">Chapter 23</a>’s name-collision coverage. As a minor but useful convenience, both the <code>import</code> and <code>from</code> statements support an optional <code>as</code> clause, which simply <em>renames</em> a name imported by your script. For example, the following <code>import</code> statement using the <code>as</code> extension:</p>
+<pre data-type="programlisting">import modulename as name                     <code><em># And use name, not modulename</em></code></pre>
+<p>is equivalent to the following set of three statements, which renames the module in the importer’s scope only (it’s still known by its original name to other files), and drops the original name in the importer’s scope altogether:</p>
+<pre data-type="programlisting">import modulename                             <code><em># Run a normal import</em></code>
+name = modulename                             <code><em># Rename the module - here</em></code>
+del modulename                                <code><em># Discard the original name - here</em></code></pre>
+<p>After an <code>import</code> with <code>as</code>, you can—and in fact, must—use the name listed after the <code>as</code> to refer to the module. The longer equivalent works because modules are <em>first-class objects</em> just like functions, and can be passed around freely.</p>
+<p>The <code>as</code> extension works in a <code>from</code> statement, too, to assign a name imported from a file to a different name in the importer’s scope. As before, you get only the new name you provide, not its original:</p>
+<pre data-type="programlisting">from modulename import attrname as name       <code><em># And use name, not attrname</em></code></pre>
+<p>This in turn works the same as the following statements:</p>
+<pre data-type="programlisting">from modulename import attrname
+name = attrname
+del attrname</pre>
+<p>As noted in <a data-type="xref" href="ch23.html#module_coding_basics">Chapter 23</a>, this extension is <a contenteditable="false" data-type="indexterm" data-primary="name clashes" id="id3628"></a>commonly used both to provide <em>shorter synonyms</em> for longer names and to avoid <em>name clashes</em> when you are already using a name in your script that would otherwise be overwritten by a normal import:</p>
+<pre data-type="programlisting">import reallylongmodulename as name           <code><em># Use shorter nickname</em></code>
+name.func()                                   <code><em># Rename to make shorter
+</em></code>
+from module1 import utility as util1          <code><em># Can have only one "utility"
+</em></code>from module2 import utility as util2          <code><em># Rename to make unique</em></code>
+util1(); util2()</pre>
+<p>By way of review, the <code>as</code> clause also comes in handy for providing a short, simple name for an entire directory path and avoiding name collisions when using the <em>package import</em> feature described in <span class="keep-together"><a data-type="xref" href="ch24.html#module_packages">Chapter 24</a></span>:</p>
+<pre data-type="programlisting">import dir1.dir2.mod as mod                   <code><em># Only list full path once</em></code>
+mod.func()                                    <code><em># Only one change if path changes</em></code>
+
+from dir1.dir2.mod import func as modfunc     <code><em># Rename to make unique if needed</em></code>
+modfunc()                                     <code><em># Allow func to be something else</em></code></pre>
+<p>Finally, the <code>as</code> clause is also something of a hedge against name <em>changes</em>: if a new release of a library renames a module or tool your code uses extensively, or provides a new alternative you’d rather use instead, you can simply rename it to its prior name on import to avoid breaking your code:</p>
+<pre data-type="programlisting">import newname as oldname
+from library import newname as oldname
+…<code><em>and keep happily using oldname until you have time to update all your code</em></code>…</pre>
+<p>That said, if all software changes <a contenteditable="false" data-type="indexterm" data-primary="import statement" data-secondary="as clause" data-startref="ipsttcl" id="id3629"></a><a contenteditable="false" data-type="indexterm" data-primary="from statement" data-secondary="as clause" data-startref="smsttcls" id="id3630"></a><a contenteditable="false" data-type="indexterm" data-primary="as clause" data-startref="ascls" id="id3631"></a>were just name changes, we’d have a lot less to fill our time!</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Module Introspection"><div class="sect1" id="module_introspection">
+<h1>Module Introspection</h1>
+<p>Next up is module plumbing. Because modules expose most of their interesting properties as built-in attributes, it’s easy to write programs that manage other programs—tools we usually call <em>metaprograms</em>, because their subjects are other programs. This <a contenteditable="false" data-type="indexterm" data-primary="metaprograms" id="id3632"></a>domain is also referred to as <em>introspection</em>, because programs can see and process object internals. Introspection is a somewhat advanced feature, but it can be useful for building programming tools.</p>
+<p>For instance, to fetch the value of a module’s attribute, we can use attribute qualification or index the module’s <a contenteditable="false" data-type="indexterm" data-primary="introspection" data-secondary="__dict__ attribute" data-secondary-sortas="dict attribute" id="id3633"></a><a contenteditable="false" data-type="indexterm" data-primary="__dict__ attribute" data-primary-sortas="dict attribute" id="id3634"></a>attribute dictionary, exposed in the built-in <code>__dict__</code> attribute we explored in <a data-type="xref" href="ch23.html#module_coding_basics">Chapter 23</a>. As we’ve also seen, Python’s <code>vars</code> built-in is an alternative way to access <code>__dict__</code>, and its <code>sys.modules</code> dictionary records all loaded modules by import-name string. In addition, its <code>getattr</code> built-in lets us fetch attributes from their string names—it’s like saying <code>object.attr</code>, but <code>attr</code> is an expression that produces a string at runtime.</p>
+<p>Hence, all the following expressions reach the same attribute and object named <code>name</code> after importing <code>M</code> and <code>sys</code>:</p>
+<pre data-type="programlisting">M.name                              <code><em># Qualify object by attribute</em></code>
+M.__dict__['name']                  <code><em># Index namespace dictionary manually</em></code>
+vars(M)['name']                     <code><em># Namespace dictionary alternative</em></code>
+sys.modules['M'].name               <code><em># Index loaded-modules table manually</em></code>
+getattr(M, 'name')                  <code><em># Call built-in fetch function</em></code>
+sys.modules['M'].__dict__['name']   <code><em># Module and attribute name strings</em></code></pre>
+<p>Demoing with <a data-type="xref" href="#example_twofive_fivedot_minmaxdotpy">Example 25-5</a> (and chained comparisons that imply an <code>and</code> and a right-side repeat):</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>import minmax, sys</strong></code>
+&gt;&gt;&gt; <code><strong>(minmax.lessthan</strong></code> 
+<code> <strong>       is minmax.__dict__['lessthan']    is vars(minmax)['lessthan']</strong></code>
+<code> <strong>       is sys.modules['minmax'].lessthan is getattr(minmax, 'lessthan')</strong></code>
+<code> <strong>       is sys.modules['minmax'].__dict__['lessthan'])</strong></code>
+True</pre>
+<p>Of course, the first of these is much easier on the eyes (and keyboard), but the others support more generic access.</p>
+<section data-type="sect2" data-pdf-bookmark="Example: Listing Modules with __dict__"><div class="sect2" id="example_listing_modules_with_dict">
+<h2>Example: Listing Modules with __dict__</h2>
+<p>By exposing module internals like this, Python <a contenteditable="false" data-type="indexterm" data-primary="introspection" data-secondary="__dict__ attribute" data-secondary-sortas="dict attribute" data-tertiary="listing modules" id="ipttls"></a><a contenteditable="false" data-type="indexterm" data-primary="__dict__ attribute" data-primary-sortas="dict attribute" data-tertiary="listing modules" id="dctdctmd"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="listing, __dict__ attribute" id="mdlstdct"></a><a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="__dict__ attribute" data-secondary-sortas="dict attribute" id="lssttdt"></a>helps you build programs about programs. As a demo, the module in <a data-type="xref" href="#example_twofive_sixdot_mydirdotpy">Example 25-6</a>, named <em>mydir.py</em>, puts these ideas to work to implement a customized and expanded version of the built-in <code>dir</code> function. It defines and exports a function called <code>listing</code>, which takes a module object as an argument and prints a formatted display of the module’s namespace sorted by attribute name.</p>
+<div data-type="example" id="example_twofive_sixdot_mydirdotpy">
+<h5><span class="label">Example 25-6. </span>mydir.py</h5>
+<pre data-type="programlisting">"""
+mydir.py: a module that lists the namespaces of other modules.
+Import this module's listing and pass an imported module, or 
+run this file as a script to perform its self-test code.
+"""
+
+sepchr = '-'
+seplen = 60
+
+def listing(module, verbose=True, unders=True):
+    """
+    List module: just attributes if verbose=False, 
+    hide built-in __X__ attributes if unders=False. 
+    """
+    sepline = sepchr * seplen
+    if verbose:
+        print(sepline)
+        print(f'name: {module.__name__}\nfile: {module.__file__}')
+        print(sepline)
+
+    <code><em># Scan namespace keys</em></code>
+    for (count, attr) in enumerate(sorted(module.__dict__)):
+        prefix = f'{count + 1:02d}) {attr}'
+        if attr.startswith('__'):
+            if unders:
+               print(prefix, '&lt;built-in name&gt;')    <code><em># Skip __file__, etc.</em></code>
+        else:
+           print(prefix, getattr(module, attr))    <code><em># Or module.__dict__[attr]</em></code>
+
+    if verbose:
+        print(sepline)
+        print(f'{module.__name__} has {count + 1} names')
+        print(sepline)
+
+if __name__ == '__main__':
+    import mydir
+    listing(mydir)                                  <code><em># Self-test code: list myself</em></code></pre>
+</div>
+<p>Notice the <em>docstrings</em> in this module; because we may want to use this as a general tool, the docstrings provide functional information accessible via <code>help</code> and the browser mode of PyDoc—tools that use similar introspection tools to do their jobs (see <a data-type="xref" href="ch15.html#the_documentation_interlude">Chapter 15</a> for usage info). A <em>self-test</em> is also provided at the bottom of this module, which narcissistically imports and lists itself; here’s the sort of output produced (with path edits for space):</p>
+<pre data-type="programlisting">$ <code><strong>python3 mydir.py</strong></code>
+------------------------------------------------------------
+name: mydir
+file: /Users/me/…/LP6E/Chapter25/mydir.py
+------------------------------------------------------------
+01) __builtins__ &lt;built-in name&gt;
+02) __cached__ &lt;built-in name&gt;
+03) __doc__ &lt;built-in name&gt;
+04) __file__ &lt;built-in name&gt;
+05) __loader__ &lt;built-in name&gt;
+06) __name__ &lt;built-in name&gt;
+07) __package__ &lt;built-in name&gt;
+08) __spec__ &lt;built-in name&gt;
+09) listing &lt;function listing at 0x1077758a0&gt;
+10) sepchr -
+11) seplen 60
+------------------------------------------------------------
+mydir has 11 names
+------------------------------------------------------------</pre>
+<p>To use this as a tool for listing other modules, simply pass the modules in as objects to this file’s function. Here it is listing itself manually, as well as attributes in the <code>tkinter</code> GUI module in the Python standard library; it will technically work on any object with <code>__name__</code>, <code>__file__</code>, and <code>__dict__</code> attributes:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from mydir import listing</strong></code>
+&gt;&gt;&gt; <strong>import mydir, tkinter</strong>
+
+&gt;&gt;&gt; <code><strong>listing(mydir, unders=False, verbose=False)</strong></code>
+09) listing &lt;function listing at 0x10800fba0&gt;
+10) sepchr -
+11) seplen 60
+
+&gt;&gt;&gt; <code><strong>listing(tkinter, unders=False)</strong></code>
+------------------------------------------------------------
+name: tkinter
+file: /…/lib/python3.12/tkinter/__init__.py
+------------------------------------------------------------
+01) ACTIVE active
+02) ALL all
+03) ANCHOR anchor
+04) ARC arc
+...<code><em>more names omitted</em></code>...
+166) re &lt;module 're' from '/…/lib/python3.12/re/__init__.py'&gt;
+167) sys &lt;module 'sys' (built-in)&gt;
+168) types &lt;module 'types' from '/…/lib/python3.12/types.py'&gt;
+169) wantobjects 1
+------------------------------------------------------------
+tkinter has 169 names
+------------------------------------------------------------</pre>
+<p>You’ll meet <code>getattr</code> and its relatives again later. The point to notice here is that <code>mydir</code> is a program that lets you browse other programs. Because Python exposes its internals, you can <a contenteditable="false" data-type="indexterm" data-primary="introspection" data-secondary="__dict__ attribute" data-secondary-sortas="dict attribute" data-tertiary="listing modules" data-startref="ipttls" id="id3635"></a><a contenteditable="false" data-type="indexterm" data-primary="__dict__ attribute" data-primary-sortas="dict attribute" data-tertiary="listing modules" data-startref="dctdctmd" id="id3636"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="listing, _dict_ attribute" data-startref="mdlstdct" id="id3637"></a><a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="__dict__ attribute" data-secondary-sortas="dict attribute" data-startref="lssttdt" id="id3638"></a>process objects <span class="keep-together">generically</span>.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>REPL startup tip</em>: You can preload <a contenteditable="false" data-type="indexterm" data-primary="REPLs (real-eval-print loops)" data-secondary="preloading tools" id="id3639"></a>tools such as <code>mydir.listing</code> and the reloader we’ll code in a moment into the interactive REPL by importing them in a file named by the <code>PYTHONSTARTUP</code> environment variable. Because code in the startup file runs in the interactive namespace, importing common tools in this file can save you some typing. See <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a> for more info.</p>
+</div>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Importing Modules by Name String"><div class="sect1" id="importing_modules_by_name_string">
+<h1>Importing Modules by Name String</h1>
+<p>Finally, it’s time for something more dynamic. By now, you’ve probably noticed that the module <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="imports" data-tertiary="name strings" id="mdmpnstr"></a><a contenteditable="false" data-type="indexterm" data-primary="name strings, module imports" id="id3640"></a>name in an <code>import</code> or <code>from</code> statement is a hardcoded variable name. Sometimes, though, your program will get the name of a module to be imported as a string at runtime—from a user selection in a GUI, or a parse of an XML document, for instance. Unfortunately, you can’t use import statements directly to load a module given its name as a string—Python expects a variable name that’s taken literally and not evaluated, not a string or expression. For instance:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import 'string'</strong></code>
+SyntaxError: invalid syntax</pre>
+<p>It also won’t work to simply assign the string to a variable name:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x = 'string'</strong></code>
+&gt;&gt;&gt; <code><strong>import x</strong></code>
+ModuleNotFoundError: No module named 'x'</pre>
+<p>Here, Python will try to import a file <em>x.py</em>, not the <code>string</code> module—the name in an <code>import</code> statement both becomes a variable assigned to the loaded module and identifies the external file literally.</p>
+<section data-type="sect2" data-pdf-bookmark="Running Code Strings"><div class="sect2" id="running_code_strings">
+<h2>Running Code Strings</h2>
+<p>To get around this, you need to <a contenteditable="false" data-type="indexterm" data-primary="name strings, module imports" data-secondary="code strings, running" id="id3641"></a><a contenteditable="false" data-type="indexterm" data-primary="code strings, module imports" id="id3642"></a>use special tools to load a module dynamically from a string that is generated at runtime. The most general approach is to construct an <code>import</code> statement as a string of Python code and pass it to the <code>exec</code> built-in function to run:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>modname = 'string'</strong></code>
+&gt;&gt;&gt; <code><strong>exec('import ' + modname)</strong></code>      <code><em># Run a string of code</em></code>
+&gt;&gt;&gt; <code><strong>string</strong></code>                         <code><em># Imported in this namespace</em></code>
+&lt;module 'string' from '/…/lib/python3.12/string.py'&gt;</pre>
+<p>We met the <code>exec</code> function—and its cousin for expressions, <code>eval</code>—earlier, in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch03.html#how_you_run_programs">3</a>, <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch05.html#numbers_and_expressions">5</a>, <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch09.html#tuplescomma_filescomma_and_everything_e">9</a>, and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch10.html#introducing_python_statements">10</a>. <code>exec</code> compiles a string of code and passes it to the Python interpreter to be executed. In Python, the bytecode compiler is available at runtime, so you can write programs that construct and run other programs like this. By default, <code>exec</code> runs the code in the current scope (as if pasted there), but you can get more specific by passing in optional namespace dictionaries. It also has security issues noted earlier in the book, which may be moot in a code string you are building yourself.</p>
+</div></section>
+<section data-type="sect2" class="pagebreak-before" data-pdf-bookmark="Direct Calls: Two Options"><div class="sect2" id="direct_calls_two_options">
+<h2 class="less_space">Direct Calls: Two Options</h2>
+<p>The only real drawback to <code>exec</code> here is that it must compile the <code>import</code> statement each <a contenteditable="false" data-type="indexterm" data-primary="name strings, module imports" data-secondary="direct calls" id="id3643"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="imports" data-tertiary="direct calls" id="id3644"></a>time it runs, and compiling can be slow. Precompiling to bytecode with the <code>compile</code> built-in may help for code strings run many times, but in most cases, it’s probably simpler and may run quicker to use the built-in <code>__import__</code> function to import from a name string. The effect is similar, but <code>__import__</code> returns the module object—assign it to a name to keep it:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>modname = 'string'
+</strong></code>&gt;&gt;&gt; <code><strong>string = __import__(modname)
+</strong></code>&gt;&gt;&gt; <code><strong>string</strong></code>
+&lt;module 'string' from '/…/lib/python3.12/string.py'&gt;</pre>
+<p>Because imports work by invoking <code>__import__</code>, it loads the named module normally. The newer standard-library call <code>importlib.import_module</code> does the same job; Python’s docs describe it as a simplified wrapper around <code>__import__</code> for “everyday” use (though our code is growing longer as our tools are growing newer):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import importlib
+</strong></code>&gt;&gt;&gt; <code><strong>modname = 'string'
+</strong></code>&gt;&gt;&gt; <code><strong>string = importlib.import_module(modname)
+</strong></code>&gt;&gt;&gt; <code><strong>string</strong></code>
+&lt;module 'string' from '/…/lib/python3.12/string.py'&gt;</pre>
+<p>This call works the same as <code>__import__</code> in its basic roles, but see Python’s manuals for more details on both calls’ advanced usage and arguments. Python’s docs also seem to prefer the newer <code>importlib</code> call for importing by name string, though this seems subjective, either call works, and the imports system has been a frequent morpher.</p>
+<p>On callout here: both calls also work for the <em>package imports</em> of the prior chapter, but the first returns the <em>leftmost</em> component in a package path, and the second returns the <em>last</em>—in fact, this is their most prominent difference:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import importlib</strong></code>
+&gt;&gt;&gt; <code><strong>__import__('email.message')</strong></code>
+&lt;module 'email' from '/…/lib/python3.12/email/__init__.py'&gt;
+&gt;&gt;&gt; <code><strong>importlib.import_module('email.message')</strong></code>
+&lt;module 'email.message' from '/…/lib/python3.12/email/message.py'&gt;</pre>
+<p>The <code>importlib</code> call also works for a <em>package-relative</em> import string (with leading dots), if also passed the string name of a package path from which to resolve the import. See <a data-type="xref" href="ch24.html#module_packages">Chapter 24</a> for the story of package imports.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Example: Transitive Module Reloads"><div class="sect2" id="example_transitive_module_reloads">
+<h2>Example: Transitive Module Reloads</h2>
+<p>To tie together and apply some of the topics we’ve studied, this section develops a module tool that serves as a larger case study to close out this chapter and part. We explored module reloads in <a data-type="xref" href="ch23.html#module_coding_basics">Chapter 23</a>, as a way to pick up changes in code without stopping and <a contenteditable="false" data-type="indexterm" data-primary="name strings, module imports" data-secondary="reloads" id="nsmprld"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="reloads" id="id3645"></a><a contenteditable="false" data-type="indexterm" data-primary="reloading modules" id="id3646"></a>restarting a program or REPL. When reloading a module, though, Python reloads only that particular module’s file; it doesn’t automatically reload modules that the file being reloaded happens to import.</p>
+<p>For example, if you reload some module <code>A</code>, and <code>A</code> imports modules <code>B</code> and <code>C</code>, the reload applies only to <span class="keep-together"><code>A</code>—not to</span> <code>B</code> and <code>C</code>. The statements inside <code>A</code> that import <code>B</code> and <code>C</code> are rerun during the reload, but they just fetch the already loaded <code>B</code> and <code>C</code> module objects (assuming they’ve been imported before). In abstract code, here’s the file <em>A.py</em>:</p>
+<pre data-type="programlisting"><code><em># A.py
+</em></code>import B                   <code><em># Not reloaded when A is!</em></code>
+import C                   <code><em># Just imports of already loaded modules: no-ops</em></code>
+
+$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; …<em>import and use A</em>…
+&gt;&gt;&gt; <code><strong>from importlib import reload
+</strong></code>&gt;&gt;&gt; <code><strong>reload(A)</strong></code></pre>
+<p>By default, this means that you cannot depend on reloads to pick up changes in all the modules in your program transitively. Instead, you must use multiple <code>reload</code> calls to update the subcomponents independently. This can require substantial work for large systems you’re testing interactively. You can design your systems to reload their subcomponents automatically by adding <code>reload</code> calls in parent modules like <code>A</code>, but this complicates the code.</p>
+<section data-type="sect3" data-pdf-bookmark="A recursive reloader"><div class="sect3" id="a_recursive_reloader">
+<h3>A recursive reloader</h3>
+<p>A better approach is to write a <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="reloads" data-tertiary="recursive reloaders" id="morerc"></a><a contenteditable="false" data-type="indexterm" data-primary="reloading modules" data-secondary="recursive reloaders" id="relmodrec"></a>general tool to do transitive reloads automatically, by scanning a module’s <code>__dict__</code> attributes dictionary and checking the <code>type</code> of each attribute’s value to find nested modules to reload. Such a utility function could call itself <em>recursively</em> to navigate arbitrarily shaped and deep import-dependency chains. The module <code>__dict__</code> was introduced in <a data-type="xref" href="ch23.html#module_coding_basics">Chapter 23</a> and employed by <em>mydir.py</em> earlier, recursion was explored in <a data-type="xref" href="ch19.html#function_odds_and_ends">Chapter 19</a>, and the <code>type</code> call was presented in <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a>; we just need to combine these tools for this new role.</p>
+<p>To this end, the module <em>reloadall.py</em> listed in <a data-type="xref" href="#example_twofive_sevendot_reloadalldotpy">Example 25-7</a> defines a <code>reload_all</code> function that automatically reloads a module, every module that the module imports, and so on, all the way to the bottom of each import chain. It uses a dictionary to keep track of already reloaded modules, recursion to walk the import chains, and the standard library’s <code>types</code> module, which simply predefines <code>type</code> results for built-in types like modules. Its <code>visited</code> dictionary avoids repeats when imports are recursive or redundant (module objects are immutable, and so can be dictionary keys); as we saw in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch05.html#numbers_and_expressions">5</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch08.html#lists_and_dictionaries">8</a>, a <em>set</em> could work similarly (and will in rewrites ahead).</p>
+<div data-type="example" id="example_twofive_sevendot_reloadalldotpy">
+<h5><span class="label">Example 25-7. </span>reloadall.py</h5>
+<pre class="less_codespace1" data-type="programlisting">"""
+reloadall.py: transitively reload nested modules.
+Call reload_all with one or more imported modules as arguments.
+These modules, and all the modules they import, are reloaded.
+"""
+
+import types
+from importlib import reload
+
+def status(module):
+    print('reloading', module.__name__)
+
+def tryreload(module):
+    try:
+        reload(module)                                   <code><em># Imports might fail</em></code>
+    except:
+        print('FAILED:', module)
+
+def transitive_reload(module, visited):
+    if not module in visited:                            <code><em># Trap cycles, duplicates</em></code>
+        status(module)                                   <code><em># Reload this module</em></code>
+        tryreload(module)                                <code><em># And visit children</em></code>
+        visited[module] = True
+        for attrobj in module.__dict__.values():         <code><em># For all attrs in mod</em></code>
+            if type(attrobj) == types.ModuleType:        <code><em># Recur if nested module</em></code>
+                transitive_reload(attrobj, visited)
+
+def reload_all(*args):
+    visited = {}                                         <code><em># Main entry point</em></code>
+    for arg in args:                                     <code><em># For all passed in</em></code>
+        if type(arg) == types.ModuleType:
+            transitive_reload(arg, visited)
+
+def tester(reloader, modname):                           <code><em># Self-test: cmd or passed</em></code>
+    import importlib, sys                                <code><em># Imports for tests only
+</em></code>    if len(sys.argv) &gt; 1:                                <code><em># Command-line argument?</em></code>
+        modname = sys.argv[1]
+    module = importlib.import_module(modname)            <code><em># Import by name string</em></code>
+    reloader(module)                                     <code><em># Test passed-in reloader</em></code>
+
+if __name__ == '__main__':
+    tester(reload_all, 'reloadall')                      <code><em># Test: reload self or arg</em></code></pre>
+</div>
+<p>Besides namespace dictionaries, this script makes use of other tools we’ve studied before: it includes a <code>__name__</code> test to launch self-test code when run as a top-level script only, and its <code>tester</code> function uses <code>sys.argv</code> to inspect command-line arguments and <code>importlib</code> to import a module by name string passed in as a function or command-line argument. Review earlier coverage for more info if needed.</p>
+<p>One curious bit: notice how this code’s <code>tryreload</code> wraps the basic <code>reload</code> call in a <code>try</code> statement to catch exceptions. Reloads may fail for many reasons, and it’s best to be defensive when using system interfaces. As you’ll see in a moment, for example, an unreloadable <code>monitoring</code> module <a contenteditable="false" data-type="indexterm" data-primary="reloading modules" data-secondary="recursive reloaders" data-startref="relmodrec" id="id3647"></a>added to <code>sys</code> in Python 3.12 would otherwise crash the reloader. The <code>try</code> was previewed in <a data-type="xref" href="ch10.html#introducing_python_statements">Chapter 10</a> and will be covered in full in <a data-type="xref" href="part07.html#exceptions">Part VII</a>.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Testing recursive reloads"><div class="sect3" id="testing_recursive_reloads">
+<h3>Testing recursive reloads</h3>
+<p>To use this module normally, import its <code>reload_all</code> function and pass it an already loaded module object—just as <a contenteditable="false" data-type="indexterm" data-primary="reloading modules" data-secondary="recursive reloaders" data-tertiary="testing" id="relmodtst"></a>you would for the built-in <code>reload</code> function. Like <code>reload</code>, its module argument is usually obtained by a top-level <code>import</code>; as we’ve seen, <code>sys.modules</code> fetches work too, but modules accessed only by <code>from</code> don’t apply.</p>
+<p>To test first, run the module <em>standalone</em>. Its <code>tester</code> function runs a passed-in reloader on a module imported by <em>name string</em>—which is taken from a command-line argument if present, else a passed-in name. In this mode, the module’s self-test code calls <code>tester</code> to run <code>reload_all</code> on its own imported module by default if no command-line arguments are used (its own name is not defined in the file without an import):</p>
+<pre data-type="programlisting">$ <code><strong>python3 reloadall.py</strong></code>
+reloading reloadall
+reloading types</pre>
+<p>With a command-line <em>argument</em>, the tester instead reloads the listed module by its name string—in the following, the <a data-type="xref" href="ch21.html#the_benchmarking_interlude">Chapter 21</a> folder’s benchmark module we coded in <a data-type="xref" href="ch21.html#example_twoone_eightdot_pybenchdotpy">Example 21-8</a>. To run this live, you need both the reloader module here and the module it reloads. One way to handle this is to add <a data-type="xref" href="ch21.html#the_benchmarking_interlude">Chapter 21</a>’s code folder to your <code>PYTHONPATH</code> setting per <a data-type="xref" href="ch22.html#modules_the_big_picture">Chapter 22</a>. Copying files in either direction is subpar, and simply running in the <em>Chapter21</em> folder won’t work because the reloader script’s <em>Chapter25</em> folder is “home.” Note that we give a <em>module</em> name in this mode, not a filename; because the script imports the module using the search path just like <code>import</code>, the <em>.py</em> extension is omitted:</p>
+<pre data-type="programlisting">$ <code><strong>pwd           </strong>  </code>                         <code><em># In Chapter 25's code folder</em></code>
+/Users/me/…/LP6E/Chapter25
+$ <code><strong>export PYTHONPATH=../Chapter21</strong> </code>          <code><em># Extend path: your shell may vary</em></code>
+$ <code><strong>python3 reloadall.py pybench</strong>   </code>          <code><em># Import+reload Chapter 21 module</em></code>
+reloading pybench
+reloading sys
+reloading sys.monitoring
+FAILED: &lt;module 'sys.monitoring'&gt;
+reloading os
+reloading abc
+reloading stat
+reloading posixpath
+reloading genericpath
+reloading time
+reloading timeit
+reloading gc
+reloading itertools</pre>
+<p>More usefully, we can also deploy this module at the <em>interactive</em> prompt. This works like the built-in <code>reload</code>, but adds recursive reloads for the module or modules passed—here, for standard-library <span class="keep-together">modules</span>:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>from reloadall import reload_all</strong>  </code>     <code><em># Reload stdlib modules in REPL mode</em></code>
+&gt;&gt;&gt; <code><strong>import os, tkinter</strong></code>
+&gt;&gt;&gt; <code><strong>reload_all(os)</strong></code>
+reloading os
+reloading abc
+reloading sys
+reloading sys.monitoring
+FAILED: &lt;module 'sys.monitoring'&gt;
+reloading stat
+reloading posixpath
+reloading genericpath
+
+&gt;&gt;&gt; <code><strong>reload_all(tkinter)</strong></code>
+reloading tkinter
+reloading collections
+reloading collections.abc
+…<code><em>etc</em></code>…
+reloading _sre
+reloading functools
+reloading copyreg</pre>
+<p>In either mode, the reloader also works on module <em>packages</em>—here, for the standard library’s <code>email</code> package:</p>
+<pre data-type="programlisting">$ <code><strong>python3 reloadall.py email.message</strong>  </code>     <code><em># Import+reload a stdlib package</em></code>
+reloading email.message
+reloading binascii
+reloading re
+…<code><em>etc</em></code>…
+
+$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>from reloadall import reload_all</strong>  </code>     <code><em># Same, but in REPL mode</em></code>
+&gt;&gt;&gt; <code><strong>import email.message</strong></code>
+&gt;&gt;&gt; <code><strong>reload_all(email.message)</strong></code>
+reloading email.message
+reloading binascii
+reloading re
+…<code><em>etc</em></code>…</pre>
+<p>The following runs the reloader on the <code>dir1.dir2.mod</code> path we coded in <a data-type="xref" href="ch24.html#basic_package_structure">“Basic Package Structure”</a>. All items in the path are reloaded from a package root, and a <code>sys.path</code> mod in the REPL gives import access to another chapter’s code folder—much like the <code>PYTHONPATH</code> setting used earlier (again, per <a data-type="xref" href="ch22.html#modules_the_big_picture">Chapter 22</a>):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import sys</strong></code>
+&gt;&gt;&gt; <code><strong>sys.path.append('../Chapter24')</strong>   </code>     <code><em># Extend the search path manually</em></code>
+&gt;&gt;&gt; <code><strong>import dir1.dir2.mod</strong></code>                   <code><em># A package in Chapter 24's folder</em></code>
+Running dir1.__init__.py
+Running dir1.dir2.__init__.py
+Loading dir1.dir2.mod
+
+&gt;&gt;&gt; <code><strong>reload_all(dir1)</strong>   </code>                    <code><em># Reloads all on path: mods in mods</em></code>
+reloading dir1
+Running dir1.__init__.py
+reloading dir1.dir2
+Running dir1.dir2.__init__.py
+reloading dir1.dir2.mod
+Loading dir1.dir2.mod</pre>
+<p>Finally, here is a simple session that demos the effect of normal versus <em>transitive</em> reloads—changes made to the two nested files are not picked up by reloads unless our transitive utility is used (files are listed inline here for brevity):</p>
+<pre data-type="programlisting"><code><em># File ra.py</em></code> 
+import rb
+X = 1
+
+<code><em># File rb.py</em></code>
+import rc
+Y = 2
+
+<code><em># File rc.py</em></code>
+Z = 3
+
+$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>import ra
+</strong></code>&gt;&gt;&gt; <code><strong>ra.X, ra.rb.Y, ra.rb.rc.Z</strong>  </code>               <code><em># Three-level import chain</em></code>
+(1, 2, 3)</pre>
+<p>Now, without stopping Python, change all three files’ assignment values, save the files, and reload back in the REPL:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from importlib import reload
+</strong></code>&gt;&gt;&gt; <code><strong>reload(ra)</strong></code>                                <code><em># Built-in reload is top-level only</em></code>
+&lt;module 'ra' from '/…/LP6E/Chapter25/ra.py&gt;
+&gt;&gt;&gt; <code><strong>ra.X, ra.rb.Y, ra.rb.rc.Z</strong></code>
+(111, 2, 3)
+
+&gt;&gt;&gt; <code><strong>from reloadall import reload_all
+</strong></code>&gt;&gt;&gt; <code><strong>reload_all(ra)</strong></code>                            <code><em># Normal usage mode
+</em></code>reloading ra
+reloading rb
+reloading rc
+&gt;&gt;&gt; <code><strong>ra.X, ra.rb.Y, ra.rb.rc.Z</strong></code>                 <code><em># Reloads all nested modules too</em></code>
+(111, 222, 333)</pre>
+<p class="pagebreak-before">This is similar to the preceding package-path reload, but the imports here are explicit; module nesting in packages is implied. Study the reloader’s code and results for more on its operation. The next <a contenteditable="false" data-type="indexterm" data-primary="reloading modules" data-secondary="recursive reloaders" data-tertiary="testing" data-startref="relmodtst" id="id3648"></a>section exercises its tools further.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Alternative codings"><div class="sect3" id="alternative_codings">
+<h3>Alternative codings</h3>
+<p>For all the recursion fans in the audience (and we know who we are), <a data-type="xref" href="#example_twofive_eightdot_reloadalltwodo">Example 25-8</a> lists an <a contenteditable="false" data-type="indexterm" data-primary="reloading modules" data-secondary="recursive coding" id="relmodcdo"></a>alternative <em>recursive</em> coding for the original function in <a data-type="xref" href="#example_twofive_sevendot_reloadalldotpy">Example 25-7</a>. This new version uses a <em>set</em> instead of a dictionary to detect repeats and cycles, is marginally more <em>direct</em> because it eliminates a top-level loop, and serves to illustrate recursive coding in general. Compare with the original to see how this differs.</p>
+<p>This version also gets some of its work for free from the original; in fact, this module essentially <em>extends</em> the original to replace just the parts that vary. Notice how it calls the original version’s <code>tester</code>, passing in the <code>reload_all</code> defined here—which ensures that this module’s reloader is run when this script is launched in standalone mode.</p>
+<div data-type="example" id="example_twofive_eightdot_reloadalltwodo">
+<h5><span class="label">Example 25-8. </span>reloadall2.py</h5>
+<pre data-type="programlisting">"""
+reloadall2.py: transitively reload nested modules.
+Alternative coding: recursive, refactored.
+"""
+
+import types
+from reloadall import status, tryreload, tester
+
+def transitive_reload(objects, visited):
+    for obj in objects:
+        if type(obj) == types.ModuleType and obj not in visited:
+            status(obj)
+            tryreload(obj)                          <code><em># Reload this, recur to attrs</em></code>
+            visited.add(obj)
+            transitive_reload(obj.__dict__.values(), visited)
+
+def reload_all(*args):
+    transitive_reload(args, set())
+
+if __name__ == '__main__':
+    tester(reload_all, 'reloadall2')                <code><em># Test: reload myself or arg</em></code></pre>
+</div>
+<p>As we saw in <a data-type="xref" href="ch19.html#function_odds_and_ends">Chapter 19</a>, there is usually an <em>explicit stack</em> or <em>queue</em> equivalent to recursive functions, which may be preferable in some contexts. <a data-type="xref" href="#example_twofive_ninedot_reloadallthreed">Example 25-9</a> lists one such transitive reloader—it uses a stack instead of recursion, and a <em>set</em> to skip repeats and cycles. On each loop, all of a new module’s attribute values are added to the end of the <code>objects</code> stack and filtered later, and this is repeated until the list of candidate objects becomes empty. A generator expression could filter out nonmodules in the <code>extend</code> call to avoid some pops, but this would be more complex.</p>
+<p>Because it both pops and adds items at the <em>end</em> of its list, this version is stack-based, though the order of both pushes and dictionary values influences the order in which it reaches and reloads modules—it visits submodules in namespace dictionaries from <em>right to left</em>, unlike the left-to-right order of the recursive versions (trace through the code to see how). We could change this to match by reversing <code>values</code>, but reload order is unimportant.</p>
+<div data-type="example" id="example_twofive_ninedot_reloadallthreed">
+<h5><span class="label">Example 25-9. </span>reloadall3.py</h5>
+<pre data-type="programlisting">"""
+reloadall3.py: transitively reload nested modules.
+Alternative coding: nonrecursive, explicit stack.
+"""
+
+import types
+from reloadall import status, tryreload, tester
+
+def transitive_reload(objects, visited):
+    while objects:
+        next = objects.pop()                        <code><em># Delete next item at end</em></code>
+        if (type(next) == types.ModuleType          <code><em># Is it a module object?</em></code>
+            and next not in visited):               <code><em># Not already reloaded?</em></code>
+            status(next)                            <code><em># Reload this, push attrs</em></code>
+            tryreload(next)
+            visited.add(next)
+            objects.extend(next.__dict__.values())
+
+def reload_all(*args):
+    transitive_reload(list(args), set())
+
+if __name__ == '__main__':
+    tester(reload_all, 'reloadall3')                <code><em># Test: reload myself or arg</em></code></pre>
+</div>
+<p>If the recursion and nonrecursion used in these examples is confusing, see the discussion of recursive functions <a contenteditable="false" data-type="indexterm" data-primary="reloading modules" data-secondary="recursive coding" data-startref="relmodcdo" id="id3649"></a>in <a data-type="xref" href="ch19.html#function_odds_and_ends">Chapter 19</a> for more background on the subject.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Testing reload variants"><div class="sect3" id="testing_reload_variants">
+<h3>Testing reload variants</h3>
+<p>To prove that these two alternative <a contenteditable="false" data-type="indexterm" data-primary="reloading modules" data-secondary="reload variants" id="relmovarn"></a>reloaders work the same as the original, let’s test all three of our reloader variants. Thanks to their common testing function, we can run all three from a command line both with no arguments to test the module reloading itself, and with the name of a module to be reloaded listed on the command line (in <code>sys.argv</code>):</p>
+<pre data-type="programlisting">$ <code><strong>python3 reloadall.py</strong></code>
+reloading reloadall
+reloading types
+
+$ <code><strong>python3 reloadall2.py</strong></code>
+reloading reloadall2
+reloading types
+
+$ <code><strong>python3 reloadall3.py</strong></code>
+reloading reloadall3
+reloading types</pre>
+<p>Though it’s hard to see here, we really are testing the individual reloader alternatives—each of these tests shares a common <code>tester</code> function but passes it the <code>reload_all</code> from its own file. Here are the variants reloading the <code>tkinter</code> GUI module and all the modules its imports reach; again, the third’s reloads order varies:</p>
+<pre data-type="programlisting">$ <code><strong>python3 reloadall.py tkinter</strong></code>
+reloading tkinter
+reloading collections
+reloading collections.abc 
+…<code><em>etc</em></code>…
+$ <code><strong>python3 reloadall2.py tkinter</strong></code>
+reloading tkinter
+reloading collections
+reloading collections.abc 
+…<code><em>etc</em></code>…
+$ <code><strong>python3 reloadall3.py tkinter</strong></code>
+reloading tkinter
+reloading re
+reloading copyreg 
+…<code><em>etc</em></code>…</pre>
+<p>As usual, we can test interactively, too, by importing and calling either a module’s main reload entry point with a module object, or the testing function with a reloader function and module name string:</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>import reloadall, reloadall2, reloadall3
+</strong></code>&gt;&gt;&gt; <code><strong>import tkinter
+</strong></code>&gt;&gt;&gt; <code><strong>reloadall.reload_all(tkinter)</strong></code>                           <code><em># Normal use case</em></code>
+reloading tkinter
+reloading collections
+reloading collections.abc
+…<code><em>etc</em></code>…
+&gt;&gt;&gt; <code><strong>reloadall.tester(reloadall2.reload_all, 'tkinter')</strong></code>      <code><em># Testing utility</em></code>
+reloading tkinter
+reloading collections
+reloading collections.abc
+…<code><em>etc</em></code>…
+&gt;&gt;&gt; <code><strong>reloadall.tester(reloadall3.reload_all, 'reloadall3')</strong></code>   <code><em># Mimic self-test code
+</em></code>reloading reloadall3
+reloading types</pre>
+<p>Finally, as noted, the third reloader’s results will generally vary by <em>order</em>; reload order in all reloaders depends on namespace dictionary ordering (which, as we’ve learned is deterministically ordered by key insertion time today), but the last also relies on the order in which items are added to its stack. To ensure that all three are reloading the same modules irrespective of the order in which they do so, we can use <em>sets</em> or <em>sorts</em> to test for order-neutral equality of their printed messages—obtained here by running shell commands with the <code>os.popen</code> utility we used in <a data-type="xref" href="ch21.html#the_benchmarking_interlude">Chapter 21</a>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import os
+</strong></code>&gt;&gt;&gt; <code><strong>res1 = os.popen('python3 reloadall.py tkinter').readlines()
+</strong></code>&gt;&gt;&gt; <code><strong>res2 = os.popen('python3 reloadall2.py tkinter').readlines()
+</strong></code>&gt;&gt;&gt; <code><strong>res3 = os.popen('python3 reloadall3.py tkinter').readlines()</strong></code>
+
+&gt;&gt;&gt; <code><strong>res1[:3]</strong></code>
+['reloading tkinter\n', 'reloading collections\n', 'reloading collections.abc\n']
+&gt;&gt;&gt; <code><strong>res3[:3]</strong></code>
+['reloading tkinter\n', 'reloading re\n', 'reloading copyreg\n'] 
+
+&gt;&gt;&gt; <code><strong>res1 == res2, res2 == res3</strong></code>
+(True, False) 
+&gt;&gt;&gt; <code><strong>set(res2) == set(res3)</strong>   </code>               <code><em># Order-neutral equality</em></code>
+True
+&gt;&gt;&gt; <code><strong>sorted(res2) == sorted(res3)</strong>  </code>          <code><em># Ditto</em></code>
+True</pre>
+<p>Run these scripts, study their code, and experiment on your own for more insight; these are the sort of importable tools you might want to add to your own source code library. Watch for a similar testing technique in the coverage of class tree listers in <a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a>, where we’ll apply it to passed <em>class</em> objects and extend it further.</p>
+<p>Caveats: keep in mind that all the transitive reloaders, like the <code>reload</code> built-in that they use, rely on the fact that module reloads update module objects <em>in place</em>, such that all references to those modules in any namespace will see the updated version automatically. Because <code>from</code> importers copy names out, they are not updated by reloads, transitive or not. Perhaps worse, modules imported only by <code>from</code> won’t be reloaded, because they do not exist in any importer’s namespace scanned. Doing better may require either source code analysis or import customization.</p>
+<p>Tool impacts like this are perhaps another <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="imports" data-tertiary="name strings" data-startref="mdmpnstr" id="id3650"></a><a contenteditable="false" data-type="indexterm" data-primary="name strings, module imports" data-secondary="reloads" data-startref="nsmprld" id="id3651"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="reloads" data-tertiary="recursive reloaders" data-startref="morerc" id="id3652"></a><a contenteditable="false" data-type="indexterm" data-primary="reloading modules" data-secondary="reload variants" data-startref="relmovarn" id="id3653"></a>reason to prefer <code>import</code> to <code>from</code>—which brings us to the end of this chapter and part, and the standard set of warnings for this part’s topic.</p>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Module Gotchas"><div class="sect1" id="module_gotchas">
+<h1>Module Gotchas</h1>
+<p>In this section, we’ll explore the usual collection of boundary cases that can make life interesting for Python beginners. Some are review here, and a few are so obscure that coming up with representative examples can be a challenge, but most illustrate something important about the language.</p>
+<section data-type="sect2" data-pdf-bookmark="Module Name Clashes: Package and Package-Relative Imports"><div class="sect2" id="module_name_clashes_package_and_package">
+<h2>Module Name Clashes: Package and Package-Relative Imports</h2>
+<p>If you have two modules of the <a contenteditable="false" data-type="indexterm" data-primary="name clashes" id="id3654"></a><a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="name clashes" id="id3655"></a><a contenteditable="false" data-type="indexterm" data-primary="package-relative imports" data-secondary="name clashes" id="id3656"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="package-relative" data-tertiary="name clashes" id="id3657"></a>same name, you may only be able to import one of them—by default, the one whose directory is leftmost in the <code>sys.path</code> module search path will always be chosen. This isn’t an issue if the module you prefer is in your top-level script’s directory; since that is always first in the module path, its contents will be located first automatically. For cross-directory imports, however, the linear nature of the module search path means that same-named files can clash.</p>
+<p><em>To fix this</em>, either avoid same-named files or use the package imports feature of <a data-type="xref" href="ch24.html#module_packages">Chapter 24</a>. If you really need to get to two files of the same name, the latter is the solution: structure your source files in subdirectories, such that package-import directory names make the module references unique. As long as the enclosing package directory names are unique, you’ll be able to access either or both of the same-named modules.</p>
+<p>This issue can also crop up if you accidentally use a name for a module of your own that happens to be the same as a standard-library module you need—your local module in the program’s home directory (or another directory early in the module path) can hide and replace the library module.</p>
+<p><em>To fix that</em>, either avoid using the same name as another module you need or store your modules in a package directory and use the package-relative import model of <a data-type="xref" href="ch24.html#module_packages">Chapter 24</a>. In this model, normal imports skip the package directory to access the library’s version, but special dotted import statements can still select the local version of the module.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Statement Order Matters in Top-Level Code"><div class="sect2" id="statement_order_matters_in_top_level_co">
+<h2>Statement Order Matters in Top-Level Code</h2>
+<p>As we’ve seen, when a module is <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="imports" data-tertiary="statement order" id="modposrd"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="modules" data-tertiary="statement order" id="pmmdstmr"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="order" id="sttmrd"></a>first imported (or later reloaded), Python executes its statements one by one, from the top of the file to the bottom. This has a few subtle implications regarding <em>forward references</em> that are worth underscoring here:</p>
+<ul>
+<li><p>Code at the <em>top level</em> of a module file (not nested in a function) runs as soon as Python reaches it during an import; because of that, it cannot reference names assigned <em>lower</em> in the file.</p></li>
+<li><p>Code inside a <em>function</em> body doesn’t run until the function is called; because names in a function aren’t resolved until the function actually runs, they can usually reference names <em>anywhere</em> in the file.</p></li>
+</ul>
+<p>In other words, forward references are usually only a concern in top-level module code that executes immediately; functions can reference names arbitrarily. Here’s a file that illustrates forward reference dos and don’ts:</p>
+<pre data-type="programlisting">func1()                           <code><em># Error: func1 not yet assigned</em></code>
+
+def func1():
+    print(func2())                <code><em># OK: func2 looked up later</em></code>
+
+func1()                           <code><em># Error: func2 not yet assigned</em></code>
+
+def func2():
+    return "Hello"
+
+func1()                           <code><em># OK: func1 and func2 assigned</em></code></pre>
+<p>When this file is imported (or run as a standalone program), Python executes its statements from top to bottom. The first call to <code>func1</code> fails because the <code>func1 def</code> hasn’t run yet. The call to <code>func2</code> inside <code>func1</code> works as long as <code>func2</code>’s <code>def</code> has been reached by the time <code>func1</code> is called—and it hasn’t when the second top-level <code>func1</code> call is run. The last call to <code>func1</code> at the bottom of the file works because <code>func1</code> and <code>func2</code> have both been assigned.</p>
+<p>Mixing <code>def</code>s with top-level code is not only difficult to read, but it’s also dependent on statement ordering. As a rule of thumb, if you need to mix immediate code with <code>def</code>s, put your <code>def</code>s at the top of the file and your top-level code at the bottom. That way, your functions are guaranteed <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="imports" data-tertiary="statement order" data-startref="modposrd" id="id3658"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="modules" data-tertiary="statement order" data-startref="pmmdstmr" id="id3659"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="order" data-startref="sttmrd" id="id3660"></a>to be defined and assigned by the time Python runs the code that uses them.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="from Copies Names but Doesn’t Link"><div class="sect2" id="from_copies_names_but_doesnapostrophet">
+<h2>from Copies Names but Doesn’t Link</h2>
+<p>Although it’s commonly used, the <code>from</code> statement is the source of a variety of potential gotchas <a contenteditable="false" data-type="indexterm" data-primary="from statement" data-secondary="link problems" id="id3661"></a>in Python. As we’ve seen, the <code>from</code> statement is really an assignment to names in the importer’s scope—a <em>name-copy</em> operation, not a name aliasing. The implications of this are the same as for all assignments in Python, but they’re especially subtle for names that live in different files. As a refresher, suppose we define the simple module <em>nested.py</em> in <a data-type="xref" href="#example_twofive_onezerodot_nesteddotpy">Example 25-10</a>.</p>
+<div data-type="example" id="example_twofive_onezerodot_nesteddotpy">
+<h5><span class="label">Example 25-10. </span>nested.py</h5>
+<pre data-type="programlisting">X = 99
+def printer(): print(X)</pre>
+</div>
+<p>If we import its two names using <code>from</code> in another module (or the REPL, which stands in for one), we get copies of those names, not links to them. Changing a name in the importer resets only the binding of the local version of that name, not the name in <em>nested1.py</em>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from nested import X, printer</strong></code>     <code><em># Copy names out</em></code>
+&gt;&gt;&gt; <code><strong>X = 88</strong></code>                            <code><em># Changes my X only!</em></code>
+&gt;&gt;&gt; <code><strong>printer()</strong></code>                         <code><em># nested1's X is still 99</em></code>
+99</pre>
+<p>If we instead use <code>import</code> to get the whole module and assign to a qualified name, we change the name in <code>nested1</code> (the module’s loaded image, not its source code). Attribute qualification directs Python to a name in the module object, rather than a name in the importer:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>import nested</strong></code>                     <code><em># Get module as a whole</em></code>
+&gt;&gt;&gt; <code><strong>nested.X = 88</strong></code>                     <code><em># Change nested1's X</em></code>
+&gt;&gt;&gt; <code><strong>nested.printer()</strong></code>
+88</pre>
+<p>Takeaway: changes to names obtained with <code>from</code> don’t impact any other module. As covered in <a data-type="xref" href="ch23.html#module_coding_basics">Chapter 23</a>, changes to mutable <em>objects</em> shared by names copied with <code>from</code> can impact other modules, but name changes cannot.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="from * Can Obscure the Meaning of Variables"><div class="sect2" id="from_asterisk_can_obscure_the_meaning_o">
+<h2>from * Can Obscure the Meaning of Variables</h2>
+<p>This was mentioned earlier but its demo was saved for here. Because you don’t list the variables you want <a contenteditable="false" data-type="indexterm" data-primary="from * statement" data-secondary="variable meanings" id="id3662"></a><a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="from * statement" id="id3663"></a>when using the <code>from *</code> statement form, it can accidentally overwrite names you’re already using in your scope. Worse, it can make it difficult to determine where a variable comes from. This is especially true if the <code>from *</code> form is used on more than one imported file.</p>
+<p>For example, if you use <code>from *</code> on three modules in the following, you’ll have no way of knowing what a raw function call really means, short of searching all three external module files—all of which may be in other directories:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from module1 import *</strong></code>          <code><em># May overwrite names silently</em></code>
+&gt;&gt;&gt; <code><strong>from module2 import *</strong></code>          <code><em># No way to tell what we get
+</em></code>&gt;&gt;&gt; <code><strong>from module3 import *</strong></code>          <code><em># No way to see name origins</em></code>
+
+&gt;&gt;&gt; <code><strong>func()</strong></code>                         <code><em># Huh?</em></code></pre>
+<p>The solution is simply not to do this: list the attributes you want in most <code>from</code> statements, and use at most one <code>from</code> * per file. That way, any undefined names must by deduction be in the module named in the single from *. You can avoid the issue altogether if you always use <code>import</code> instead of <code>from</code>, but that advice is too harsh; like much else in programming, <code>from</code> is a convenient tool if used wisely. Even this example isn’t an absolute evil—it’s OK for a program to use this technique to collect names in a single module for convenience, as long as it’s well known.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="reload May Not Impact from Imports"><div class="sect2" id="reload_may_not_impact_from_imports">
+<h2>reload May Not Impact from Imports</h2>
+<p>Here’s another <code>from</code>-related gotcha: as discussed previously, because <code>from</code> copies (assigns) names when run, there’s no link back to the modules where the <a contenteditable="false" data-type="indexterm" data-primary="from statement" data-secondary="reloads" id="id3664"></a><a contenteditable="false" data-type="indexterm" data-primary="reload function" data-secondary="from imports" id="id3665"></a>names came from. Names imported with <code>from</code> simply become references to objects, which happen to have been referenced by the same names in the importee when the <code>from</code> ran.</p>
+<p>Because of this behavior, reloading the module of origin has no effect on clients that import its names using <code>from</code>. That is, the client’s names will still reference the <em>original</em> objects fetched with <code>from</code>, even if the names in the original module are later reset. Here’s the story in abstract code:</p>
+<pre data-type="programlisting">from module import X               <code><em># X may not reflect any module reloads</em></code>
+…
+from importlib import reload
+reload(module)                     <code><em># Changes module, but not my names
+</em></code>X                                <code> <em> # Still references old object!</em></code></pre>
+<p>To make reloads more effective, use <code>import</code> and name qualification instead of <code>from</code>. Because qualifications always go back to the module, they will find the new bindings of module names after reloading has updated the module’s content in place:</p>
+<pre class="pagebreak-before" data-type="programlisting">import module                      <code><em># Get module, not names</em></code>
+…
+from importlib import reload
+reload(module)                     <code><em># Changes module in place</em></code>
+module.X                           <code><em># Get current X: reflects module reloads</em></code></pre>
+<p>This is why our transitive reloader earlier in this chapter doesn’t apply to names fetched with <code>from</code>, only <code>import</code>; again, if you’re going to use reloads, you’re probably better off with <code>import</code>.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="reload, from, and Interactive Testing"><div class="sect2" id="reloadcomma_fromcomma_and_interactive_t">
+<h2>reload, from, and Interactive Testing</h2>
+<p>In fact, the prior gotcha is even more nuanced <a contenteditable="false" data-type="indexterm" data-primary="reload function" data-secondary="interactive testing and" id="id3666"></a><a contenteditable="false" data-type="indexterm" data-primary="from statement" data-secondary="interactive statement" id="id3667"></a><a contenteditable="false" data-type="indexterm" data-primary="interactive tests" data-secondary="reload statement" id="id3668"></a><a contenteditable="false" data-type="indexterm" data-primary="interactive tests" data-secondary="from statement" id="id3669"></a>than it appears. <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a> warned that it’s usually better not to launch programs with imports and reloads because of the complexities involved. Things get even worse when <code>from</code> is brought into the mix. Python beginners most often stumble onto its issues in scenarios like this—imagine that after opening a module file in a text edit window, you launch an interactive session to load and test your module with <code>from</code>:</p>
+<pre data-type="programlisting">from module import function
+function(1, 2, 3)</pre>
+<p>Finding a bug, you jump back to the edit window, make a change, and try to reload the module this way:</p>
+<pre data-type="programlisting">from importlib import reload
+reload(module)</pre>
+<p>This doesn’t work, because the <code>from</code> statement assigned only the name <code>function</code>, not <code>module</code>. To refer to the module in a <code>reload</code>, you have to first bind its name with an <code>import</code> statement at least once:</p>
+<pre data-type="programlisting">from importlib import reload
+import module
+reload(module)
+function(1, 2, 3)</pre>
+<p>But this doesn’t quite work either—<code>reload</code> updates the module object in place, but as discussed in the preceding section, names like <code>function</code> that were copied out of the module in the past still refer to the <em>old objects</em>; in this instance, <code>function</code> is still the original version of the function. To really get the new function, you must refer to it as <code>module.function</code> after the <code>reload</code>, or rerun the <code>from</code>:</p>
+<pre data-type="programlisting">from importlib import reload
+import module
+reload(module)
+from module import function        <code><em># Or give up and use module.function()!</em></code>
+function(1, 2, 3)</pre>
+<p>Now, the new version of the function will finally run, but it seems an awful lot of work to get there.</p>
+<p>As you can see, there are problems inherent in using <code>reload</code> with <code>from</code>: not only do you have to remember to reload after imports, but you also have to remember to rerun your <code>from</code> statements after reloads. This is complex enough to trip up even an expert once in a while. In fact, the situation grew even worse with Python 3.X, because you must also remember to import <code>reload</code> itself!</p>
+<p>The short story is that you should not expect <code>reload</code> and <code>from</code> to play together nicely. Again, the best policy is not to combine them at all—use <code>reload</code> with <code>import</code>, or launch your programs other ways, as suggested in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a>: using menu options in IDLE, file icon clicks, system command lines, the <code>exec</code> built-in function, or other.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Recursive from Imports May Not Work"><div class="sect2" id="recursive_from_imports_may_not_work">
+<h2>Recursive from Imports May Not Work</h2>
+<p>The most bizarre (and, thankfully, obscure) gotcha has been saved for last. Because imports execute a file’s statements <a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="from imports" id="rcrimpt"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="recursive" id="potcrv"></a><a contenteditable="false" data-type="indexterm" data-primary="circular imports" data-see="recursion" id="id3670"></a>from top to bottom, you need to be careful when using modules that import each other. This is often called <em>recursive</em> imports, but the recursion doesn’t really occur (in fact, <em>circular</em> may be a better term here)—such imports won’t get stuck in infinite importing loops. Still, because the statements in a module may not all have been run when it imports another module, some of its names may not yet exist.</p>
+<p>If you use <code>import</code> to fetch the module as a whole, this probably doesn’t matter; the module’s names won’t be accessed until you later use qualification to fetch their values, and by that time the module is likely complete. But if you use <code>from</code> to fetch specific names, you must bear in mind that you will only have access to names in that module that have already been assigned when a recursive import is kicked off.</p>
+<p>As a demo of this phenomenon, consider the modules <code>recur1</code> and <code>recur2</code>, in Examples <a data-type="xref" data-xrefstyle="select:labelnumber" href="#example_twofive_oneonedot_recuronedotpy">25-11</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="#example_twofive_onetwodot_recurtwodotpy">25-12</a>.</p>
+<div data-type="example" id="example_twofive_oneonedot_recuronedotpy">
+<h5><span class="label">Example 25-11. </span>recur1.py</h5>
+<pre data-type="programlisting">X = 1
+import recur2            <code><em># Run recur2 now if it doesn't exist</em></code>
+Y = 2</pre>
+</div>
+<div data-type="example" id="example_twofive_onetwodot_recurtwodotpy">
+<h5><span class="label">Example 25-12. </span>recur2.py</h5>
+<pre data-type="programlisting">from recur1 import X     <code><em># OK: X already assigned
+</em></code>from recur1 import Y     <code><em># Error: Y not yet assigned</em></code></pre>
+</div>
+<p>Module <code>recur1</code> assigns a name <code>X</code> and then imports <code>recur2</code> before assigning the name <code>Y</code>. At this point, <code>recur2</code> can fetch <code>recur1</code> as a whole with an <code>import</code>—it already exists in Python’s internal modules table, which makes it importable, and also prevents the imports from looping. But if <code>recur2</code> uses <code>from</code>, it will be able to see only the name <code>X</code>; the name <code>Y</code>, which is assigned below the <code>import</code> in <code>recur1</code>, doesn’t yet exist, so you get an error:</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>import recur1</strong></code>
+ImportError: cannot import name 'Y' from partially initialized module 'recur1' 
+(most likely due to a circular import) (/…/LP6E/Chapter25/recur1.py)</pre>
+<p>Python avoids rerunning <code>recur1</code>’s statements when they are imported recursively from <code>recur2</code> (otherwise the imports would send the script into an infinite loop that might require a Ctrl+C solution or worse), but <code>recur1</code>’s namespace is incomplete when it’s imported by <code>recur2</code>.</p>
+<p>The solution? Don’t use <code>from</code> in recursive imports (no, really!). Python won’t get stuck in a cycle if you do, but your programs will once again be dependent on the order of the statements in the modules. In fact, there are two ways out of this gotcha:</p>
+<ul>
+<li><p>You can usually eliminate import cycles like this by careful design—maximizing cohesion and minimizing coupling per the start of this chapter are good first steps.</p></li>
+<li class="pagebreak-before"><p>If you can’t break the cycles completely, postpone module name accesses by using <code>import</code> and attribute qualification (instead of <code>from</code> and direct names), or by running your <code>from</code>s either inside functions (instead of at the top level of the module) or near the bottom of your file to defer their execution.</p></li>
+</ul>
+<p>There is additional perspective on this issue in <a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="from imports" data-startref="rcrimpt" id="id3671"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="recursive" data-startref="potcrv" id="id3672"></a>the exercises at the end of this chapter—which we’ve officially reached.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00036">
+<h1>Chapter Summary</h1>
+<p>This chapter surveyed module topics, some of which qualify as advanced. We studied data-hiding techniques, enabling new language features with the <code>__future__</code> module, the <code>__name__</code> usage-mode variable, transitive reloads, importing by name strings, and more. We also explored module design issues, wrote some substantial programs, and looked at common mistakes related to modules to help you avoid them in your code.</p>
+<p>The next chapter begins our exploration of Python’s <em>class</em>—its object-oriented programming tool. Much of what we’ve covered in the last few chapters will apply there, too: classes live in modules and are namespaces as well, but they add an extra component to attribute lookup called <em>inheritance search</em>. As this is the last chapter in this part of the book, however, before we dive into classes, be sure to work through this part’s set of lab exercises. And before that, here is this chapter’s quiz to review the topics covered here.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000171">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>What is significant about variables at the top level of a module whose names begin with a single underscore?</p></li>
+<li><p>What does it mean when a module’s <code>__name__</code> variable is the string <code>'__main__'</code>?</p></li>
+<li><p>How might you step through all the attributes in a module with a loop?</p></li>
+<li><p>If the user interactively types the name of a module to test, how can your code import it?</p></li>
+<li><p>If the module <code>__future__</code> allows us to import from the future, can we also import from the past?</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000170">
+<h1>Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>Variables at the top level of a module whose names begin with a single underscore are <em>not</em> copied out to the importing scope when the <code>from *</code> statement form is used. They can still be accessed by an <code>import</code> or the normal <code>from</code> statement form, though. The <code>__all__</code> list is similar, but the logical converse; its contents are the only names that <em>are</em> copied out for a <code>from *</code>.</p></li>
+<li><p>If a module’s <code>__name__</code> variable is the string <code>'__main__'</code>, it means that the file is being executed as a top-level script instead of being imported from another file in the program. That is, the file is being used as a program, not a library. This usage mode variable supports dual-mode code and tests.</p></li>
+<li><p>By using the module’s built-in <code>__dict__</code> attribute. This is a normal dictionary that holds all of the module’s attributes, so code can iterate over its keys, values, or key/value pairs. When needed, attribute values can also be fetched for string names by indexing <code>__dict__</code>, or calling the <code>getattr</code> built-in function.</p></li>
+<li><p>User input usually comes into a script as a string; to import the referenced module given its string name, you can build and run an <code>import</code> statement with <code>exec</code>, or pass the string name in a call to the <code>__import__</code> or <code>importlib.import_module</code> functions.</p></li>
+<li><p>No, we can’t import from the past in Python. We can install (or stubbornly use) an older version of the language, but the latest Python is generally the best Python (with apologies to 2.X fans in the audience).</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Part V Exercises"><div class="sect1" id="test_your_knowledge_part_v_exercises">
+<h1>Test Your Knowledge: Part V Exercises</h1>
+<p>See <a data-type="xref" href="app02.html#part_vcomma_modules_and_packages">“Part V, Modules and Packages”</a> in <a data-type="xref" href="app02.html#appendix_b_solutions_to_end_of_part_exe">Appendix B</a> for the solutions.</p>
+<ol>
+<li><p><em>Import basics</em>: Write a program that counts the lines and characters in a file (similar in spirit to part of what <code>wc</code> does on Unix). With your text editor, code a Python module called <em>mymod.py</em> that exports three top-level names:</p>
+<ul>
+<li><p>A <code>countLines(<em>name</em>)</code> function that reads an input file specified by string <code><em>name</em></code>, and counts the number of lines in it (hint: <code><em>file</em>.readlines</code> does most of the work for you, and <code>len</code> does the rest, though you could count with <code>for</code> and file iterators to support massive files too).</p></li>
+<li><p>A <code>countChars(<em>name</em>)</code> function that reads an input file and counts the number of characters in it (hint: <code><em>file</em>.read</code> returns a single string, which may be used in similar ways).</p></li>
+<li><p>A <code>test(<em>name</em>)</code> function that calls both counting functions with a given input filename. Such a filename generally might be passed in, hardcoded, input from a user like you with the <code>input</code> built-in function, or pulled from a command line via the <code>sys.argv</code> list demoed in this chapter’s <em>reloadall.py</em> example; for now, you can assume it’s a passed-in function argument.</p></li>
+</ul>
+<p>All three <code>mymod</code> functions should expect a filename string to be passed in. If you type more than two or three lines per function, you’re working much too hard—use the hints given!</p>
+<p>Next, test your module interactively, using <code>import</code> and attribute references to fetch your exports. Does your <code>PYTHONPATH</code> need to include the directory where you created <em>mymod.py</em>? Try running your module on itself: for example, <code>test('mymod.py')</code>. Note that <code>test</code> opens the file twice; if you’re feeling ambitious, you may be able to improve this by passing an open file object into the two count functions (hint: <code><em>file</em>.seek(0)</code> is a file rewind).</p></li>
+<li><p><code>from/from *</code>: Test your <code>mymod</code> module from exercise 1 interactively by using <code>from</code> to load the exports directly, first by name, then using the <code>from *</code> variant to fetch everything.</p></li>
+<li><p><code>__main__</code>: Add a line in your <code>mymod</code> module that calls the <code>test</code> function automatically only when the module is run as a script, not when it is imported. The line you add will probably test the value of <code>__name__</code> for the string <code>'__main__'</code>, as shown in this chapter. Try running your module from the system command line or other program-launch scheme; then, import the module and test its functions interactively. Does it still work in both modes?</p></li>
+<li><p><em>Nested imports</em>: Write a second module, <em>myclient.py</em>, that imports <code>mymod</code> and tests its functions; then run <code>myclient</code> from the system command line or other scheme. If <code>myclient</code> uses <code>from</code> to fetch from <code>mymod</code>, will <code>mymod</code>’s functions be accessible from the top level of <code>myclient</code>? What if it imports with <code>import</code> instead? Try coding both variations in <code>myclient</code> and test interactively by importing <code>myclient</code> and inspecting its <code>__dict__</code> attribute.</p></li>
+<li class="pagebreak-before"><p><em>Package imports</em>: Import your <em>mymod.py</em> file from a package. Create a subdirectory called <em>mypkg</em> nested in a directory on your module import search path, copy or move the <em>mymod.py</em> module file you created in exercise 1 or 3 into the new directory, and try to import it with a package import of the form <code>import mypkg.mymod</code> and call its functions. Try to fetch your counter functions with a <code>from</code> too.</p>
+<p>This works on all Python platforms (that’s part of the reason Python uses “.” as a path separator). The package directory you create can be simply a subdirectory of the one you’re working in; if it is, it will be found via the home directory component of the search path, and you won’t have to configure your path. </p>
+<p>You also don’t need an <em>__init__.py</em> file in the package directory your module was moved into to make this go, but make one with some basic prints in it and see if they run on each import or reload of the package folder. Finally, also copy <em>mymod.py</em> to the package folder’s <em>__main__.py</em> and invoke it by running the folder itself; does it make sense to do that here? Can you still run the nested <em>mymod.py</em> module itself?</p></li>
+<li><p><em>Reloads</em>: Experiment with module reloads: if you haven’t already, perform the tests in <a data-type="xref" href="ch23.html#module_coding_basics">Chapter 23</a>’s <em>changer.py</em> (<a data-type="xref" href="ch23.html#example_twothree_onezerodot_changerdotp">Example 23-10</a>), changing the called function’s message or behavior repeatedly, without stopping the Python REPL. Depending on your device, you might edit <code>changer</code> in another window, or suspend the Python interpreter and edit in the same window (on Unix, a Ctrl+Z key combination usually suspends the current process, and an <code>fg</code> command later resumes it, though a separate text-editor window can work just as well).</p></li>
+<li><p><em>Circular imports</em>: In the section on recursive (a.k.a. circular) import gotchas, importing <code>recur1</code> raised an error. But if you restart Python and import <code>recur2</code> interactively, the error doesn’t occur—test this and see for yourself. Why do you think it works to import <code>recur2</code>, but not <code>recur1</code>? (Hint: Python records new modules before running their code, and later imports fetch the module first, whether the module is “complete” yet or not.)</p>
+<p>Now, run <code>recur1</code> as a top-level script file: <code>python3 recur1.py</code>. Do you get the same error that occurs when <code>recur1</code> is imported interactively? Why? (Hint: when modules are run as programs, they aren’t imported, so this case has the same effect as importing <code>recur2</code> interactively; <code>recur2</code> is the first module imported.) What happens when you run <code>recur2</code> as a script? Circular imports are uncommon in practice. On the other hand, if you can understand why they are a potential problem, you know a lot about Python’s import semantics.</p></li>
+</ol>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>

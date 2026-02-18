@@ -1,0 +1,817 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 17. Scopes"><div class="chapter" id="scopes">
+<h1><span class="label">Chapter 17. </span>Scopes</h1>
+<p>The preceding chapter introduced basic function definitions and calls. As we saw, Python’s core function model is simple to use, but even simple function examples quickly lead to questions about the meaning of variables in code. This chapter moves on to present the details behind Python’s <em>scopes</em>—the places where variables are defined and looked up. Like module files, scopes help prevent same-name clashes across a program’s code: names defined in one program unit don’t interfere with names in another.</p>
+<p>As you’ll learn here, the place where a name is assigned in your code is crucial to determining what the name means. You’ll also find that scope usage can have a major impact on program maintenance effort; overuse of <em>globals</em>, for example, is a generally bad idea. On the plus side, you’ll also learn that scopes can provide a way to retain <em>state information</em> between function calls, and they offer an alternative to classes in some roles.</p>
+<section data-type="sect1" data-pdf-bookmark="Python Scopes Basics"><div class="sect1" id="python_scopes_basics">
+<h1>Python Scopes Basics</h1>
+<p>Now that we’re starting to write our own functions, we need to get more formal about what names mean in Python. When we use a name in a program, Python creates, changes, or looks up the <a contenteditable="false" data-type="indexterm" data-primary="namespaces" id="id2911"></a><a contenteditable="false" data-type="indexterm" data-primary="scopes" id="id2912"></a>name in what is known as a <em>namespace</em>—a place where names live. And when we talk about names in relation to code, namespaces correspond to <em>scopes</em>: the location of a name’s assignment in your source code determines the scope of the name’s visibility in your program.</p>
+<p>Just about everything related to names, including scope classification, happens at assignment time in Python. As we’ve seen, names in Python spring into existence when they are first assigned values, and they must be assigned before they are used. Because names are not declared ahead of time, Python uses the location of the assignment of a name to associate it with (i.e., <em>bind</em> it to) a particular namespace and scope. In other words, the place where you assign a name in your source code determines the namespace it will live in, and hence its scope of visibility.</p>
+<p>Besides packaging code for reuse, functions add an extra namespace layer to your programs to minimize the potential for collisions among variables of the same name—by default, all names <em>assigned</em> inside a function are associated with that function’s namespace, and no other. This rule means that:</p>
+<ul>
+<li class="pagebreak-before"><p>Names assigned inside a <code>def</code> can be seen <a contenteditable="false" data-type="indexterm" data-primary="names" data-secondary="def statement" id="id2913"></a>only by the code <em>within</em> that <code>def</code>. You cannot even refer to such names from outside the function.</p></li>
+<li><p>Names assigned inside a <code>def</code> do not clash with variables outside the <code>def</code>, even if the same names are used elsewhere. A name <code>X</code> assigned <em>outside</em> a given <code>def</code> (i.e., in a different <code>def</code> or at the top level of a module file) is a completely different variable from a name <code>X</code> assigned <em>inside</em> that <code>def</code>.</p></li>
+<li><p>Names assigned in a <code>lambda</code> work <a contenteditable="false" data-type="indexterm" data-primary="lambda expression" data-secondary="names" id="id2914"></a><a contenteditable="false" data-type="indexterm" data-primary="names" data-secondary="lambda expressions" id="id2915"></a>the same way, though assignment in their expressions can happen only for arguments and <code>:=</code> named assignments, and is much less common than in <code>def</code>.</p></li>
+</ul>
+<p>In all cases, the scope of a variable (where it can be used) is wholly determined by where it is assigned <a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="scope" id="id2916"></a>in your source code, and has nothing to do with which functions call which. In fact, as you’ll learn in this chapter, variables may be assigned in three different places, corresponding to three different scopes:</p>
+<ul>
+<li><p>If a variable is assigned inside a <code>def</code> or <code>lambda</code>, it is <em>local</em> to that function.</p></li>
+<li><p>If a variable is assigned in an enclosing <code>def</code> or <code>lambda</code>, it is <em>nonlocal</em> to nested functions.</p></li>
+<li><p>If a variable is assigned outside all <code>def</code>s and <code>lambda</code>s, it is <em>global</em> to the entire file.</p></li>
+</ul>
+<p>We call this <em>lexical scoping</em> because <a contenteditable="false" data-type="indexterm" data-primary="lexical scoping" id="id2917"></a><a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="lexical scoping" id="id2918"></a>variable scopes are determined entirely by the locations of the variables in the source code of your program files, not by function calls. Hence, a simple visual inspection is enough to make the call.</p>
+<p>For example, in the following module file, the <code>X = 99</code> assignment creates a <em>global</em> variable named <code>X</code> (visible everywhere in this file), but the <code>X = 88</code> assignment creates a <em>local</em> variable <code>X</code> (visible only within the <code>def</code> statement). If we refer to <code>X</code> inside the function, we’ll get the function’s <code>X</code>, not the global:</p>
+<pre data-type="programlisting">X = 99                     <code><em># Global (module) scope X</em></code>
+
+def func():
+    X = 88                 <code><em># Local (function) scope X: a different variable</em></code></pre>
+<p>Even though both variables are named <code>X</code>, their scopes make them different. The net effect is that function scopes help to avoid name clashes in your programs and help to make functions more self-contained program units—their code need not be concerned with names used elsewhere.</p>
+<section data-type="sect2" data-pdf-bookmark="Scopes Overview"><div class="sect2" id="scopes_overview">
+<h2>Scopes Overview</h2>
+<p>Before we started writing functions, none of the code we wrote was nested in a <code>def</code>, so the names we used either lived in a module or were built-ins predefined by Python like <code>open</code> and <code>zip</code>. This includes code typed at the REPL: the interactive prompt is technically a module named <code>__main__</code> that prints results and doesn’t correspond to a real file; in all other ways, though, it’s like the top level of a module file.</p>
+<p>Functions, though, provide <a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="global scopes" id="id2919"></a><a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="local scopes" id="id2920"></a><a contenteditable="false" data-type="indexterm" data-primary="local scopes" id="id2921"></a>nested namespaces (scopes) that localize the names they use, such that names inside a function won’t clash with those outside it (in a module or another function). Specifically, functions define a <em>local scope</em> and modules define a <em>global scope</em> with the following properties:</p>
+<ul>
+<li><p><strong>The enclosing module is a global scope.</strong> Each module is a global scope—that is, a namespace in which variables created by assignment at the top level of the module file live. Global variables become attributes of a module object to the outside world after imports but can also be used as simple variables within the module file itself.</p></li>
+<li><p><strong>The global scope spans a single file only.</strong> Don’t be fooled by the word “global” here—names at the top level of a file are global to code within that single file only. There is no notion of an all-encompassing global scope that corresponds to user code in Python (built-ins are truly global, but not user defined). Instead, names are partitioned into modules, and you must always import a module explicitly if you want to be able to use the names its file defines. When you hear “global” in Python, think “module.”</p></li>
+<li><p><strong>Assigned names are <a contenteditable="false" data-type="indexterm" data-primary="names" data-secondary="local" id="id2922"></a>local unless declared global or nonlocal.</strong> By default, all the names assigned inside a function definition are put in its local scope—the namespace associated with the function itself. To assign a name that lives at the top level of the module enclosing a function, declare it in a <code>global</code> statement inside the function. To assign a name that lives in an enclosing <code>def</code> instead, declare it in a <code>nonlocal</code> statement. Because <code>lambda</code> bodies are limited to expressions, these two statements are just for <code>def</code>.</p></li>
+<li><p><strong>All other names are enclosing function locals, globals, or built-ins.</strong> Names <em>not</em> assigned a value in the function definition are assumed to be either locals defined in a physically <em>enclosing</em> function, <em>globals</em> that live in the enclosing module’s namespace, or <em>built-ins</em> in the predefined built-ins module that Python provides. Enclosing scopes can arise for any <code>def</code> and <code>lambda</code> combo, though <code>def</code> can’t be coded in <code>lambda</code>.</p></li>
+<li><p><strong>Each call to a function creates a new local scope.</strong> Every time you call a function, you create a <em>new</em> local scope—that is, a namespace in which the names created inside that function will live, barring <code>global</code> or <code>nonlocal</code> statements. You can think of each <code>def</code> statement and <code>lambda</code> expression as defining a new local scope, but the local scope actually corresponds to a function <em>call</em>, for reasons the next bullet explains.</p></li>
+<li><p><strong>Per-call scopes matter in <a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="per-call scopes" id="id2923"></a><a contenteditable="false" data-type="indexterm" data-primary="per-call scopes" id="id2924"></a><a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="local variables" id="id2925"></a><a contenteditable="false" data-type="indexterm" data-primary="local variables" data-secondary="recursion" id="id2926"></a>recursion and closures.</strong> It’s crucial that each active call receive its own copy of the function’s local variables when using <em>recursion</em>, an advanced technique that allows functions to loop by calling themselves, and noted briefly in <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a> for comparisons. Recursion is useful in functions we write as well, to process structures whose shapes can’t be predicted ahead of time; we’ll explore it more fully in <a data-type="xref" href="ch19.html#function_odds_and_ends">Chapter 19</a>. Per-call scopes are also required for the <em>closure</em> functions covered ahead here: each call gets a fresh packet of the function’s locals, which can remember state-information objects to be used later.</p></li>
+</ul>
+<p>Beyond those basics, there are three subtleties worth underscoring. First, as noted, code typed at the Python <em>interactive prompt</em> lives in a module, too, and follows the normal scope rules: names assigned there are global variables, accessible to the entire interactive session. You’ll learn more about modules in the next part of this book.</p>
+<p>Second, also bear in mind that <em>any type of assignment</em> classifies a name as local or global, based on where the assignment appears. This includes <code>=</code> statements and <code>:=</code> expressions; module names in <code>import</code>; function and argument <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="names" id="id2927"></a><a contenteditable="false" data-type="indexterm" data-primary="names" data-secondary="assignments" id="id2928"></a>names in <code>def</code>; names in <code>class</code> covered later; and so on. If you assign a name in any way within a function, it will be local to that function by default. This includes its arguments listed in its header, but also names in its body’s code.</p>
+<p>Third, <em>in-place changes</em> to objects do <a contenteditable="false" data-type="indexterm" data-primary="in-place changes" data-secondary="names" id="id2929"></a><a contenteditable="false" data-type="indexterm" data-primary="names" data-secondary="in-place changes" id="id2930"></a>not classify names as locals; only actual <em>name</em> assignments do. For instance, if the name <code>L</code> is assigned to a list at the top level of a module, a statement <code>L = X</code> within a function will classify <code>L</code> as a local, but <code>L.append(X)</code> will not. In the latter case, we are changing the list object that <code>L</code> references, not <code>L</code> itself—hence, <code>L</code> is found in the global scope as usual, and Python happily modifies it without requiring a <code>global</code> declaration. As usual, it helps to keep the distinction between names and objects clear: changing an object is not an assignment to a name.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Name Resolution: The LEGB Rule"><div class="sect2" id="name_resolution_the_legb_rule">
+<h2>Name Resolution: The LEGB Rule</h2>
+<p>If the prior section sounds complicated, it <a contenteditable="false" data-type="indexterm" data-primary="LEGB rule" id="legbrle"></a><a contenteditable="false" data-type="indexterm" data-primary="names" data-secondary="LEGB rule" id="nmsbgr"></a>really boils down to three simple rules. Within a <code>def</code> <span class="keep-together">statement</span>:</p>
+<ul>
+<li><p>Name <em>assignments</em> create or <a contenteditable="false" data-type="indexterm" data-primary="names" data-secondary="assignments" id="id2931"></a><a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="names" id="id2932"></a>change local names by default.</p></li>
+<li><p>Name <em>references</em> search at <a contenteditable="false" data-type="indexterm" data-primary="names" data-secondary="references" id="id2933"></a><a contenteditable="false" data-type="indexterm" data-primary="references" data-secondary="names" id="id2934"></a>most four scopes: local, then enclosing functions (if any), then global, then built-in.</p></li>
+<li><p>Names declared in <code>global</code> and <code>nonlocal</code> statements map assigned names to enclosing <a contenteditable="false" data-type="indexterm" data-primary="names" data-secondary="global statements" id="id2935"></a><a contenteditable="false" data-type="indexterm" data-primary="names" data-secondary="nonlocal statements" id="id2936"></a>module and function scopes, respectively.</p></li>
+</ul>
+<p>The same goes for <code>lambda</code>, except for the last bullet: it doesn’t support statements.</p>
+<p>In other words, all names assigned <a contenteditable="false" data-type="indexterm" data-primary="names" data-secondary="def statements" id="id2937"></a><a contenteditable="false" data-type="indexterm" data-primary="def statement" data-secondary="name assignments" id="id2938"></a><a contenteditable="false" data-type="indexterm" data-primary="names" data-secondary="lambda statements" id="id2939"></a><a contenteditable="false" data-type="indexterm" data-primary="lambda expression" data-secondary="name assignments" id="id2940"></a>inside a function <code>def</code> statement or <code>lambda</code> expression are locals by default. Functions can freely use names assigned in syntactically enclosing functions and the global scope, but they must declare such nonlocals and globals in order to change them.</p>
+<p>Python’s name-resolution scheme is usually called the <em>LEGB rule</em>, after the names of the scopes it searches:</p>
+<ul>
+<li><p>When you use an <em>unqualified</em> name (not after a “.”) inside a function, Python searches up to four scopes—the local (<em>L</em>) scope of the function itself, then the local scopes of any enclosing (<em>E</em>) <code>def</code>s and <code>lambda</code>s, then the global (<em>G</em>) scope of the surrounding module, and finally the built-in (<em>B</em>) scope—and stops at the first place the name is found. If the name is not found during this search, Python reports an error.</p></li>
+<li><p>When you assign a name <em>inside</em> a function (instead of just referring to it in an expression), Python always creates or changes the name in the assigner’s local scope, unless it’s declared to be global or nonlocal there.</p></li>
+<li><p>When you assign a name <em>outside</em> any function (i.e., at the top level of a module file, or at the interactive prompt), the local and global scope are one and the same—the module’s namespace.</p></li>
+</ul>
+<p>Because names must be assigned before they can be used (as we saw in <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>), there are no automatic components in this model: assignments always determine name scopes unambiguously. <a data-type="xref" href="#the_legb_scope_lookup_rule_for_names">Figure 17-1</a> illustrates Python’s four scopes and LEGB rule. Note that the second scope lookup layer, <span class="keep-together"><em>E</em>—the</span> scopes of enclosing <code>def</code>s or <code>lambda</code>s—can technically correspond to more than one lookup level. This layer only comes into play when you nest functions within functions for reasons you’ll meet ahead, and is enhanced by the <code>nonlocal</code> statement.<sup><a data-type="noteref" id="ch17fn1-marker" href="ch17.html#ch17fn1">1</a></sup></p>
+<figure><div id="the_legb_scope_lookup_rule_for_names" class="figure">
+<img src="assets/lpy6_1701.png" alt="" width="1416" height="576"/>
+<h6><span class="label">Figure 17-1. </span>The LEGB scope lookup rule for names</h6>
+</div></figure>
+<p>Also keep in mind that these rules apply only to simple <em>variable</em> names (e.g., <code>name</code>). In Parts <a data-type="xref" data-xrefstyle="select:labelnumber" href="part05.html#modules_and_packages">V</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="part06.html#classes_and_oop">VI</a>, you’ll see that qualified <em>attribute</em> names (e.g., <code><em>object</em>.name</code>) live in particular objects and follow a completely different set of lookup rules than those covered here. References to attribute names following periods (<code>.</code>) search one or more <em>objects</em>, not scopes, and in fact may invoke something called <em>inheritance</em> in Python’s OOP model; more on this in <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a>.</p>
+<section data-type="sect3" data-pdf-bookmark="Preview: Other Python scopes"><div class="sect3" id="preview_other_python_scopes">
+<h3>Preview: Other Python scopes</h3>
+<p>Though obscure at this point in the book, there are technically three more scopes in Python—temporary loop variables in comprehensions, exception reference variables in <code>try</code> handlers, and local scopes in <code>class</code> statements. The first two of these are special cases that rarely impact real code, and the third falls under the LEGB umbrella rule.</p>
+<p>Importantly, most statement blocks and other constructs do not localize the names used within them. This includes loop variables in <code>for</code> loop statements, and the targets of <code>:=</code> named assignment, which works the same as all others with regard to scopes. There are, however, some boundary cases whose variables are not available to (and do not clash with) surrounding code, and which involve topics covered in full elsewhere in this book:</p>
+<ul>
+<li><p><em>Comprehension loop variables</em>: The variable (or variables) <code><em>X</em></code> in <code>[<em>X</em> for <em>X</em> in <em>I</em>]</code> used to refer to the <a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="comprehensions, loop variables" id="id2941"></a><a contenteditable="false" data-type="indexterm" data-primary="comprehensions" data-secondary="loop variables" id="id2942"></a><a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="comprehensions" id="id2943"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="comprehensions" id="id2944"></a>current iteration item in comprehension expressions. Because they might clash with other names and reflect internal state in generators, such names are local to the expression itself in all comprehension forms: list, dictionary, set, and generator. By contrast, <code>for</code> loop <em>statements</em> never localize their loop variable (e.g., <code><em>X</em></code> in <code>for <em>X</em> in <em>I</em>:</code>) to the statement block as noted, despite the similarity. Moreover, names assigned by <code>:=</code> within a comprehension <em>do</em> leak out to the enclosing scope, per the info and demos in <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a>.</p></li>
+<li><p><em>Exception variables</em>: The variable <code><em>X</em></code> in <code>except <em>E</em> as <em>X</em></code> used <a contenteditable="false" data-type="indexterm" data-primary="exceptions" data-secondary="variables, scopes" id="id2945"></a><a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="exception variables" id="id2946"></a>to reference the raised exception in a <code>try</code> statement handler. Because this might defer garbage collection’s memory recovery, such variables are local to that <code>except</code> block, and in fact are <em>removed</em> from the containing scope when the block is exited (even if you’ve used them earlier in your code!). You’ll learn all about <code>try</code> statements in <a data-type="xref" href="ch34.html#exception_coding_details">Chapter 34</a>.</p></li>
+<li class="pagebreak-before"><p><em>Named assignments in</em> <code>lambda</code>: The variable <code><em>X</em></code> in <code><em>X</em> := <em>Y</em></code> used in assignment expressions. In terms of scopes, the <code>:=</code> works the same as an unnested <code>=</code> assignment <a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="named assignments" id="id2947"></a><a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="scopes" id="id2948"></a>statement in general. Keep in mind, though, that a <code>lambda</code> function expression creates a new local function scope just like a <code>def</code> statement. Hence, any names assigned by a <code>:=</code> nested in a <code>lambda</code> are local variables that can be used within the body of the <code>lambda</code> itself, but are not available to code outside the <code>lambda</code> expression. That said, this is likely a rare coding pattern in most code (and pushes the envelope on complexity). For a refresher on <code>:=</code>, see <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>.</p></li>
+</ul>
+<p>Most of these contexts <em>augment</em> the LEGB rule, rather than modifying it. Loop variables assigned in a comprehension, for example, are simply bound to a further nested and special-case local scope; all other names referenced within these expressions follow the usual LEGB lookup rules.</p>
+<p>It’s also worth noting that the <code>class</code> statement you’ll meet in <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a> creates a new <em>local</em> scope, too, for the names assigned inside the top level of its block. As for <code>def</code>, names assigned inside a <code>class</code> don’t clash with names elsewhere, and follow the LEGB lookup rule, where the <code>class</code> block is the <em>L</em> level. As for imported modules, these class-local names also morph into class object attributes after the <code>class</code> statements ends. For all practical purposes, classes are a local scope (despite some rare border cases that likely qualify as glitches, and can be safely omitted here).</p>
+<p>Unlike functions, though, <code>class</code> names are not created per <em>call</em>: class object calls generate <em>instances</em>, which inherit names assigned in the <code>class</code> and record per-object state as per-instance attributes of their own. As you’ll also learn in <a data-type="xref" href="ch29.html#class_coding_details">Chapter 29</a>, although the LEGB rule is used to resolve names used in both the top level of a class itself as well as the top level of method functions nested within it, classes themselves are <em>skipped</em> by scope lookups—their names must be fetched as object attributes. Hence, because Python searches enclosing functions <a contenteditable="false" data-type="indexterm" data-primary="LEGB rule" data-startref="legbrle" id="id2949"></a><a contenteditable="false" data-type="indexterm" data-primary="names" data-secondary="LEGB rule" data-startref="nmsbgr" id="id2950"></a>for referenced names, but not enclosing classes, the LEGB rule sketched in <a data-type="xref" href="#the_legb_scope_lookup_rule_for_names">Figure 17-1</a> still applies to OOP code.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Scopes Examples"><div class="sect2" id="scopes_examples">
+<h2>Scopes Examples</h2>
+<p>But enough theory! Let’s step through <a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="examples" id="scpsxpl"></a>a live example that demos scope ideas. Suppose we wrote the code in <a data-type="xref" href="#example_oneseven_onedot_scopesonezeroon">Example 17-1</a> and saved it in a module file named <em>scopes101.py</em>.</p>
+<div data-type="example" id="example_oneseven_onedot_scopesonezeroon">
+<h5><span class="label">Example 17-1. </span>scopes101.py</h5>
+<pre data-type="programlisting"><code><em># Global scope</em></code>
+X = 99                <code><em># X and func assigned in module: global</em></code>
+
+def func(Y):          <code><em># Y and Z assigned in function: locals
+</em></code>    <code><em># Local scope</em></code>
+    Z = X + Y         <code><em># X is a global when referenced here</em></code>
+    return Z
+
+func(1)               <code><em># func in module: result=100 (not printed)</em></code></pre>
+</div>
+<p>To see this example’s result, import and call its function; the file’s global <code>func</code> is a module attribute to importers (be sure to run this in the same folder as the file if it matters for imports in your REPL, as introduced in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a>):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import scopes101</strong></code>
+&gt;&gt;&gt; <code><strong>scopes101.func(1)</strong></code>
+100</pre>
+<p>This module and the function it contains use a number of names to do their business. Applying Python’s scope rules, we can classify these names as follows:</p>
+<dl>
+<dt>Global names: <code>X</code>, <code>func</code></dt>
+<dd><code>X</code> is global because it’s assigned at the top level of the module file; it can be referenced inside the function as a simple unqualified variable without being declared global. <code>func</code> is global for the same reason; the <code>def</code> statement makes a function object and assigns it to the name <code>func</code> at the top level of the module.</dd>
+<dt>Local names: <code>Y</code>, <code>Z</code></dt>
+<dd><code>Y</code> and <code>Z</code> are local to the function (and exist only while the function runs) because they are both assigned values in the function definition: <code>Z</code> by virtue of the <code>=</code> statement, and <code>Y</code> because arguments are always passed by assignment. Hence both are assigned during a function call, and both are locals.</dd>
+</dl>
+<p>The underlying rationale for this name-segregation scheme is that local variables serve as <em>temporary</em> names that you need only while a function is running. For instance, in the preceding example, the argument <code>Y</code> and the addition result <code>Z</code> exist only inside the function; these names don’t interfere with the enclosing module’s namespace—or any other function, for that matter. In fact, local variables are removed from memory when the function call exits, and objects they reference may be <em>garbage-collected</em> if not referenced elsewhere. This is an automatic internal step, but it helps minimize memory requirements.</p>
+<p>The local/global distinction also makes functions easier to understand, as most of the names a function uses appear in the function itself, not at an arbitrarily distant place in a module file. Also, because you can be sure that local names will not be changed by some remote function in your program, they tend to make programs easier to debug and modify. In the following sort of code, for instance, each function’s variable cannot be changed—or even seen—anywhere else:</p>
+<pre data-type="programlisting">def func1():
+    X = 'hack'       <code><em># This X...</em></code>
+
+def func2():
+    X = 'code'       <code><em># ...is not the same as this X</em></code></pre>
+<p>The net effect helps make functions self-contained <a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="examples" data-startref="scpsxpl" id="id2951"></a>units of software, by design.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="The Built-in Scope"><div class="sect2" id="the_built_in_scope">
+<h2>The Built-in Scope</h2>
+<p>We’ve been talking about the built-in scope in the abstract, but it’s a bit simpler than you may think. Really, the built-in scope is just a built-in module called <code>builtins</code>, but you <a contenteditable="false" data-type="indexterm" data-primary="built-ins" id="id2952"></a><a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="built-ins" id="id2953"></a>have to import <code>builtins</code> to query built-ins because the name <code>builtins</code> is not itself a built-in...</p>
+<p>Yes, seriously! The built-in scope is implemented as a standard-library module named <code>builtins</code>, but that name itself is not placed in the built-in scope, so you have to import it in order to inspect it. Once you do, you can run a <code>dir</code> call to see which names are predefined (run this on your own for full fidelity: it can vary across Python versions):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import builtins
+</strong></code>&gt;&gt;&gt; <code><strong>dir(builtins)</strong></code>
+['ArithmeticError', 'AssertionError', 'AttributeError', 'BaseException', 
+'BaseExceptionGroup', 'BlockingIOError', 'BrokenPipeError', 'BufferError',
+…<code><em>many more names omitted: 158 total in 3.12</em></code>…
+'ord', 'pow', 'print', 'property', 'quit', 'range', 'repr', 'reversed', 
+'round', 'set', 'setattr', 'slice', 'sorted', 'staticmethod', 'str', 'sum', 
+'super', 'tuple', 'type', 'vars', 'zip']</pre>
+<p>The names in this list constitute the built-in scope in Python. Roughly the first half are built-in exceptions, and the second half are built-in functions. Also in this list are the special names <code>None</code>, <code>True</code>, <code>False</code>, and <code>Ellipsis</code> we met earlier. Because Python automatically searches this module last in its LEGB lookup (it’s <em>B</em>), you get all the names in this list “for free.” That is, you can use them without importing any modules. Thus, there are really two ways to refer to a built-in function—by taking advantage of the LEGB rule, or by manually importing the <code>builtins</code> module:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>zip</strong></code>                        <code><em># The normal way, per LEGB's B</em></code>
+&lt;class 'zip'&gt;
+
+&gt;&gt;&gt; <code><strong>import builtins</strong></code>            <code><em># The hard way: for customizations</em></code>
+&gt;&gt;&gt; <code><strong>builtins.zip</strong></code>
+&lt;class 'zip'&gt;
+
+&gt;&gt;&gt; <code><strong>zip is builtins.zip</strong></code>        <code><em># Same object, different lookup routes</em></code>
+True</pre>
+<p>The second of these approaches, though more to type, can be useful in advanced roles you’ll meet in the sidebar <a data-type="xref" href="#why_you_will_care_customizing_open">“Why You Will Care: Customizing open”</a>.</p>
+<section data-type="sect3" data-pdf-bookmark="Redefining built-in names: For better or worse"><div class="sect3" id="redefining_built_in_names_for_better_or">
+<h3>Redefining built-in names: For better or worse</h3>
+<p>Careful readers might notice that <a contenteditable="false" data-type="indexterm" data-primary="built-ins" data-secondary="LEGB rule" id="bltgbl"></a><a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="built-ins" data-tertiary="LEGB rule" id="scpblbg"></a><a contenteditable="false" data-type="indexterm" data-primary="LEGB rule" data-secondary="built-ins" id="lbgrlblt"></a>because the LEGB lookup procedure takes the <em>first</em> occurrence of a name that it finds, names in the local scope may override variables of the same name in both the global and built-in scopes, and global names may override built-ins. A function can, for instance, create a local variable called <code>open</code> by assigning to it:</p>
+<pre data-type="programlisting">def hider():
+    open = 'text'              <code><em># Local variable, hides built-in here (L before B)
+</em></code>    …
+    open('data.txt')           <code><em># Error: this no longer opens files in this scope!</em></code></pre>
+<p>However, this will <em>hide</em> the built-in function <a contenteditable="false" data-type="indexterm" data-primary="open function" id="id2954"></a>called <code>open</code> that lives in the built-in (outer) scope, such that the name <code>open</code> will no longer work within the function to open files—it’s now a string, not the opener function. This is sometimes called “shadowing” a built-in. This isn’t a problem if you don’t need to open files in this function, but triggers an error if you attempt to open through this name in this scope; your <code>open</code> is no longer the built-in <code>open</code>.</p>
+<p>This can even occur more simply at the interactive prompt, which works as a global, implicit-module scope:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>open = 99</strong></code>                  <code><em># Assign in global scope, hides built-in here too</em></code></pre>
+<p>That being said, there is nothing inherently <em>wrong</em> with using a built-in name for variables of your own, as long as you don’t need the original built-in version. After all, if these were truly off limits, we would need to memorize the entire built-in names list and treat all its names as reserved. With some 150 usable names in this module in Python 3.12, that would be far too restrictive and daunting:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>len(dir(builtins)), len([x for x in dir(builtins) if not x.startswith('__')])</strong></code>
+(158, 150)</pre>
+<p>In fact, there are times in advanced programming where you may really <em>want</em> to replace a built-in name by redefining it in your code—to define a custom <code>open</code> that augments access attempts, for instance (again, more in the sidebar at the end of the chapter). Exception: the special names <code>None</code>, <code>True</code>, and <code>False</code> in the built-in scope are also treated as reserved words today,  so they can no longer be reassigned (fun though it once was!). All other built-in names, though, are fair game.</p>
+<p>Nevertheless, redefining a built-in name is often a bug, and a nasty one at that, because Python will not issue a warning message about it. You may find tools on the web that can warn you of such mistakes, but knowledge may be your best defense on this point: don’t redefine a built-in name you need. If you <em>accidentally</em> reassign a built-in name at the interactive prompt this way, though, you can either restart your session or run a <code>del <em>name</em></code> statement to remove the redefinition from your scope, thereby restoring the original in the built-in scope per LEGB.</p>
+<p>Note that functions can similarly hide <em>global</em> variables of the same name with locals, but this is more broadly useful, and in fact is much of the point of local scopes—because they minimize the potential for name clashes, your functions are self-contained namespaces:</p>
+<pre data-type="programlisting">X = 88                         <code><em># Global X</em></code>
+
+def func():
+    X = 99                     <code><em># Local X: hides global, but we want this here</em></code>
+
+func()
+print(X)                       <code><em># Prints 88: unchanged</em></code></pre>
+<p>Here, the assignment within the function creates a local <code>X</code> that is a completely different variable from the global <code>X</code> in the module outside the function. As a consequence, though, there is no way to <em>change</em> a name outside a function without adding a <code>global</code> or <code>nonlocal</code> declaration to the <code>def</code>; the next section takes up the former.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>More built-in tongue twisters</em>: Technically, the name <code>__builtins__</code> is preset in most global scopes, including the interactive session, to reference the module known as <code>builtins</code>, so you can often use <code>__builtins__</code> without an import, but cannot run an import on the name <code>__builtins__</code> itself—it’s a preset variable, not a module’s name. Thus, <code>builtins is __builtins__</code> is <code>True</code> after you import <code>builtins</code>. The upshot is that we can often inspect the built-in scope by simply running <code>dir(__builtins__)</code> sans imports, but are advised to use <span class="keep-together"><code>builtins</code></span> for real <a contenteditable="false" data-type="indexterm" data-primary="built-ins" data-secondary="LEGB rule" data-startref="bltgbl" id="id2955"></a><a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="built-ins" data-tertiary="LEGB rule" data-startref="scpblbg" id="id2956"></a><a contenteditable="false" data-type="indexterm" data-primary="LEGB rule" data-secondary="built-ins" data-startref="lbgrlblt" id="id2957"></a>work and customization. Who said documenting this stuff was easy?</p>
+</div>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="The global Statement"><div class="sect1" id="the_global_statement">
+<h1>The global Statement</h1>
+<p>The <code>global</code> statement <a contenteditable="false" data-type="indexterm" data-primary="global statement" id="glblstt"></a><a contenteditable="false" data-type="indexterm" data-primary="namespaces" data-secondary="global statements" id="nmpcgbs"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="global" data-tertiary="namespaces" id="sttgbnm"></a>and its <code>nonlocal</code> cousin are the only declaration statements in Python that are actually used by Python (for contrast, see <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>’s discussion of unused type hinting). They are not type or size declarations, though; they are <em>namespace declarations</em>. The <code>global</code> statement, for instance, tells Python that a function plans to change one or more global names—that is, names that live in the enclosing module’s scope (namespace).</p>
+<p>We’ve talked about <code>global</code> in passing already. Here’s a summary:</p>
+<ul>
+<li><p>Global names are variables assigned at the top level of the enclosing module file.</p></li>
+<li><p>Global names must be declared only if they are assigned within a function.</p></li>
+<li><p>Global names may be referenced within a function without being declared, per the LEGB rule.</p></li>
+</ul>
+<p>In other words, <code>global</code> allows us to <em>change</em> names that live outside a <code>def</code> at the top level of a module file. As you’ll see later, the <code>nonlocal</code> statement is almost identical but applies to names in an enclosing <code>def</code>’s local scope, rather than names in the enclosing module.</p>
+<p>The <code>global</code> statement, usable in <code>def</code> but not <code>lambda</code>, simply consists of the reserved word <code>global</code>, followed by one or more names separated by commas. All the listed names will be mapped to the enclosing module’s scope when assigned or referenced within the function body. For instance, the following is a takeoff on the preceding example:</p>
+<pre data-type="programlisting">X = 88                         <code><em># Global X
+</em></code>
+def func():
+    global X
+    X = 99                     <code><em># Global X: outside def</em></code>
+
+func()
+print(X)                       <code><em># Prints 99</em></code></pre>
+<p>We’ve added a <code>global</code> declaration to the example here, such that the <code>X</code> inside the <code>def</code> now refers to the <code>X</code> outside the <code>def</code>; they are the same variable this time, so changing <code>X</code> inside the function changes the <span class="keep-together"><code>X</code> outside</span> it. Here is a slightly more involved example of <code>global</code> at work:</p>
+<pre data-type="programlisting">y, z = 1, 2                    <code><em># Global variables in module</em></code>
+def all_global():
+    global x                   <code><em># Declare globals assigned</em></code>
+    x = y + z                  <code><em># No need to declare y or z: LEGB rule</em></code></pre>
+<p>Here, <code>x</code>, <code>y</code>, and <code>z</code> are all globals inside the function <code>all_global</code>. Names <code>y</code> and <code>z</code> are global because they aren’t assigned in the function, and <code>x</code> is global because it was listed in a <code>global</code> statement to map it to the module’s scope explicitly. Without the <code>global</code> here, <code>x</code> would be considered local by virtue of the assignment.</p>
+<p>Notice that <code>y</code> and <code>z</code> are not declared global; Python’s LEGB lookup rule finds them in the module (<em>G</em>) automatically. Also notice that <code>x</code> does not even exist in the enclosing module before the function runs; in this case, the first assignment in the function creates <code>x</code> in the module. All of which works when needed, but you really should try to avoid using globals like this <a contenteditable="false" data-type="indexterm" data-primary="global statement" data-startref="glblstt" id="id2958"></a><a contenteditable="false" data-type="indexterm" data-primary="namespaces" data-secondary="global statements" data-startref="nmpcgbs" id="id2959"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="global" data-tertiary="namespaces" data-startref="sttgbnm" id="id2960"></a>whenever possible—as the next section will explain.</p>
+<section data-type="sect2" data-pdf-bookmark="Program Design: Minimize Global Variables"><div class="sect2" id="program_design_minimize_global_variable">
+<h2>Program Design: Minimize Global Variables</h2>
+<p>Functions in general, and global variables in particular, raise some larger design questions. How, for example, should <a contenteditable="false" data-type="indexterm" data-primary="design" data-secondary="global variable minimization" id="desgblvr"></a><a contenteditable="false" data-type="indexterm" data-primary="global variables" data-secondary="program design" id="glbvgd"></a><a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="global" data-tertiary="program design" id="vrbgpg"></a><a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="global variables, program design" id="scpgbvgg"></a>functions communicate? Although some answers will become more apparent when you begin writing larger functions of your own, a few guidelines up front might spare you from problems later. In general, functions should rely on <em>arguments</em> and <em>return</em> values instead of globals, but this may not at all be obvious to newcomers to programming.</p>
+<p>By default, names assigned in functions are locals, so if you want to change names outside functions you have to write <em>extra</em> code (e.g., <code>global</code> statements). This is deliberate—you have to say more to do the potentially “wrong” thing. Although there are times when globals are useful (and even required), variables assigned in a <code>def</code> are local by default because that is normally the best policy. Changing globals can lead to well-known software-engineering problems: because the variables’ values are dependent on the <em>order</em> of calls to arbitrarily distant functions, programs can become difficult to debug, or understand at all.</p>
+<p class="pagebreak-before">Consider this module file, for example, which is presumably imported and used elsewhere:</p>
+<pre data-type="programlisting">X = 99
+
+def func1():
+    global X              <code><em># Change global X when called</em></code>
+    X = 88
+
+def func2():
+    global X              <code><em># But so does this, and when?
+</em></code>    X = 77</pre>
+<p>Now, imagine that it is your job to modify or reuse this code. What will the value of <code>X</code> be here? Really, that question has no meaning unless it’s qualified with a point of reference in <em>time</em>—the value of <code>X</code> is timing-dependent, as it depends on which function was called last (something we can’t tell from this file alone).</p>
+<p>The net effect is that to understand this code, you have to trace the flow of control through the <em>entire program</em>. Hence, if you need to reuse or modify the code, you have to keep the entire program in your head all at once. In fact, you can’t really use one of these functions without bringing along the other. They are dependent on—that is, <em>coupled</em> with—the global variable. And that is the problem with globals: they generally make code more difficult to understand and reuse than code consisting of self-contained functions that rely on locals.</p>
+<p>On the other hand, short of using tools like the nested scope closures covered ahead or OOP with classes covered later, global variables are the most basic way to retain shared <em>state information</em>—information that a function needs to remember for use the next time it is called. Local variables disappear when the function returns, but globals do not. As you’ll see later, other techniques can achieve this, too, and allow for multiple copies of the retained information; but they are more complex than pushing values out to the global scope for retention in simple cases where this applies.</p>
+<p>Moreover, some programs designate a single module to collect shared globals; as long as this is expected, it is not as harmful. Programs that use multithreading for parallel <a contenteditable="false" data-type="indexterm" data-primary="multithreading, global variables" id="id2961"></a><a contenteditable="false" data-type="indexterm" data-primary="global variables" data-secondary="multithreading" id="id2962"></a>processing also commonly depend on global variables—they become shared memory between functions running in parallel threads, and so act as a communication device.<sup><a data-type="noteref" id="ch17fn2-marker" href="ch17.html#ch17fn2">2</a></sup></p>
+<p>For now, though, and especially if you are relatively new to programming, avoid the temptation to use globals whenever you can—they tend to make programs difficult to understand and reuse, and won’t work for cases where one copy of saved data is not enough. That’s why they are not the default in Python. Try to communicate with passed-in arguments and return <a contenteditable="false" data-type="indexterm" data-primary="design" data-secondary="global variable minimization" data-startref="desgblvr" id="id2963"></a><a contenteditable="false" data-type="indexterm" data-primary="global variables" data-secondary="program design" data-startref="glbvgd" id="id2964"></a><a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="global" data-tertiary="program design" data-startref="vrbgpg" id="id2965"></a><a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="global variables, program design" data-startref="scpgbvgg" id="id2966"></a>values instead. Six months from now, both you and your coworkers may be glad you did.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Program Design: Minimize Cross-File Changes"><div class="sect2" id="program_design_minimize_cross_file_chan">
+<h2>Program Design: Minimize Cross-File Changes</h2>
+<p>While we’re on the subject of globals, here’s <a contenteditable="false" data-type="indexterm" data-primary="design" data-secondary="cross-file changes" id="dscrfcg"></a><a contenteditable="false" data-type="indexterm" data-primary="cross-file changes" id="crsfmmz"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="cross-file changes, minimizing" id="flsccgmz"></a><a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="cross-file changes" id="scpcfcg"></a><a contenteditable="false" data-type="indexterm" data-primary="program design" data-see="design" id="id2967"></a><a contenteditable="false" data-type="indexterm" data-primary="global variables" data-secondary="cross-file changes" id="gbvbcfg"></a>another related design note: although we <em>can</em> change global variables in another file directly, we usually <em>shouldn’t</em>. Module files were introduced in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a> and are covered in depth in the next part of this book, but their basics are simple. To demo their relationship to scopes, consider these two module files:</p>
+<pre data-type="programlisting"><code><em># first.py</em></code>
+X = 99                    <code><em># This code doesn't know about second.py
+</em></code>
+<code><em># second.py</em></code>
+import first
+print(first.X)            <code><em># OK: references a name in another file</em></code>
+first.X = 88              <code><em># But changing it can be too subtle and implicit</em></code></pre>
+<p>The first defines a variable <code>X</code>, which the second prints and then changes by assignment. Notice that we must import the first module into the second to get to its variable at all—as we’ve learned, each module is a self-contained namespace (package of variables), and we must import one module to see inside it from another. That’s the main purpose of modules: by segregating variables on a per-file basis, they avoid name collisions across files, in much the same way that local variables avoid name clashes across functions.</p>
+<p>Really, though, in terms of this chapter’s topic, the global <em>scope</em> of a module file becomes the attribute <em>namespace</em> of the module object once it is imported—importers automatically have access to all of the file’s global variables, because a file’s global scope morphs into an object’s attribute namespace when it is imported.</p>
+<p>After importing the first module, the second module prints its variable and then assigns it a new value. Referencing the module’s variable to print it is fine—this is how modules are linked together into a larger system normally. The problem with the assignment to <code>first.X</code>, however, is that it is far too implicit: whoever’s charged with maintaining or reusing the first module probably has no clue that some arbitrarily far-removed module on the import chain can change <code>X</code> at runtime. In fact, the second module may be in a different folder, and so difficult to notice at all.</p>
+<p>Although such cross-file variable changes are always possible in Python, they are usually much more subtle than you will want. Again, this sets up too strong a <em>coupling</em> between two components—because the files are both dependent on the value of the variable <code>X</code>, it’s difficult to understand or reuse one file without the other. Such implicit cross-file dependencies can lead to inflexible code at best, and surprising bugs at worst.</p>
+<p>Here again, and generally speaking, don’t do that—the better way to communicate across file boundaries is to call functions, passing in arguments and getting back return values. In this specific case, we would probably be better off coding an <em>accessor function</em> to manage the change:</p>
+<pre data-type="programlisting"><code><em># first.py</em></code>
+X = 99
+
+def setX(new):            <code><em># Accessors make external changes explicit</em></code>
+    global X              <code><em># And can manage access in a single place
+</em></code>    X = new
+
+<code><em># second.py
+</em></code>import first
+first.setX(88)            <code><em># Call the function instead of changing directly</em></code></pre>
+<p class="pagebreak-before">This requires more code and may seem like a trivial change, but it makes a huge difference in terms of readability and maintainability—when a person reading the first module by itself sees a function, that person will know that it is a point of <em>interface</em> and will expect the change to the <code>X</code>. In other words, it removes the element of surprise that is rarely a good thing in software projects. Although we cannot prevent cross-file changes from happening (sans obscure hacks that we’ll omit here), common sense dictates that they should be minimized unless widely <a contenteditable="false" data-type="indexterm" data-primary="design" data-secondary="cross-file changes" data-startref="dscrfcg" id="id2968"></a><a contenteditable="false" data-type="indexterm" data-primary="cross-file changes" data-startref="crsfmmz" id="id2969"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="cross-file changes, minimizing" data-startref="flsccgmz" id="id2970"></a><a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="cross-file changes" data-startref="scpcfcg" id="id2971"></a><a contenteditable="false" data-type="indexterm" data-primary="global variables" data-secondary="cross-file changes" data-startref="gbvbcfg" id="id2972"></a>known across the program.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Other Ways to Access Globals"><div class="sect2" id="other_ways_to_access_globals">
+<h2>Other Ways to Access Globals</h2>
+<p>Interestingly, because global-scope variables <a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="global statement emulation" id="spscgtt"></a><a contenteditable="false" data-type="indexterm" data-primary="global statement" data-secondary="emulation" id="glbseml"></a>morph into the attributes of a loaded module object, we can emulate the <code>global</code> statement by importing the enclosing module and assigning to its attributes, as in the module file in <a data-type="xref" href="#example_oneseven_twodot_thismoddotpy">Example 17-2</a>. Code in this file accesses its enclosing module, first by importing it, and then by indexing the <code>sys.modules</code> dictionary that records all loaded modules and is used in advanced roles (there’s more on this dictionary in <a data-type="xref" href="part05.html#modules_and_packages">Part V</a>).</p>
+<div data-type="example" id="example_oneseven_twodot_thismoddotpy">
+<h5><span class="label">Example 17-2. </span>thismod.py</h5>
+<pre data-type="programlisting">"Change a global three ways"
+
+var = 99                          <code><em># Global variable == module attribute
+</em></code>
+def local():
+    var = 0                       <code><em># Change local var</em></code>
+
+def glob1():
+    global var                    <code><em># Declare global (normal)</em></code>
+    var += 1                      <code><em># Change global var
+</em></code>
+def glob2():
+    var = 0                       <code><em># Change local var
+</em></code>    import thismod                <code><em># Import myself</em></code>
+    thismod.var += 1              <code><em># Change global var</em></code>
+
+def glob3():
+    var = 0                              <code><em># Change local var</em></code>
+    import sys                           <code><em># Import system table</em></code>
+    thismod = sys.modules['thismod']     <code><em># Get module object (or use __name__)</em></code>
+    thismod.var += 1                     <code><em># Change global var</em></code>
+
+def test():
+    print(var)
+    local(); glob1(); glob2(); glob3()
+    print(var)</pre>
+</div>
+<p>When we import and call this module’s <code>test</code> to invoke its other functions, this adds 3 to the global variable <code>var</code>—only its first function, <code>local</code>, does not impact the global:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import thismod 
+</strong></code>&gt;&gt;&gt; <code><strong>thismod.test()</strong></code>
+99
+102
+&gt;&gt;&gt; <code><strong>thismod.var</strong></code>
+102</pre>
+<p>All these global-access techniques work, and illustrate the equivalence of the global scope to module attributes, but they’re noticeably more work than using the <code>global</code> statement to make your intentions explicit.</p>
+<p>As we’ve seen, <code>global</code> allows us to easily change names in a module outside a function. It has a close relative named <code>nonlocal</code> that can be used to change names in enclosing functions, too—but to understand how that can be useful, we first need to <a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="global statement emulation" data-startref="spscgtt" id="id2973"></a><a contenteditable="false" data-type="indexterm" data-primary="global statement" data-secondary="emulation" data-startref="glbseml" id="id2974"></a>explore function nesting in general, the topic we turn to next.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Nested Functions and Scopes"><div class="sect1" id="nested_functions_and_scopes">
+<h1>Nested Functions and Scopes</h1>
+<p>So far, this chapter has largely omitted one part of Python’s scope rules on purpose, because it’s relatively uncommon to encounter it in practice. However, it’s time to take a deeper look at layer <em>E</em> in the LEGB lookup rule. This layer was added during Python 2.X’s reign. It takes the form of the local scopes of any and all enclosing function’s local scopes. Enclosing <a contenteditable="false" data-type="indexterm" data-primary="statistically nested scopes" data-seealso="nested scopes" id="id2975"></a>scopes are sometimes also called <em>statically nested scopes</em>. Really, the nesting is a <em>lexical</em> one—nested scopes correspond to physically and syntactically nested code structures in your program’s source code text.</p>
+<section data-type="sect2" data-pdf-bookmark="Nested Scopes Overview"><div class="sect2" id="nested_scopes_overview">
+<h2>Nested Scopes Overview</h2>
+<p>With the addition of nested function scopes, variable lookup rules become slightly more complex. Within a function:</p>
+<ul>
+<li><p>A <em>name reference</em> (<code>X</code>) looks for the name <code>X</code> first in the current <a contenteditable="false" data-type="indexterm" data-primary="name references, nested scopes" id="id2976"></a><a contenteditable="false" data-type="indexterm" data-primary="nested scopes" data-secondary="name references" id="id2977"></a><a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="nested scopes" data-tertiary="name references" id="id2978"></a><a contenteditable="false" data-type="indexterm" data-primary="references" data-secondary="names" data-tertiary="nested scopes" id="id2979"></a>local scope (function); then in the local scopes of any lexically enclosing functions in your source code, from inner to outer; then in the current global scope (the module file); and finally in the built-in scope (which we’ve seen means the built-in module <code>builtins</code>). <code>global</code> declarations in a <code>def</code> make the search begin in the global (module file) scope instead.</p></li>
+<li><p>A <em>name assignment</em> (e.g., <code>X = value</code>) creates or changes the name <code>X</code> in <a contenteditable="false" data-type="indexterm" data-primary="name assignments, nested scopes" id="id2980"></a><a contenteditable="false" data-type="indexterm" data-primary="nested scopes" data-secondary="name assignments" id="id2981"></a><a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="nested scopes" data-tertiary="name assignments" id="id2982"></a><a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="name references, nested scopes" id="id2983"></a>the current local scope, by default. If <code>X</code> is declared <code>global</code> within the function, the assignment creates or changes the name <code>X</code> in the enclosing module’s scope instead. If, on the other hand, <code>X</code> is declared <code>nonlocal</code> within a <code>def</code> function, the assignment changes the name <code>X</code> in the local scope of the closest enclosing function that assigns the same name.</p></li>
+</ul>
+<p>Notice that the <code>global</code> declaration still maps variables to the enclosing module. When nested functions are present, variables in enclosing functions may be referenced, but require <code>nonlocal</code> declarations to be changed. Also note that, unlike <code>global</code>, <code>nonlocal</code> does not create a name in an enclosing <code>def</code> if it’s not assigned there; <code>nonlocal</code> makes sense only if the variables it names are also assigned by an enclosing <code>def</code>—and is an error to use otherwise.</p>
+<p>This section is primarily concerned with the first bullet in the preceding list: nested scope <em>references</em>. We’ll explore nested <em>assignments</em> and <code>nonlocal</code> in a moment, but first we need to grok function nesting in general.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Nested Scopes Examples"><div class="sect2" id="nested_scopes_examples">
+<h2>Nested Scopes Examples</h2>
+<p>Let’s turn to code to illustrate some of <a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="nested scopes" id="scpnstp"></a><a contenteditable="false" data-type="indexterm" data-primary="nested scopes" id="nstscps"></a>the preceding points. Here is what an enclosing function scope looks like (type this into a script file or at the interactive prompt to run it live):</p>
+<pre class="pagebreak-before" data-type="programlisting">X = 99                   <code><em># Global scope name: not used</em></code>
+
+def f1():
+    X = 88               <code><em># Enclosing def local</em></code>
+    def f2():
+        print(X + 1)     <code><em># Reference made in nested def</em></code>
+    f2()
+
+f1()                     <code><em># Prints 89: enclosing def local + 1</em></code></pre>
+<p>First off, this is legal Python code: the <code>def</code> is simply an executable statement, which can appear anywhere any other statement can—including nested in another <code>def</code>. Here, the nested <code>def</code> runs while a call to the function <code>f1</code> is running; it makes a function and assigns it to the name <code>f2</code>, a local variable within <code>f1</code>’s local scope. In a sense, <code>f2</code> is a temporary function that lives only during the execution of (and is visible only to code in) the enclosing <code>f1</code>. As such, its name won’t clash with any other part of the program—which is one reason to nest it this way.</p>
+<p>But notice what happens inside <code>f2</code>: when it uses the variable <code>X</code>, it refers to the <code>X</code> that lives in the <em>enclosing</em> <code>f1</code> function’s local scope. Because functions can access names in all physically enclosing functions, the <code>X</code> in <code>f2</code> is automatically mapped to the <code>X</code> in <code>f1</code>, by the LEGB lookup rule’s level <em>E</em>.</p>
+<p>In fact, this enclosing scope lookup works even if the enclosing function’s call has already <em>ended</em>. For example, the following code defines a function that makes and <em>returns</em> another function, and introduces a common nesting role:</p>
+<pre data-type="programlisting">def f1():
+    X = 88
+    def f2():
+        print(X + 1)     <code><em># Remembers X in enclosing def scope</em></code>
+    return f2            <code><em># Return f2 but don't call it</em></code>
+
+action = f1()            <code><em># Make, return function</em></code>
+action()                 <code><em># Call it now: prints 89</em></code></pre>
+<p>In this code, the call to <code>action</code> is really running the function we named <code>f2</code> when <code>f1</code> ran. This works naturally because functions are objects in Python like everything else and can be passed back as return values from other functions. More subtly, <code>f2</code> “remembers” the enclosing scope’s <code>X</code> in <code>f1</code>—even though <code>f1</code> is no longer active when <code>f2</code> is run. Though abstract here, this memory behavior turns out to be one <a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="nested scopes" data-startref="scpnstp" id="id2984"></a><a contenteditable="false" data-type="indexterm" data-primary="nested scopes" data-startref="nstscps" id="id2985"></a>of the main reasons to nest functions, and warrants a closer look in the next section.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Closures and Factory Functions"><div class="sect2" id="closures_and_factory_functions">
+<h2>Closures and Factory Functions</h2>
+<p>Depending on whom you ask, the preceding example’s <a contenteditable="false" data-type="indexterm" data-primary="factory functions" id="fcfct"></a><a contenteditable="false" data-type="indexterm" data-primary="closures" id="clsrs"></a><a contenteditable="false" data-type="indexterm" data-primary="functional programming" data-secondary="closures" id="fcpgcl"></a><a contenteditable="false" data-type="indexterm" data-primary="design" data-secondary="patterns, factory functions" id="dspffr"></a><a contenteditable="false" data-type="indexterm" data-primary="patterns" data-secondary="factory functions" id="pttffc"></a>behavior is sometimes called a <em>closure</em> or a <em>factory</em> function—the former describing a <em>functional programming</em> technique, and the latter denoting a <em>design pattern</em>. In code, a factory function creates and returns a function that has a stateful closure, but the two terms are intertwined.</p>
+<p>Whatever the label, the function object in question remembers values in enclosing scopes regardless of whether those scopes are still active for a call. In effect, it has attached packets of memory (a.k.a. <em>state retention</em>), which are made anew for each copy of the nested function created, and often provide a simple alternative to classes in this role.</p>
+<p>Closures (a.k.a. factory functions) are sometimes used by programs that need to generate event handlers on the fly in response to conditions at runtime. For instance, imagine a GUI that must define actions according to user inputs that cannot be anticipated when the GUI is built and vary per action. In such cases, we need a function that creates and returns another function, with information (i.e., state) that differs per function made.</p>
+<p>To demo this live in simplified terms, consider the following function, typed at the interactive prompt:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def maker(N):</strong></code>
+        <code><strong>def action(X):</strong></code>                <code><em># Make and return action</em></code>
+            <code><strong>return X ** N</strong></code>             <code><em># action retains N from enclosing scope</em></code>
+        <code><strong>return action</strong></code></pre>
+<p>This defines an outer function that simply makes and returns a nested function, without calling it—<code>maker</code> makes <code>action</code>, but simply returns <code>action</code> without running it. If we then call the <em>outer</em> function:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>f = maker(2)</strong></code>                      <code><em># Pass 2 to argument N</em></code>
+&gt;&gt;&gt; <code><strong>f</strong></code>
+&lt;function maker.&lt;locals&gt;.action at 0x101ae7ba0&gt;</pre>
+<p>What we get back is a reference to the <em>nested</em> function built—the one created and assigned to <code>action</code> when the nested <code>def</code> runs. If we now call what we got back from the outer function:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>f(3)</strong></code>                              <code><em># Pass 3 to action's X</em></code>
+9                                     <code><em># And maker's N remembers 2: 3 ** 2</em></code>
+&gt;&gt;&gt; <code><strong>f(4)</strong></code>                              <code><em># Pass 4 to X, N is still 2: 4 ** 2
+</em></code>16</pre>
+<p>We invoke the nested function—the one called <code>action</code> within <code>maker</code>. In other words, we’re calling the nested function that <code>maker</code> created and passed back.</p>
+<p>Perhaps the most unusual part of this, though, is that the nested function <em>remembers</em> integer <code>2</code>, the value of the variable <code>N</code> in <code>maker</code>, even though <code>maker</code> has returned and exited by the time we call <code>action</code>. In effect, <code>N</code> from the enclosing local scope is retained as state information attached to the generated <code>action</code>, which is why we get back its argument squared whenever it is later called.</p>
+<p>Just as important, if we now call the outer function again, we get back a <em>new</em> nested function with <em>different</em> state information attached. In the following, we compute the argument cubed instead of squared when calling the new function, but the original still squares as before:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>g = maker(3)</strong></code>                      <code><em># g remembers 3, f remembers 2</em></code>
+&gt;&gt;&gt; <code><strong>g(4)</strong></code>                              <code><em># 4 ** 3</em></code>
+64
+&gt;&gt;&gt; <code><strong>f(4)</strong></code>                              <code><em># 4 ** 2
+</em></code>16</pre>
+<p>This works because each call to a closure/factory function like this gets its <em>own</em> set of state information. In our demo, the function we assign to name <code>g</code> remembers <code>3</code>, and <code>f</code> remembers <code>2</code>, because each has its own state information retained by the variable <code>N</code> in <code>maker</code>. In a GUI, <code>N</code> might be a username, email address, or other per-function state.</p>
+<p>This is all literal inside Python. Nested functions have an attached closure storage area for the enclosing scope names they use. It’s available as the <code>__closure__</code> attribute of such functions (and fetching <code>cell_contents</code> after indexing this tuple yields a state item), but we don’t need to understand Python internals to use closures in our code.</p>
+<p>This is also a somewhat advanced technique that you may not see commonly in most code, and may be more popular among programmers with backgrounds in functional programming languages. On the other hand, enclosing scopes are often employed by the <code>lambda</code> function-creation expressions introduced in the prior chapter—because <code>lambda</code> is an expression, it is almost <em>always</em> nested in a <code>def</code>. For example, a <code>lambda</code> can serve in place of a <code>def</code> in our demo, and also relies on enclosing scope references to retain state—like <code>N</code> in the following variation:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def maker(N):</strong></code>
+        <code><strong>return lambda X: X * N</strong></code>        <code><em># lambda functions retain state too</em></code>
+
+&gt;&gt;&gt; <code><strong>h, i = maker(2), maker(3)</strong></code>         <code><em># Make two closure functions</em></code>
+
+&gt;&gt;&gt; <code><strong>h('Py'), i('Py')</strong></code>                  <code><em># Run lambdas: ('Py' * 2) and ('Py' * 3)</em></code>
+<code><strong>('PyPy', 'PyPyPy')</strong></code></pre>
+<p>For a more tangible example of closures at work, see the sidebar <a data-type="xref" href="#why_you_will_care_customizing_open">“Why You Will Care: Customizing open”</a>. It uses similar techniques to store information for later use in an enclosing scope. As you’ll also see after <a contenteditable="false" data-type="indexterm" data-primary="factory functions" data-startref="fcfct" id="id2986"></a><a contenteditable="false" data-type="indexterm" data-primary="closures" data-startref="clsrs" id="id2987"></a><a contenteditable="false" data-type="indexterm" data-primary="functional programming" data-secondary="closures" data-startref="fcpgcl" id="id2988"></a><a contenteditable="false" data-type="indexterm" data-primary="design" data-secondary="patterns, factory functions" data-startref="dspffr" id="id2989"></a><a contenteditable="false" data-type="indexterm" data-primary="patterns" data-secondary="factory functions" data-startref="pttffc" id="id2990"></a>the next section’s closer, closures become more useful when their state becomes changeable with <code>nonlocal</code>.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Arbitrary Scope Nesting"><div class="sect2" id="arbitrary_scope_nesting">
+<h2>Arbitrary Scope Nesting</h2>
+<p>Finally, this tour of nested function scopes <a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="nested scopes" data-tertiary="arbitrary nesting" id="id2991"></a><a contenteditable="false" data-type="indexterm" data-primary="nested scopes" data-secondary="arbitrary nesting" id="id2992"></a><a contenteditable="false" data-type="indexterm" data-primary="arbitrary scope nesting" id="id2993"></a>would be remiss if it didn’t point out that scopes may nest arbitrarily, though only enclosing functions (not classes, described in <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a>) are searched when names are referenced:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def f1():
+        x = 99
+        def f2():
+            def f3():
+                print(x)</strong></code>        <code><em># Found in f1's local scope!</em></code>
+            <code><strong>f3()</strong></code>
+        <code><strong>f2()</strong></code>
+
+&gt;&gt;&gt; <code><strong>f1()</strong></code>
+99</pre>
+<p>This does work: Python will search the local scopes of <em>all</em> enclosing <code>def</code>s, from inner to outer, after the referencing function’s own local scope and before the module’s global scope or built-ins. However, this sort of code is even less likely to crop up in practice. Per coding aphorism, <em>flat is better than nested</em>, and this still holds generally true even with nested scope closures in the toolbox. Except in limited contexts, your life (and the lives of your fellow travelers in the software realm) will generally be better if you minimize nesting in function definitions.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="The nonlocal Statement"><div class="sect1" id="the_nonlocal_statement">
+<h1>The nonlocal Statement</h1>
+<p>In the prior section, we saw how nested functions can <em>reference</em> variables in an enclosing function’s scope, even if that function has already returned. As suggested earlier, we can also <em>change</em> such enclosing scope variables, as long as we declare them in <code>nonlocal</code> statements. With this statement, nested functions gain both read and write access to names in enclosing functions. This makes nested scope closures more useful, by making state changeable.</p>
+<p>The <code>nonlocal</code> statement, usable in <code>def</code> but not <code>lambda</code>, is similar in both <a contenteditable="false" data-type="indexterm" data-primary="nonlocal statement" id="nnltt"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="nonlocal" id="sttnnl"></a><a contenteditable="false" data-type="indexterm" data-primary="def statement" data-secondary="nonlocal statement and" id="dfsttnon"></a>form and role to <code>global</code>, covered earlier. Like <code>global</code>, <code>nonlocal</code> declares that a name (or names) will be changed in an enclosing scope. Unlike <code>global</code>, though, <code>nonlocal</code> applies to a name in an enclosing function’s scope, not to the global module scope outside all functions. Also unlike <code>global</code>, <code>nonlocal</code> names must exist in an enclosing function’s scope—they are mapped only to enclosing functions and cannot be created by a first assignment in a nested <code>def</code> that uses <code>nonlocal</code>.</p>
+<p>In other words, <code>nonlocal</code> both <em>allows</em> assignment to names in enclosing function scopes, and <em>limits</em> scope lookups for such names to enclosing functions. The net effect is a direct and reliable implementation of changeable state information, for contexts that do not desire or need to use classes or other stateful tools.</p>
+<section data-type="sect2" data-pdf-bookmark="nonlocal Basics"><div class="sect2" id="nonlocal_basics">
+<h2>nonlocal Basics</h2>
+<p>The <code>nonlocal</code> statement has meaning only inside a function, and is an error to use elsewhere. More specifically, it applies and is usable only when <code>def</code> is nested in another <code>def</code>: because the body of a <code>lambda</code> allows just an <em>expression</em>, it supports neither <code>nonlocal</code> nor nested <code>def</code> statements.</p>
+<p>When used within a <code>def</code>, the <code>nonlocal</code> statement seals the fate of references—much like the <code>global</code> statement, <code>nonlocal</code> causes searches for the names listed in the statement to begin in the enclosing <code>def</code>s’ scopes, not in the local scope of the declaring function. That is, <code>nonlocal</code> also means “skip my local scope entirely.” In fact, the names listed in a <code>nonlocal</code> <em>must</em> be assigned in an enclosing <code>def</code>, and never refer to names in the global or built-in scopes.</p>
+<p>Importantly, the addition of <code>nonlocal</code> does not alter name reference scope rules in general; they still work as before, per the LEGB rule described earlier. The <code>nonlocal</code> statement simply serves to allow names in enclosing scopes to be changed rather than just referenced. The <code>global</code> and <code>nonlocal</code> statements, though, tighten up and even restrict the lookup rules within a function for the names that they list:</p>
+<ul>
+<li><p><code>global</code> makes scope lookup begin in the enclosing module’s scope and allows names there to be assigned. Scope lookup continues on to the built-in scope if the name does not exist in the module, but assignments to global names always create or change them in the module’s scope.</p></li>
+<li><p><code>nonlocal</code> restricts scope lookup to just enclosing <code>def</code>s, requires that the names exist there, and allows them to be reassigned. Scope lookup does not continue on to the global or built-in scopes.</p></li>
+</ul>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="nonlocal in Action"><div class="sect2" id="nonlocal_in_action">
+<h2>nonlocal in Action</h2>
+<p>Let’s move on to examples to make this more concrete. Simple <em>references</em> to enclosing <code>def</code> scopes work as we’ve already seen—in the following, <code>outer</code> builds and returns the function <code>inner</code> to be called later, and the <code>state</code> reference in <code>inner</code> maps the local scope of <code>outer</code> using the normal scope LEGB lookup rules:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def outer(start):
+        state = start</strong></code>             <code><em># Referencing nonlocals works normally</em></code>
+        <code><strong>def inner(label):
+            print(label, state)</strong></code>   <code><em># Remembers state in enclosing scope</em></code>
+        <code><strong>return inner</strong></code>
+
+&gt;&gt;&gt; <code><strong>F = outer(0)
+</strong></code>&gt;&gt;&gt; <code><strong>F('code')</strong> </code>                    <code><em># State is the same on every inner run</em></code>
+code 0
+&gt;&gt;&gt; <code><strong>F('hack')</strong></code>
+hack 0</pre>
+<p><em>Changing</em> a name in an enclosing <code>def</code>’s scope, however, is not allowed by default:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def outer(start):
+        state = start
+        def inner(label):
+            state += 1</strong></code>            <code><em># Cannot change by default</em></code>
+<code> <strong>           print(label, state)
+</strong></code>        <code><strong>return inner</strong></code>
+
+&gt;&gt;&gt; <code><strong>F = outer(0)
+</strong></code>&gt;&gt;&gt; <code><strong>F('code')</strong></code>
+UnboundLocalError: cannot access local variable 'state' …</pre>
+<p>Now, if we declare <code>state</code> in the <code>outer</code> scope as <code>nonlocal</code> within <code>inner</code>, we get to both reference and <em>change</em> it inside the nested function. Again, this works even though <code>outer</code> has returned and exited by the time we call the returned <code>inner</code> function through the name <code>F</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def outer(start):
+        state = start</strong></code>             <code><em># Each call gets its own state</em></code>
+        <code><strong>def inner(label):
+            nonlocal state</strong></code>        <code><em># &lt;= Remembers state in enclosing scope</em></code>
+<code> <strong>           state += 1</strong></code>            <code><em># Allowed to change it if nonlocal</em></code>
+            <code><strong>print(label, state)
+</strong></code>        <code><strong>return inner</strong></code>
+
+&gt;&gt;&gt; <code><strong>F = outer(0)
+</strong></code>&gt;&gt;&gt; <code><strong>F('code')</strong></code>                     <code><em># Increments state on each call</em></code>
+code 1
+&gt;&gt;&gt; <code><strong>F('hack')</strong></code>
+hack 2</pre>
+<p>As usual with enclosing scope references, we can call the <code>outer</code> factory (closure) function multiple times to get multiple copies of its state in memory. The <code>state</code> object in the enclosing scope is essentially attached to the new <code>inner</code> function object returned; each call makes a new, distinct <code>state</code> object, such that updating one function’s state won’t impact the other. The following continues the prior listing’s interaction:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>G = outer(24)</strong></code>                 <code><em># Make a new outer that starts at 24</em></code>
+&gt;&gt;&gt; <code><strong>G('code')</strong></code>
+code 25
+&gt;&gt;&gt; <code><strong>G('hack')</strong></code>                     <code><em># G's state information updated to 26
+</em></code>hack 26
+
+&gt;&gt;&gt; <code><strong>F('more')</strong></code>                     <code><em># But F's state is where it left off: at 2</em></code>
+more 3                            <code><em># Each call has different state information</em></code></pre>
+<p>As you can see, Python’s nonlocals are much more functional than “static” function locals typical in some other languages: in a closure function, nonlocals are <em>per-call, <em>multiple copy</em></em> data.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="nonlocal Boundary Cases"><div class="sect2" id="nonlocal_boundary_cases">
+<h2>nonlocal Boundary Cases</h2>
+<p>Though useful, nonlocals come with some subtleties to be aware of. First, unlike the <code>global</code> statement, <code>nonlocal</code> names really <em>must</em> be assigned in an enclosing <code>def</code>’s scope—you cannot create them dynamically by assigning them anew in a nested function. The enclosing function’s assignment can appear either before or after the nested function, but you’ll get an error if it’s missing. In fact, nonlocals are checked for an enclosing function assignment at function definition time, before either an enclosing or nested function is ever called:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def outer(start):
+        def inner(label):
+            nonlocal state</strong></code>        <code><em># Nonlocals must exist in an enclosing def</em></code>
+            <code><strong>state = 0
+            print(label, state)
+        return inner</strong></code>
+
+SyntaxError: no binding for nonlocal 'state' found
+
+&gt;&gt;&gt; <code><strong>def outer(start):
+        def inner(label):
+            global state</strong></code>          <code><em># But globals don't have to exist when declared
+</em></code>            <code><strong>state = 0</strong></code>
+            <code><strong>print(label, state)
+        return inner</strong></code>
+
+&gt;&gt;&gt; <code><strong>F = outer(0)
+</strong></code>&gt;&gt;&gt; <code><strong>F('glob')</strong></code>
+glob 0
+&gt;&gt;&gt; <code><strong>state</strong></code>                         <code><em># Created by the assignment in nested inner</em></code>
+0</pre>
+<p>Second, <code>nonlocal</code> restricts the scope lookup to <em>just</em> enclosing <code>def</code>s; nonlocals are not looked up in the enclosing module’s global scope or the built-in scope outside all <code>def</code>s, even if they are already there:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>state = 0</strong></code>
+&gt;&gt;&gt; <code><strong>def outer():
+        def inner():
+            nonlocal state</strong>   </code>         <code><em># Must be located in a def, not the module</em></code>
+<code> <strong>           state += 1</strong> </code>               <code><em># Use global for globals, not nonlocal</em><strong>
+        return inner</strong></code>
+
+SyntaxError: no binding for nonlocal 'chapter' found
+
+&gt;&gt;&gt; <code><strong>def outer():</strong></code>
+        <code><strong>def inner():</strong></code>
+            <code><strong>nonlocal ord</strong></code>              <code><em># Ditto for built-ins (and immediate calls)</em></code>
+            <code><strong>print(ord)</strong></code>
+        <code><strong>inner()</strong></code>
+
+SyntaxError: no binding for nonlocal 'ord' found</pre>
+<p>These restrictions make sense once you realize that Python would not otherwise generally know in which enclosing scope to create a brand-new name. In the prior listing, should <code>state</code> be assigned in <code>outer</code>, or the module outside? Because this is ambiguous, Python must resolve nonlocals at function <em>creation</em> time, not function <em>call</em> time.</p>
+<p>Finally, this chapter has been careful to say that nonlocal names must be assigned in <em>an</em> enclosing function, not <em>the</em> enclosing function. This can matter when function nesting runs deep: a name listed in <code>nonlocal</code> can technically appear <em>anywhere</em> in the hierarchy of enclosing functions—not just one level up—and the <a contenteditable="false" data-type="indexterm" data-primary="nonlocal statement" data-startref="nnltt" id="id2994"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="nonlocal" data-startref="sttnnl" id="id2995"></a><a contenteditable="false" data-type="indexterm" data-primary="def statement" data-secondary="nonlocal statement and" data-startref="dfsttnon" id="id2996"></a>closest appearance is used. Even so, because such code seems unlikely to crop up in practice (and probably qualifies as cruel and unusual punishment), we’ll forgo a formal demo here, but see <a data-type="xref" href="#arbitrary_scope_nesting">“Arbitrary Scope Nesting”</a> for most of the morass.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="State-Retention Options"><div class="sect1" id="state_retention_options">
+<h1>State-Retention Options</h1>
+<p>Given the extra complexity of nested functions, you might wonder why they’re worth the fuss. Although it’s difficult to see in our small examples, state information becomes essential in many programs. While functions can return results, their local variables won’t normally retain other values that must live on between calls. Moreover, many applications require such values to differ per context of use.</p>
+<p>Broadly speaking, there are multiple ways for Python functions to retain state between calls. These include the global variables and enclosing scope references we’ve already met, but also class-instance attributes and function attributes. To close out this chapter, let’s review these options to see how they stack up.</p>
+<section data-type="sect2" data-pdf-bookmark="Nonlocals: Changeable, Per-Call, LEGB"><div class="sect2" id="nonlocals_changeablecomma_per_callcomma">
+<h2>Nonlocals: Changeable, Per-Call, LEGB</h2>
+<p>First off, the following code is a recap from the <a contenteditable="false" data-type="indexterm" data-primary="state" data-secondary="retaining" data-tertiary="nonlocal statement" id="id2997"></a><a contenteditable="false" data-type="indexterm" data-primary="nonlocal statement" data-secondary="state retention and" id="id2998"></a>prior section, repeated here for compare and contrast. As we’ve seen, its <code>nonlocal</code> allows state in an enclosing scope to be saved and modified. Each call to <code>outer</code> makes a self-contained <em>package of changeable information</em>, whose names and objects do not clash with any other part of the program:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def outer(start):
+        state = start</strong></code>                  <code><em># Each call gets its own state</em></code>
+        <code><strong>def inner(label):
+            nonlocal state</strong></code>             <code><em># Remembers state in enclosing scope
+</em> <strong>           state += 1</strong></code>                 <code><em># Allowed to change it if nonlocal</em></code>
+            <code><strong>print(label, state)
+</strong></code>        <code><strong>return inner</strong></code>
+
+&gt;&gt;&gt; <code><strong>F = outer(0)</strong>   </code>                    <code><em># State to be saved in enclosing scope</em><strong>
+</strong></code>&gt;&gt;&gt; <code><strong>F('nonlocal1')</strong></code>                     <code><em># State visible within closure only</em></code>
+nonlocal1 1
+&gt;&gt;&gt; <code><strong>F('nonlocal2')</strong></code>
+nonlocal2 2
+
+&gt;&gt;&gt; <code><strong>F.state</strong></code>
+AttributeError: 'function' object has no attribute 'state'</pre>
+<p>We need to declare variables nonlocal only if they must be changed (other enclosing scope name references are automatically retained as usual per LEGB), and nonlocal names are not visible outside the enclosing function.</p>
+<p>While this scheme works well, the next three sections present some alternatives. Some of the code in these sections uses tools we haven’t covered yet and is intended partially as preview, but we’ll keep the examples simple here so that you can compare and contrast along the way.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Globals: Changeable but Shared"><div class="sect2" id="globals_changeable_but_shared">
+<h2>Globals: Changeable but Shared</h2>
+<p>One common suggestion for achieving state retention <a contenteditable="false" data-type="indexterm" data-primary="state" data-secondary="retaining" data-tertiary="global scope" id="id2999"></a><a contenteditable="false" data-type="indexterm" data-primary="global scope, state retention and" id="id3000"></a><a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="global, state retention and" id="id3001"></a>without <code>nonlocal</code> is to simply move saved info out to the <em>global scope</em> (the enclosing module):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def outer(start):
+        global state</strong></code>                 <code><em># Move it out to the module to change it</em></code>
+        <code><strong>state = start</strong></code>                <code><em># global allows changes in module scope</em></code>
+        <code><strong>def inner(label):
+            global state
+            state += 1
+            print(label, state)
+        return inner</strong></code>
+
+&gt;&gt;&gt; <code><strong>F = outer(0)
+</strong></code>&gt;&gt;&gt; <code><strong>F('global1')</strong></code>                     <code><em># Each call increments shared global state</em></code>
+global1 1 
+&gt;&gt;&gt; <code><strong>F('global2')</strong></code>
+global2 2
+&gt;&gt;&gt; <code><strong>state </strong>  </code>                         <code><em># State accessible as global outside defs</em></code>
+2</pre>
+<p>This works in this case, but it requires <code>global</code> declarations in both functions and is prone to name collisions in the global scope (what if “state” is already being used for something else?). A more subtle problem is that it only allows for a <em>single shared copy</em> of the state information in the module scope—if we call <code>outer</code> again, we’ll wind up resetting the module’s <code>state</code> variable, such that prior calls will see their <code>state</code> overwritten:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>G = outer(24)</strong></code>                    <code><em># Resets state's single copy in global scope</em></code>
+&gt;&gt;&gt; <code><strong>G('global3')</strong></code>
+global3 25
+
+&gt;&gt;&gt; <code><strong>F('global4')</strong></code>                     <code><em># But F's counter has been overwritten!</em></code>
+global4 26</pre>
+<p>As shown earlier, when you use <code>nonlocal</code> and nested function closures instead of <code>global</code>, each call to <code>outer</code> remembers its own unique copy of the <code>state</code> object. For per-call roles, globals don’t fit the bill.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Function Attributes: Changeable, Per-Call, Explicit "><div class="sect2" id="function_attributes_changeablecomma_per">
+<h2>Function Attributes: Changeable, Per-Call, Explicit </h2>
+<p>As another state-retention <a contenteditable="false" data-type="indexterm" data-primary="state" data-secondary="retaining" data-tertiary="function attributes" id="sttrtfc"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="attributes" data-tertiary="state retention" id="fcatttrt"></a>option, we can often achieve the same effect as nonlocals with <em>function attributes</em>—user-defined names attached to functions explicitly. When you attach user-defined attributes to nested functions generated by factory functions, they can also serve as per-call, multiple copy, and writeable state, just like nonlocal scope closures. Such user-defined attribute names won’t clash with names Python creates itself, and as for <code>nonlocal</code>, need be used only for state variables that must be <em>changed</em>; other scope references are retained and work normally.</p>
+<p>Because factory functions make a new function on each call anyhow, this does not require extra <span class="keep-together">objects—the</span> new function’s attributes become per-call state in much the same way as nonlocals, and are similarly associated with the new function in memory. In contrast, function attributes are perhaps less <em>magical</em> than scopes, and allow state variables to be accessed <em>outside</em> the nested function. With <span class="keep-together"><code>nonlocal</code></span>, state variables can be seen directly only within the nested <code>def</code>; with attributes, state access is a simple function-attribute fetch.</p>
+<p>Here’s a mutation of our example based on this technique—it replaces a <code>nonlocal</code> with an attribute attached to the nested function. This scheme may not seem as intuitive to some at first glance; you must access state explicitly through the function’s name instead of as simple variables, and must initialize <em>after</em> the nested <code>def</code>. Still, it allows state to be accessed externally, saves a line by eliminating a <code>nonlocal</code> declaration, and makes state usage more explicit:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def outer(start):
+        def inner(label):
+</strong></code>            <code><strong>inner.state += 1</strong></code>               <code><em># Change object attr, not inner itself</em></code>
+<code> <strong>           print(label, inner.state)</strong></code>      <code><em># inner is in the enclosing scope</em></code>
+        <code><strong>inner.state = start</strong></code>                <code><em># Initialize state after inner defined</em></code>
+        <code><strong>return inner</strong></code>
+
+&gt;&gt;&gt; <code><strong>F = outer(0)
+</strong></code>&gt;&gt;&gt; <code><strong>F('attr1')</strong></code>                       <code><em># F is an inner with state attached</em></code>
+attr1 1
+&gt;&gt;&gt; <code><strong>F('attr2')</strong></code>
+attr2 2
+
+&gt;&gt;&gt; <code><strong>F.state</strong></code>                          <code><em># Can access state outside defs too</em></code>
+2</pre>
+<p>Because each call to the outer <a contenteditable="false" data-type="indexterm" data-primary="function calls" data-secondary="changeable data" id="id3002"></a>function produces a new nested function object, this scheme supports multiple-copy, <em>per-call</em> changeable data just like nonlocal closures—a usage mode that global variables cannot provide:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>G = outer(24)</strong></code>                    <code><em># G has own state, doesn't overwrite F's
+</em></code>&gt;&gt;&gt; <code><strong>G('attr3')</strong></code>
+attr3 25
+&gt;&gt;&gt; <code><strong>F('attr4')</strong>   </code>                    <code><em># F's state varies</em></code>
+attr4 3
+
+&gt;&gt;&gt; <code><strong>F.state</strong></code>                          <code><em># State is accessible and per-call</em></code>
+3
+&gt;&gt;&gt; <code><strong>G.state</strong></code>
+25
+&gt;&gt;&gt; <code><strong>F is G</strong></code>                           <code><em># Different function objects</em></code>
+False</pre>
+<p>Fine points: this code relies on the fact that the function name <code>inner</code> is a local variable in the <code>outer</code> scope enclosing <code>inner</code>; as such, it can be referenced freely inside <code>inner</code> per LEGB’s <em>E</em>. This code also relies on the fact that changing an object in place is not an assignment to a name; when it increments <code>inner.state</code>, it is changing part of the <em>object</em> <code>inner</code> references, not the name <code>inner</code> itself (much like the <code>L.append</code> call we saw earlier). Because we’re not really assigning a <em>name</em> in the enclosing scope, no <code>nonlocal</code> declaration is required.</p>
+<p>We’ll explore function attributes further in <a data-type="xref" href="ch19.html#function_odds_and_ends">Chapter 19</a>. Importantly, you’ll see there that Python uses naming conventions that ensure that the arbitrary names you assign as function attributes won’t clash with names related to internal implementation, making the namespace equivalent to a user scope. At the end of the day, function attributes both predate <code>nonlocal</code> and provide similar utility, making the latter technically redundant in some roles.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>State with enclosing scope mutables</em>: On a related note, it’s also possible to change a <a contenteditable="false" data-type="indexterm" data-primary="state" data-secondary="scope mutables" id="id3003"></a>mutable object like a <em>list</em> in the enclosing scope without declaring its name <code>nonlocal</code>. The following, for example, implements changeable per-call state information, and largely works the same as the preceding version (though it does not support access to state info from outside the functions):</p>
+<pre data-type="programlisting">def outer(start):
+    def inner(label):
+        state[0] += 1              <code><em># Clever hack or dark magic?</em></code>
+        print(label, state[0])     <code><em># Leverage in-place mutable change</em></code>
+    state = [start]
+    return inner</pre>
+<p>This exploits the mutability of lists, and like function attributes, relies on the fact that in-place object changes do not classify a name as local. This is perhaps more obscure than either function attributes or <code>nonlocal</code>, though—it’s a technique that predates others, and seems to lie today somewhere on the spectrum from arcane hack to dated workaround. You’re probably better off using named function <a contenteditable="false" data-type="indexterm" data-primary="state" data-secondary="retaining" data-tertiary="function attributes" data-startref="sttrtfc" id="id3004"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="attributes" data-tertiary="state retention" data-startref="fcatttrt" id="id3005"></a>attributes than lists and numeric offsets this way (but you can’t control what others code).</p>
+</div>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Classes: Changeable, Per-Call, OOP"><div class="sect2" id="classes_changeablecomma_per_callcomma_o">
+<h2>Classes: Changeable, Per-Call, OOP</h2>
+<p>Another standard prescription for changeable <a contenteditable="false" data-type="indexterm" data-primary="state" data-secondary="retaining" data-tertiary="classes" id="id3006"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="state retention" id="id3007"></a>state information in Python is to use <em>classes with attributes</em>. Like function attributes, this scheme makes state information access more explicit than the implicit magic of scope lookup rules. In addition, each instance of a class gets a fresh copy of the state information, as a natural byproduct of Python’s object model. Classes also support inheritance, multiple behaviors, and other OOP tools above and beyond functions.</p>
+<p>As an abstract and partial illustration, the following defines two stateful instances of a class:</p>
+<pre data-type="programlisting">class Book:
+    …<code><em>code to define method functions that manage and use state</em></code>…
+
+lp6e = Book()               <code><em># Make an instance of the class</em></code>
+lp6e.year = 2024            <code><em># Access instance state via attributes</em></code>
+lp6e.python = 3.12
+
+lp5e = Book()               <code><em># Make another instance of the class</em></code>
+lp5e.year = 2013            <code><em># Each instance has its own attributes/state</em></code>
+lp5e.python = 3.3</pre>
+<p>Because classes support a broader array of tools, they tend to require more code than closure functions, but may be better in more demanding roles. We haven’t explored classes in any sort of detail yet, though, so we’ll have to cut this section short here. Watch for classes, and their explicit flavor of multiple-copy state information, in <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a>.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="And the Winner Is…"><div class="sect2" id="and_the_winner_ishasheighttwothreezeros">
+<h2>And the Winner Is…</h2>
+<p>As a wrap-up, globals, nonlocals, function attributes, and classes all offer changeable state-retention options. Globals support only single-copy shared data, but nonlocals, function attributes, and classes all support multiple-copy changeable state. Of the latter, nonlocals rely on an implicit LEGB lookup, function attributes are manual but explicit and allow state access outside of functions, and classes are a larger solution that comes with OOP’s complexities.</p>
+<p>As usual, the best tool for your program depends upon your program’s goals. We’ve seen that <code>nonlocal</code> provides changeable state for nested functions with a dedicated statement, and is especially useful for simpler state-retention needs where global variables do not apply and classes may not be warranted. That being said, function attributes can often serve the same roles as <code>nonlocal</code>, with arguably less implicit behavior.</p>
+<p>We’ll revisit state-retention options introduced here in <a data-type="xref" href="ch39.html#decorators">Chapter 39</a> for a more realistic use case—<em>decorators</em>, a tool that by nature involves multilevel state retention. State options have additional selection factors (e.g., performance), which we’ll have to leave unexplored here for space (you’ll learn how to time code speed in <a data-type="xref" href="ch21.html#the_benchmarking_interlude">Chapter 21</a>). For now, it’s time to explore one more technique, which both confounds the LEGB rule and segues to the next chapter.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Scopes and Argument Defaults"><div class="sect1" id="scopes_and_argument_defaults">
+<h1>Scopes and Argument Defaults</h1>
+<p>In early versions of Python, the enclosing scope references we’ve used in this chapter failed because nested <a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="argument defaults and" id="scpgdf"></a><a contenteditable="false" data-type="indexterm" data-primary="arguments" data-secondary="scopes" id="argmscp"></a><a contenteditable="false" data-type="indexterm" data-primary="default argument values, scopes" id="dfrgvps"></a>functions did not do anything about scopes—a reference to an enclosing function’s variable would search only the local, global, and built-in scopes. Because it skipped the scopes of enclosing functions, an error would result. To work around this, programmers typically used <em>default argument values</em> to pass in and remember the objects in an enclosing scope.</p>
+<p>Though a preview of the next chapter’s arguments coverage, this also bears on scopes. In the following, a takeoff of an earlier example, a value from the enclosing function’s scope is passed into a nested function via an unused argument’s default:</p>
+<pre data-type="programlisting">def f1():
+    X = 88
+    def f2(X=X):            <code><em># Remember enclosing scope X with defaults</em></code>
+        print(X + 1)
+    f2()
+
+f1()                        <code><em># Prints 89</em></code></pre>
+<p>This syntax also works in <code>lambda</code>, which, as we’ve learned, naturally and normally creates nested-function scopes:</p>
+<pre data-type="programlisting">def f1():
+    X = 88
+    f2 = lambda X=X: print(X + 1)
+    f2()</pre>
+<p>Both of these examples still work in all Python releases, and rely on argument defaults. In short, the syntax <code><em>arg</em>=<em>val</em></code> in a function header means that the argument <code><em>arg</em></code> will default to the value <code><em>val</em></code> if no real value is passed to <code><em>arg</em></code> in a call. In the preceding code, this is used to explicitly assign enclosing scope state to be retained.</p>
+<p>Specifically, in the modified <code>f2</code>s here, the <code>X=X</code> means that the argument <code>X</code> on the left will default to the value of <code>X</code> in the enclosing scope—because the <code>X</code> on the right is evaluated <em>before</em> Python steps into the nested function, it still refers to the <code>X</code> in <code>f1</code>. In effect, each <code>f2</code>’s default argument <code>X</code> remembers what <code>X</code> was in the enclosing <code>f1</code>: the object <code>88</code>.</p>
+<p>That’s fairly subtle, and it depends entirely on the <em>timing</em> of default-value evaluations. It’s also an <em>incidental</em>—if not accidental—feature: this works only if a real value is never passed to argument <code>X</code> to overwrite the default. In fact, the nested scope lookup rule was added to Python in part to make defaults unnecessary for this role: today, Python <em>automatically</em> remembers any values required from the enclosing scope for use in nested <code>def</code>s and <code>lambda</code>s. As we’ve seen, this example today works the same sans defaults:</p>
+<pre data-type="programlisting">def f1():
+    X = 88
+    def f2():               <code><em># Remember enclosing scope X per LEGB rule</em></code>
+        print(X + 1)        <code><em># And likewise for lambda</em></code>
+    f2()</pre>
+<p>That said, flat is generally better than nested again, and function nesting in some such code makes programs more complex than they need be. The following, for instance, is an equivalent of the prior examples that avoids nesting altogether. Notice the forward reference to <code>f2</code> inside <code>f1</code> in this code—it’s OK to call a function defined <em>after</em> the function that calls it, as long as the second <code>def</code> runs before the first function is actually <em>called</em>. Code inside a function’s body is never evaluated until the function is later called:</p>
+<pre data-type="programlisting">def f1():<code><strong>
+</strong></code>    X = 88                  <code><em># Pass x along instead of nesting</em></code>
+    f2(X)                   <code><em># Forward reference OK</em></code>
+
+def f2(X):
+<code><strong></strong></code>    print(X + 1)            <code><em># Flat is still often better than nested</em></code></pre>
+<p>If you avoid nesting this way, you can almost forget about the nested scopes concept in Python. On the other hand, nested functions can avoid <em>name clashes</em> by localizing the names of functions used nowhere else, and nesting is the basis of <em>closure functions</em>, which support stateful callable objects useful in a variety of roles. When functions are nested for such reasons, the LEGB rule almost makes defaults unnecessary for saving state from an enclosing function’s scope—<em>except</em> in the following case.</p>
+<section data-type="sect2" data-pdf-bookmark="Loops Require Defaults, Not Scopes"><div class="sect2" id="loops_require_defaultscomma_not_scopes">
+<h2>Loops Require Defaults, Not Scopes</h2>
+<p>So why bother learning an <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="defaults" id="lpoofd"></a>outdated scope-reference scheme? Because it’s still <em>required</em> in one common case: if a <code>lambda</code> or <code>def</code> is nested in a <em>loop</em>, and the nested function references an enclosing scope variable that is changed by that loop, then all functions generated within the loop will have the same <span class="keep-together">value—the</span> value the referenced variable had in the <em>last</em> loop iteration. In such cases, you must still use defaults to save the variable’s <em>current</em> value instead.</p>
+<p>This may seem obscure, but it can come up in practice more often than you may think, especially in code that generates event-handler functions for a number of widgets in a GUI—for instance, handlers for button-clicks for all the buttons in a panel. If these are created in a loop (and they often will be), you need to be careful to save state with defaults, or all your buttons’ callbacks may wind up doing the same thing.</p>
+<p>Here’s an illustration of this phenomenon reduced to simple code: the following attempts to build up a list of functions that each remember the current variable <code>i</code> from the enclosing scope:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def makeActions():
+        acts = []
+        for i in range(5):</strong></code>                       <code><em># Try to remember each i in 0..4</em></code>
+            <code><strong>acts.append(lambda x: i ** x)</strong></code>        <code><em># But all remember same last i!</em></code>
+        <code><strong>return acts</strong></code>
+
+&gt;&gt;&gt; <code><strong>acts = makeActions()
+</strong></code>&gt;&gt;&gt; <code><strong>acts[0]</strong></code>
+&lt;function makeActions.&lt;locals&gt;.&lt;lambda&gt; at 0x101ae7ec0&gt;</pre>
+<p>Interestingly, this can also be coded as a list comprehension, where a <code>lambda</code> can be used as the collection result, and the list comprehension serves as a local scope for its loop variable:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>acts = [(lambda x: i ** x) for i in range(5)]</strong></code>
+&gt;&gt;&gt; <code><strong>acts[0]</strong></code>
+&lt;function &lt;lambda&gt; at 0x10de6bce0&gt;</pre>
+<p>Either way, though, this doesn’t quite work—because the enclosing scope variable <code>i</code> is looked up when the nested functions are later <em>called</em>, they all effectively remember the same value: the value the loop variable had on the <em>last</em> loop iteration. That is, when we pass a power argument of 2 to <code>x</code> in each of the following calls, we get back 4 to the power of 2 for each function in the list, because <code>i</code> is the same in all of them—4:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>acts[0](2)</strong></code>                                  <code><em># All are 4 ** 2, 4=last i</em></code>
+16
+&gt;&gt;&gt; <code><strong>acts[1](2)</strong></code>                                  <code><em># This should be 1 ** 2 (1)</em></code>
+16
+&gt;&gt;&gt; <code><strong>acts[2](2)</strong></code>                                  <code><em># This should be 2 ** 2 (4)
+</em></code>16
+&gt;&gt;&gt; <code><strong>acts[4](2)</strong></code>                                  <code><em># Only this should be 4 ** 2 (16)</em></code>
+16</pre>
+<p>In this case, we still have to explicitly retain enclosing scope values with default arguments, rather than enclosing scope references. That is, to make this sort of code work, we must pass in the <em>current</em> value of the enclosing scope’s variable with a default. Here’s the required mod for both the <code>def</code> and comprehension versions:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def makeActions():
+        acts = []
+        for i in range(5):</strong></code>                       <code><em># Use defaults instead
+</em></code>            <code><strong>acts.append(lambda x, i=i: i ** x)</strong></code>   <code><em># Remember _current_ i</em></code>
+        <code><strong>return acts</strong></code>
+
+&gt;&gt;&gt; <code><strong>acts = [(lambda x, i=i: i ** x) for i in range(5)]</strong></code></pre>
+<p>In either coding, because defaults are evaluated when the nested function is <em>created</em> (not when it’s later <em>called</em>), each remembers its own value for <code>i</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>acts = makeActions()
+</strong></code>&gt;&gt;&gt; <code><strong>acts[0](2)</strong></code>                                   <code><em># 0 ** 2</em></code>
+0
+&gt;&gt;&gt; <code><strong>acts[1](2)</strong></code>                                   <code><em># 1 ** 2</em></code>
+1
+&gt;&gt;&gt; <code><strong>acts[2](2)</strong></code>                                   <code><em># 2 ** 2
+</em></code>4
+&gt;&gt;&gt; <code><strong>acts[4](2)</strong></code>                                   <code><em># 4 ** 2</em></code>
+16</pre>
+<p>Nor are function attributes a fix here: because a function’s own <em>name</em> is a variable from the enclosing scope that changes in the loop too, in every function it may reference the <em>last</em> function made by the <em>last</em> loop iteration. We’ll omit the gory details here, but keep in mind that <em>any</em> enclosing scope reference changed by a loop may require defaults.</p>
+<p>This may seem an odd special case, but it reflects Python’s implementation of variable scopes, and will become more likely to crop up as you start writing larger programs. This case is also rooted in both scopes and arguments defaults, and to understand the latter in full, we have to move on to the next chapter.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>State with argument-default mutables</em>: Also on a related note, it’s possible to retain state too with mutable argument defaults like lists and dictionaries (e.g., <code>def f(a=[])</code>). Because defaults are implemented as objects attached to functions at function <em>creation</em> time, mutable defaults retain state from call to call, rather than being initialized anew on each call. Defaults can also retain mutables from an enclosing function’s scope, thereby enabling changeable per-call state information.</p>
+<p>Depending on whom you ask—and when you ask them—this is either a feature that supports state retention, or a perilous and dark corner of the language to be avoided. Usually, programmers expect defaults initialized with literals like <code>[]</code> to be re-created on <a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="argument defaults and" data-startref="scpgdf" id="id3008"></a><a contenteditable="false" data-type="indexterm" data-primary="arguments" data-secondary="scopes" data-startref="argmscp" id="id3009"></a><a contenteditable="false" data-type="indexterm" data-primary="default argument values, scopes" data-startref="dfrgvps" id="id3010"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="defaults" data-startref="lpoofd" id="id3011"></a>every call, and are surprised when they retain prior calls’ values. More on this in <a data-type="xref" href="ch21.html#function_gotchas">“Function Gotchas”</a>.</p>
+</div>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00027">
+<h1>Chapter Summary</h1>
+<p>In this chapter, we studied one of two key concepts related to functions: <em>scopes</em>, which determine how variables are looked up when used. As we learned, variables are considered local to the function definitions in which they are assigned, unless they are specifically declared to be global or nonlocal. We also explored some more advanced scope concepts here, including nested function scopes and function attributes. Finally, we looked at some general design ideas, such as the need to minimize globals and cross-file changes.</p>
+<p>In the next chapter, we’re going to continue our function tour with the second key function-related <span class="keep-together">concept:</span> argument passing. As you’ll find, arguments are passed into a function by assignment, but Python also provides tools that allow functions to be flexible in how items are passed, including the defaults we previewed here. Before we move on, let’s take this chapter’s quiz to review the scope concepts we’ve covered here.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000155">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>What is the output of the following code, and why?</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>X = 'Hack'
+</strong></code>&gt;&gt;&gt; <code><strong>def func():
+        print(X)
+
+</strong></code>&gt;&gt;&gt; <code><strong>func()</strong></code></pre></li>
+<li><p>What is the output of this code, and why?</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>X = 'Hack'
+</strong></code>&gt;&gt;&gt; <code><strong>def func():
+        X = 'Py!'
+
+</strong></code>&gt;&gt;&gt; <code><strong>func()
+</strong></code>&gt;&gt;&gt; <code><strong>print(X)</strong></code></pre></li>
+<li><p>What does this code print, and why?</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>X = 'Hack'
+</strong></code>&gt;&gt;&gt; <code><strong>def func():
+        X = 'Py!'
+        print(X)
+
+</strong></code>&gt;&gt;&gt; <code><strong>func()
+</strong></code>&gt;&gt;&gt; <code><strong>print(X)</strong></code></pre></li>
+<li><p>What output does this code produce? Why?</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>X = 'Hack'
+</strong></code>&gt;&gt;&gt; <code><strong>def func():
+        global X
+        X = 'Py!'
+
+</strong></code>&gt;&gt;&gt; <code><strong>func()
+</strong></code>&gt;&gt;&gt; <code><strong>print(X)</strong></code></pre></li>
+<li><p>What about this code—what’s the output, and why?</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>X = 'Hack'
+</strong></code>&gt;&gt;&gt; <code><strong>def func():
+        X = 'Py!'
+        def nested():
+            print(X)
+        nested()
+
+</strong></code>&gt;&gt;&gt; <code><strong>func()
+</strong></code>&gt;&gt;&gt; <code><strong>print(X)</strong></code></pre></li>
+<li class="pagebreak-before"><p>How about this example: what is its output, and why?</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def func():
+        X = 'Py!'
+        def nested():
+            nonlocal X
+            X = 'Hack'
+        nested()
+        print(X)
+
+</strong></code>&gt;&gt;&gt; <code><strong>func()</strong></code></pre></li>
+<li><p>Name three or more ways to retain state information across calls in a Python function.</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000154">
+<h1>Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>The output here is <code>Hack</code> because the function references a global variable in the enclosing module (because it is not assigned in the function, it is considered global).</p></li>
+<li><p>The output here is <code>Hack</code> again because assigning the variable inside the function makes it a local and effectively hides the global of the same name. The <code>print</code> statement finds the variable unchanged in the global (module) scope.</p></li>
+<li><p>It prints <code>Py!</code> on one line and <code>Hack</code> on another, because the reference to the variable within the function finds the assigned local and the reference in the <code>print</code> statement finds the global.</p></li>
+<li><p>This time it just prints <code>Py!</code> because the global declaration forces the variable assigned inside the function to refer to the variable in the enclosing global scope, even though the variable is assigned inside the function.</p></li>
+<li><p>The output in this case is again <code>Py!</code> on one line and <code>Hack</code> on another, because the <code>print</code> statement in the nested function finds the name in the enclosing function’s local scope, and the display at the end finds the variable in the global scope.</p></li>
+<li><p>This example prints <code>Hack</code> because the <code>nonlocal</code> statement means that the assignment to <code>X</code> inside the nested function changes <code>X</code> in the enclosing function’s local scope. Without this statement, this assignment would classify <code>X</code> as local to the nested function, making it a different variable; the code would then print <code>Py!</code> instead.</p></li>
+<li><p>Although the values of local variables go away when a function returns, you can make a Python function retain state information by using shared <em>global</em> variables, <em>nonlocal</em> enclosing scope references within nested functions, or using <em>default</em> argument values. Function <em>attributes</em> also allow state to be attached to the function itself, instead of looked up in scopes. Another alternative, using <em>classes</em> and OOP, sometimes supports state retention better than any of the scope-based techniques because it makes it explicit with attribute assignments; we’ll explore this option in <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a>. Changing <em>mutable</em> objects in scopes and defaults works too, but may not be legal in some locales.</p></li>
+</ol>
+<aside data-type="sidebar" epub:type="sidebar"><div class="sidebar" id="why_you_will_care_customizing_open">
+<h1>Why You Will Care: Customizing open</h1>
+<p>For another example of closures at work, consider changing the built-in <code>open</code> call to a custom version as suggested earlier in this chapter. If the custom version needs <a contenteditable="false" data-type="indexterm" data-primary="open function" data-secondary="customizing" id="id3012"></a>to call the original, it must save it before changing it, and retain it for later use—a classic state retention scenario. Moreover, if we wish to support multiple customizations to the same function, globals won’t do: we need per-customizer state.</p>
+<p>The following, coded in file <em>makeopen.py</em>, is one way to achieve this. It uses a nested scope closure to remember a value for later use, without relying on global variables—which can clash and allow just one value, and without using a class—that may require more code than is warranted here:</p>
+<pre data-type="programlisting">import builtins
+
+def makeopen(id):
+    original = builtins.open
+    def custom(*pargs, **kargs):
+        print(f'Custom open call {id}' , pargs, kargs)
+        return original(*pargs, **kargs)
+    builtins.open = custom</pre>
+<p>To change <code>open</code> for every module in a process, this code reassigns it in the built-in scope to a custom version coded with a nested <code>def</code>, after saving the original in the enclosing scope so the customization can call it later. This code is partially a preview, as it relies on <em>starred-argument</em> forms to collect and later unpack arbitrary positional and keyword arguments meant for <code>open</code>—a topic coming up in the next chapter. Much of the magic here, though, is scope closures: the custom <code>open</code> found by the LEGB rule retains the original:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>file = '../Chapter14/data.txt'</strong></code>
+&gt;&gt;&gt; <code><strong>F = open(file)</strong></code>                   <code><em># Call built-in open in builtins</em></code>
+&gt;&gt;&gt; <code><strong>F.read()</strong></code>
+'Testing file IO\nLearning Python, 6E\nPython 3.12\n'
+
+&gt;&gt;&gt; <code><strong>from makeopen import makeopen</strong></code>    <code><em># Import open resetter function</em></code>
+&gt;&gt;&gt; <code><strong>makeopen('MOD1')</strong></code>                 <code><em># Custom open calls built-in open
+</em></code>
+&gt;&gt;&gt; <code><strong>F = open(file)</strong></code>                   <code><em># Call custom open in builtins</em></code>
+Custom open call MOD1 ('../Chapter14/data.txt',) {}
+&gt;&gt;&gt; <code><strong>F.read()</strong></code>
+'Testing file IO\nLearning Python, 6E\nPython 3.12\n'</pre>
+<p>Because each customization remembers the former built-in scope version in its own enclosing scope, they can even be <em>nested</em> naturally in ways that global variables cannot support—each call to the <code>makeopen</code> closure function remembers its own versions of <code>id</code> and <code>original</code>, so multiple customizations may be run:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>makeopen('MOD2')</strong></code>                 <code><em># Nested customizers work too</em></code>
+&gt;&gt;&gt; <code><strong>F = open(file)</strong>   </code>                <code><em># Because each retains its own state</em></code>
+Custom open call MOD2 ('../Chapter14/data.txt',) {}
+Custom open call MOD1 ('../Chapter14/data.txt',) {}
+&gt;&gt;&gt; <code><strong>F.read()</strong></code>
+'Testing file IO\nLearning Python, 6E\nPython 3.12\n'</pre>
+<p>As is, our function simply adds possibly nested call tracing to a built-in function, but the general technique may have other applications. A class-based equivalent to this may require more code because it would need to save the <code>id</code> and <code>original</code> values explicitly in object attributes—but requires more background knowledge than we yet have; stay tuned for state retention in classes in this book’s <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a>.</p>
+</div></aside>
+</div></section>
+<div data-type="footnotes"><p data-type="footnote" id="ch17fn1"><sup><a href="ch17.html#ch17fn1-marker">1</a></sup> The scope lookup rule was branded the “LGB rule” in the first edition of this book. The enclosing “E” layer was added later in Python to obviate the task of passing in enclosing scope names explicitly with default arguments—an advanced topic that we’ll sample later in this chapter. Since this scope is now addressed by the <code>nonlocal</code> statement, the lookup rule might have been better named “LNGB,” but backward compatibility matters in books, too. The present form of this acronym also does not account for the newer obscure scopes of comprehensions and exception handlers, but acronyms longer than four letters tend to defeat their purpose!</p><p data-type="footnote" id="ch17fn2"><sup><a href="ch17.html#ch17fn2-marker">2</a></sup> <em>Multithreading</em> runs function calls in parallel with the rest of a program and is supported by Python’s standard-library modules <code>_thread</code>, <code>threading</code>, and <code>queue</code>. Because all threaded functions run in the same process, global scopes often serve as one form of shared memory between them (threads may share both names in global scopes, as well as objects in a process’s memory space). Threading is commonly used for long-running tasks in GUIs, to implement nonblocking IO, and to utilize CPU capacity. Threading is also well beyond this language book’s scope (a property it shares with <code>async</code> functions, which are nevertheless part of Python syntax today, as you’ll learn in <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a>). See Python’s library manual for more details.</p></div></div></section></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,520 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 12. if and match Selections"><div class="chapter" id="if_and_match_selections">
+<h1><span class="label">Chapter 12. </span>if and match Selections</h1>
+<p>This chapter presents Python’s two statements used for selecting from alternative actions based on test results:</p>
+<dl>
+<dt><code>if</code>/<code>elif</code>/<code>else</code></dt>
+<dd>The main selection workhorse in most programs, capable of coding arbitrary logic</dd>
+<dt><code>match</code>/<code>case</code></dt>
+<dd>A tool for narrower multiple-choice selection, with advanced matching operations</dd>
+</dl>
+<p>Because this is our first in-depth <a contenteditable="false" data-type="indexterm" data-primary="compound statements" id="id2561"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="compound statements" id="id2562"></a>look at <em>compound statements</em>—statements that embed other <span class="keep-together">statements—we</span> will also explore the general concepts behind the Python statement syntax model here in more detail than we did in the introduction in <a data-type="xref" href="ch10.html#introducing_python_statements">Chapter 10</a>. Because the <code>if</code> statement introduces the notion of tests, this chapter will also deal with Boolean expressions, cover the “ternary” <code>if</code> expression, and fill in some details on truth tests in general.</p>
+<section data-type="sect1" data-pdf-bookmark="if Statements"><div class="sect1" id="if_statements">
+<h1>if Statements</h1>
+<p>In simple terms, the Python <code>if</code> statement selects actions to perform. Along with its <code>if</code> expression <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="if statements" id="id2563"></a><a contenteditable="false" data-type="indexterm" data-primary="if statements" id="id2564"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="if statements" id="id2565"></a>counterpart, it’s the primary selection tool in Python and represents much of the <em>logic</em> a Python program possesses. It’s also our first compound statement. Like all such statements, the <code>if</code> statement may contain other statements, including other <code>if</code>s. In fact, Python lets you combine statements in a program both sequentially (so that they execute one after another), and in an arbitrarily nested fashion (so that they execute only under certain conditions, such as selections and loops).</p>
+<section data-type="sect2" data-pdf-bookmark="General Format"><div class="sect2" id="general_format-id00064">
+<h2>General Format</h2>
+<p>The Python <code>if</code> is typical of <code>if</code> statements in most procedural languages. It takes the form of an <code>if</code> test, followed by one or more optional <code>elif</code> (for “else if”) tests, and a final and optional <code>else</code> block. The tests and the <code>else</code> part each have an associated block of nested statements, indented under a header line. When the <code>if</code> statement runs, Python executes the block of code associated with the first test that evaluates to true, or the <code>else</code> block if all tests prove false. The general form of an <code>if</code> statement looks like this:</p>
+<pre data-type="programlisting">if <code><em>test1</em></code>:                 <code><em># Main if test</em></code>
+    <code><em>statements1</em></code>           <code><em>#     Associated block</em></code>
+elif <code><em>test2</em></code>:               <code><em># Optional elif test(s)</em></code>
+    <code><em>statements2           #     Associated block</em></code>
+else:                     <code><em># Optional else default</em></code>
+    <code><em>statements3           #     Associated block</em></code></pre>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Basic Examples"><div class="sect2" id="basic_examples">
+<h2>Basic Examples</h2>
+<p>To demonstrate, let’s turn to a few simple examples of the <code>if</code> statement at work, in the REPL as usual. All parts are optional, except the initial <code>if</code> test and its associated statements. Thus, in the simplest case, the other parts are omitted:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>if 1:</strong></code>
+...     <code><strong>print('true')</strong></code>
+...
+true</pre>
+<p>As you’ve seen before, the prompt changes to <code>...</code> for continuation lines in many REPLs; in IDLE, you’ll simply drop down to an indented line instead (and tap Backspace to back up when needed). A blank line, input by pressing Enter twice, terminates and runs the entire statement in most interactive <span class="keep-together">interfaces</span>.</p>
+<p>Remember that <code>1</code> is Boolean true (as we’ll review later, the word <code>True</code> is its equivalent), so this statement’s test always succeeds. To handle a false result here, code the <code>else</code> to be run when the <code>if</code> test is not true:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>if not 1:</strong></code>
+...     <code><strong>print('true')</strong></code>
+... <code><strong>else:</strong></code>
+...     <code><strong>print('false')</strong></code>
+...
+false</pre>
+<p>If you’re working along: this chapter would like to omit all the <code>...</code> prompts for easier emedia copy and paste, but this would throw off indentation of associated lines like <code>else</code>. Instead, prompts are left off where possible, and code of some longer examples is listed without prompts, before its output. The book’s examples package also has code sans prompts.</p>
+<p>Here’s a more complex <code>if</code> statement with all its optional parts present; it aims to display the roots of today’s mobile operating systems (though it’s not fully inclusive, and is prone to grow dated in a discriminating future near you):</p>
+<pre data-type="programlisting">if os in ['iOS', 'iPhoneOS']:
+    print('macOS')
+elif mode == 'mobile' and os != 'Windows':
+    print('Linux')
+else:
+    print('unknown?')
+
+&gt;&gt;&gt; <code><strong>os, mode = 'Windows', 'mobile'</strong></code>
+&gt;&gt;&gt; …<code><em>insert the code above here</em></code>…
+unknown?</pre>
+<p>This multiline statement extends from the <code>if</code> line through the block nested under the <code>else</code>. When it’s run, Python executes the statements nested under the first test that is true, or the <code>else</code> part if all tests are false (in this example, they are). In practice, both the <code>elif</code> and <code>else</code> parts may be omitted, and there may be more than one statement nested in each section. Note that the words <code>if</code>, <code>elif</code>, and <code>else</code> are associated by the fact that they line up vertically, with the same indentation (ignoring the REPL prompts you may see if you paste and run this live).</p>
+<p>The <code>and</code> expression in the preceding example is true if the expressions on its left and right sides are both true (more on such logical tests ahead). The <code>if</code> statement can also be <em>nested</em> to code choices that depend on others, and arbitrary logic in general. The following, for example, first ensures that it’s dealing with a mobile before checking specific system names—logically speaking, there is an implied <code>and</code> between the enclosing and nested <code>if</code>s:</p>
+<pre data-type="programlisting">if mode == 'mobile':
+    if os == 'Android':
+        print('Linux')
+    elif os != 'Windows':
+        print('macOS')
+
+&gt;&gt;&gt; <code><strong>os, mode = 'Android', 'mobile'</strong></code>
+&gt;&gt;&gt; …<code><em>insert the code above here</em></code>…
+Linux</pre>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Multiple-Choice Selections"><div class="sect2" id="multiple_choice_selections">
+<h2>Multiple-Choice Selections</h2>
+<p>Until Python’s version 3.10, it had no <em>multiple-choice</em> selection statement similar to a “switch” in some other <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="if statements" data-tertiary="multiple-choice selections" id="stifmpc"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="if statements" data-tertiary="multiple-choice selection" id="cpifmpc"></a><a contenteditable="false" data-type="indexterm" data-primary="if statements" data-secondary="multiple-choice selection" id="id2566"></a>languages that selects an action based on a variable’s value. As you’ll learn ahead, Python today has sprouted a <code>match</code> statement that achieves the same goals (and substantially more!). Even so, multiple-choice logic can usually be coded just as easily by a series of <code>if</code>/<code>elif</code> tests and occasionally by indexing dictionaries or searching lists. Because dictionaries and lists can be built at runtime dynamically, they are often more flexible than hardcoded <code>if</code> (or <code>match</code>) logic in your script. The following, for instance, picks an operating system’s release year, more or less, from its name:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>choice = 'Windows'</strong></code>
+&gt;&gt;&gt; <code><strong>print({'macos':    2001,</strong>   </code>          <code><em># A dictionary-based 'switch'</em></code>
+           <code><strong>'Linux':    1991,</strong>   </code>          <code><em># Use get() for a default (ahead)</em></code>
+           <code><strong>'Windows':  1985}[choice])</strong></code>
+1985</pre>
+<p>Although it may take a few moments for this to sink in the first time you see it, this dictionary <em>is</em> a multiple-choice branch—indexing on the key <code>choice</code> branches to one of a set of values, much like a “switch” statement in other languages. An almost equivalent but more verbose Python <code>if</code> statement might look like the following:</p>
+<pre data-type="programlisting">if choice == 'macos':                    <code><em># The equivalent if statement</em></code>
+    print(2001)
+elif choice == 'Linux':
+    print(1991)
+elif choice == 'Windows':
+    print(1985)
+else:
+    print('Bad choice')
+
+&gt;&gt;&gt; …<code><em>insert the code above here</em></code>…
+1985</pre>
+<p>Though it’s perhaps more readable, the potential downside of an <code>if</code> like this is that, short of constructing it as a string and running it with tools like the <code>eval</code> or <code>exec</code> tools noted in <a data-type="xref" href="ch10.html#introducing_python_statements">Chapter 10</a>, it cannot handle choices unknown until the program runs as easily as a dictionary. In more dynamic programs, data structures offer added flexibility.</p>
+<section data-type="sect3" data-pdf-bookmark="Handling switch defaults"><div class="sect3" id="handling_switch_defaults">
+<h3>Handling switch defaults</h3>
+<p>Notice the <code>else</code> clause on <a contenteditable="false" data-type="indexterm" data-primary="if statements" data-secondary="multiple-choice selection" data-tertiary="switch defaults" id="id2567"></a>the <code>if</code> here to handle the default case when no key matches. As demoed in <a data-type="xref" href="ch08.html#lists_and_dictionaries">Chapter 8</a>, dictionary defaults can be coded with <code>in</code> expressions, <code>get</code> method calls, or exception catching with the <code>try</code> statement introduced in the preceding chapter. All of these same techniques can be used here to code a default action in a dictionary-based multiple choice. As a review in the context of this role, here’s the <code>get</code> scheme at work with defaults (which also uses the more compact <code>dict</code> call to make the same dictionary):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>branch = dict(macos=2001, Linux=1991, Windows=1985)</strong></code>
+&gt;&gt;&gt; <code><strong>print(branch.get('Windows', 'Bad choice'))</strong></code>
+1985
+&gt;&gt;&gt; <code><strong>print(branch.get('Solaris', 'Bad choice'))</strong></code>
+Bad choice</pre>
+<p>An <code>in</code> membership test in an <code>if</code> statement can have the same default effect:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>choice = 'AmigaOS'</strong></code>
+&gt;&gt;&gt; <code><strong>if choice in branch:</strong></code>
+...     <code><strong>print(branch[choice])</strong></code>
+... <code><strong>else:</strong></code>
+...     <code><strong>print('Bad choice')</strong></code>
+...
+Bad choice</pre>
+<p>And the <code>try</code> statement is a general way to handle dictionary-based defaults by catching and handling the errors they’d otherwise trigger (for more on exceptions, see <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>’s overview and <a data-type="xref" href="part07.html#exceptions">Part VII</a>’s full treatment):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>choice = 'GEM'</strong></code>
+&gt;&gt;&gt; <code><strong>try:</strong></code>
+...     <code><strong>print(branch[choice])</strong></code>
+... <code><strong>except KeyError:</strong></code>
+...     <code><strong>print('Bad choice')</strong></code>
+...
+Bad choice</pre>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Handling larger actions"><div class="sect3" id="handling_larger_actions">
+<h3>Handling larger actions</h3>
+<p>As you can tell, dictionaries are good <a contenteditable="false" data-type="indexterm" data-primary="if statements" data-secondary="multiple-choice selection" data-tertiary="function definition" id="id2568"></a>for associating values with keys, but what about the more complicated actions you can code in the statement blocks associated with <code>if</code> statements? In <a data-type="xref" href="part04.html#functions_and_generators">Part IV</a>, you’ll learn that dictionaries can also contain <em>functions</em> to represent more complex actions and implement general “jump tables.” Such functions appear as dictionary values, may be coded as function names or inline <code>lambda</code>s, and are run by simply adding parentheses to trigger their actions.</p>
+<p>Here’s an abstract sample of this technique, but stay tuned for a rehash in <a data-type="xref" href="ch19.html#function_odds_and_ends">Chapter 19</a> after you’ve learned more about function definition:</p>
+<pre data-type="programlisting"><code>def action():  …</code>
+<code>def default(): …</code>
+
+<code>branch = {'Android':    lambda: …,</code>       <code><em># A table of callable function objects
+</em>          'iOS':        action,</code>          <code><em># Via inline lambdas, or def elsewhere</em></code>
+<code>          'Symbian OS': lambda: …}</code>
+
+<code>choice = 'Android'
+branch.get(choice, default)()  </code>          <code><em># Fetch and run associated action</em></code></pre>
+<p>Although dictionary-based multiple-choice branching is useful in programs that deal with more dynamic data, most programmers will probably find that coding an <code>if</code> statement is a straightforward way to perform this task. As a rule of thumb in coding, when in doubt, err on the side of simplicity and readability; it’s the “Pythonic” way.</p>
+<p>And the punch line here, of course, is that the <code>match</code> statement may handle <em>basic</em> multiple-choice selections better today—though it’s doesn’t do general logic like <code>if</code>, can’t handle dynamic data like dictionary indexing, and comes with substantial extra convolution for other roles. You’ll have to move on to the <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="if statements" data-tertiary="multiple-choice selections" data-startref="stifmpc" id="id2569"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="if statements" data-tertiary="multiple-choice selection" data-startref="cpifmpc" id="id2570"></a>next section to see all this for yourself.</p>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="match Statements"><div class="sect1" id="match_statements">
+<h1>match Statements</h1>
+<p>For most of Python’s three-decade career, it resisted adding a multiple-choice selection statement, in <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="match statements" id="id2571"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="match statements" id="id2572"></a><a contenteditable="false" data-type="indexterm" data-primary="match statements" id="id2573"></a>large part because of all the options for coding such logic with existing tools that we just explored. Those options permeate vast amounts of Python code and remain relatively simple techniques that are perfectly valid to use in Python code written today.</p>
+<p>Nevertheless, programming languages have a tendency to get caught up in <em>arms races</em> with each other—copying other languages’ features and eroding their own distinctions in the process, and often for no better reason than familiarity with other tools. One of the fruits of this process is the <code>match</code> statement, new as of Python 3.10.</p>
+<p>At its basic level, <code>match</code> is a potentially useful tool that adds a multiple-choice statement to Python. At this level, it works very much like “switch” statements in <a contenteditable="false" data-type="indexterm" data-primary="structural pattern matching" id="id2574"></a><a contenteditable="false" data-type="indexterm" data-primary="patterns" data-secondary="structural pattern matching" id="id2575"></a>other languages and can be used instead of both <code>if</code>/<code>elif</code>/<code>else</code> combos and dictionary indexing in some contexts. In its full-blown form, however, <code>match</code> implements something known as <em>structural pattern matching</em>, which quickly falls off a complexity cliff, and seems a highly convoluted answer to a question that most Python programmers never asked. Especially for newcomers, it’s a lot to justify.</p>
+<p>Because of all that, this section is going to focus on the basic roles of <code>match</code>, and touch on its advanced pattern-matching roles only briefly, with delegation to Python’s manuals for more of the story.</p>
+<section data-type="sect2" data-pdf-bookmark="Basic match Usage"><div class="sect2" id="basic_match_usage">
+<h2>Basic match Usage</h2>
+<p>The good news is that <code>match</code>’s basic usage is straightforward. In its first-level form, <code>match</code> works the same as both an <code>if</code> statement and a dictionary index—like the following abstract snippets that emulate traffic lights in some locales (to run most examples here live, first assign variables to one of the options listed in their opening comments):</p>
+<pre data-type="programlisting"><code><em># state = 'go' or 'stop' or other</em></code>
+
+if state == 'go':
+   print('green')
+elif state == 'stop':                        <code><em># if-based multiple choice</em></code>
+    print('red')
+else:
+    print('yellow')
+
+colors = dict(go='green', stop='red')        <code><em># Dictionary-based mltiple choice</em></code>
+print(colors.get(state, 'yellow'))</pre>
+<p>The equivalent <code>match</code> statement provides explicit syntax for such multiple-choice logic, at the cost of extra lines and extra indentation:</p>
+<pre data-type="programlisting">match state:
+    case 'go':
+        print('green')                       <code><em># match-based multiple choice: 3.10+</em></code>
+    case 'stop':
+        print('red')
+    case _:
+        print('yellow')</pre>
+<p>This statement works like this: <code>match</code> first evaluates the expression given in its header line (e.g., <code>state</code>) and then compares its result to values given in <code>case</code> header lines indented below it (e.g., <code>'go'</code>)—one after another, and top to bottom. As soon as a first match is found, the block of code nested under the matching <code>case</code> is run, and the entire <code>match</code> is exited. If no <code>case</code> values match, the <code>match</code> statement either runs the block under the <code>case</code> with value <code>_</code> (which provides a fallback <em>default</em>, and must appear last), or simply exits silently if no <code>_ case</code> is present.</p>
+<p>As usual, <code>case</code> blocks can contain <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="match statements" data-tertiary="nesting" id="id2576"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="match statements" data-tertiary="nesting" id="id2577"></a><a contenteditable="false" data-type="indexterm" data-primary="match statements" data-secondary="nesting" id="id2578"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="match statements" id="id2579"></a>multiple statements and nesting, and <code>match</code> itself can be nested in other statements. Moreover, <code>case</code> headers can also designate <em>multiple</em> values separated by <code>|</code> (“or”) which are all checked for a match, name a variable to be assigned to the matched value with <code>as</code>, and give a simple variable that is assigned the <code>match</code> expression’s result and always matches (and hence ends the statement, much like the anonymous <code>_</code>):</p>
+<pre data-type="programlisting"><code><em># state = 'go' or 'proceed' or 'start', or 'stop' or 'halt', or any other</em></code>
+
+match state:
+    case 'go' | 'proceed' | 'start':      <code><em># Match any one of these 3</em></code>
+        print('green')                    <code><em># First left-to-right match wins</em></code>
+        print('means go')
+    case 'stop' | 'halt' as what:         <code><em># Match any, and assign it to what</em></code>
+        print('red')                      <code><em># what outlives match if assigned</em></code>
+        print('means', what)
+    case other:                           <code><em># Set other to state, and match</em></code>
+        print('catchall', other)          <code><em># other outlives match if assigned</em></code></pre>
+<p>In general, variables (like this example’s <code>what</code> and <code>other</code>) embedded in <code>case</code> headers and assigned during a successful match outlive the <code>match</code> statement itself: they can be used in code after the <code>match</code> exits, as long as that code is part of the same <em>scope</em>—which roughly means the same module or function, per coverage later in this book.</p>
+<section data-type="sect3" data-pdf-bookmark="Match versus if live"><div class="sect3" id="match_versus_if_live">
+<h3>Match versus if live</h3>
+<p>As a live <code>match</code> example, the following <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="match statements" data-tertiary="if statements" id="id2580"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="match statements" data-tertiary="if statements" id="id2581"></a><a contenteditable="false" data-type="indexterm" data-primary="match statements" data-secondary="if statements" id="id2582"></a><a contenteditable="false" data-type="indexterm" data-primary="if statements" data-secondary="match statements" id="id2583"></a>maps statements to categories and assigns some variables along the way for later use; we’ll get formal about the <code>for</code> loop used here in the next chapter:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for stmt in ['if', 'while', 'try']:</strong></code>
+<code> <strong>       match stmt:</strong></code>
+<code> <strong>           case 'if' | 'match':</strong></code>
+<code> <strong>               print('logic')</strong></code>
+<code> <strong>           case 'for' | 'while' as which:</strong></code>
+<code> <strong>               print('loop')</strong></code>
+<code> <strong>           case other:</strong></code>
+<code> <strong>               print('tbd')</strong></code>
+ 
+logic
+loop
+tbd
+&gt;&gt;&gt; <code><strong>which, other</strong></code>
+('while', 'try')</pre>
+<p>The equivalent <code>if</code> must assign the variables explicitly—though it requires less indentation, this example is artificial, and the <code>if</code> can handle more complex logic that the <code>match</code> cannot; it’s not just a multiple-choice tool:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for stmt in ['if', 'while', 'try']:</strong></code>
+<code> <strong>       if stmt in ['if', 'match']:</strong></code>
+<code> <strong>           print('logic')</strong></code>
+<code> <strong>       elif stmt in ['for', 'while']:</strong></code>
+<code> <strong>           which = stmt</strong></code>
+<code> <strong>           print('loop')</strong></code>
+<code> <strong>       else:</strong></code>
+<code> <strong>           other = stmt</strong></code>
+<code> <strong>           print('tbd')</strong></code>
+
+…<code><em>same results</em></code>…</pre>
+<p>Watch for more basic <code>match</code> statements to show up later in this book (e.g., in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch25.html#module_odds_and_ends">25</a>, <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch30.html#operator_overloading-id000103">30</a>, and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch38.html#managed_attributes">38</a>). Though it cannot be used to code general logic like <code>if</code>, <code>match</code> can make multiple-choice selection explicit in its basic form. Its extension to the <em>structural pattern matching</em> of the next section, however, is more difficult to rationalize—but you’ll have to read on to judge for yourself.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Advanced match Usage"><div class="sect2" id="advanced_match_usage">
+<h2>Advanced match Usage</h2>
+<p>As noted, beyond its basic level shown so far, <code>match</code> becomes too complex to cover usefully here. In this guise, it goes well beyond multiple-choice logic, to define a language of its own for extracting components of structured objects. As a very brief survey, this over-caffeinated <code>match</code> treats <code>case</code> values as <em>patterns</em>, which may be:</p>
+<ul>
+<li><p><em>Literal</em> patterns: a literal <code><em>X</em></code> matches the same value, by equality or identity</p></li>
+<li><p><em>Wildcard</em> patterns: <code>_</code> matches anything, but the value is not assigned to <code>_</code></p></li>
+<li><p><em>Capture</em> patterns: variable <code><em>X</em></code> matches anything, and will be assigned to it</p></li>
+<li><p><em>Or</em> patterns: <code><em>X</em> | <em>Y</em> | <em>Z</em></code> matches patterns <code><em>X</em></code> or <code><em>Y</em></code> or <code><em>Z</em></code>, stopping at the first match</p></li>
+<li><p><em>As</em> patterns: <code><em>X</em> as <em>Y</em></code> matches pattern <code><em>X</em></code>, and assigns the matched value to <code><em>Y</em></code></p></li>
+<li><p>Additional patterns that match <em>sequences</em>, <em>mappings</em>, <em>attributes</em>, and <em>instances</em> by structure</p></li>
+</ul>
+<p>As an artificial (if frightening) example, <a data-type="xref" href="#example_onetwo_onedot_matchdemodotpy">Example 12-1</a> demos <em>literal</em>, <em>sequence</em>, and <em>mapping</em> patterns. Its <code>[…]</code> and <code>(…)</code> patterns <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="match statements" data-tertiary="literal patterns" id="id2584"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="match statements" data-tertiary="literal patterns" id="id2585"></a><a contenteditable="false" data-type="indexterm" data-primary="match statements" data-secondary="literal patterns" id="id2586"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="match statements" data-tertiary="sequence patterns" id="id2587"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="match statements" data-tertiary="sequence patterns" id="id2588"></a><a contenteditable="false" data-type="indexterm" data-primary="match statements" data-secondary="sequence patterns" id="id2589"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="match statements" data-tertiary="mapping patterns" id="id2590"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="match statements" data-tertiary="mapping patterns" id="id2591"></a><a contenteditable="false" data-type="indexterm" data-primary="match statements" data-secondary="mapping patterns" id="id2592"></a><a contenteditable="false" data-type="indexterm" data-primary="literal patterns" id="id2593"></a><a contenteditable="false" data-type="indexterm" data-primary="sequence patterns" id="id2594"></a><a contenteditable="false" data-type="indexterm" data-primary="mapping patterns" id="id2595"></a>both match any sequence and are interchangeable; its <code>{…}</code> matches a mapping; and its single <code>*</code> or <code>**</code> names in patterns collect unmatched parts of a sequence or mapping, respectively. Using a <code>*</code> in this context is similar to <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>’s extended-unpacking assignments, though here <code>**</code> is unique, not all parts of a pattern must be variables, and assignment to starred names is really a <em>side effect</em> of a Boolean test for a match (pasters beware: blank lines added for readability here won’t work in a REPL, and <code>[…]</code> patterns preclude <code>(…)</code>s; run from a file and experiment freely).</p>
+<div data-type="example" class="pagebreak-before" id="example_onetwo_onedot_matchdemodotpy">
+<h5 class="less_space"><span class="label">Example 12-1. </span>matchdemo.py</h5>
+<pre data-type="programlisting"><code><em># state = 1 or</em></code> 
+<code><em>#   [1, 2, 3] or [0, 2, 3] or (1, 2, 3) or (0, 2, 3) or</em></code> 
+<code><em>#   dict(a=1, b=2, c=3) or dict(a=0, b=2, c=3) or other</em></code>
+
+match state:
+    case 1 | 2 | 3 as what:              <code><em># Match integer literals, what = 1</em></code>
+        print('or', what)
+
+    case [1, 2, what]:                   <code><em># Match sequence (1), what = 3</em></code>
+        print('list', what)
+    case [0, *what]:                     <code><em># Match sequence (0), what = [2, 3]</em></code>
+        print('list', what)
+
+    case {'a': 1, 'b': 2, 'c': what}:    <code><em># Match mapping, what = 3</em></code>
+        print('dict', what)
+    case {'a': 0, **what}:               <code><em># Match mapping, what = {'b': 2, 'c': 3}</em></code>
+        print('dict', what)
+
+    case (1, 2, what):                   <code><em># Match sequence: same as [1, 2, what]</em></code> 
+        print('tuple', what)
+    case (0, *what):                     <code><em># Match sequence: same as [0, *what]</em></code>
+        print('tuple', what)
+
+    case _ as what:                      <code><em># Match all other, what = other</em></code>
+        print('other', what)</pre>
+</div>
+<p>Subtly, the <code>[…]</code>, <code>{…}</code>, and <code>(…)</code> patterns in this code’s <code>case</code> headers are not normal object literals. They’re really <em>special-case syntax</em> forms that contain nested patterns, many of which just happen<a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="special-case" id="id2596"></a><a contenteditable="false" data-type="indexterm" data-primary="special-case syntax" id="id2597"></a> to be literal patterns here. Nested patterns <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="match statements" data-tertiary="nested patterns" id="id2598"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="match statements" data-tertiary="nested patterns" id="id2599"></a><a contenteditable="false" data-type="indexterm" data-primary="match statements" data-secondary="nested patterns" id="id2600"></a><a contenteditable="false" data-type="indexterm" data-primary="nested patterns, match statements" id="id2601"></a>can also be capture patterns (possibly after at most one <code>*</code> or <code>**</code>), and may use <code>|</code> ors, or <code>_</code> wildcards. The <code>case</code> header <code>[*a, 2 | 3, _]</code>, for example, is a valid sequence pattern, but has little to do with list literals.</p>
+<p><em>Attribute</em> and <em>instance</em> patterns require knowledge you haven’t yet gained (a recurring theme in Python today), but they check for attribute values <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="match statements" data-tertiary="attribute patterns" id="id2602"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="match statements" data-tertiary="attribute patterns" id="id2603"></a><a contenteditable="false" data-type="indexterm" data-primary="match statements" data-secondary="attribute patterns" id="id2604"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="match statements" data-tertiary="instance patterns" id="id2605"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="match statements" data-tertiary="instance patterns" id="id2606"></a><a contenteditable="false" data-type="indexterm" data-primary="match statements" data-secondary="instance patterns" id="id2607"></a>and inheritance-tree membership, and some of their components are nested patterns again, which may be literals, captures, and more. As a preview—which you can revisit after reading <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a>:</p>
+<pre data-type="programlisting">class Emp:
+    def __init__(self, name): self.name = name
+
+pat = Emp('Pat')                         <code><em># pat.name becomes 'Pat': see Part VI!</em></code>
+
+<code><em># state = 'Pat' or pat</em></code>
+
+match state:
+    case pat.name as what:               <code><em># Match object's attribute, what = 'Pat'</em></code>
+        print('attr', what)
+    case Emp(name=what):                 <code><em># Match an Emp instance, what = 'Pat'</em></code>
+        print('instance', what)</pre>
+<p>And if that’s not already overkill for your multiple-choice logic needs, <em>parentheses</em> may be used around <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="match statements" data-tertiary="parentheses" id="id2608"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="match statements" data-tertiary="parentheses" id="id2609"></a><a contenteditable="false" data-type="indexterm" data-primary="match statements" data-secondary="parentheses" id="id2610"></a>any pattern for grouping (as in general expressions); <em>nested</em> structures match recursively as they do in sequence assignment; and each <code>case</code> header can also end with an optional <em>guard</em> expression introduced by an <code>if</code> (after the optional <code>as</code> capture), which must be true for the <code>case</code> to be selected and its code block run:</p>
+<pre data-type="programlisting">state = ((1, 2), 3)
+guard1 = True                            <code><em># a=1, b=3 if True; a=(1, 2) if False</em></code>
+
+match state:
+    case ((a, 2), b) if guard1:          <code><em># Match+run only if guard1 is True</em></code>
+        print(f'case1 {a=} {b=}')        
+    case (a, 3) as what:                 <code><em># Reached only if guard1 is False</em></code> 
+        print(f'case2 {a=} {what=}')
+    case [a, (3 | 4)] as what if guard1:
+        print(f'case3 {a=} {what=}')</pre>
+<p>All of which seems a blizzard of functionality to address usage that’s overwhelmingly straightforward. Hence, this is where this book’s <code>match</code> coverage must stop short for space (and mercy). For more on advanced roles of <code>match</code>, including all the gory details of its special-case patterns, consult Python’s online resources.</p>
+<p>Before you do, though, ponder just for a moment on the fact that Python was used successfully for three decades and rose to the top of the programming-languages heap <em>without</em> a <code>match</code> statement. Saddling the language with yet another convoluted subdomain that obviates a trivial amount of code might owe at least as much to hubris as user need.</p>
+<p>That said, <code>match</code> may be useful in simpler roles, though you’ll still need to choose between <code>if</code>, dictionaries fetches, and <code>match</code> when coding multiple-choice logic. While you should generally strive to avoid doing something just because you’ve done it in other languages (you’re now using Python, after all), such choices are yours to make.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Python Syntax Revisited"><div class="sect1" id="python_syntax_revisited">
+<h1>Python Syntax Revisited</h1>
+<p>Python’s syntax model was introduced in <a data-type="xref" href="ch10.html#introducing_python_statements">Chapter 10</a>. Now that we’re stepping up to larger statements like <code>if</code> and <code>match</code>, this section reviews and <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="syntax" id="id2611"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="syntax" id="id2612"></a><a contenteditable="false" data-type="indexterm" data-primary="match statements" data-secondary="syntax" id="id2613"></a><a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="statements" id="id2614"></a>expands on the syntax ideas introduced earlier. In general, Python has a simple, statement-based syntax. Among its highlights:</p>
+<ul>
+<li><p><strong>Statements execute one after another, until you say otherwise.</strong> Python normally runs statements in a file or nested block in order from first to last, but statements like <code>if</code> (as well as loops and exceptions) cause the interpreter to jump around in your code. Because Python’s path through a program is called the control flow, statements such as <code>if</code> that affect it are often called <em>control-flow statements</em>.</p></li>
+<li><p><strong>Block and statement boundaries are detected automatically.</strong> As we’ve seen, there are no braces or “begin/end” delimiters around blocks of code in Python; instead, Python uses the indentation of statements under a header to group the statements in a nested block. Similarly, Python statements are not normally terminated with semicolons; rather, the end of a line usually marks the end of the statement coded on that line. As special cases you’ll meet later, statements can both span lines and be combined on a line when it’s useful.</p></li>
+<li><p><strong>Compound statements = header + “:” + indented statements.</strong> All Python <em>compound statements</em>—those with nested statements—follow the same pattern: a header line terminated with a colon, followed by one or more nested statements, usually indented under the header. The indented statements are called a <em>block</em> (or sometimes, a suite). In the <code>if</code> statement, the <code>elif</code> and <code>else</code> are part of the <code>if</code>, but they are also header lines with nested blocks of their own. As a special case, blocks can be on the same line as the header if they are not compound.</p></li>
+<li class="pagebreak-before"><p><strong>Blank lines, spaces, and comments are usually ignored.</strong> Blank lines are both optional and ignored in files (but not at the interactive prompt, when they terminate compound statements). Spaces inside statements and expressions are almost always ignored (except in string literals, and when used for indentation). Comments are always ignored: they start with a <code>#</code> character (not inside a string literal) and extend to the end of the current line.</p></li>
+<li><p><strong>Docstrings are ignored but are saved and displayed by tools.</strong> Python supports an additional comment form called documentation strings (<em>docstrings</em> for short), which, unlike <code>#</code> comments, are retained at runtime for inspection. Docstrings are simply strings that show up at the top of program files and some statements. Their content is ignored, but they are attached to objects and may be displayed with tools covered later in this book.</p></li>
+</ul>
+<p>For most Python newcomers, the lack of the braces and semicolons used to mark blocks and statements in many other languages seems to be the most novel syntactic feature of Python, so let’s explore what this means in more depth.</p>
+<section data-type="sect2" data-pdf-bookmark="Block Delimiters: Indentation Rules"><div class="sect2" id="block_delimiters_indentation_rules">
+<h2>Block Delimiters: Indentation Rules</h2>
+<p>As introduced in <a data-type="xref" href="ch10.html#introducing_python_statements">Chapter 10</a>, Python detects <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="syntax" data-tertiary="blocks" id="styxsb"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="syntax" data-tertiary="blocks" id="cpstyxb"></a><a contenteditable="false" data-type="indexterm" data-primary="match statements" data-secondary="syntax" data-tertiary="blocks" id="mttyx"></a><a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="statements" data-tertiary="blocks" id="syxtt"></a><a contenteditable="false" data-type="indexterm" data-primary="blocks, statements" id="blkstt"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="syntax" data-tertiary="indentation" id="styxkd"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="syntax" data-tertiary="indentation" id="cpstyidt"></a><a contenteditable="false" data-type="indexterm" data-primary="match statements" data-secondary="syntax" data-tertiary="indentation" id="mtidtt"></a><a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="statements" data-tertiary="indentation" id="syxidtt"></a>block boundaries automatically, by line <em>indentation</em>—that is, the empty space to the left of your code. This section is a rehash of the rules, with a few more details sprinkled in along the way.</p>
+<p>In short, all statements indented the same distance to the right belong to the same block of code. In other words, the statements within a block line up vertically, as in a column. The block ends when a lesser-indented line or the end of the file is encountered (or you enter a blank like in a REPL), and more deeply nested blocks are simply indented further to the right than the statements in the enclosing block.</p>
+<p>For instance, <a data-type="xref" href="#nested_blocks_of_code_denoted_by_their">Figure 12-1</a> demonstrates the block structure of the following code:</p>
+<pre data-type="programlisting">x = 1
+if x:
+    y = 2
+    if y:
+        print('block2')
+    print('block1')
+print('block0')</pre>
+<p>This code contains three blocks: the first (the top-level code of the file) is not indented at all, the second (within the outer <code>if</code> statement) is indented four spaces, and the third (the <code>print</code> statement under the nested <code>if</code>) is indented eight spaces.</p>
+<p>Top-level (unnested) code must start in column 1, but nested blocks can start in any column; indentation may consist of any number of spaces and tabs, as long as it’s the same for all the statements in a given single block. That is, Python doesn’t care <em>how</em> you indent your code; it only cares that it’s done consistently. Four spaces or one tab per indentation level are common conventions, but there is no absolute standard or rule in the Python world.</p>
+<figure><div id="nested_blocks_of_code_denoted_by_their" class="figure">
+<img src="assets/lpy6_1201.png" alt="" width="788" height="719"/>
+<h6><span class="label">Figure 12-1. </span>Nested blocks of code denoted by their indentation</h6>
+</div></figure>
+<p>Indenting code is quite natural in practice. For example, the following fully frivolous code snippet demonstrates common indentation errors in Python code, which are easy to spot because they’re visually askew:</p>
+<pre data-type="programlisting">  x = 'Hack'                        <code><em># Error: first line indented</em></code>
+if 'tho' in 'python':
+    print(x * 8)
+        x += 'More!'                <code><em># Error: unexpected indentation</em></code>
+        if x.endswith('re!'):
+                x *= 2
+            print(x)                <code><em># Error: inconsistent indentation</em></code></pre>
+<p>The properly indented version of this code looks like the following—even for an artificial example like this, proper indentation makes the code’s intent much more apparent:</p>
+<pre data-type="programlisting">x = 'Hack'
+if 'tho' in 'python':
+    print(x * 8)                    <code><em># Prints 8 Hack</em></code>
+    x += 'More!'
+    if x.endswith('re!'):
+        x *= 2
+        print(x)                    <code><em># Prints HackMore!HackMore!</em></code></pre>
+<p>It’s important to know that the only major place in Python where whitespace matters is where it’s used to the <em>left</em> of your code, for indentation; in most other contexts, space can be coded or not. However, indentation is really part of Python syntax, not just a stylistic suggestion: all the statements within any given single block must be indented to the same level, or Python reports a syntax error. This is <span class="keep-together">intentional—because</span> you don’t need to explicitly mark the start and end of a nested block of code, some of the syntactic clutter found in other languages is unnecessary in Python.</p>
+<p>As described in <a data-type="xref" href="ch10.html#introducing_python_statements">Chapter 10</a>, making indentation part of the syntax model also enforces consistency, a crucial component of readability in structured programming languages like Python. In Python’s syntax, the indentation of each line of code unambiguously tells readers what it is associated with. This uniform and consistent appearance in turn makes Python code easier to maintain and reuse.</p>
+<p>In the end, indentation is easier than you may think. Consistently indented code always satisfies Python’s rules, and most text editors (including IDLE) make it easy to follow Python’s model by automatically indenting as you type.</p>
+<section data-type="sect3" data-pdf-bookmark="Avoid mixing tabs and spaces"><div class="sect3" id="avoid_mixing_tabs_and_spaces">
+<h3>Avoid mixing tabs and spaces</h3>
+<p>That said, there’s one rule of thumb you should know: although you can use spaces or tabs to indent, it’s usually not a good idea to <em>mix</em> the two within a block—use one or the other. Technically, tabs count for enough spaces to move the current column number up to a multiple of 8, and your code will work if you mix tabs and spaces consistently. However, mixing tabs and spaces makes code difficult to read and change completely apart from Python’s syntax rules—tabs may look very different in the next programmer’s editor than they do in yours.</p>
+<p>For these reasons, Python issues an error when a script mixes tabs and spaces for indentation inconsistently within a block (that is, in a way that makes it dependent on a tab’s equivalent in spaces). So don’t do that: when in Python do as Pythoneers do and use <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="syntax" data-startref="styxs" id="id2615"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="syntax" data-tertiary="blocks" data-startref="cpstyxb" id="id2616"></a><a contenteditable="false" data-type="indexterm" data-primary="match statements" data-secondary="syntax" data-tertiary="blocks" data-startref="mttyx" id="id2617"></a><a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="statements" data-tertiary="blocks" data-startref="syxtt" id="id2618"></a><a contenteditable="false" data-type="indexterm" data-primary="blocks, statements" data-startref="blkstt" id="id2619"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="syntax" data-tertiary="indentation" data-startref="styxkd" id="id2620"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="syntax" data-tertiary="indentation" data-startref="cpstyidt" id="id2621"></a><a contenteditable="false" data-type="indexterm" data-primary="match statements" data-secondary="syntax" data-tertiary="indentation" data-startref="mtidtt" id="id2622"></a><a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="statements" data-tertiary="indentation" data-startref="syxidtt" id="id2623"></a>consistent indentation instead of block delimiters.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Statement Delimiters: Lines and Continuations"><div class="sect2" id="statement_delimiters_lines_and_continua">
+<h2>Statement Delimiters: Lines and Continuations</h2>
+<p>While blocks are indented, a statement in <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="syntax" data-tertiary="delimiters" id="id2624"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="syntax" data-tertiary="delimiters" id="id2625"></a><a contenteditable="false" data-type="indexterm" data-primary="match statements" data-secondary="syntax" data-tertiary="delimiters" id="id2626"></a><a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="statements" data-tertiary="delimiters" id="id2627"></a>Python normally ends at the end of the line on which it appears. When a statement is too long to fit on a single line, though, a few special rules may be used to make it span multiple lines:</p>
+<ul>
+<li><p><strong>Statements may span multiple lines if you’re continuing an “open pair.”</strong> The code of a statement can always be continued on the next line if it’s enclosed in a <code>()</code>, <code>{}</code>, or <code>[]</code> pair. For instance, expressions in parentheses and dictionary and list literals can span any number of lines; the statement doesn’t end until the end of the line containing the closing part of the pair (a <code>)</code>, <code>}</code>, or <code>]</code>). <em>Continuation lines</em>—lines 2 and beyond of the statement—can start at any indentation level, but it’s best to align vertically for readability in some fashion.</p></li>
+<li><p><strong>Statements may span multiple lines if they end in a backslash.</strong> Though best used as a fallback option, if a statement needs to span multiple lines, you can also add a backslash—a <code>\</code> not embedded in a string literal or comment—at the end of the prior line to indicate you’re continuing on the next line. Because you can also continue by adding parentheses around most constructs, backslashes are rarely used today. This approach is also error-prone: accidentally forgetting a <code>\</code> may generate a syntax error or cause the next line to run independently.</p></li>
+<li><p><strong>Statements may be combined if separated with a semicolon.</strong> Though uncommon, you can terminate a statement with a semicolon. This is sometimes used to squeeze more than one statement onto a single line by separating them with semicolons, but this works only when the combined statements are not compound.</p></li>
+<li><p><strong>Statements may contain multiline strings.</strong> As we learned in <a data-type="xref" href="ch07.html#string_fundamentals">Chapter 7</a>, triple-quoted string blocks are designed to span multiple lines normally. We also learned in <a data-type="xref" href="ch07.html#string_fundamentals">Chapter 7</a> that adjacent string literals are implicitly concatenated; when this is used in conjunction with the open-pairs rule mentioned earlier, wrapping this construct in parentheses allows it to span multiple lines.</p></li>
+</ul>
+</div></section>
+<section data-type="sect2" class="pagebreak-before" data-pdf-bookmark="Special Syntax Cases in Action"><div class="sect2" id="special_syntax_cases_in_action">
+<h2 class="less_space">Special Syntax Cases in Action</h2>
+<p>Here’s what a continuation line looks like using <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="syntax" data-tertiary="special syntax" id="stmyxx"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="syntax" data-tertiary="special syntax" id="cpspyx"></a><a contenteditable="false" data-type="indexterm" data-primary="match statements" data-secondary="syntax" data-tertiary="special syntax" id="sxspyx"></a><a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="statements" data-tertiary="special syntax" id="yxtmpcx"></a>the open-pairs rule just described. Delimited constructs, such as lists in square brackets, can span across any number of lines:</p>
+<pre data-type="programlisting">L = ['app',
+     'script',
+     'program']                  <code><em># Open pairs may span lines</em></code></pre>
+<p>This also works for list comprehensions enclosed in <code>[]</code>; anything in <code>()</code> (tuples, expressions, function argument and headers, and generators expressions); and anything in <code>{}</code> (dictionary and set literals and comprehensions). Some of these are tools we’ll study in later chapters, but this rule naturally covers most constructs that span lines in practice.</p>
+<p>If you’re accustomed to using backslashes to continue lines, you can in Python, too, but it’s not common practice:</p>
+<pre data-type="programlisting">if a == b and c == d and   \
+   d == e and f == g:
+   print('old school')           <code><em># Backslashes allow continuations...</em></code></pre>
+<p>Because any expression can be enclosed in parentheses, you can usually use the open-pairs technique instead if you need your code to span multiple lines—simply wrap a part of your statement in <span class="keep-together">parentheses:</span></p>
+<pre data-type="programlisting">if (a == b and c == d and
+    d == e and e == f):
+    print('new school')          <code><em># But parentheses usually do too, and are obvious</em></code></pre>
+<p>In fact, backslashes are generally discouraged, because they’re too easy to not notice and too easy to omit altogether. In the following, <code>x</code> is assigned <code>10</code> with the backslash, as intended; if the backslash is accidentally omitted, though, <code>x</code> is assigned <code>6</code> instead, and <em>no error is reported</em> (the <code>+4</code> is a valid expression statement by itself). In a real program with a more complex assignment, this could be the source of a very obscure bug:</p>
+<pre data-type="programlisting">x = 1 + 2 + 3 \                  <code><em># Omitting the \ makes this very different!</em></code>
++4</pre>
+<p>As another special case, Python allows you to write more than one noncompound statement (i.e., statements without nested statements) on the same line, separated by semicolons. Some coders use this form to save program file real estate, but it usually makes for more readable code if you stick to one statement per line for most of your work:</p>
+<pre data-type="programlisting">x = 1; y = 2; print(x)           <code><em># More than one simple statement</em></code></pre>
+<p>As covered in <a data-type="xref" href="ch07.html#string_fundamentals">Chapter 7</a>, triple-quoted string literals span lines too. In addition, if two string literals appear next to each other, they are concatenated as if a <code>+</code> had been added between them—when used in conjunction with the open-pairs rule, wrapping in parentheses allows this form to span multiple lines. For example, the first of the following inserts newline characters at line breaks and assigns <code>S</code> to <code>'\naaaa\nbbbb\ncccc'</code>, and the other two implicitly concatenate and assign <code>S</code> to <code>'aaaabbbbcccc'</code>; as we also saw in <a data-type="xref" href="ch07.html#string_fundamentals">Chapter 7</a>, <code>#</code> comments are ignored in the second form but <em>included</em> in the string in the first, and <em>f-strings</em> require <code>f</code> prefixes even on continuations lines:</p>
+<pre class="pagebreak-before" data-type="programlisting">S = """
+aaaa
+bbbb
+cccc"""
+
+S = ('aaaa' 
+     'bbbb'              <code><em># Comments here are ignored, add \n if needed</em></code>
+     'cccc')
+
+S = (f'{'a' * 4}'        <code><em># Also makes 'aaaabbbbcccc'</em></code>
+     f'{'b' * 4}'        <code><em># Use f'' on each f-string part</em></code>
+     r'cccc')            <code><em># And ditto for r'' raw-string parts</em></code></pre>
+<p>Finally, and also as a review, Python lets you move a compound statement’s body up to the header line, provided the body contains just simple (noncompound) statements. You’ll most often see this used for simple <code>if</code> statements with a single test and action, as in the interactive loops we coded in <a data-type="xref" href="ch10.html#introducing_python_statements">Chapter 10</a>:</p>
+<pre data-type="programlisting">if 1: print('hello')             <code><em># Simple statement on header line</em></code></pre>
+<p>With a little effort, you can combine some of these special cases to write Python code that is difficult to read, but it’s not generally recommended. As a rule of thumb, try to keep each statement on a line of its own, and indent all but the simplest of blocks. Six months <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="syntax" data-tertiary="special syntax" data-startref="stmyxx" id="id2628"></a><a contenteditable="false" data-type="indexterm" data-primary="compound statements" data-secondary="syntax" data-tertiary="special syntax" data-startref="cpspyx" id="id2629"></a><a contenteditable="false" data-type="indexterm" data-primary="match statements" data-secondary="syntax" data-tertiary="special syntax" data-startref="sxspyx" id="id2630"></a><a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="statements" data-tertiary="special syntax" data-startref="yxtmpcx" id="id2631"></a>down the road, you’ll be happy you did.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Truth Values Revisited"><div class="sect1" id="truth_values_revisited">
+<h1>Truth Values Revisited</h1>
+<p>The notions of comparison, equality, and truth values were introduced in <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a>. Like <a contenteditable="false" data-type="indexterm" data-primary="truth values" id="trthvls"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="truth values" id="stmtrvl"></a>syntax, though, the <code>if</code> is the first statement we’ve studied that actually uses these tools, so we’ll rehash these ideas with additional info. All told, Python’s Boolean operators are a bit different from their counterparts in some other languages. In Python:</p>
+<ul>
+<li><p>All objects have an inherent Boolean true or false value.</p></li>
+<li><p>Any nonzero number or nonempty object is true.</p></li>
+<li><p>Zero numbers, empty objects, and the special object <code>None</code> are considered false.</p></li>
+<li><p>Comparisons and equality tests are applied recursively to data structures.</p></li>
+<li><p>Comparisons and equality tests return <code>True</code> or <code>False</code> (custom versions of <code>1</code> and <code>0</code>).</p></li>
+<li><p>Boolean <code>and</code> and <code>or</code> operators return a true or false operand <em>object</em>.</p></li>
+<li><p>Boolean operators stop evaluating (<em>short-circuit</em>) as soon as a result is known.</p></li>
+</ul>
+<p>The <code>if</code> statement takes action on truth values, but <em>Boolean</em> operators are used to combine the results of other tests in richer ways to produce new truth values. More formally, there are three Boolean expression operators in Python:</p>
+<dl>
+<dt><code><em>X</em> and <em>Y</em></code></dt>
+<dd>Is true if both <code><em>X</em></code> and <code>Y</code> are true—and returns either <code><em>X</em></code> or <code><em>Y</em></code></dd>
+<dt><code><em>X</em> or <em>Y</em></code></dt>
+<dd>Is true if either <code><em>X</em></code> or <code><em>Y</em></code> is true—and returns either <code><em>X</em></code> or <code><em>Y</em></code></dd>
+<dt><code>not <em>X</em></code></dt>
+<dd>Is true if <code><em>X</em></code> is false—and returns either <code>True</code> or <code>False</code></dd>
+</dl>
+<p>Here, <code><em>X</em></code> and <code><em>Y</em></code> may be any truth value, or any expression that returns a truth value (e.g., an <code>==</code> equality test, an <code>in</code> membership check, and so on). Boolean operators are typed out as words in Python (instead of C’s <code>&amp;&amp;</code>, <code>||</code>, and <code>!</code>), and shouldn’t be confused with Python’s <code>&amp;</code>, <code>|</code>, and <code>^</code> operators that work on numbers and sets (and dictionaries).</p>
+<p>Most uniquely, Boolean <code>and</code> and <code>or</code> operators return a true or false <em>object</em> in Python, not the values <code>True</code> or <code>False</code>. Let’s turn to a few examples to see how this works:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>2 &lt; 3, 3 &lt; 2</strong></code>        <code><em># Less than: return True or False (1 or 0)
+</em></code>(True, False)</pre>
+<p><em>Magnitude</em> comparisons such as <a contenteditable="false" data-type="indexterm" data-primary="magnitude comparisons" id="id2632"></a>these return <code>True</code> or <code>False</code> as their truth results, which, as we learned in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch05.html#numbers_and_expressions">5</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch09.html#tuplescomma_filescomma_and_everything_e">9</a>, are really just custom versions of the integers <code>1</code> and <code>0</code> (they print themselves differently but are otherwise the same).</p>
+<p><em>Boolean</em> operators <code>and</code> and <code>or</code>, on the other hand, always return an object—either the object on the <em>left</em> side of the operator or the object on the <em>right</em>. If we test their results in <code>if</code> or other statements, they will be as expected (remember, every object is inherently true or false), but we won’t get back a simple <code>True</code> or <code>False</code>.</p>
+<p>For <code>or</code> tests, Python evaluates the operand objects from left to right and returns the first one that is <em>true</em>. Moreover, Python stops at the first true operand it finds. This is usually called <em>short-circuit evaluation</em>, as determining a result short-circuits (terminates) the rest of the expression as soon as the result is known:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>2 or 3, 3 or 2</strong></code>      <code><em># Return left operand if true</em></code>
+(2, 3)                  <code><em># Else, return right operand (true or false)</em></code>
+&gt;&gt;&gt; <code><strong>[] or 3</strong></code>
+3
+&gt;&gt;&gt; <code><strong>[] or {}</strong></code>
+{}</pre>
+<p>In the first line of the preceding example, both operands (<code>2</code> and <code>3</code>) are true (i.e., are nonzero), so Python always stops and returns the one on the left—which determines the result because true <code>or</code> anything is always true. In the other two tests, the left operand is false (an empty object), so Python simply evaluates and returns the object on the right—which may have either a true or a false value when tested, but determines the result of the <code>or</code> at large.</p>
+<p>Python <code>and</code> operations also stop (short-circuit) as soon as the result is known. However, in this case Python evaluates the operands from left to right and stops if the left operand is a <em>false</em> object because it determines the result—false <code>and</code> anything is always false:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>2 and 3, 3 and 2</strong></code>    <code><em># Return left operand if false</em></code>
+(3, 2)                  <code><em># Else, return right operand (true or false)</em></code>
+&gt;&gt;&gt; <code><strong>[] and {}</strong></code>
+[]
+&gt;&gt;&gt; <code><strong>3 and []</strong></code>
+[]</pre>
+<p>Here, both operands are true in the first line, so Python evaluates both sides and returns the object on the right—which determines the result of the <code>and</code>. In the second test, the left operand is false (<code>[]</code>), so Python stops and returns it as the <code>and</code> result without ever running the code on the right side. In the last test, the left side is true (<code>3</code>), so Python evaluates and returns the object on the right—which happens to be a false <code>[]</code>.</p>
+<p>The net effect of all this apparent nonsense is the same as in most other languages—you get a value that is logically true or false if tested in an <code>if</code> or <code>while</code> according to the normal definitions of <code>or</code> and <code>and</code>. However, in Python, Booleans return either the left or the right <em>object</em>, not a simple integer flag.</p>
+<p>This behavior of <code>and</code> and <code>or</code> may seem esoteric at first glance, but see this chapter’s sidebar, <a data-type="xref" href="#why_you_will_care_booleans">“Why You Will Care: Booleans”</a>, for examples of how it is sometimes used to advantage in Python coding. The next section also shows a common way to <a contenteditable="false" data-type="indexterm" data-primary="truth values" data-startref="trthvls" id="id2633"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="truth values" data-startref="stmtrvl" id="id2634"></a>leverage this behavior, and its more mnemonic alternative.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="The if/else Ternary Expression"><div class="sect1" id="the_ifsoliduselse_ternary_expression">
+<h1>The if/else Ternary Expression</h1>
+<p>One common role for the prior <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="if/then/else" id="stftnse"></a><a contenteditable="false" data-type="indexterm" data-primary="if/then/else expression" id="ftltnrx"></a><a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="if/then/else" id="xprfthls"></a>section’s Boolean operators is to code an expression that runs the same as an <code>if</code> statement. To get started, consider the following very common code, which sets <code>A</code> to either <code>Y</code> or <code>Z</code>, based on the truth value of <code>X</code>:</p>
+<pre data-type="programlisting">if X:
+    A = Y
+else:
+    A = Z</pre>
+<p>Sometimes, though, the items involved in such a statement are so simple that it seems like overkill to spread them across four lines. At other times, we may want to nest such a construct in a larger statement instead of assigning its result to a variable separately. For such reasons (and possibly to appease ex-C programmers), Python includes a “ternary” (three-part) expression that allows us to say the same thing in just one line of code:</p>
+<pre data-type="programlisting">A = Y if X else Z</pre>
+<p>This expression has the exact same effect as the preceding four-line <code>if</code> statement, but it’s simpler to code. In some sense, it is to <code>if</code> statements what the prior chapter’s <code>:=</code> is to assignment statements: an expression equivalent with more limited syntax and narrower roles, which is nevertheless useful in some code. For example, you can’t code full statements in the parts of this expression, but you can embed it anywhere that Python allows an expression.</p>
+<p>As in the statement equivalent, the ternary expression runs expression <code>Y</code> only if <code>X</code> turns out to be true and runs expression <code>Z</code> only if <code>X</code> turns out to be false. That is, it <em>short-circuits</em>, just like the Boolean operators described in the prior section, running just <code>Y</code> or <code>Z</code> but not both. Here are some examples of it in action:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>tone = 'formal'</strong></code>
+&gt;&gt;&gt; <code><strong>a = 'code' if tone == 'formal' else 'hack'</strong></code>
+&gt;&gt;&gt; <code><strong>a</strong></code>
+'code'
+
+&gt;&gt;&gt; <code><strong>tone = 'informal'</strong></code>
+&gt;&gt;&gt; <code><strong>a = 'code' if tone == 'formal' else 'hack'</strong></code>
+&gt;&gt;&gt; <code><strong>a</strong></code>
+'hack'</pre>
+<p>The same effect can often be achieved by a careful combination of <code>and</code> and <code>or</code> operators, because they return either the object on the left side or the object on the right as the preceding section described. The ternary expression in the following works the same as the Boolean expression below it:</p>
+<pre data-type="programlisting">A = Y if X else Z           <code><em># Ternary if/else</em></code>
+
+A = ((X and Y) or Z)        <code><em># and+or equivalent</em></code></pre>
+<p>This works, but there is a catch—you have to be able to assume that <code>Y</code> will be Boolean true. If that is the case, the effect is the same: the <code>and</code> runs first and returns <code>Y</code> if <code>X</code> is true; if <code>X</code> is false the <code>and</code> skips <code>Y</code> and returns false <code>X</code>, and the <code>or</code> simply returns <code>Z</code>. In other words, we get “if <code>X</code> then <code>Y</code> else <code>Z</code>”—which is exactly what the ternary expression says, albeit in a different order.</p>
+<p>The <code>and</code>/<code>or</code> combination form also seems to require a “moment of great clarity” to understand the first time you see it, which qualifies as an argument against its deployment. As a guideline: use the equivalent and more robust and mnemonic <code>if</code>/<code>else</code> expression when you need this structure, or use a full <code>if</code> statement when the parts are nontrivial.</p>
+<p>As a side note (and just in case this section hasn’t made your head explode yet), using the following expression is similar to the prior Boolean and ternary expressions, because the <code>bool</code> function will translate any <code>X</code> into the equivalent of integer <code>1</code> or <code>0</code> (i.e., <code>True</code> or <code>False</code>), which can then be used as an offset to pick true and false values from a list:</p>
+<pre data-type="programlisting">A = [Z, Y][bool(X)]</pre>
+<p>Truth be told, the <code>bool</code> is not required when <code>X</code> already yields a truth value, but is when <code>X</code> is an object like a string:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>['hack', 'code'][tone == 'formal']</strong></code>
+'hack'
+&gt;&gt;&gt; <code><strong>['hack', 'code'][bool('formal')]</strong></code>
+'code'</pre>
+<p>But alas, this isn’t exactly the same, because Python will not <em>short-circuit</em>—it will always run both <code>Z</code> and <code>Y</code>, regardless of the value of <code>X</code>. Because of such complexities, you’re better off using the simpler and more easily digested <code>if</code>/<code>else</code> expression. Even then, common sense goes a long way here as always. Like most nestable tools, the ternary expression is naturally prone to yield code that’s tough to read. If you find yourself working hard at packing logic into one, consider taking a moment <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="if/then/else" data-startref="stftnse" id="id2635"></a><a contenteditable="false" data-type="indexterm" data-primary="if/then/else expression" data-startref="ftltnrx" id="id2636"></a><a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="if/then/else" data-startref="xprfthls" id="id2637"></a>to think about how hard it will be to unpack later. Your coworkers will be glad you did.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00022">
+<h1>Chapter Summary</h1>
+<p>In this chapter, we studied the Python <code>if</code> statement. Additionally, because this was our first compound and logical statement, we reviewed Python’s general syntax rules and explored the operation of truth values and tests in more depth than we were able to previously. Along the way, we also looked at how to code multiple-choice logic in Python with both dictionaries and <code>match</code>, learned about the <code>if</code>/<code>else</code> ternary expression, and explored Boolean operators.</p>
+<p>The next chapter continues our look at procedural statements by expanding the coverage of <code>while</code> and <code>for</code> loops. There, you’ll learn about alternative ways to code loops in Python, some of which may be better than others. Before that, though, here is the usual chapter quiz to review before moving ahead.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000146">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>How might you code a multiple-choice branch in Python?</p></li>
+<li><p>How can you code an <code>if</code>/<code>else</code> statement as an expression in Python?</p></li>
+<li><p>How can you make a single statement span many lines?</p></li>
+<li><p>What do the words <code>True</code> and <code>False</code> mean?</p></li>
+<li><p>What does “short-circuiting” mean, and where does it crop up?</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000145">
+<h1>Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>An <code>if</code> statement with multiple <code>elif</code> clauses is often the most straightforward way to code a multiple-choice branch, though not necessarily the most concise or flexible. Dictionary indexing can often achieve the same result, especially if the dictionary contains callable functions coded with <code>def</code> statements or <code>lambda</code> expressions. As of Python 3.10, the <code>match</code> statement provides explicit syntax for multiple-choice selections; it works well in basic roles but can’t code logic as general as that in the <code>if</code> statement and comes with substantial heft in support of structural pattern matching, a very different tool.</p></li>
+<li><p>The expression form <code>Y if X else Z</code> returns <code>Y</code> if <code>X</code> is true, or <code>Z</code> otherwise; it’s the same as a four-line <code>if</code> statement and works well in limited contexts, but can’t code actions as rich as those in the full <code>if</code> statement, and has the potential to produce code that’s hard to read. The <code>and</code>/<code>or</code> combination (<code>((X and Y) or Z)</code>) can work the same way, but it’s more obscure and requires that the <code>Y</code> part be true.</p></li>
+<li><p>Wrap up the statement in an open syntactic pair (<code>()</code>, <code>[]</code>, or <code>{}</code>), and it can span as many lines as you like; the statement ends when Python sees the closing (right) half of the pair, and lines 2 and beyond of the statement can begin at any indentation level. Backslash continuations work, too, but are broadly discouraged in the Python world.</p></li>
+<li><p>This is partly a review from <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a>, but is reinforced in the sidebar at the end of this chapter. <code>True</code> and <code>False</code> are just custom versions of the integers <code>1</code> and <code>0</code>, respectively: they always stand for Boolean true and false values in Python. They’re available for use in truth tests and variable initialization and are printed for expression results at the interactive prompt. In all these roles, they serve as a more mnemonic and hence readable alternative to <code>1</code> and <code>0</code>.</p></li>
+<li><p>Short-circuiting happens when Python stops evaluating an expression early because its result can already be determined from the expression so far. It comes up in <code>and</code> and <code>or</code> expressions, which run their right side only if their left sides don’t determine their results. It also comes up in the <code>if</code>/<code>else</code> ternary expression, which runs either its true or false parts, depending on its test part’s logical result.</p></li>
+</ol>
+<aside data-type="sidebar" epub:type="sidebar"><div class="sidebar" id="why_you_will_care_booleans">
+<h1>Why You Will Care: Booleans</h1>
+<p>One common way to use the somewhat <a contenteditable="false" data-type="indexterm" data-primary="Booleans" id="bloonea"></a>unusual behavior of Python Boolean operators is to select from a set of objects with an <code>or</code>. A statement such as this:</p>
+<pre data-type="programlisting">X = A or B or C or None</pre>
+<p>assigns <code>X</code> to the first nonempty (that is, true) object among <code>A</code>, <code>B</code>, and <code>C</code>, or to <code>None</code> if all of them are empty. This works because the <code>or</code> operator returns one of its two objects, and it turns out to be a fairly common coding paradigm in Python: to select a nonempty object from among a fixed-size set, simply string them together in an <code>or</code> expression. In simpler form, this is also commonly used to designate a default—the following sets <code>X</code> to <code>A</code> if <code>A</code> is true (nonzero or nonempty), and to <code>default</code> otherwise:</p>
+<pre data-type="programlisting">X = A or default</pre>
+<p class="pagebreak-before">It’s also important to understand the short-circuit evaluation of Boolean operators and the <code>if</code>/<code>else</code>, because it may prevent actions from running. Expressions on the right of a Boolean operator, for example, might call functions that perform substantial or important work, or have side effects that won’t happen if the short-circuit rule takes effect:</p>
+<pre data-type="programlisting">if f1() or f2(): …</pre>
+<p>Here, if <code>f1</code> returns a true (or nonempty) value, Python will never run <code>f2</code>. To guarantee that both functions will be run, call them before the <code>or</code>:</p>
+<pre data-type="programlisting">tmp1, tmp2 = f1(), f2()
+if tmp1 or tmp2: …</pre>
+<p>You’ve already seen another application of this behavior in this chapter: because of the way Booleans work, the expression <code>((A and B) or C)</code> can be used to emulate an <code>if</code> statement—almost (see this chapter’s discussion of this form for details).</p>
+<p>We met additional Boolean use cases in prior chapters. As we saw in <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a>, because all objects are inherently true or false, it’s common and easier in Python to test an object directly (<code>if X:</code>) than to compare it to an empty value (<code>if X != '':</code>). For a string, the two tests are equivalent. As we also saw in <a data-type="xref" href="ch05.html#numbers_and_expressions">Chapter 5</a>, the preset Boolean values <code>True</code> and <code>False</code> are the same as the integers <code>1</code> and <code>0</code> and are useful for initializing variables (<code>X = False</code>), for loop tests (<code>while True:</code>), and for displaying results at the interactive prompt.</p>
+<p>Also watch for related discussion in operator overloading in <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a>: when we define new object types with classes, we can specify their Boolean nature with either the <code>__bool__</code> or <code>__len__</code> methods. The latter of these is tried if the former is absent and designates false by returning a length of zero—because an empty object is considered false.</p>
+<p>Finally, and as a preview, other tools in Python have roles similar to the <code>or</code> chains at the start of this sidebar: the <code>filter</code> call and list comprehensions you’ll explore later can be used to select true values when the set of candidates isn’t known until runtime (though they evaluate all values and return all that are true), and the <code>any</code> and <code>all</code> built-ins can be used to test if any or all items in a collection are true (they short-circuit their checks like <code>and</code>, <code>or</code>, and <code>if</code>/<code>else</code>, but don’t select an item per se):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 0, 2, 0, 'hack', '', 'py', []]</strong></code>
+&gt;&gt;&gt; <code><strong>list(filter(bool, L))</strong></code>                    <code><em># Get true values</em></code>
+[1, 2, 'hack', 'py']
+&gt;&gt;&gt; <code><strong>[x for x in L if x]</strong></code>                      <code><em># Comprehensions</em></code>
+[1, 2, 'hack', 'py']
+&gt;&gt;&gt; <code><strong>any(L), all(L)</strong></code>                           <code><em># Aggregate truth</em></code>
+(True, False)</pre>
+<p>As we’ve learned, the <code>bool</code> function <a contenteditable="false" data-type="indexterm" data-primary="Booleans" data-startref="bloonea" id="id2638"></a>here simply returns its argument’s true or false value, as though it were tested in an <code>if</code>. Watch for more on these related tools in Chapters <a data-xrefstyle="select:labelnumber" data-type="xref" href="ch14.html#iterations_and_comprehensions">14</a>, <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch19.html#function_odds_and_ends">19</a>, and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch20.html#comprehensions_and_generations">20</a>.</p>
+</div></aside>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>

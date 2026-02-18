@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 16. Function Basics"><div class="chapter" id="function_basics">
+<h1><span class="label">Chapter 16. </span>Function Basics</h1>
+<p>In <a data-type="xref" href="part03.html#statements_and_syntax">Part III</a>, we studied basic procedural statements in Python. Here, we’ll move on to explore a set of additional statements and expressions that we can use to create functions of our own.</p>
+<p>In simple terms, a <em>function</em> is a package of code invoked by name. It labels and groups a set of statements <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="overview" id="id2827"></a>so they can be run more than once in a program. A function also can compute a result value, and lets us specify parameters that serve as inputs and may differ each time the function’s code is run. Wrapping an operation in a function makes it a generally useful tool, which we can apply in a variety of <span class="keep-together">contexts</span>.</p>
+<p>On a more pragmatic level, functions are the alternative to programming by <em>cutting and pasting</em>—rather than having multiple redundant copies of an operation’s code, we can factor it into a single function. In so doing, we reduce our future work radically: if the operation must be changed later, we have only one copy to update in the function, not many scattered throughout the program.</p>
+<p>Functions are also the most basic program <a contenteditable="false" data-type="indexterm" data-primary="code reuse" data-secondary="functions" id="id2828"></a><a contenteditable="false" data-type="indexterm" data-primary="design" data-secondary="functions" id="id2829"></a>structure Python provides for maximizing code <em>reuse</em>, and lead us to the larger notions of program <em>design</em>. As you’ll see, functions let us split complex systems into manageable parts. By implementing each part as a function, we make it both reusable and easier to code.</p>
+<p><a data-type="xref" href="#function_related_statements_and_express">Table 16-1</a> abstractly <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="function-related" id="id2830"></a><a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="function-related" id="id2831"></a>previews the function-related tools we’ll study in this part of the book—a set that includes call expressions, two ways to make functions (<code>def</code> and <code>lambda</code>), two ways to manage scope visibility (<code>global</code> and <code>nonlocal</code>), two ways to send results back to callers (<code>return</code> and <code>yield</code>), and tools to pause for results (<code>async</code> and <code>await</code>). While this comprises a feature-rich topic, you’ll find that its commonly used core is straightforward.</p>
+<table class="border" id="function_related_statements_and_express">
+<caption><span class="label">Table 16-1. </span>Function-related statements and expressions</caption>
+<thead>
+<tr>
+<th>Statement or expression</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Call expressions</td>
+<td><code>myfunc('hack', tool=python, *versions)</code></td>
+</tr>
+<tr>
+<td><code>def</code></td>
+<td><code>def printer(message):
+    print('Hello', message)</code></td>
+</tr>
+<tr>
+<td><code>return</code></td>
+<td><code>def adder(a, b=1, *c):
+    return a + b + c[0]</code></td>
+</tr>
+<tr>
+<td><code>lambda</code></td>
+<td><code>funcs = [lambda x: x**2, lambda x: x**3]</code></td>
+</tr>
+<tr>
+<td><code>global</code></td>
+<td><code>x = 'old'
+def changer():
+    global x; x = 'new'</code></td>
+</tr>
+<tr>
+<td><code>nonlocal</code></td>
+<td><code>def outer():
+    x = 'old'
+    def changer():
+        nonlocal x; x = 'new'</code></td>
+</tr>
+<tr>
+<td><code>yield</code></td>
+<td><code>def squares(x):
+    for i in range(x): yield i ** 2</code></td>
+</tr>
+<tr>
+<td>Generator expressions</td>
+<td><code>(i ** 2 for i in range(x))</code></td>
+</tr>
+<tr>
+<td><code>async/await</code></td>
+<td><code>async def consumer(a, b):
+    await producer(b)</code></td>
+</tr>
+<tr>
+<td>Decorators and annotations</td>
+<td><code>@tracer
+def func(a: 'hack' = None) -&gt; None</code></td>
+</tr>
+</tbody>
+</table>
+<section data-type="sect1" data-pdf-bookmark="Why Use Functions?"><div class="sect1" id="why_use_functionsquestion_mark">
+<h1>Why Use Functions?</h1>
+<p>Before we get into the details, let’s establish a clearer picture of what functions are all about. Functions are a <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="uses" id="fctnsuss"></a>nearly universal program-structuring device. You may have come across them before in other languages, where they may <a contenteditable="false" data-type="indexterm" data-primary="subroutines" id="id2832"></a><a contenteditable="false" data-type="indexterm" data-primary="procedures" id="id2833"></a>have been called <em>subroutines</em> or <em>procedures</em>. As a brief introduction, functions serve two primary development roles, and serve as the basis of other tools:</p>
+<dl>
+<dt>Maximizing reuse and minimizing redundancy</dt>
+<dd>As in most programming languages, Python functions are the simplest way to package logic you may wish to use in more than one place and more than one time. Up until now, almost all the code we’ve been writing has run immediately. Functions allow us to defer and generalize code to be used arbitrarily many times later. Because they allow us to code an operation in a single place and use it in many others, functions are also a <em>factoring</em> tool: they enable us to reduce code redundancy in our programs, and thereby reduce maintenance effort.</dd>
+<dt>Dividing and conquering</dt>
+<dd>Functions also provide a tool for splitting systems into pieces that have well-defined roles and <em>manageable</em> scopes. For instance, to make a pizza from scratch, you would start by mixing the dough, rolling it out, adding toppings, baking it, and so on. If you were programming a pizza-making robot, functions would help you divide the overall “make pizza” task into smaller parts—one function for each subtask in the process. Because it’s easier to implement the smaller tasks in isolation than it is to implement the entire process at once, this makes larger tasks more practical.</dd>
+<dt>Implementing object methods</dt>
+<dd>In general, functions are about <em>procedure</em>—how to do something, rather than what you’re doing it to. Nevertheless, when paired with an implied subject, they can also be used to code object-specific behavior known as methods. You’ll see why this distinction matters in <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a>, when we start making new objects with classes. As you’ll find, classes are largely just packages of the functions you’ll learn to code here.</dd>
+</dl>
+<p>In this part of the book, we’ll explore the tools used to code functions in Python: function basics, scope rules, and argument passing, along with a few related concepts such as generators, coroutines, and functional tools. Because its importance begins to become more apparent at this level of coding, we’ll also revisit the notion of polymorphism, which <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="uses" data-startref="fctnsuss" id="id2834"></a>was introduced earlier in the book. As you’ll see, functions don’t imply much new syntax, but they do lead us to some bigger programming ideas.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Function Coding Overview"><div class="sect1" id="function_coding_overview">
+<h1>Function Coding Overview</h1>
+<p>Although it wasn’t made very formal, we’ve already <em>used</em> functions in earlier chapters. For instance, we called the built-in <code>open</code> function to make a file object, invoked the <code>len</code> built-in function to ask for the number of items in a collection object, and employed tools like <code>zip</code> and <code>range</code> for iteration tasks.</p>
+<p>In this chapter, we will begin exploring how to write <em>new</em> functions in Python. Functions we write behave the same way as the built-ins we’ve already seen: they are called in expressions, are passed values, and return results. But writing new functions requires the application of a few additional tools and ideas that haven’t yet been introduced. Moreover, functions behave very differently in Python than they do in compiled languages like C.</p>
+<section data-type="sect2" data-pdf-bookmark="Basic Function Tools"><div class="sect2" id="basic_function_tools">
+<h2>Basic Function Tools</h2>
+<p>As a road map and brief rundown on what we’ll study in this part of the book, here are the basic components and concepts in Python’s function toolbox:</p>
+<ul>
+<li><p><code><strong>def</strong></code> <strong>creates a function and assigns it to a name.</strong> Python functions are <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="def statements" id="id2835"></a><a contenteditable="false" data-type="indexterm" data-primary="def statement" id="id2836"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="def" id="id2837"></a>coded with <code>def</code> statements. When Python reaches and runs a <code>def</code>, it generates a new function object and assigns it to the function’s name. As with all assignments, the function name becomes a reference to the function object. There’s nothing magical about the name of a function—as you’ll see, the function object can be assigned to other names, stored in a list, and so on. Function objects may also have arbitrary user-defined <em>attributes</em> attached to them to record data.</p></li>
+<li><p><code><strong>def</strong></code> <strong>is executable code.</strong> Unlike functions in compiled languages, <code>def</code> is an executable statement—your function does not exist until Python runs its <code>def</code>. In fact, it’s legal (and even occasionally useful) to nest <code>def</code> statements inside <code>if</code> statements, <code>for</code> loops, and even other <code>def</code>s. In typical usage, <code>def</code> statements are coded at the top level of module files, and are automatically run to make functions when their modules are imported.</p></li>
+<li><p><code><strong>return</strong></code> <strong>sends a result object back to the caller.</strong> When a <a contenteditable="false" data-type="indexterm" data-primary="return statement" id="id2838"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="return" id="id2839"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="return statements" id="id2840"></a>function is called, the caller normally stops until the function finishes its work and returns control to the caller. Functions that compute a value send it back to the caller with a <code>return</code> statement, and the returned value becomes the result of the function call. A <code>return</code> without a value simply returns to the caller (and sends back <code>None</code>, the default result).</p></li>
+<li><p><code><strong>lambda</strong></code> <strong>creates a function but returns it as a result.</strong> Function objects may also be created with the <code>lambda</code> expression, a feature that <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="lambda expressions" id="id2841"></a><a contenteditable="false" data-type="indexterm" data-primary="lambda expression" id="id2842"></a><a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="lambda" id="id2843"></a>allows us to code <em>inline</em> function definitions in places where a <code>def</code> statement won’t work syntactically. Like <code>def</code>, functions made this way are created when the <code>lambda</code> is reached and run. Because <code>lambda</code> is not typically coded at the top level of a module, though, such functions are made during program runs, not imports. <code>lambda</code> is an optional convenience best seen as a sidebar to the <code>def</code> statement.</p></li>
+</ul>
+</div></section>
+<section data-type="sect2" class="pagebreak-before" data-pdf-bookmark="Advanced Function Tools"><div class="sect2" id="advanced_function_tools">
+<h2 class="less_space">Advanced Function Tools</h2>
+<p>In addition, Python functions can leverage more advanced tools like the following, which we’ll take up after we’ve introduced the basics:</p>
+<ul>
+<li><p><code><strong>global</strong></code> <strong>declares module-level variables that are to be assigned.</strong> By default, <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="global statement" id="id2844"></a><a contenteditable="false" data-type="indexterm" data-primary="global statement" id="id2845"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="global" id="id2846"></a>all names assigned in a function are local to that function and exist only while the function runs. To assign a name in the enclosing module, functions need to list it in a <code>global</code> statement. More generally, names are always looked up in <em>scopes</em>—places where variables are stored—and names are bound to scopes per the location of assignments in your code.</p></li>
+<li><p><code><strong>nonlocal</strong></code> <strong>declares enclosing-function variables that <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="nonlocal statement" id="id2847"></a><a contenteditable="false" data-type="indexterm" data-primary="nonlocal statement" id="id2848"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="nonlocal" id="id2849"></a>are to be assigned.</strong> In the same category as <code>global</code>, the <code>nonlocal</code> statement allows a function to assign a name that exists in the scope of a syntactically enclosing <code>def</code> statement. This allows enclosing functions to serve as a place to retain <em>state</em>—information remembered between function calls—without using shared global names.</p></li>
+<li><p><code><strong>yield</strong></code> <strong>sends a <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="yield statement" id="id2850"></a><a contenteditable="false" data-type="indexterm" data-primary="yield statement" id="id2851"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="yield" id="id2852"></a>result object back to the caller, but remembers where it left off.</strong> Functions known as <em>generators</em> may also use <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="generators" id="id2853"></a><a contenteditable="false" data-type="indexterm" data-primary="generators" id="id2854"></a>the <code>yield</code> statement to send back a value and suspend their state such that they may be resumed later, to produce a series of results over time. Along with their <em>generator expression</em> kin, such functions save space and avoid delays just like the built-in iterables we met in the prior part of this book.</p></li>
+<li><p><code><strong>await/async</strong></code> <strong>pause a waiting function so that other tasks may run.</strong> Functions <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="await statement" id="id2855"></a><a contenteditable="false" data-type="indexterm" data-primary="await statement" id="id2856"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="await" id="id2857"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="async statement" id="id2858"></a><a contenteditable="false" data-type="indexterm" data-primary="async statement" id="id2859"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="async" id="id2860"></a>known as <em>coroutines</em> can suspend <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="coroutines" id="id2861"></a><a contenteditable="false" data-type="indexterm" data-primary="coroutines" id="id2862"></a>their execution until a required result is available. This is an advanced applications-level topic, but allows code to use language tools to get other work done while waiting on a blocking event like slow IO.</p></li>
+</ul>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="General Function Concepts"><div class="sect2" id="general_function_concepts">
+<h2>General Function Concepts</h2>
+<p>Finally, along the way we’ll explore a handful of core concepts that span functions of all kinds:</p>
+<ul>
+<li><p><strong>Arguments are passed <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="arguments" data-tertiary="passing" id="id2863"></a><a contenteditable="false" data-type="indexterm" data-primary="arguments" data-secondary="passing" id="id2864"></a>by assignment (object reference).</strong> In Python, arguments are passed to functions by assignment—which, as we’ve learned, means by object reference. As you’ll see, in Python’s model the caller and function share <em>objects</em> by references, but there is no name aliasing. Changing an argument name within a function does not also change the corresponding name in the caller, but changing passed-in mutable objects in place can change objects shared by the caller, and serve as a function result.</p></li>
+<li><p><strong>Arguments are passed by <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="definitions" id="id2865"></a>position, unless you say otherwise.</strong> Values you pass in a function call match argument names in a function’s definition from left to right by default. For flexibility, function <em>calls</em> can also pass arguments by name with <code><em>name=value</em></code> keyword syntax and unpack arbitrarily many arguments to send with <code>*<em>args</em></code> and <code>**<em>args</em></code> starred-value notation. Function <em>definitions</em> use the same syntax forms to specify argument defaults and collect arbitrarily many arguments received.</p></li>
+<li><p><strong>Arguments, return values, and variables are not declared.</strong> As with everything in Python, there are no type constraints on functions. In fact, nothing about a function needs to be declared ahead of time: you can pass in arguments of any type, return any kind of object, and so on. As a consequence, a single function can often be applied to a variety of object types—any objects that have a compatible <em>interface</em> (support for expected methods and expressions) will do, regardless of their specific types. This makes code flexible by design.</p></li>
+<li><p><strong>Attributes, annotations, and decorators support advanced roles.</strong> Functions can optionally be augmented <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="attributes" id="id2866"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="annotations" id="id2867"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="decorators" id="id2868"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="functions" id="id2869"></a><a contenteditable="false" data-type="indexterm" data-primary="annotations, functions" id="id2870"></a><a contenteditable="false" data-type="indexterm" data-primary="decorators" data-secondary="functions" id="id2871"></a>with both user-defined attributes and other tools that extend their roles. Annotations of arguments and results, for example, can serve a variety of goals. Among these, <em>type hinting</em> (noted in <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>) gives suggested object types but is unused by Python itself and simply serves as a weighty form of documentation, which we won’t cover further in this book. More usefully, functions can also be prefixed with <code>@</code> decorators that add extra layers of logic but are used in ways that merit largely deferring until <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a> when we’ve also learned about classes.</p></li>
+</ul>
+<p>If some of the preceding words didn’t sink in, don’t worry—we’ll explore most of these concepts with real code in this part of the book. Let’s get started by expanding on some of the basics by coding a few abstract examples.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="def Statements"><div class="sect2" id="def_statements">
+<h2>def Statements</h2>
+<p>The <code>def</code> statement creates a <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="def statements" id="id2872"></a><a contenteditable="false" data-type="indexterm" data-primary="def statement" id="id2873"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="def" id="id2874"></a>function object and assigns it to a name. Its general format and usage is as follows:</p>
+<pre data-type="programlisting">def <code><em>name</em></code>(<code><em>arg1</em></code>, <code><em>arg2</em></code>,… <code><em>argN</em></code>):        <code><em># Define a function</em></code>
+    <code><em>statements                      # Function body</em></code>
+
+<code><em>name</em></code>(<code><em>val1</em></code>, <code><em>val2</em></code>,… <code><em>valN</em></code>)             <code><em># Call it later in an expression</em></code></pre>
+<p>As with all compound statements, <code>def</code> consists of a <em>header</em> line followed by a block of other statements, usually indented (though a simple statement after the colon works as usual). The statement block becomes the function’s <em>body</em>—that is, the code Python executes each time the function is later called.</p>
+<p>The <code>def</code> header line specifies <a contenteditable="false" data-type="indexterm" data-primary="arguments" id="id2875"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="arguments" id="id2876"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="parameters" id="id2877"></a><a contenteditable="false" data-type="indexterm" data-primary="parameters, functions" id="id2878"></a>a function <em>name</em> that is assigned the new function object, along with a list of zero or more <em>arguments</em> (sometimes called <em>parameters</em>) enclosed in parentheses (even for zero arguments). The argument names in the header are <em>assigned</em> to the objects passed in parentheses at the point of call elsewhere in your code.</p>
+<p>To <em>call</em> the function later in your program and run its body, you can use the function <em>name</em> assigned by <code>def</code>, passing in zero or more <em>values</em> (objects) to match the arguments listed in the <code>def</code> header. A call expression can also denote the function with other types of object references; it need not necessarily be the name coded in the <code>def</code> header.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="return Statements"><div class="sect2" id="return_statements">
+<h2>return Statements</h2>
+<p>Function bodies often contain one <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="return statements" id="id2879"></a><a contenteditable="false" data-type="indexterm" data-primary="return statement" id="id2880"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="return" id="id2881"></a>or more <code>return</code> statements that make sense only inside a <code>def</code>:</p>
+<pre data-type="programlisting">def <code><em>name</em></code>(<code><em>arg1</em></code>, <code><em>arg2</em></code>,… <code><em>argN</em></code>):
+    …
+    return <code><em>result</em></code>                   <code><em># The result of the call expression</em></code></pre>
+<p>The Python <code>return</code> statement can show up anywhere in a function body. When reached, it <em>ends</em> the function call and sends a <em>result</em> back to the caller to serve as the result of the call expression. The <code>return</code> statement consists of an optional object-value expression that gives the result. If the value is omitted, <code>return</code> sends back a <code>None</code> by default.</p>
+<p>The <code>return</code> statement itself is optional too; if it’s not present, the function exits when the control flow falls off the end of the function body. Technically, a function <em>without</em> a <code>return</code> statement also returns the <code>None</code> object automatically, but this return value is usually ignored at the call, by using a call-expression <em>statement</em> of <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>.</p>
+<p>Functions may also contain <code>yield</code> statements used to produce a series of values over time, as well as <code>await</code> and <code>async for</code>/<code>with</code> statements used to suspend the function’s execution, but we’ll defer discussion of these more advanced tools until we survey generator and coroutine topics in <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a>.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="def Executes at Runtime"><div class="sect2" id="def_executes_at_runtime">
+<h2>def Executes at Runtime</h2>
+<p>The Python <code>def</code> is a true <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="def statements" id="id2882"></a><a contenteditable="false" data-type="indexterm" data-primary="def statement" data-secondary="runtime execution" id="id2883"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="def" id="id2884"></a>executable statement: when it runs, it creates a new function object and assigns it to a name. (Remember, all we have in standard Python is <em>runtime</em>; there is no such thing as a separate compile time.) Because it’s a statement, a <code>def</code> can appear anywhere a statement can—even <em>nested</em> in other statements. For instance, although <code>def</code>s are normally top-level code run when the module enclosing them is imported, it’s also completely legal to nest a function <code>def</code> inside an <code>if</code> statement to select between alternative definitions:</p>
+<pre data-type="programlisting">if <code><em>test</em></code>:
+    def func():            <code><em># Define func this way</em></code>
+        …
+else:
+    def func():            <code><em># Or else this way</em></code>
+        …
+…
+func()                     <code><em># Call the version selected and built</em></code></pre>
+<p>One way to understand this code is to realize that the <code>def</code> is much like an <code>=</code> statement: it simply assigns a name (like <code>func</code> here) at runtime. Unlike in compiled languages such as C, Python functions do not need to be fully defined before the program runs. More generally, <code>def</code>s are not run until they are reached, and the code <em>inside</em> <code>def</code>s is not run until the functions are later called.</p>
+<p>Because function definition happens at runtime, there’s nothing special about the function name. What’s important is the object to which it refers. For example:</p>
+<pre data-type="programlisting">othername = func           <code><em># Assign function object</em></code>
+othername()                <code><em># Call func again</em></code></pre>
+<p>Here, the function was assigned to a different name and called through the new name. Like everything else in Python, functions are just <em>objects</em>; they are recorded explicitly in memory at program execution time. In fact, besides calls, functions allow arbitrary <em>attributes</em> to be attached to record information for later use:</p>
+<pre data-type="programlisting">def func(): …              <code><em># Create + assign function object</em></code>
+func()                     <code><em># Call object via its name</em></code>
+func.attr = value          <code><em># Attach attributes</em></code></pre>
+<p>In other words, functions are <em>first-class objects</em>, to borrow a term introduced in <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a>. While they don’t support some operations that other objects do, functions inhabit the same category as every object. As you’ll see, passing them about and storing them in other objects is both syntactically legal and surprisingly useful.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="lambda Makes Anonymous Functions"><div class="sect2" id="lambda_makes_anonymous_functions">
+<h2>lambda Makes Anonymous Functions</h2>
+<p>In addition to <code>def</code>, you can make <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="lambda expressions" id="fctlbdx"></a><a contenteditable="false" data-type="indexterm" data-primary="lambda expression" id="lbdxpr"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="anonymous" id="fcannym"></a><a contenteditable="false" data-type="indexterm" data-primary="anonymous functions" id="annyfct"></a>a new function with the <code>lambda</code> expression. It’s coded and might be used like this:</p>
+<pre data-type="programlisting"><code><em>name</em></code> = lambda <code><em>arg1</em></code>, <code><em>arg2</em></code>,… <code><em>argN</em></code>: <code><em>expression</em></code>
+
+<code><em>name</em></code>(<code><em>val1</em></code>, <code><em>val2</em></code>,… <code><em>valN</em></code>)</pre>
+<p>Like <code>def</code>, <code>lambda</code> makes a new function object to be called later. It begins with the word <code>lambda</code>, followed by an arguments-list <em>header</em> that works the same as in <code>def</code> but is coded without parentheses. Unlike <code>def</code>, the code after the <code>:</code> in <code>lambda</code> is a single <em>expression</em>—it cannot contain statements and is the <em>implied</em> body and return value of the function that <code>lambda</code> makes. We don’t need to say <code>return</code> in a <code>lambda</code> (and we can’t).</p>
+<p>Also unlike <code>def</code>, <code>lambda</code> does not itself assign the new function to a name, but simply <em>returns</em> it as the result of the whole <code>lambda</code> expression. This snippet manually assigns the function to a name through which it is called, but that’s optional: the result might also be saved in another object or passed for use elsewhere. Because of this, <code>lambda</code> is usually called an “anonymous” function—one that’s unnamed.</p>
+<p>You’ll learn more about <code>lambda</code> later and see it in action along the way. But your first question may be, Why have a version of <code>def</code> whose code is limited to just one expression? In short, <code>lambda</code> can be used in places that <code>def</code> cannot, including in calls and object literals where we want to embed small bits of deferred and runnable code. While <code>def</code> handles larger tasks and also supports embedding functions by name, <code>lambda</code> is an optional amenity in simpler roles.</p>
+<p>And if you’re keeping track, we’ve now seen <em>four</em> expression equivalents for more general statements—the <code>lambda</code> for <code>def</code>, the <code>:=</code> named assignment for <code>=</code>, the <code>if</code>/<code>else</code> ternary for <code>if</code>, and the comprehension for <code>for</code>. Although lambdas are limited to expressions, they can use any of these expression equivalents to code assignments, logic, and loops. All these expression forms were accumulated <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="lambda expressions" data-startref="fctlbdx" id="id2885"></a><a contenteditable="false" data-type="indexterm" data-primary="lambda expression" data-startref="lbdxpr" id="id2886"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="anonymous" data-startref="fcannym" id="id2887"></a><a contenteditable="false" data-type="indexterm" data-primary="anonymous functions" data-startref="annyfct" id="id2888"></a>over time, but are convenient alternatives in practical code.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="A First Example: Definitions and Calls"><div class="sect1" id="a_first_example_definitions_and_calls">
+<h1>A First Example: Definitions and Calls</h1>
+<p>Apart from their runtime flavor (which tends to seem most novel to programmers with backgrounds in compiled languages), Python functions are straightforward to use. Let’s code a first real example to demonstrate the fundamentals, from both sides of the function equation: <em>definition</em> (the <code>def</code> or <code>lambda</code> that creates a function) and <em>calls</em> (the expressions that tell Python to run the function’s body).</p>
+<section data-type="sect2" data-pdf-bookmark="Definition"><div class="sect2" id="definition-id00057">
+<h2>Definition</h2>
+<p>Here’s a definition typed interactively <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="definitions" id="id2889"></a><a contenteditable="false" data-type="indexterm" data-primary="definition, functions" id="id2890"></a>that defines a function named <code>times</code>, which returns the product of its two arguments (it’s not much, but it demos the basic bits). As usual “…” prompts are omitted here for copy and paste:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def times(x, y):</strong></code>       <code><em># Create and assign function</em></code>
+        <code><strong>return x * y</strong></code>       <code><em># Body executed when called</em></code></pre>
+<p>When Python reaches and runs this <code>def</code>, it creates a new function object that packages the function’s code, and assigns this object to the name <code>times</code>. Typically, such a statement is coded in a module file and runs when the enclosing file is imported; for something this small, though, the interactive REPL suffices.</p>
+<p>As an aside, a <code>lambda</code> can have the same effect if we assign its result to a name, though it’s typically used in more focused roles than this, and often not as top-level code. Try the <code>def</code>, <code>lambda</code>, or both if you’re working along—they both make function objects that work the same:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>times = lambda x, y: x * y</strong></code></pre>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Calls"><div class="sect2" id="calls-id00008">
+<h2>Calls</h2>
+<p>Both <code>def</code> and <code>lambda</code> make a function but do not call it. After either <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="calls" id="id2891"></a><a contenteditable="false" data-type="indexterm" data-primary="calls" data-secondary="functions" id="id2892"></a>has run, you can <em>call</em> (i.e., run) the function in your program by adding parentheses after the function’s name. The parentheses may optionally contain one or more object arguments, to be passed (i.e., assigned) to the names in the function’s header:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>times(2, 4)</strong></code>            <code><em># Arguments in parentheses</em></code>
+8</pre>
+<p>This expression passes two arguments to <code>times</code>. As mentioned previously, arguments are passed by assignment, so in this case the name <code>x</code> in the function header is assigned the object <code>2</code>, <code>y</code> is assigned <code>4</code>, and the function’s body is run.</p>
+<p>For this function, the body is just a <code>def</code>’s <code>return</code> statement or a <code>lambda</code>’s expression, that sends back the result as the value of the call expression. The returned object was printed here interactively (as in most languages, <code>2 * 4</code> is <code>8</code> in Python), but if we needed to use it later we could instead assign it to a variable. For example:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x = times(3.14, 4)</strong></code>     <code><em># Save the result object</em></code>
+&gt;&gt;&gt; <code><strong>x</strong></code>
+12.56</pre>
+<p>Now, watch what happens when the function is called a third time, with very different kinds of objects passed in:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>times('Py', 4)</strong></code>         <code><em># Functions are "typeless"</em></code>
+'PyPyPyPy'</pre>
+<p>This time, our function means something wholly different. In this third call, a string and an integer are passed to <code>x</code> and <code>y</code>, instead of two numbers. Recall that <code>*</code> works on both numbers and sequences; because we don’t constrain the types of variables, arguments, or return values in Python, we can use <code>times</code> to either <em>multiply</em> numbers or <em>repeat</em> sequences.</p>
+<p>In other words, what our <code>times</code> function means and does depends on what we pass into it. This is a core idea in Python (and perhaps the key to using the language well), which merits a separate callout here.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Polymorphism in Python"><div class="sect2" id="polymorphism_in_python">
+<h2>Polymorphism in Python</h2>
+<p>As we just saw, the very meaning of the <a contenteditable="false" data-type="indexterm" data-primary="polymorphism" id="plymphs"></a>expression <code>x * y</code> in our simple <code>times</code> function depends completely upon the kinds of objects that <code>x</code> and <code>y</code> are—thus, the same function can perform multiplication in one instance and repetition in another. Python leaves it up to the <em>objects</em> to do something reasonable for the syntax. Really, <code>*</code> is just a dispatch mechanism that routes control to the objects being processed.</p>
+<p>This sort of type-dependent behavior is known as <em>polymorphism</em>, a term we first met in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a> that essentially means that the meaning of an operation depends on the objects being operated upon. Because it’s a dynamically typed language, polymorphism runs rampant in Python. In fact, <em>every</em> operation is a polymorphic operation in Python: printing, indexing, the <code>*</code> operator, and much more.</p>
+<p>This is deliberate, and it accounts for much of the language’s conciseness and flexibility. A single function, for instance, can generally be applied to a whole category of object types automatically. As long as those objects support the expected <em>interface</em> (a.k.a. protocol), the function can process them. That is, if the objects passed into a function have the expected methods and expression operators, they are plug-and-play compatible with the function’s logic.</p>
+<p>Even in our simple <code>times</code> function, this means that <em>any</em> two objects that support a <code>*</code> will work, no matter what they may be, and no matter when they are coded. This function will work on two numbers (performing multiplication), or a string and a number (performing repetition), or any other combination of objects supporting the expected interface—even class-based objects we have not even imagined yet.</p>
+<p>Moreover, if the objects passed in do <em>not</em> support this expected interface, Python will detect the error when the <code>*</code> expression is run and raise an exception automatically. It’s therefore usually pointless to code error checking in such code ourselves. In fact, doing so would limit our function’s utility, as it would be restricted to work only on objects whose types we test for:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>times('not', 'quite')</strong></code>
+TypeError: can't multiply sequence by non-int of type 'str'</pre>
+<p>This turns out to be a crucial philosophical difference between Python and statically typed languages like C++ and Java: in Python, your code is <em>not supposed to care</em> about specific data types. If it does, it will be limited to working on just the types you anticipated when you wrote it, and it will not support other compatible object types coded now or in the future. Although it is possible to test for types with tools like the <code>type</code> built-in function, doing so breaks your code’s flexibility. By and large, we code to object <em>interfaces</em> in Python, not data types.</p>
+<p>Of course, some programs have unique requirements, and this polymorphic model of programming means we have to <em>test</em> our code to detect some errors that statically typed compiled languages might be able to detect earlier. In exchange for an initial bit of extra testing, though, we radically reduce the amount of code we have to write, and radically increase our code’s flexibility. As you’ll come to find with <a contenteditable="false" data-type="indexterm" data-primary="polymorphism" data-startref="plymphs" id="id2893"></a>time, it’s a resounding net win in practice.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="A Second Example: Intersecting Sequences"><div class="sect1" id="a_second_example_intersecting_sequences">
+<h1>A Second Example: Intersecting Sequences</h1>
+<p>Next, let’s explore a second function example that does something a bit more useful than multiplying arguments and further illustrates function basics.</p>
+<p>In <a data-type="xref" href="ch13.html#while_and_for_loops">Chapter 13</a>, we coded a <code>for</code> loop that collected items held in common in two strings (and called it nearly intersection, except for duplicates). We noted there that the code wasn’t as useful as it could be because it was set up to work only on specific variables and could not be rerun later. Of course, we could copy the code and paste it into each place where it needs to be run, but this solution is neither good nor general—we’d still have to edit each copy to support different sequence names, and changing the algorithm would then require changing multiple copies.</p>
+<section data-type="sect2" data-pdf-bookmark="Definition"><div class="sect2" id="definition-id00091">
+<h2>Definition</h2>
+<p>By now, you can probably guess that the solution to this dilemma is to package the <code>for</code> loop inside <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="for loops in" id="ftcfloop"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="in functions" data-secondary-sortas="functions" id="frlpfc"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="for loops" data-tertiary="in functions" data-tertiary-sortas="functions" id="lpfrfcns"></a>a function. Doing so offers a number of advantages:</p>
+<ul>
+<li><p>Putting the code in a function makes it a tool that you can run as many times as you like.</p></li>
+<li><p>Because callers can pass in arbitrary arguments, functions are general enough to work on any two sequences (or other iterables) you wish to intersect.</p></li>
+<li><p>When the logic is packaged in a function, you have to change code in only <em>one</em> place if you ever need to change the way the intersection works.</p></li>
+<li><p>Coding the function in a module file means it can be imported and reused by any program run on your machine.</p></li>
+</ul>
+<p>In effect, wrapping the code in a function makes it a general utility, as captured by <a data-type="xref" href="#example_onesix_onedot_interonedotpy">Example 16-1</a>.</p>
+<div data-type="example" id="example_onesix_onedot_interonedotpy">
+<h5><span class="label">Example 16-1. </span>inter1.py</h5>
+<pre data-type="programlisting">def intersect(seq1, seq2):
+    res = []                     <code><em># Start empty</em></code>
+    for x in seq1:               <code><em># Scan seq1</em></code>
+        if x in seq2:            <code><em># Common item?</em></code>
+            res.append(x)        <code><em># Add to end</em></code>
+    return res</pre>
+</div>
+<p>The transformation from the simple code of <a data-type="xref" href="ch13.html#while_and_for_loops">Chapter 13</a> to this function is straightforward; we’ve just nested the original logic under a <code>def</code> header and made the objects on which it operates passed-in parameter names. Because this function computes a result, we’ve <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="for loops in" data-startref="ftcfloop" id="id2894"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="in functions" data-secondary-sortas="functions" data-startref="frlpfc" id="id2895"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="for loops" data-tertiary="in functions" data-tertiary-sortas="functions" data-startref="lpfrfcns" id="id2896"></a>also added a <code>return</code> statement to send a result object back to the caller.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Calls"><div class="sect2" id="calls-id00009">
+<h2>Calls</h2>
+<p>Before you can call a function, you <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="calls" data-tertiary="def statement" id="id2897"></a><a contenteditable="false" data-type="indexterm" data-primary="def statement" data-secondary="function calls" id="id2898"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="def" id="id2899"></a><a contenteditable="false" data-type="indexterm" data-primary="calls" data-secondary="def statements" id="id2900"></a>have to make it. To do this, run its <code>def</code> statement, either by typing it interactively or by coding it in a module file and importing the file. You can paste it at a REPL as a whole, but we’ll import it from a file here (per <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a>, make sure you can see it in your REPL by working in the file’s folder if needed). Once you’ve run the <code>def</code> by such means, you can call the function by passing any two sequence objects in parentheses:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from inter1 import intersect</strong></code>     <code><em># Get function from module</em></code>
+&gt;&gt;&gt; <code><strong>s1 = 'HACK'</strong></code>
+&gt;&gt;&gt; <code><strong>s2 = 'CHOK'</strong></code>
+&gt;&gt;&gt; <code><strong>intersect(s1, s2)</strong></code>                <code><em># Pass two strings
+</em></code>['H', 'C', 'K']</pre>
+<p>Here, we’ve passed in two strings, and we get back a list containing the characters in common. The algorithm the function uses is simple: “For every item in the first argument, if that item is also in the second argument, append the item to the result.” It’s a little shorter to say that in Python than in English, but it works out the same.</p>
+<p>To be fair, our <code>intersect</code> function <a contenteditable="false" data-type="indexterm" data-primary="intersect function" id="id2901"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="intersect" id="id2902"></a>could probably be quicker (it executes naive nested loops), isn’t really mathematical intersection (there may be duplicates in the result), and isn’t required at all (as we’ve seen, Python’s set objects provide a built-in intersection operation kicked off with <code>&amp;</code>). Indeed, the function could be replaced with a single list comprehension expression, as it exhibits the classic collector-loop code pattern:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>[x for x in s1 if x in s2]</strong></code>
+['H', 'C', 'K']</pre>
+<p>Which also works as a loop inside a <code>lambda</code> body expression—despite being five lines in the <code>def</code>. This suffices as a demo, but doesn’t make much sense in a simple role like <a contenteditable="false" data-type="indexterm" data-primary="intersect function" data-secondary="lambda body expression" id="id2903"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="intersect" data-tertiary="lambda body expression" id="id2904"></a>this (again, we’ll put lambdas to better use later):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>intersect = lambda seq1, seq2: [x for x in seq1 if x in seq2]</strong></code>
+&gt;&gt;&gt; <code><strong>intersect(s1, s2)</strong></code>
+['H', 'C', 'K']</pre>
+<p>However it’s coded, though, this function does the job: its single piece of code can apply to an entire range of object types, as the next section explains. In fact, we’ll improve and extend this to support arbitrarily many operands in <a data-type="xref" href="ch18.html#arguments">Chapter 18</a>, after we uncover more about argument passing modes.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Polymorphism Revisited"><div class="sect2" id="polymorphism_revisited">
+<h2>Polymorphism Revisited</h2>
+<p>Like all good functions in Python, <code>intersect</code> is polymorphic. That is, it works on arbitrary types, as long <a contenteditable="false" data-type="indexterm" data-primary="polymorphism" data-secondary="intersect function" id="id2905"></a><a contenteditable="false" data-type="indexterm" data-primary="intersect function" data-secondary="polymorphism" id="id2906"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="intersect" data-tertiary="polymorphism" id="id2907"></a>as they support the expected object interface:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x = intersect([1, 2, 3], (1, 4))</strong></code>      <code><em># Pass mixed types</em></code>
+&gt;&gt;&gt; <code><strong>x</strong></code>                                     <code><em># Saved result object</em></code>
+[1]</pre>
+<p>This time, we passed in different types of objects to our function—a list and a tuple (mixed types)—and it still picked out the common items. Because you don’t have to specify the types of arguments ahead of time, the <code>intersect</code> function happily iterates through any kind of objects you send it, as long as they support the expected interfaces.</p>
+<p>For <code>intersect</code>, this means that the first argument has to support the <code>for</code> loop, and the second has to support the <code>in</code> membership test, in both <code>def</code> and <code>lambda</code> flavors. Any two such objects will work, regardless of their specific types—that includes physically stored sequences like strings and lists; all the iterable objects we met in <a data-type="xref" href="ch14.html#iterations_and_comprehensions">Chapter 14</a>, including files and dictionaries; and even any class-based objects we code that apply operator overloading techniques we’ll discuss later in the book.<sup><a data-type="noteref" id="ch16fn1-marker" href="ch16.html#ch16fn1">1</a></sup></p>
+<p>And here again, if we pass in objects that do <em>not</em> support these interfaces (e.g., numbers), Python will automatically detect the mismatch and raise an exception for us—which is exactly what we want, and the best we could do on our own if we coded explicit type tests:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>intersect([1, 2, 3], 1)</strong></code>
+TypeError: argument of type 'int' is not iterable</pre>
+<p>By not coding type tests and allowing Python to detect the mismatches for us, we both reduce the amount of code we need to write, and avoid artificially limiting our code’s scope.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Segue: Local Variables"><div class="sect2" id="segue_local_variables">
+<h2>Segue: Local Variables</h2>
+<p>Perhaps the most interesting part of <a contenteditable="false" data-type="indexterm" data-primary="local variables" id="lclvrbles"></a><a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="local" id="vrlcla"></a><a contenteditable="false" data-type="indexterm" data-primary="intersect function" data-secondary="local variables" id="intclcv"></a>this example, though, is its names. It turns out that the variable <code>res</code> inside the <code>def</code> version of <code>intersect</code> is what in Python is called a <em>local variable</em>—a name that is visible only to code inside the function <code>def</code> and that exists only while the function call runs. In fact, because all names <em>assigned</em> in any way inside a function are classified as local variables by default, nearly all the names in the <code>def</code> qualify:</p>
+<ul>
+<li><p><code>res</code> is obviously assigned, so it is a local variable.</p></li>
+<li><p>Arguments are passed by assignment, so <code>seq1</code> and <code>seq2</code> are, too.</p></li>
+<li><p>The <code>for</code> loop assigns items to a variable, so the name <code>x</code> is also local.</p></li>
+</ul>
+<p>All these local variables appear when the function is called and disappear when the function exits—the <code>return</code> statement at the end of <code>intersect</code> sends back the result <em>object</em>, but the <em>name</em> <code>res</code> goes away. The same goes for argument names in the <code>lambda</code>, though its compression hides its loop variable (sans a nested <code>:=</code> to export it).</p>
+<p>Because of this, a function’s variables don’t clash with names elsewhere, but also won’t remember values between calls. Although the object returned by a function lives on, retaining other <em>state information</em> requires other techniques. To fully explore the notion of <a contenteditable="false" data-type="indexterm" data-primary="local variables" data-startref="lclvrbles" id="id2908"></a><a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="local" data-startref="vrlcla" id="id2909"></a><a contenteditable="false" data-type="indexterm" data-primary="intersect function" data-secondary="local variables" data-startref="intclcv" id="id2910"></a>locals and state, though, we need to move on to the scopes coverage of the next chapter.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00026">
+<h1>Chapter Summary</h1>
+<p>This chapter introduced the core ideas behind function definition—the syntax and operation of the <code>def</code> and <code>return</code> statements and <code>lambda</code> expression, the behavior of function call expressions, and the notion and benefits of polymorphism in Python functions. As we saw, a <code>def</code> and <code>lambda</code> are executable code that create a function object at runtime; when the function is later called, objects are passed into it by assignment (which means object reference in Python), and computed values are sent back by <code>return</code> in <code>def</code> and implicitly in <code>lambda</code>. We also began exploring the concepts of local variables and scopes, but saved the details for <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>. First, though, a quick quiz.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000153">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>What is the point of coding functions?</p></li>
+<li><p>At what time does Python create a function?</p></li>
+<li><p>What does a <code>def</code> function return if it has no <code>return</code> statement in it?</p></li>
+<li><p>When does the code nested inside the function definition run?</p></li>
+<li><p>What’s wrong with checking the types of objects passed into a function?</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000152">
+<h1>Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>Functions are the most basic way of avoiding code <em>redundancy</em> in Python—factoring code into functions means that we have only one copy of an operation’s code to update in the future. Functions are also the basic unit of code <em>reuse</em> in Python—wrapping code in functions makes it a reusable tool, callable in a variety of programs. Finally, functions allow us to <em>divide</em> a complex system into manageable parts, each of which may be developed individually. Functions are also used for object <em>methods</em>, but we’re postponing this role until we study classes.</p></li>
+<li class="pagebreak-before"><p>A function is created when Python reaches and runs a <code>def</code> statement, which creates a function object and assigns it to the function’s name. This normally happens when the enclosing module file is imported by another module (recall that imports run the code in a file from top to bottom, including any <code>def</code>s), but it can also occur when a <code>def</code> is typed interactively or nested in other statements, such as <code>if</code>s. Functions are also created when a <code>lambda</code> is reached and run, though this doesn’t normally happen during an import operation.</p></li>
+<li><p>A <code>def</code> function returns the <code>None</code> object by default if the control flow falls off the end of the function body without running into a <code>return</code> statement. Such functions are usually called with expression statements, as assigning their <code>None</code> results to variables is generally pointless. A <code>return</code> statement with no expression in it also returns <code>None</code>. A <code>lambda</code> implicitly returns its expression’s result, so it has no default.</p></li>
+<li><p>The function <em>body</em> (the code nested inside the function <code>def</code> statement or following the colon in <code>lambda</code>) is run when the function is later invoked with a call expression. The body runs anew each time the function is called.</p></li>
+<li><p>Checking the types of objects passed into a function effectively breaks the function’s <em>flexibility</em>, constraining the function to work on specific types only. Without such checks, the function would likely be able to process an entire array of object types—any objects that support the interface expected by the function will work. (The term <em>interface</em> means the set of methods and expression operators the function’s code runs.)</p></li>
+</ol>
+</div></section>
+<div data-type="footnotes"><p data-type="footnote" id="ch16fn1"><sup><a href="ch16.html#ch16fn1-marker">1</a></sup> This code will always work if we intersect files’ contents obtained with <code>file.readlines()</code>. It may not work to intersect lines in open input files directly, though, depending on the file object’s implementation of the <code>in</code> operator or general iteration. Files must generally be rewound (e.g., with a <code>file.seek(0)</code> or another <code>open</code>) after they have been read to end-of-file once, and so are single-pass iterators. As you’ll see in <a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a> when we study operator overloading, objects implement the <code>in</code> operator either by providing the specific <code>__contains__</code> method or by supporting the general iteration protocol with the <code>__iter__</code> or older <code>__getitem__</code> methods; classes can code these methods arbitrarily to define what iteration means for their data.</p></div></div></section></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,900 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 28. A More Realistic Example"><div class="chapter" id="a_more_realistic_example">
+<h1><span class="label">Chapter 28. </span>A More Realistic Example</h1>
+<p>We’ll dig into more class syntax details in the next chapter. Before we do, though, let’s take a short detour to explore a realistic example of classes in action that’s more practical than what we’ve seen so far. In this chapter, we’re going to build a set of classes that do something concrete—recording and processing information about people. As you’ll see, what we call <em>instances</em> and <em>classes</em> in Python programming can often serve the same roles as <em>records</em> and <em>programs</em> in more traditional terms. The main difference here is the customization that inheritance will enable.</p>
+<p>Specifically, in this chapter we’re going to code two classes:</p>
+<ul>
+<li><p><code>Person</code>—a class that creates and processes information about people</p></li>
+<li><p><code>Manager</code>—a customization of <code>Person</code> that modifies inherited behavior</p></li>
+</ul>
+<p>Along the way, we’ll make instances of both classes and test out their functionality. When we’re done, this chapter will also show you a nice example use case for classes—we’ll store our instances in a simple object-oriented database, to make them permanent. That way, you can use this code as a template for fleshing out a full-blown personal database of your own written entirely in Python.</p>
+<p>Besides actual utility, though, our aim here is also <em>educational</em>: this chapter provides a tutorial on object-oriented programming in Python. Often, people grasp the last chapter’s class syntax in the abstract but have trouble seeing how to get started when confronted with coding a new class from scratch. Toward this end, we’ll take it one step at a time here, to help you learn the basics; we’ll build up the classes gradually, so you can see how their features come together in complete programs.</p>
+<p>In the end, our classes will still be relatively small in terms of code, but they will demonstrate <em>all</em> of the main ideas in Python’s OOP model. Despite its syntax details, Python’s class system really is largely just a matter of searching for an attribute in a tree of objects, along with a special first argument for <span class="keep-together">functions</span>.</p>
+<section data-type="sect1" data-pdf-bookmark="Step 1: Making Instances"><div class="sect1" id="step_one_making_instances">
+<h1>Step 1: Making Instances</h1>
+<p>OK, so much for the design phase—let’s move on to <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP" id="id3786"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="classes" id="id3787"></a>implementation. Our first task is to start coding the main class, <code>Person</code>. In your favorite text editor, open a new file for the code we’ll be writing.</p>
+<p>As noted in the prior chapter, it’s a fairly strong convention in Python to begin module names with a lowercase letter and class names with an uppercase letter. Like the name of <code>self</code> arguments in methods, this is not required by the language, but it’s so common that deviating might be confusing to people who later read your code. To conform, we’ll call our new module file <em>person.py</em> and our class within it <code>Person</code>, as in <a data-type="xref" href="#example_twoeight_onedot_person_onedotpy">Example 28-1</a>.</p>
+<div data-type="example" id="example_twoeight_onedot_person_onedotpy">
+<h5><span class="label">Example 28-1. </span>person_1.py (start)</h5>
+<pre data-type="programlisting"><code><strong>class Person:  </strong>  </code>                         <code><em># Start a class</em></code></pre>
+</div>
+<p>We’re going to change this file as we go. To help you keep track of its variations, we’ll append an <em>example number</em> to the filename in captions, and use that number both in the examples package and in launches and imports here. Changes will also be shown in bold font on each revision. The intent is to show mods to a single file, but books are linear.</p>
+<p>As noted in the prior chapter, we can code any number of functions and classes in a single module file in Python, and this one’s <em>person.py</em> name might not make much sense if we add unrelated components to it later. For now, we’ll assume everything in it will be <code>Person</code>-related. It probably should be anyhow—as we’ve learned, modules tend to work best when they have a single, <em>cohesive</em> purpose.</p>
+<section data-type="sect2" data-pdf-bookmark="Coding Constructors"><div class="sect2" id="coding_constructors">
+<h2>Coding Constructors</h2>
+<p>Now, the first thing we want to do with <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP" data-tertiary="constructors" id="ispocs"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="classes" data-tertiary="constructors" id="popstc"></a><a contenteditable="false" data-type="indexterm" data-primary="constructors" data-secondary="classes" id="cstcst"></a>our <code>Person</code> class is record basic information about people—to fill out record fields, if you will. Of course, <a contenteditable="false" data-type="indexterm" data-primary="instance objects" data-secondary="attributes" id="id3788"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="instance objects" id="id3789"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="instance objects" data-tertiary="attributes" id="id3790"></a>these are known as instance object <em>attributes</em> in Python-speak, and they generally are created by assignment to <code>self</code> attributes in a class’s method functions. The normal way to give instance attributes their first values is to assign them to <code>self</code> in the <code>__init__</code> <em>constructor method</em>, which contains code run automatically by Python each time an instance is created. Let’s add one to our class, in <a data-type="xref" href="#example_twoeight_twodot_person_twodotpy">Example 28-2</a>.</p>
+<div data-type="example" id="example_twoeight_twodot_person_twodotpy">
+<h5><span class="label">Example 28-2. </span>person_2.py (add attribute initialization)</h5>
+<pre data-type="programlisting">class Person:
+<code> <strong>   def __init__(self, name, job, pay):</strong></code>      <code><em># Constructor takes three arguments</em></code>
+        <code><strong>self.name = name</strong></code>                     <code><em># Fill out fields when created</em></code>
+        <code><strong>self.job  = job</strong></code>                      <code><em># self is the new instance object</em></code>
+        <code><strong>self.pay  = pay</strong></code></pre>
+</div>
+<p>This is a very common coding pattern: we pass in the data to be attached to an instance as arguments to the constructor method and assign them to <code>self</code> to retain them permanently. In OO terms, <code>self</code> is the newly created instance object, and <code>name</code>, <code>job</code>, and <code>pay</code> become <em>state information</em>—descriptive data saved on an object for later use. Although other techniques (such as enclosing scope reference closures) can save details, too, instance attributes make this very explicit and easy to understand.</p>
+<p>Notice that the argument names appear <em>twice</em> here. This code might even seem a bit redundant at first, but it’s not. The <code>job</code> argument, for example, is a local variable in the scope of the <code>__init__</code> function, but <code>self.job</code> is an attribute of the instance that’s the implied subject of the method call. They are two different variables, which happen to have the same name. By assigning the <code>job</code> local to the <code>self.job</code> attribute with <code>self.job=job</code>, we save the passed-in <code>job</code> on the instance for later use. As usual in Python, where a name is assigned, or what object it is assigned to, determines what it means.</p>
+<p>Speaking of arguments, there’s really nothing magical about <code>__init__</code>, apart from the fact that it’s called automatically when an instance is made, and has a special first argument. Despite its weird name, it’s a normal function and supports all the features of functions we’ve already covered. We can, for example, provide <em>defaults</em> for some of its arguments, so they need not be provided in cases where their values aren’t available or useful.</p>
+<p>To demonstrate, let’s make the <code>job</code> argument optional—it will default to <code>None</code>, meaning the person being created is not (currently?) employed. If <code>job</code> defaults to <code>None</code>, we’ll probably want to default <code>pay</code> to <code>0</code>, too, for consistency (unless some of the people you know manage to get paid without having jobs). In fact, we have to specify a default for <code>pay</code> because according to Python’s syntax rules and <a data-type="xref" href="ch18.html#arguments">Chapter 18</a>, any arguments in a function’s header after the first default must all have defaults, too. <a data-type="xref" href="#example_twoeight_threedot_person_threed">Example 28-3</a> codes the mod.</p>
+<div data-type="example" id="example_twoeight_threedot_person_threed">
+<h5><span class="label">Example 28-3. </span>person_3.py (add constructor defaults)</h5>
+<pre data-type="programlisting">class Person:
+    def __init__(self, name, <code><strong>job=None, pay=0</strong></code>):         <code><em># Normal function args</em></code>
+        self.name = name
+        self.job  = job
+        self.pay  = pay</pre>
+</div>
+<p>What this code means is that we’ll need to pass in a name when making <code>Person</code>s, but <code>job</code> and <code>pay</code> are now optional; they’ll default to <code>None</code> and <code>0</code> if omitted. The <code>self</code> argument, as usual, is filled in by Python automatically to refer to the instance object—assigning values to <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP" data-tertiary="constructors" data-startref="ispocs" id="id3791"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="classes" data-tertiary="constructors" data-startref="popstc" id="id3792"></a><a contenteditable="false" data-type="indexterm" data-primary="constructors" data-secondary="classes" data-startref="cstcst" id="id3793"></a>attributes of <code>self</code> attaches them to the new instance.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Testing as You Go"><div class="sect2" id="testing_as_you_go">
+<h2>Testing as You Go</h2>
+<p>This class doesn’t do much yet—it essentially just fills out the fields of a new record—but it’s a real working class. At this point, we could add more code to it for more features, but we won’t do <a contenteditable="false" data-type="indexterm" data-primary="incremental prototyping" id="id3794"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP" data-tertiary="testing" id="clpootts"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="classes" data-tertiary="testing" id="opoctt"></a><a contenteditable="false" data-type="indexterm" data-primary="testing" data-secondary="class creation" id="tstgclssc"></a>that yet. As you’ve probably begun to appreciate already, programming in Python is really a matter of <em>incremental prototyping</em>—you write some code, test it, write more code, test again, and so on. Because Python provides both an interactive session and nearly immediate turnaround after code changes, it’s more natural to test as you go than to write a huge amount of code to test all at once.</p>
+<p>Before adding more features, then, let’s test what we’ve got so far by making a few instances of our class and displaying their attributes as created by the constructor. We could do this interactively, but as you’ve also probably surmised by now, interactive testing has its limits—it gets tedious to have to reimport modules and retype test cases each time you start a new testing session. More commonly, Python programmers use the interactive prompt for simple one-off tests but do more substantial testing by writing code at the bottom of the file that contains the objects to be tested, as in <a data-type="xref" href="#example_twoeight_fourdot_person_fourdot">Example 28-4</a>.</p>
+<div data-type="example" id="example_twoeight_fourdot_person_fourdot">
+<h5><span class="label">Example 28-4. </span>person_4.py (add incremental self-test code)</h5>
+<pre data-type="programlisting">class Person:
+    def __init__(self, name, job=None, pay=0):
+        self.name = name
+        self.job  = job
+        self.pay  = pay
+
+<code><strong>bob = Person('Bob Smith')</strong></code>                         <code><em># Test the class</em></code>
+<code><strong>sue = Person('Sue Jones', job='dev', pay=100000)</strong></code>  <code><em># Runs __init__ automatically
+</em><strong>print(bob.name, bob.pay)</strong></code>                          <code><em># Fetch attached attributes
+</em><strong>print(sue.name, sue.pay)</strong></code>                          <code><em># sue's and bob's attrs differ</em></code></pre>
+</div>
+<p>Notice here that the <code>bob</code> object accepts the defaults for <code>job</code> and <code>pay</code>, but <code>sue</code> provides values explicitly. Also, note how we use <em>keyword arguments</em> when making <code>sue</code>; we could pass by position instead, but the keywords may help remind us later what the data is, and they allow us to pass the arguments in any left-to-right order we like. Again, despite its unusual name, <code>__init__</code> is a normal function, supporting everything you already know about functions—including both defaults and pass-by-name keyword arguments.</p>
+<p>When this file runs as a script, the test code at the bottom makes two instances of our class and prints two attributes of each—<code>name</code> and <code>pay</code>:</p>
+<pre data-type="programlisting">$ <code><strong>python3 person_4.py</strong></code>
+Bob Smith 0
+Sue Jones 100000</pre>
+<p>You can also type this file’s test code at Python’s interactive prompt (assuming you import the <code>Person</code> class there first), but coding canned tests inside the module file like this makes it much easier to rerun them in the future.</p>
+<p>Although this is fairly simple code, it’s already demonstrating something important. Notice that <code>bob</code>’s <code>name</code> is not <code>sue</code>’s, and <code>sue</code>’s <code>pay</code> is not <code>bob</code>’s. Each is an independent record of information. Technically, <code>bob</code> and <code>sue</code> are both <em>namespace objects</em>—like all class instances, they each have their own independent <a contenteditable="false" data-type="indexterm" data-primary="namespaces" id="id3795"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="namespace objects" id="id3796"></a>copy of the state information created by the class. Because each instance of a class has its own set of <code>self</code> attributes, classes are a natural for recording information for multiple objects this way; just like built-in types such as lists and <a contenteditable="false" data-type="indexterm" data-primary="object factories" id="id3797"></a>dictionaries, classes serve as a sort of <em>object factory</em>.</p>
+<p>Other Python program structures, such as functions and modules, have no such concept. <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>’s closure functions come close in terms of per-call state but don’t <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP" data-tertiary="testing" data-startref="clpootts" id="id3798"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="classes" data-tertiary="testing" data-startref="opoctt" id="id3799"></a><a contenteditable="false" data-type="indexterm" data-primary="testing" data-secondary="class creation" data-startref="tstgclssc" id="id3800"></a>have the multiple methods, inheritance, and larger structure we get from classes.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Using Code Two Ways"><div class="sect2" id="using_code_two_ways">
+<h2>Using Code Two Ways</h2>
+<p>As is, the test code at the bottom of the file works, but there’s a big catch—its top-level <code>print</code> statements run both when the file is run as a script and when it is imported as a module. This means if we ever decide to import the class in this file in order to use it somewhere else (and we will soon in this chapter), we’ll see the output of its test code every time the file is imported. That’s not very good software citizenship, though: client programs probably don’t care about our internal tests and won’t want to see our output mixed in with their own.</p>
+<p>Although we could split the test code off into a separate file, it’s often more convenient to code tests in the same file as the items to be tested. It would be better to arrange to run the test statements at the bottom <em>only</em> when the file is run for testing, not when the file is imported. As linear readers of this book have already learned, that’s exactly what the module <code>__name__</code> check is designed for. <a data-type="xref" href="#example_twoeight_fivedot_person_fivedot">Example 28-5</a> shows what this addition looks like—simply add the required test and indent your self-test code.</p>
+<div data-type="example" id="example_twoeight_fivedot_person_fivedot">
+<h5><span class="label">Example 28-5. </span>person_5.py (support both imports and run/tests)</h5>
+<pre data-type="programlisting">class Person:
+    def __init__(self, name, job=None, pay=0):
+        self.name = name
+        self.job  = job
+        self.pay  = pay
+
+<code><strong>if __name__ == '__main__':</strong></code>                  <code><em># When run for testing only</em></code>
+    bob = Person('Bob Smith')
+    sue = Person('Sue Jones', job='dev', pay=100000)
+    print(bob.name, bob.pay)
+    print(sue.name, sue.pay)</pre>
+</div>
+<p>Now, we get exactly the behavior we’re after—running the file as a top-level script tests it because its <code>__name__</code> is <code>__main__</code>, but importing it as a library of classes later does not:</p>
+<pre data-type="programlisting">$ <code><strong>python3 person_5.py</strong></code>
+Bob Smith 0
+Sue Jones 100000
+
+$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>import person_5</strong></code>
+&gt;&gt;&gt;</pre>
+<p>When imported, the file now defines the class but does not use it. When run directly, this file creates two instances of our class as before, and prints two attributes of each; again, because each instance is an independent namespace object, the values of their attributes differ.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Step 2: Adding Behavior Methods"><div class="sect1" id="step_two_adding_behavior_methods">
+<h1>Step 2: Adding Behavior Methods</h1>
+<p>Everything looks good so far—at this point, our class is <a contenteditable="false" data-type="indexterm" data-primary="record factories" id="id3801"></a>essentially a record <em>factory</em>; it creates and <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP" data-tertiary="methods" id="clphvmt"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="classes" data-tertiary="methods" id="opclbhvm"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="methods" id="id3802"></a>fills out fields of records (attributes of instances, in Pythonic terms). Even as limited as it is, though, we can still run some operations on its objects. Although classes add an extra layer of structure, they ultimately do most of their work by embedding and processing <em>core object types</em> like lists and strings. In other words, if you already know how to use Python’s simple core objects, you already know much of the Python class story; classes are really just a minor structural extension.</p>
+<p>For example, the <code>name</code> field of our objects is a simple string, so we can extract last names from our objects by splitting on spaces and indexing. These are all core-object operations, which work whether their subjects are embedded in class instances or not:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>name = 'Bob Smith'</strong></code>      <code><em># Simple string, outside class
+</em></code>&gt;&gt;&gt; <code><strong>name.split()</strong></code>            <code><em># Extract last name</em></code>
+['Bob', 'Smith']
+&gt;&gt;&gt; <code><strong>name.split()[-1]</strong></code>       <code> <em># Or [1], if always just two parts</em></code>
+'Smith'</pre>
+<p>Similarly, we can give an object a pay raise by updating its <code>pay</code> field—that is, by changing its state information in place with an assignment. This task also involves basic operations that work on Python’s core objects, regardless of whether they are standalone or embedded in a class structure (formatting here masks any extraneous digits):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>pay = 100000</strong></code>            <code><em># Simple variable, outside class</em></code>
+&gt;&gt;&gt; <code><strong>pay *= 1.10</strong></code>             <code><em># Give a 10% raise</em></code>
+&gt;&gt;&gt; <code><strong>print(f'{pay:,.2f}')</strong></code>    <code><em># Or: pay = pay * 1.10, if you like to type</em></code>
+110,000.00                  <code><em># Or: pay = pay + (pay * .10), if you really do</em></code></pre>
+<p>To apply these operations to the <code>Person</code> objects created by our script, simply do to <code>bob.name</code> and <code>sue.pay</code> what we just did to <code>name</code> and <code>pay</code>, as listed in <a data-type="xref" href="#example_twoeight_sixdot_person_sixdotpy">Example 28-6</a>. The operations are the same, but the subjects are attached as attributes to objects created from our class.</p>
+<div data-type="example" class="pagebreak-before" id="example_twoeight_sixdot_person_sixdotpy">
+<h5 class="less_space"><span class="label">Example 28-6. </span>person_6.py (process embedded built-in objects)</h5>
+<pre data-type="programlisting">class Person:
+    def __init__(self, name, job=None, pay=0):
+        self.name = name
+        self.job  = job
+        self.pay  = pay
+
+if __name__ == '__main__':
+    bob = Person('Bob Smith')
+    sue = Person('Sue Jones', job='dev', pay=100000)
+    print(bob.name, bob.pay)
+    print(sue.name, sue.pay)
+    <code><strong>print(bob.name.split()[-1])</strong></code>            <code><em># Extract object's last name</em></code>
+    <code><strong>sue.pay *= 1.10</strong></code>                        <code><em># Give this object a raise</em></code>
+    <code><strong>print(f'{sue.pay:,.2f}')</strong></code></pre>
+</div>
+<p>We’ve added the last three lines here; when they’re run, we extract <code>bob</code>’s last name by using basic string and list operations on his name field, and give <code>sue</code> a pay raise by modifying her <code>pay</code> attribute in place with basic number operations. In a sense, <code>sue</code> is also a <em>mutable</em> object—her state changes in place just like a list after an <code>append</code> call. Here’s the new version’s output when run as a top-level script:</p>
+<pre data-type="programlisting">$ <code><strong>python3 person_6.py</strong></code>
+Bob Smith 0
+Sue Jones 100000
+Smith
+110,000.00</pre>
+<p>The preceding code works as planned, but if you show it to a veteran software developer he or she will probably tell you that its general approach is not a great idea in practice. Hardcoding operations like these <em>outside</em> of the class can lead to maintenance problems in the future.</p>
+<p>For example, what if you’ve hardcoded the last-name-extraction formula at many different places in your program? If you ever need to change the way it works (to support a new name structure, for instance), you’ll need to hunt down and update <em>every</em> occurrence. Similarly, if the pay-raise code ever changes (e.g., to require approval or database updates), you may have multiple copies to modify. Just finding all the appearances of such code may be problematic in larger programs—they may be scattered across many files and folders, split into individual steps, and so on. In a prototype like this, frequent change is almost guaranteed.</p>
+<section data-type="sect2" data-pdf-bookmark="Coding Methods"><div class="sect2" id="coding_methods">
+<h2>Coding Methods</h2>
+<p>What we really want to do here is <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="methods" data-tertiary="encapsulation" id="id3803"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="encapsulation" id="id3804"></a><a contenteditable="false" data-type="indexterm" data-primary="encapsulation" id="id3805"></a>employ a software design concept known as <em>encapsulation</em>—wrapping up operation logic behind interfaces, such that each operation is coded only once in our program. That way, if our needs change in the future, there is just one copy to update. Moreover, we’re free to change the single copy’s internals almost arbitrarily, without breaking the code that uses it.</p>
+<p>In Python terms, we want to code operations on objects in a class’s <em>methods</em>, instead of littering them throughout our program. In fact, this is one of the things that classes are very good at—<em>factoring</em> code to remove <em>redundancy</em> and <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="redundancy" id="id3806"></a><a contenteditable="false" data-type="indexterm" data-primary="redundancy" data-secondary="removing" id="id3807"></a>thus optimize maintainability. As an added bonus, turning operations into methods enables them to be applied to any instance of the class, not just those that they’ve been hardcoded to process.</p>
+<p>This is all simpler in code than it may sound in theory. <a data-type="xref" href="#example_twoeight_sevendot_person_sevend">Example 28-7</a> achieves encapsulation by moving the two operations from code outside the class to methods inside the class. While we’re at it, let’s change our self-test code at the bottom to use the new methods we’re creating, instead of hardcoding <span class="keep-together">operations</span>.</p>
+<div data-type="example" id="example_twoeight_sevendot_person_sevend">
+<h5><span class="label">Example 28-7. </span>person_7.py (add methods to encapsulate operations)</h5>
+<pre data-type="programlisting">class Person:
+    def __init__(self, name, job=None, pay=0):
+        self.name = name
+        self.job  = job
+        self.pay  = pay
+    <code><strong>def lastName(self):</strong></code>                               <code><em># Behavior methods</em></code>
+        <code><strong>return self.name.split()[-1]</strong></code>                  <code><em># self is implied subject
+</em></code>    <code><strong>def giveRaise(self, percent):</strong></code>
+        <code><strong>self.pay = int(self.pay * (1 + percent))</strong></code>      <code><em># Must change here only</em></code>
+
+if __name__ == '__main__':
+    bob = Person('Bob Smith')
+    sue = Person('Sue Jones', job='dev', pay=100000)
+    print(bob.name, bob.pay)
+    print(sue.name, sue.pay)
+    <code><strong>print(bob.lastName(), sue.lastName())</strong></code>             <code><em># Use the new methods
+</em></code>    <code><strong>sue.giveRaise(.10)</strong></code>                                <code><em># instead of hardcoding</em></code>
+<code> <strong>   print(sue.pay)</strong></code></pre>
+</div>
+<p>As we’ve learned, <em>methods</em> are simply normal functions that are attached to classes and designed to process instances of those classes. The instance is the subject of the method call and is passed to the method’s <code>self</code> argument automatically.</p>
+<p>The transformation to the methods in this version is straightforward. The new <code>lastName</code> method, for example, simply does for <code>self</code> what the previous version hardcoded for <code>bob</code>, because <code>self</code> is the implied subject when the method is called. <code>lastName</code> also returns the result because this operation is a called function now; it computes a value for its caller to use arbitrarily, even if it is just to be printed. Similarly, the new <code>giveRaise</code> method just does for <code>self</code> what we did for <code>sue</code> before.</p>
+<p>When run now, our file’s output is similar to before—we’ve mostly just <em>refactored</em> the code to allow for easier changes in the future (command lines that run the most recent mod are often omitted from here on for space):</p>
+<pre data-type="programlisting">Bob Smith 0
+Sue Jones 100000
+Smith Jones
+110000</pre>
+<p>A few coding details are worth pointing out here. First, notice that <code>sue</code>’s pay is now still an <em>integer</em> after a pay raise—we convert the math result back to an integer by calling the <code>int</code> built-in within the method. Changing the value to either <code>int</code> or <code>float</code> is probably not a significant concern for this demo: integer and floating-point objects have the same interfaces and can be mixed within expressions. Still, we may need to address truncation and rounding issues in a real system—money probably is significant to <span class="keep-together"><code>Person</code>s!</span></p>
+<p>As covered in <a data-type="xref" href="ch05.html#numbers_and_expressions">Chapter 5</a>, we might handle this by using the <code>round(<em>N</em>, 2)</code> built-in to round and retain cents, using the <code>decimal</code> type to fix precision, or storing monetary values as full floating-point numbers and displaying them with a formatting string to show cents as we did earlier. For now, we’ll simply truncate any cents with <code>int</code>.</p>
+<p>Second, notice that we’re also printing <code>sue</code>’s last name this time—because the last-name logic has been encapsulated in a method, we get to use it on <em>any instance</em> of the class. As we’ve seen, Python tells a method which instance to process by automatically passing it in to the first argument, usually called <code>self</code>. Specifically:</p>
+<ul>
+<li><p>In the first call, <code>bob.lastName()</code>, <code>bob</code> is the implied subject passed to <code>self</code>.</p></li>
+<li><p>In the second call, <code>sue.lastName()</code>, <code>sue</code> goes to <code>self</code> instead.</p></li>
+</ul>
+<p>Trace through these calls to see how the instance winds up in <code>self</code>—it’s a key concept. The net effect is that the method fetches the name of the implied subject each time. The same happens for <code>giveRaise</code>. We could, for example, give <code>bob</code> a raise by calling <code>giveRaise</code> for both instances this way, too. Unfortunately for <code>bob</code>, though, his zero starting pay will prevent him from getting a raise as the program is currently coded—nothing times anything is nothing, something we may want to address in a future 2.0 release of our software.</p>
+<p>Finally, notice that the <code>giveRaise</code> method assumes that <code>percent</code> is passed in as a floating-point number between zero and one. That may be too radical an assumption in the real world (a 1,000% raise would probably be a bug for most of us!); we’ll let it pass for this prototype, but we might want to test or at least document this in a future iteration of this code. Stay tuned for a rehash of this idea in later chapters, where we’ll explore <em>function decorators</em> and Python’s <code>assert</code> statement as alternatives that can do the validity test for us automatically during development. In <a data-type="xref" href="ch39.html#decorators">Chapter 39</a>, for example, we’ll write a tool that lets us <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP" data-tertiary="methods" data-startref="clphvmt" id="id3808"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="classes" data-tertiary="methods" data-startref="opclbhvm" id="id3809"></a>validate with strange incantations like the following:</p>
+<pre data-type="programlisting">    @rangetest(percent=(0.0, 1.0))               <code><em># Use decorator to validate</em></code>
+    def giveRaise(self, percent):
+        self.pay = int(self.pay * (1 + percent))</pre>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Step 3: Operator Overloading"><div class="sect1" id="step_three_operator_overloading">
+<h1>Step 3: Operator Overloading</h1>
+<p>At this point, we have a fairly full-featured class that generates and initializes instances, along with two <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP" data-tertiary="operator overloading" id="clsspoopov"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="operator overloading" id="id3810"></a><a contenteditable="false" data-type="indexterm" data-primary="operator overloading" id="id3811"></a>new bits of behavior for processing instances in the form of methods. So far, so good.</p>
+<p>As it stands, though, testing is still a bit less convenient than it needs to be—to trace our objects, we have to manually fetch and print <em>individual attributes</em> (e.g., <code>bob.name</code>, <code>sue.pay</code>). It would be nice if displaying an instance all at once actually gave us some useful information. Unfortunately, the default display format for an instance object isn’t very good—it displays the object’s class name and its address in memory (which is essentially useless in Python, except as a unique identifier).</p>
+<p>To see this, change the last line in the latest version of our script to <code>print(sue)</code> so it displays the object as a whole. Here’s what you’ll get—as coded, the output says that <code>sue</code> is an object, but not much more:</p>
+<pre data-type="programlisting">Bob Smith 0
+Sue Jones 100000
+Smith Jones
+&lt;__main__.Person object at 0x104972630&gt;</pre>
+<section data-type="sect2" data-pdf-bookmark="Providing Print Displays"><div class="sect2" id="providing_print_displays">
+<h2>Providing Print Displays</h2>
+<p>Fortunately, it’s easy to do better by employing <em>operator overloading</em>—coding methods in a class that <a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="operator overloading" data-tertiary="print displays" id="popovpdy"></a><a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="print displays" id="opovldd"></a><a contenteditable="false" data-type="indexterm" data-primary="printing" data-secondary="operator overloading and" id="prtopov"></a>intercept and process built-in operations when run on the class’s instances. Specifically, we can make use of what are probably the second most commonly used operator-overloading methods in Python, after <code>__init__</code>: the <code>__repr__</code> method we’ll deploy here, and its <code>__str__</code> twin introduced in the preceding chapter.</p>
+<p>These methods are run automatically every time an instance is converted to its print string. Because that’s what <code>print</code> normally does, the net transitive effect is that printing an object displays whatever is returned by the object’s <code>__str__</code> or <code>__repr__</code> method, if the object either defines one itself or inherits one from a superclass. Double-underscored names are inherited just like any other.</p>
+<p>Technically, <code>__str__</code> is preferred by <code>print</code> and <code>str</code>, and <code>__repr__</code> is used both as a fallback for these, as well as by interactive echoes and nested appearances. Although the two can be used to implement different displays in different contexts (e.g., user- or developer-focused), coding <code>__repr__</code> alone suffices to give a single display in all cases. This allows clients to provide an alternative display with <code>__str__</code>, though this is a moot point for this demo.</p>
+<p>The <code>__init__</code> constructor method we’ve already coded is, strictly speaking, operator overloading too—it is run automatically at construction time to initialize a newly created instance. Constructors are so common, though, that they almost seem like a special case. More focused methods like <code>__repr__</code> allow us to tap into specific operations and provide <em>specialized behavior</em> when our objects are used in those contexts.</p>
+<p>Let’s put this into code. <a data-type="xref" href="#example_twoeight_eightdot_person_eightd">Example 28-8</a> extends our class to give a custom display that lists attributes when our class’s instances are displayed as a whole, instead of relying on the less useful default display.</p>
+<div data-type="example" id="example_twoeight_eightdot_person_eightd">
+<h5><span class="label">Example 28-8. </span>person_8.py (add __repr__ overload method for displays)</h5>
+<pre data-type="programlisting">class Person:
+    def __init__(self, name, job=None, pay=0):
+        self.name = name
+        self.job  = job
+        self.pay  = pay
+    def lastName(self):
+        return self.name.split()[-1]
+    def giveRaise(self, percent):
+        self.pay = int(self.pay * (1 + percent))
+    <code><strong>def __repr__(self):</strong> </code>                                     <code><em># Added method</em></code>
+        <code><strong>return f'[Person: {self.name} ${self.pay:,}]'</strong></code>        <code><em># String to print</em></code>
+
+if __name__ == '__main__':
+    bob = Person('Bob Smith')
+    sue = Person('Sue Jones', job='dev', pay=100000)
+    <code><strong>print(bob)
+    print(sue)</strong></code>
+    print(bob.lastName(), sue.lastName())
+    sue.giveRaise(.10)
+    <code><strong>print(sue)</strong></code></pre>
+</div>
+<p>Notice that we’re doing f-string formatting to build the display string in <code>__repr__</code> here, with comma separators for pay; at the bottom, classes use built-in operations like these to get their work done. Again, everything you’ve already learned about both built-in objects and user-defined functions applies to class-based code. Classes largely just add an additional layer of <em>structure</em> that packages functions and data together and supports extensions.</p>
+<p>We’ve also changed our self-test code to <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP" data-tertiary="operator overloading" data-startref="clsspoopov" id="id3812"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="operator overloading" data-tertiary="print displays" data-startref="popovpdy" id="id3813"></a><a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="print displays" data-startref="opovldd" id="id3814"></a><a contenteditable="false" data-type="indexterm" data-primary="printing" data-secondary="operator overloading and" data-startref="prtopov" id="id3815"></a>print objects directly, instead of printing individual attributes. When run, the output is more uniform now; the “[…]” lines are returned by <code>__repr__</code>, run automatically by print operations:</p>
+<pre data-type="programlisting">[Person: Bob Smith $0]
+[Person: Sue Jones $100,000]
+Smith Jones
+[Person: Sue Jones $110,000]</pre>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Step 4: Customizing Behavior by Subclassing"><div class="sect1" id="step_four_customizing_behavior_by_subcl">
+<h1>Step 4: Customizing Behavior by Subclassing</h1>
+<p>At this point, our class captures much of the OOP machinery in Python: it makes instances, provides behavior in methods, and even does a bit of operator overloading now to intercept print operations in <code>__repr__</code>. It effectively packages our data and logic together into a single, self-contained <em>software component</em>, making it easy to locate code and straightforward to change it in the future. By allowing us to encapsulate behavior, it also allows us to factor that code to avoid redundancy and its associated maintenance headaches.</p>
+<p>The only major OOP concept it does not <a contenteditable="false" data-type="indexterm" data-primary="customization by inheritance" id="id3816"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="customization by" id="id3817"></a>yet capture is <em>customization by inheritance</em>. In some sense, we’re already doing inheritance, because instances inherit methods from their classes. To demonstrate the real power of OOP, though, we need to define a superclass/subclass relationship that allows us to extend our software and replace bits of inherited behavior. That’s the main idea behind OOP, after all; by fostering a coding model based upon customization of work already done, it can dramatically cut development time when used well.</p>
+<section data-type="sect2" data-pdf-bookmark="Coding Subclasses"><div class="sect2" id="coding_subclasses">
+<h2>Coding Subclasses</h2>
+<p>As a next step, then, let’s put OOP’s methodology to <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP" data-tertiary="subclassing" id="clpsbc"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="classes" data-tertiary="subclassing" id="opocbcs"></a><a contenteditable="false" data-type="indexterm" data-primary="subclassing" id="id3818"></a>use and customize our <code>Person</code> class by extending our software hierarchy. For the purpose of this tutorial, we’ll define a subclass of <code>Person</code> called <code>Manager</code> that replaces the inherited <code>giveRaise</code> method with a more specialized version. Our new class begins as follows:</p>
+<pre data-type="programlisting"><code><strong>class Manager(Person):</strong></code>                          <code><em># Define a subclass of Person</em></code></pre>
+<p>This code means that we’re defining a new class named <code>Manager</code>, which inherits from and may add customizations to the superclass <code>Person</code>. In plain terms, a <code>Manager</code> is almost like a <code>Person</code>… (admittedly, a very long journey for a very small joke), but <code>Manager</code> has a custom way to give raises.<sup><a data-type="noteref" id="ch28fn1-marker" href="ch28.html#ch28fn1">1</a></sup></p>
+<p>For the sake of argument, let’s assume that when a <code>Manager</code> gets a raise, it receives the passed-in percentage as usual, but also gets an extra bonus that defaults to 10%. For instance, if a <code>Manager</code>’s raise is specified as 10%, it will really get 20%. (Any relation to <code>Person</code>s living or dead is, of course, strictly coincidental.) Our new method begins as follows; because this redefinition of <code>giveRaise</code> will be closer in the class tree to <code>Manager</code> instances than the original version in <code>Person</code>, it effectively replaces, and thereby customizes, the operation. Recall that according to the inheritance search rules, the <em>lowest</em> version of the name wins (we’ll add this code to the file in a moment):</p>
+<pre data-type="programlisting"><code><strong>class Manager(Person):</strong></code>                          <code><em># Inherit Person attrs</em></code>
+    <code><strong>def giveRaise(self, percent, bonus=.10):</strong></code>    <code><em># Redefine to customize</em></code></pre>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Augmenting Methods: The Bad Way"><div class="sect2" id="augmenting_methods_the_bad_way">
+<h2>Augmenting Methods: The Bad Way</h2>
+<p>Now, there are two ways we might code this <code>Manager</code> customization: a good way and a bad way. Let’s start <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP" data-tertiary="methods, augmenting" id="clspmgm"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="classes" data-tertiary="methods, augmenting" id="pojcgua"></a><a contenteditable="false" data-type="indexterm" data-primary="subclassing" data-secondary="methods" id="subcthd"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="subclasses" id="mthdbcl"></a>with the <em>bad way</em> since it might be a bit easier to understand. The bad way is to cut and paste the code of <code>giveRaise</code> in <code>Person</code> and modify it for <code>Manager</code>, like this:</p>
+<pre data-type="programlisting"><code><strong>class Manager(Person):
+    def giveRaise(self, percent, bonus=.10):</strong></code>
+<code> <strong>       self.pay = int(self.pay * (1 + percent + bonus))</strong></code>   <code><em># Bad: cut and paste</em></code></pre>
+<p>This would work as advertised—when we later call the <code>giveRaise</code> method of a <code>Manager</code> instance, it would run this custom version, which tacks on the extra bonus. So what’s wrong with something that runs correctly?</p>
+<p>The problem here is a very general one: anytime you copy code with cut and paste, you essentially <em>double</em> your maintenance effort in the future. Think about it: because we copied the original version, if we ever have to change the way raises are given (and we probably will), we’ll have to change the code in <em>two</em> places, not one. Although this is a small and artificial example, it’s also representative of a universal issue—anytime you’re tempted to program by copying code this way, you probably want to look for a better approach.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Augmenting Methods: The Good Way"><div class="sect2" id="augmenting_methods_the_good_way">
+<h2>Augmenting Methods: The Good Way</h2>
+<p>What we really want to do here is somehow <em>augment</em> the original <code>giveRaise</code>, instead of replacing it altogether. The <em>good way</em> to do that in Python is by calling to the original version directly, with augmented arguments, like this:</p>
+<pre data-type="programlisting"><code><strong>class Manager(Person):</strong></code>
+    <code><strong>def giveRaise(self, percent, bonus=.10):
+</strong></code>        <code><strong>Person.giveRaise(self, percent + bonus)</strong>  </code>          <code><em># Good: augment original</em></code></pre>
+<p>This code leverages the fact that a class’s method can always be called either through an <em>instance</em> (the usual way, where Python sends the instance to the <code>self</code> argument automatically) or through the <em>class</em> (the less common scheme, where you must pass the instance manually). In more symbolic terms, a normal method call of this form:</p>
+<pre data-type="programlisting"><code><em>instance</em></code>.<code><em>method</em></code>(<code><em>args</em></code>…)</pre>
+<p>is automatically translated by Python into this equivalent form:</p>
+<pre data-type="programlisting"><code><em>class</em></code>.<code><em>method</em></code>(<code><em>instance</em></code>, <code><em>args</em></code>…)</pre>
+<p>where the class containing the method to be run is determined by the inheritance search rule applied to the method’s name. You can code <em>either</em> form in your script, but there is a slight asymmetry between the two—you must remember to pass along the instance manually if you call through the class directly.</p>
+<p>The method always needs a subject instance one way or another, and Python provides it automatically only for calls made through an instance. For calls through the class name, you need to send an instance to <code>self</code> yourself; and for code inside a method like <code>giveRaise</code>, <code>self</code> already <em>is</em> the subject of the call, and hence the instance to pass along.</p>
+<p>Calling through the class directly effectively subverts inheritance and kicks the call higher up the class tree to <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="inheritance" data-tertiary="subverting" id="id3819"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="subverting" id="id3820"></a>run a specific version. In our case, we can use this technique to invoke the default <code>giveRaise</code> in <code>Person</code>, even though it’s been redefined at the <code>Manager</code> level. In fact, we <em>must</em> call through <code>Person</code> this way, because a <code>self.giveRaise()</code> inside <code>Manager</code>’s <code>giveRaise</code> code would loop—since <code>self</code> already is a <code>Manager</code>, <code>self.giveRaise()</code> would resolve again to <code>Manager</code>’s <code>giveRaise</code>, and so on, <em>recursively</em>, until available memory is exhausted.</p>
+<p>Call syntax aside, this “good” version may seem like a small difference in code, but it can make a huge difference for future <em>code maintenance</em>—because the <code>giveRaise</code> logic lives in just one place now (<span class="keep-together"><code>Person</code>’s</span> method), we have only one version to change in the future as needs evolve. And really, this form captures our intent more directly anyhow—we want to perform the standard <code>giveRaise</code> operation, but simply tack on an extra bonus. <a data-type="xref" href="#example_twoeight_ninedot_person_ninedot">Example 28-9</a> lists our entire module file with this step applied.</p>
+<div data-type="example" id="example_twoeight_ninedot_person_ninedot">
+<h5><span class="label">Example 28-9. </span>person_9.py (add method customization in a subclass)</h5>
+<pre data-type="programlisting">class Person:
+    def __init__(self, name, job=None, pay=0):
+        self.name = name
+        self.job  = job
+        self.pay  = pay
+    def lastName(self):
+        return self.name.split()[-1]
+    def giveRaise(self, percent):
+        self.pay = int(self.pay * (1 + percent))
+    def __repr__(self):
+        return f'[Person: {self.name} ${self.pay:,}]'
+
+<code><strong>class Manager(Person):
+    def giveRaise(self, percent, bonus=.10):</strong></code>           <code><em># Redefine at this level</em></code>
+        <code><strong>Person.giveRaise(self, percent + bonus)</strong></code>        <code><em># Call Person's version</em></code>
+
+if __name__ == '__main__':
+    bob = Person('Bob Smith')
+    sue = Person('Sue Jones', job='dev', pay=100000)
+    print(bob)
+    print(sue)
+    print(bob.lastName(), sue.lastName())
+    sue.giveRaise(.10)
+    print(sue)
+    <code><strong>pat = Manager('Pat Jones', 'mgr', 50000)</strong></code>           <code><em># Make a Manager: __init__</em></code>
+    <code><strong>pat.giveRaise(.10)</strong></code>                                 <code><em># Runs custom version</em></code>
+    <code><strong>print(pat.lastName())</strong></code>                              <code><em># Runs inherited method</em></code>
+    <code><strong>print(pat)</strong></code>                                         <code><em># Runs inherited __repr__</em></code></pre>
+</div>
+<p>To test our <code>Manager</code> subclass customization, we’ve also added self-test code that makes a <code>Manager</code>, calls its methods, and prints it. When we make a <code>Manager</code>, we pass in a name, and an optional job and pay as before—because <code>Manager</code> had no <code>__init__</code> constructor, it inherits that in <code>Person</code>. Here’s the new version’s output:</p>
+<pre data-type="programlisting">[Person: Bob Smith $0]
+[Person: Sue Jones $100,000]
+Smith Jones
+[Person: Sue Jones $110,000]
+Jones
+[Person: Pat Jones $60,000]</pre>
+<p>Everything looks good here: <code>bob</code> and <code>sue</code> are as before, and when <code>pat</code> the <code>Manager</code> is given a 10% raise, he or she really gets 20% (pay goes from $50K to $60K), because the customized <code>giveRaise</code> in <code>Manager</code> is run for this person only. Also notice how printing <code>pat</code> as a whole at the end of the test code displays the nice format defined in <code>Person</code>’s <code>__repr__</code>: <code>Manager</code> objects get <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP" data-tertiary="subclassing" data-startref="clpsbc" id="id3821"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="classes" data-tertiary="subclassing" data-startref="opocbcs" id="id3822"></a><a contenteditable="false" data-type="indexterm" data-primary="subclassing" data-secondary="methods" data-startref="subcthd" id="id3823"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="subclasses" data-startref="mthdbcl" id="id3824"></a>this, <code>lastName</code>, and the <code>__init__</code> constructor method’s code “for free” from <code>Person</code>, by inheritance.</p>
+<aside data-type="sidebar" epub:type="sidebar"><div class="sidebar" id="the_super_alternative">
+<h1>The super Alternative</h1>
+<p>To extend inherited methods, the examples in <a contenteditable="false" data-type="indexterm" data-primary="super built-in function" id="id3825"></a><a contenteditable="false" data-type="indexterm" data-primary="built-in functions" data-secondary="super" id="id3826"></a>this chapter simply call the original through the superclass name: <code>Person.giveRaise(…)</code>. This is the explicit, traditional, and simplest scheme in Python, and the one used in most of this book. It also follows the same pattern we’ll code to access <em>class attributes</em>: names attached to a class and shared by all instances, introduced ahead. Methods are just callable class attributes.</p>
+<p>Java programmers may especially be interested to know that Python also has a <code>super</code> built-in function that allows calling back to a superclass’s methods more generically. In the custom <code>giveRaise</code> of <a data-type="xref" href="#example_twoeight_ninedot_person_ninedot">Example 28-9</a>’s <code>Manager</code> class, both of the following would work the same way:</p>
+<pre data-type="programlisting">Person.giveRaise(self, percent + bonus)     <code><em># Explicit, general use</em></code>
+super().giveRaise(percent + bonus)          <code><em># Implicit, special case</em></code></pre>
+<p>The <code>super</code> built-in, however, relies on unusual semantics; works unevenly with Python’s operator overloading; and does not always mesh well with multiple inheritance, where a single method call may not suffice. It’s a special-case tool with a single role, which is redundant with general class-name references.</p>
+<p>In its defense, the <code>super</code> call has a valid role too—cooperative same-named method dispatch in multiple inheritance trees—but this relies on the “MRO” class ordering of <a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a>, which many find artificial; requires universal deployment to be used reliably; does not fully support method replacement and varying argument lists; and to many observers seems an esoteric solution to a role that is rare in real Python code.</p>
+<p>Because of these downsides, this book prefers to call superclasses by explicit name instead of <code>super</code>, recommends the same policy for newcomers, and defers presenting <code>super</code> until <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>. You’re of course free to draw your own conclusions there, but <code>super</code> is usually best had after you learn the simpler and more explicit ways of achieving the same goals in Python, especially if you’re new to OOP. Topics like cooperative multiple-inheritance dispatch are a lot to digest—for beginners and experts alike.</p>
+<p>And to any Java programmers in the audience: try resisting the temptation to use Python’s <code>super</code> until you’ve had a chance to study its subtle implications. This call is benign in single-inheritance of the sort you’re used to, but once you step up to Python’s multiple <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP" data-tertiary="methods, augmenting" data-startref="clspmgm" id="id3827"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="classes" data-tertiary="methods, augmenting" data-startref="pojcgua" id="id3828"></a>inheritance, <code>super</code> is not what you think it is, and more than you probably expect. The class it picks can vary per context, and may not even be a superclass at all!</p>
+</div></aside>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Polymorphism in Action"><div class="sect2" id="polymorphism_in_action">
+<h2>Polymorphism in Action</h2>
+<p>To make this acquisition of inherited behavior <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP" data-tertiary="polymorphism" id="clspplyp"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="polymorphism" id="opopyrp"></a><a contenteditable="false" data-type="indexterm" data-primary="polymorphism" id="plymphs2"></a><a contenteditable="false" data-type="indexterm" data-primary="subclassing" data-secondary="polymorphism" id="subclplyph"></a>even more striking, add the following code at the end of our file temporarily (this is file <em>person_9_plus.py</em> in the examples package, but doesn’t warrant a full listing or caption here):</p>
+<pre data-type="programlisting">if __name__ == '__main__':
+    …
+    <code><strong>print('--All three--')
+    for obj in (bob, sue, pat):</strong></code>               <code><em># Process objects generically</em></code>
+        <code><strong>obj.giveRaise(.10)</strong></code>                    <code><em># Run this object's giveRaise
+</em></code>        <code><strong>print(obj)</strong></code>                            <code><em># Run the common __repr__</em></code></pre>
+<p>Here’s the resulting output, showing just its new parts (and the accumulated effects of two raises per person):</p>
+<pre data-type="programlisting">…
+<code><strong>--All three--</strong></code>
+<code><strong>[Person: Bob Smith $0]</strong></code>
+<code><strong>[Person: Sue Jones $121,000]</strong></code>
+<code><strong>[Person: Pat Jones $72,000]</strong></code></pre>
+<p>In the added code, <code>object</code> is <em>either</em> a <code>Person</code> or a <code>Manager</code>, and Python runs the appropriate <code>giveRaise</code> automatically—our original version in <code>Person</code> for <code>bob</code> and <code>sue</code>, and our customized version in <code>Manager</code> for <code>pat</code>. Trace the method calls yourself to see how Python selects the right <code>giveRaise</code> method for each object.</p>
+<p>This is just Python’s notion of <em>polymorphism</em>, which we met earlier in the book, at work again—what <code>giveRaise</code> does depends on what you do it to. Here, it’s made all the more obvious when it selects from code we’ve written ourselves in classes. The practical effect in this code is that <code>sue</code> gets another 10% but <code>pat</code> gets another 20% because <code>giveRaise</code> is dispatched based on the object’s type. As we’ve seen, polymorphism is at the heart of Python’s flexibility. Passing any of our three objects to a function that calls a <code>giveRaise</code> method, for example, would have the same effect: the appropriate version would be run automatically, depending on which type of object was passed.</p>
+<p>On the other hand, printing runs the <em>same</em> <code>__repr__</code> for all three objects, because it’s coded just once in <code>Person</code>. <code>Manager</code> both specializes and applies the code we originally wrote in <code>Person</code>. Although this example is small, it’s already leveraging OOP’s talent for code customization and reuse; with <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP" data-tertiary="polymorphism" data-startref="clspplyp" id="id3829"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="polymorphism" data-startref="opopyrp" id="id3830"></a><a contenteditable="false" data-type="indexterm" data-primary="polymorphism" data-startref="plymphs2" id="id3831"></a><a contenteditable="false" data-type="indexterm" data-primary="subclassing" data-secondary="polymorphism" data-startref="subclplyph" id="id3832"></a>classes, this almost seems automatic at times.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Inherit, Customize, and Extend"><div class="sect2" id="inheritcomma_customizecomma_and_extend">
+<h2>Inherit, Customize, and Extend</h2>
+<p>In fact, classes can be even more flexible than our example implies. In general, classes can <em>inherit</em>, <em>customize</em>, or <em>extend</em> existing code in <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="subclassing" id="ihrtsbc"></a><a contenteditable="false" data-type="indexterm" data-primary="subclassing" data-secondary="inheritance" id="sbclssih"></a><a contenteditable="false" data-type="indexterm" data-primary="subclassing" data-secondary="extending code" id="sbsxtdc"></a>superclasses. For example, although we’re focused on customization here, we can also add unique methods to <code>Manager</code> that are not present in <code>Person</code>, if <code>Manager</code>s require something different. The following abstract snippet illustrates. Here, <code>giveRaise</code> redefines a superclass’s method to customize it, but <code>someThingElse</code> defines something new to extend:</p>
+<pre data-type="programlisting">class Person:
+    def lastName(self): …
+    def giveRaise(self): …
+    def __repr__(self): …
+
+class Manager(Person):                 <code><em># Inherit</em></code>
+    def giveRaise(self, …): …          <code><em># Customize</em></code>
+    def someThingElse(self, …): …      <code><em># Extend</em></code>
+
+pat = Manager()
+pat.lastName()           <code><em># Inherited verbatim</em></code>
+pat.giveRaise()          <code><em># Customized version</em></code>
+pat.someThingElse()      <code><em># Extension here</em></code>
+print(pat)               <code><em># Inherited overload method</em></code></pre>
+<p>Extra methods like this code’s <code>someThingElse</code> augment the existing software and are available on <code>Manager</code> objects only, not on <code>Person</code>s. For the purposes of this tutorial, however, we’ll limit our scope to customizing some of <code>Person</code>’s behavior by redefining it, not adding to it.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="OOP: The Big Idea"><div class="sect2" id="oop_the_big_idea">
+<h2>OOP: The Big Idea</h2>
+<p>As is, our code may be small, but it’s fairly functional. And really, it already illustrates the main point behind OOP in general: in OOP, we program by <em>customizing</em> what has already been done, rather than copying or changing existing code. This isn’t always an obvious win to newcomers at first glance, especially given the extra coding requirements of classes. But overall, the programming style implied by classes can cut development time radically compared to other approaches.</p>
+<p>For instance, in our example we could theoretically have implemented a custom <code>giveRaise</code> operation without subclassing, but none of the other options yield code as optimal as ours:</p>
+<ul>
+<li><p>Although we could have simply coded <code>Manager</code> <em>from scratch</em> as new, independent code, we would have had to reimplement all the behaviors in <code>Person</code> that are the same for <code>Manager</code>s.</p></li>
+<li><p>Although we could have simply <em>changed</em> the existing <code>Person</code> class in place for the requirements of <code>Manager</code>’s <code>giveRaise</code>, doing so would break code that still needs the original <code>Person</code> behavior.</p></li>
+<li><p>Although we could have simply <em>copied</em> the <code>Person</code> class in its entirety, renamed the copy to <code>Manager</code>, and changed its <code>giveRaise</code>, doing so would introduce code redundancy that would double our work in the future—changes made to <code>Person</code> in the future would not be picked up automatically, but would have to be manually propagated to <code>Manager</code>’s code. As usual, the cut-and-paste approach may seem quick now, but it doubles your work in the future.</p></li>
+</ul>
+<p>The <em>customizable hierarchies</em> we can build with classes provide a much better solution for software that <a contenteditable="false" data-type="indexterm" data-primary="subclassing" data-secondary="hierarchies" id="id3833"></a><a contenteditable="false" data-type="indexterm" data-primary="hierarchies, subclassing" id="id3834"></a>will evolve over time. No other tools in Python support this development mode. Because we can tailor and extend our prior work by coding new subclasses, we can leverage what we’ve already done, rather than starting anew each time, breaking what already works, or introducing multiple redundant copies. When done right, OOP is a powerful ally.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Step 5: Customizing Constructors, Too"><div class="sect1" id="step_five_customizing_constructorscomma">
+<h1>Step 5: Customizing Constructors, Too</h1>
+<p>Our code works as it is, but if you study the current version closely, you may be struck by something a <a contenteditable="false" data-type="indexterm" data-primary="constructors" data-secondary="customizing" id="csttcz"></a>bit odd—it seems pointless to have to provide a <code>mgr</code> job name for <code>Manager</code> objects when we create them: this is already implied by the class itself. It would be better if we could somehow fill in this value automatically when a <code>Manager</code> is made.</p>
+<p>The trick we need to improve on this turns out to be the <em>same</em> as the one we employed in the prior section: we want to customize the constructor logic for <code>Manager</code>s in such a way as to provide a job name automatically. In terms of code, we want to redefine an <code>__init__</code> method in <code>Manager</code> that provides the <code>mgr</code> string for us. And as in <code>giveRaise</code> customization, we also want to run the original <code>__init__</code> in <code>Person</code> by calling through the class name, so it still initializes our objects’ state information attributes.</p>
+<p>The mods in <a data-type="xref" href="#example_twoeight_onezerodot_person_onez">Example 28-10</a> will do the job—we’ve coded the new <code>Manager</code> constructor and changed the call that creates <code>pat</code> to not pass in the <code>mgr</code> job name.</p>
+<div data-type="example" id="example_twoeight_onezerodot_person_onez">
+<h5><span class="label">Example 28-10. </span>person_10.py (add constructor customization in a subclass)</h5>
+<pre data-type="programlisting">class Person:
+    def __init__(self, name, job=None, pay=0):
+        self.name = name
+        self.job  = job
+        self.pay  = pay
+    def lastName(self):
+        return self.name.split()[-1]
+    def giveRaise(self, percent):
+        self.pay = int(self.pay * (1 + percent))
+    def __repr__(self):
+        return f'[Person: {self.name} ${self.pay:,}]'
+
+class Manager(Person):
+    <code><strong>def __init__(self, name, pay):</strong></code>                     <code><em># Redefine constructor</em></code>
+        <code><strong>Person.__init__(self, name, 'mgr', pay)</strong></code>        <code><em># Run original with 'mgr'</em></code>
+    def giveRaise(self, percent, bonus=.10):
+        Person.giveRaise(self, percent + bonus)
+
+if __name__ == '__main__':
+    bob = Person('Bob Smith')
+    sue = Person('Sue Jones', job='dev', pay=100000)
+    print(bob)
+    print(sue)
+    print(bob.lastName(), sue.lastName())
+    sue.giveRaise(.10)
+    print(sue)
+    <code><strong>pat = Manager('Pat Jones', 50000)</strong></code>                   <code><em># Job name set by class</em></code>
+    pat.giveRaise(.10)
+    print(pat.lastName())
+    print(pat)</pre>
+</div>
+<p>Again, we’re using the same technique to augment the <code>__init__</code> constructor <a contenteditable="false" data-type="indexterm" data-primary="constructors" data-secondary="superclasses" id="id3835"></a><a contenteditable="false" data-type="indexterm" data-primary="superclasses" data-secondary="constructors" id="id3836"></a>here that we used for <span class="keep-together"><code>giveRaise</code></span> earlier—running the superclass version by calling through the class name directly and passing the <code>self</code> instance along explicitly. Although the constructor has a strange name, the effect is identical. Because we need <code>Person</code>’s construction logic to run too (to initialize instance attributes), we really have to call it this way; otherwise, instances would not have any attributes attached.</p>
+<p>Calling superclass constructors from redefinitions this way turns out to be a very common coding pattern in Python. By itself, Python uses inheritance to look for and call only <em>one</em> <code>__init__</code> method at construction time—the <em>lowest</em> one in the class tree. If you need higher <code>__init__</code> methods to be run at construction time (and you usually do), you must call them manually, and usually through the superclass’s name. The upside to this is that you can be explicit about which argument to pass up to the superclass’s constructor and can choose to <em>not</em> call it at all: not calling the superclass constructor allows you to replace its logic altogether, rather than augmenting it.</p>
+<p>The output of this file’s self-test code is the same as before—we haven’t changed what this example does, we’ve simply restructured it to get rid of some logical redundancy:</p>
+<pre data-type="programlisting">$ <code><strong>python3 person_10.py</strong></code>
+[Person: Bob Smith $0]
+[Person: Sue Jones $100,000]
+Smith Jones
+[Person: Sue Jones $110,000]
+Jones
+[Person: Pat Jones $60,000]</pre>
+<p>Per the sidebar <a data-type="xref" href="#the_super_alternative">“The super Alternative”</a>, an implicit <code>super().__init__(…)</code> sans <code>self</code> would run the superclass constructor too, and this is a common role for this built-in in single-inheritance class trees. For all the reasons noted earlier, though, let’s <a contenteditable="false" data-type="indexterm" data-primary="constructors" data-secondary="customizing" data-startref="csttcz" id="id3837"></a>stick to the explicit and general for now.</p>
+<section data-type="sect2" data-pdf-bookmark="OOP Is Simpler Than You May Think"><div class="sect2" id="oop_is_simpler_than_you_may_think">
+<h2>OOP Is Simpler Than You May Think</h2>
+<p>In this complete form, and despite their relatively small sizes, our classes capture nearly all the important concepts in Python’s OOP machinery:</p>
+<ul>
+<li><p>Instance creation—filling out instance attributes</p></li>
+<li><p>Behavior methods—encapsulating logic in a class’s methods</p></li>
+<li><p>Operator overloading—providing behavior for built-in operations like printing</p></li>
+<li><p>Customizing behavior—redefining methods in subclasses to specialize them</p></li>
+<li><p>Customizing constructors—adding initialization logic to superclass steps</p></li>
+</ul>
+<p>Most of these concepts are based upon just three simple ideas: the inheritance search for attributes in object trees, the special <code>self</code> argument in methods, and operator overloading’s automatic dispatch to methods.</p>
+<p>Along the way, we’ve also made our code easy to change in the future, by harnessing the class’s propensity for factoring code to reduce <em>redundancy</em>. For example, we wrapped up logic in methods and called back to superclass methods from extensions to avoid having multiple copies of the same code. Most of these steps were a natural outgrowth of the structuring power of classes.</p>
+<p>By and large, that’s all there is to OOP in Python. Classes certainly can become larger than this, and there are some more advanced class concepts, such as decorators and metaclasses, which we will explore in later chapters. In terms of the basics, though, our classes already do it all. In fact, if you’ve grasped the workings of the classes we’ve written, most OOP Python code should now be within your reach.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Other Ways to Combine Classes: Composites"><div class="sect2" id="other_ways_to_combine_classes_composite">
+<h2>Other Ways to Combine Classes: Composites</h2>
+<p>Having said that, it should be noted that although the basic mechanics of OOP are simple in Python, some of the art <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="composites" id="clcmps"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="composites" id="ihtcpm"></a>in larger programs lies in the way that classes are put together. We’re focusing on <em>inheritance</em> in this tutorial because that’s the mechanism the Python language provides, but programmers sometimes combine classes in other ways, too.</p>
+<p>For example, a common coding pattern <a contenteditable="false" data-type="indexterm" data-primary="composites" data-secondary="nesting" id="id3838"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="composites" id="id3839"></a>involves nesting objects inside each other to build up <em>composites</em>. We’ll explore this pattern in more detail in <a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a>, which is really more about design than about Python. As a quick example, though, we could use this composition idea to code our <code>Manager</code> extension by <em>embedding</em> a <code>Person</code>, instead of inheriting from it.</p>
+<p>The alternative <code>Manager</code> in <a data-type="xref" href="#example_twoeight_oneonedot_person_compo">Example 28-11</a> does so in part by using the <code>__getattr__</code> operator-overloading method to intercept undefined attribute fetches, and the <code>getattr</code> built-in to <em>delegate</em> them to the embedded object:</p>
+<ul>
+<li><p>The <code>__getattr__</code> method isn’t <a contenteditable="false" data-type="indexterm" data-primary="__getattr__ method" data-primary-sortas="getattr method" id="id3840"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="__getattr__" data-secondary-sortas="getattr" id="id3841"></a>covered in full until <a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a>, but its usage is simple enough to employ here—it’s automatically run for all fetches of undefined attributes (those not found in the instance by normal inheritance search). And yes, this is the same name used for the nonclass module-attributes hook of <a data-type="xref" href="ch25.html#module_odds_and_ends">Chapter 25</a>.</p></li>
+<li><p>The <code>getattr</code> call was introduced in <a data-type="xref" href="ch25.html#module_odds_and_ends">Chapter 25</a>—it’s the same as <code><em>X</em>.<em>Y</em></code> attribute fetch notation and thus performs inheritance, but the attribute name <code><em>Y</em></code> is evaluated to yield a string, not a name interpreted literally.</p></li>
+</ul>
+<p>More specifically here, the constructor makes the embedded object with job name; <code>giveRaise</code> customizes by changing the argument passed along to the embedded object; and <code>lastName</code> triggers <code>__getattr__</code> to reroute to the embedded object. In effect, <code>Manager</code> becomes a controller layer that passes calls <em>down</em> to the embedded object, rather than <em>up</em> to superclass methods.</p>
+<div data-type="example" id="example_twoeight_oneonedot_person_compo">
+<h5><span class="label">Example 28-11. </span>person-composite.py (embedding-based Manager alternative)</h5>
+<pre data-type="programlisting">from person_10 import Person                        <code><em># Example 28-10's Person</em></code>
+
+class Manager:
+    def __init__(self, name, pay):
+        self.person = Person(name, 'mgr', pay)      <code><em># Embed a Person object</em></code>
+
+    def giveRaise(self, percent, bonus=.10):
+        self.person.giveRaise(percent + bonus)      <code><em># Intercept and delegate</em></code>
+
+    def __getattr__(self, attr):
+        return getattr(self.person, attr)           <code><em># Delegate all other attrs</em></code>
+
+    def __repr__(self):
+        return str(self.person)                    <code> <em># Must overload again per ahead
+</em></code>
+if __name__ == '__main__':
+    pat = Manager('Pat Jones', 50000)               <code><em># Embed a Person
+</em></code>    pat.giveRaise(.10)                              <code><em># Run Manager.giveRaise</em></code>
+    print(pat.lastName())                           <code><em># Delegate to embedded
+</em></code>    print(pat)                                      <code><em># Run Manager.__repr__</em></code></pre>
+</div>
+<p>The output of this version tests just its <code>Manager</code> class (the imported <a data-type="xref" href="#example_twoeight_onezerodot_person_onez">Example 28-10</a> tests its own code). As before, a 10% raise is munged to 20% by the custom <code>giveRaise</code> here, but other calls are handled by the embedded <code>Person</code>, by either direct calls or generic attribute rerouting:</p>
+<pre data-type="programlisting">$ <code><strong>python3 person-composite.py</strong></code>
+Jones
+[Person: Pat Jones $60,000]</pre>
+<p>The more important point here is that <a contenteditable="false" data-type="indexterm" data-primary="delegation" id="id3842"></a><a contenteditable="false" data-type="indexterm" data-primary="composites" data-secondary="delegation" id="id3843"></a>this <code>Manager</code> alternative is representative of a general coding pattern usually known as <em>delegation</em>—a composite-based structure that manages a wrapped object and propagates method calls to it.</p>
+<p>This pattern works in our example, but it requires about twice as much code and is less well suited than inheritance to the kinds of direct customizations we meant to express. In fact, reasonable Python programmers would almost certainly not code this example this way in practice. <code>Manager</code> isn’t really a <code>Person</code> here, so we need extra code to manually dispatch method calls to the embedded object; operator-overloading methods like <code>__repr__</code> must be redefined for reasons explained in the sidebar <a data-type="xref" href="#delegating_built_insem_dashor_not">“Delegating Built-ins—or Not”</a>; and adding new <code>Manager</code> behavior is less straightforward since state information is one level removed.</p>
+<p>Still, <em>object embedding</em>, and design patterns based upon it, can be a good fit when embedded objects <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="embedding" id="id3844"></a><a contenteditable="false" data-type="indexterm" data-primary="embedding" data-secondary="embedded objects" id="id3845"></a>require more limited interaction with the container than direct customization implies. A controller layer, or <em>proxy</em>, like this alternative <code>Manager</code>, for example, might come in handy if we want to adapt a class to an expected interface it does not support, or trace or validate calls to another object’s methods (indeed, we will use a nearly identical coding pattern when we study <em>class decorators</em> later in the book).</p>
+<p class="pagebreak-before">Moreover, a <code>Department</code> class <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="aggregation" id="id3846"></a><a contenteditable="false" data-type="indexterm" data-primary="aggregation" data-secondary="object" id="id3847"></a>prototype like that in <a data-type="xref" href="#example_twoeight_onetwodot_person_depar">Example 28-12</a> could <em>aggregate</em> other objects in order to treat them as a set.</p>
+<div data-type="example" id="example_twoeight_onetwodot_person_depar">
+<h5><span class="label">Example 28-12. </span>person-department.py (aggregate embedded objects into a composite)</h5>
+<pre data-type="programlisting">from person_10 import Person, Manager           <code><em># Example 28-10's classes</em></code>
+
+class Department:
+    def __init__(self, *args):
+        self.members = list(args)               <code><em># Manage an objects list</em></code>
+
+    def addMember(self, person):
+        self.members.append(person)
+
+    def giveRaises(self, percent):              <code><em># Apply methods to all objects</em></code>
+        for person in self.members:
+            person.giveRaise(percent)
+
+    def showAll(self):                          <code><em># Display all nested objects</em></code>
+        for person in self.members:
+            print(person)
+
+if __name__ == '__main__':
+    bob = Person('Bob Smith')
+    sue = Person('Sue Jones', job='dev', pay=100000)
+    pat = Manager('Pat Jones', 50000)
+
+    development = Department(bob, sue)          <code><em># Embed objects in a composite</em></code>
+    development.addMember(pat)
+    development.giveRaises(.10)                 <code><em># Runs embedded objects' giveRaise</em></code>
+    development.showAll()                       <code><em># Runs embedded objects' __repr__</em></code></pre>
+</div>
+<p>When run, the department’s <code>showAll</code> method lists all of its contained objects after updating their state in true polymorphic fashion with <code>giveRaises</code>:</p>
+<pre data-type="programlisting">$ <code><strong>python3 person-department.py</strong></code>
+[Person: Bob Smith $0]
+[Person: Sue Jones $110,000]
+[Person: Pat Jones $60,000]</pre>
+<p>Interestingly, this code uses both inheritance <em>and</em> composition—<code>Department</code> is a composite that embeds and controls other objects to aggregate, but the embedded <code>Person</code> and <code>Manager</code> objects themselves use inheritance to customize. As another example, a GUI might similarly use <em>inheritance</em> to customize the behavior or appearance of labels and buttons, but also <em>composition</em> to build up larger packages of embedded widgets, such as input forms, calculators, and text editors. The class structure to use depends on the objects you are trying to model—in fact, the ability to model real-world entities this way is one of OOP’s strengths.</p>
+<p>Design issues like composition are explored in <a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a>, so we’ll postpone further investigations for now. But again, in terms of the basic mechanics of OOP in Python, our <code>Person</code> and <code>Manager</code> classes already tell the entire story. Now that you’ve mastered the basics of OOP, though, developing general tools for applying it more easily in your scripts is often a natural next step—and the topic of the next section.</p>
+<aside data-type="sidebar" epub:type="sidebar"><div class="sidebar" id="delegating_built_insem_dashor_not">
+<h1>Delegating Built-ins—or Not</h1>
+<p>Notice how the delegation-based <code>Manager</code> class of <a data-type="xref" href="#example_twoeight_oneonedot_person_compo">Example 28-11</a> redefines the <code>__repr__</code> run by <code>print</code>, instead of allowing it to be <a contenteditable="false" data-type="indexterm" data-primary="built-in operations" data-secondary="delegating" id="id3848"></a>caught by <code>__getattr__</code> like other attributes. In general, classes cannot intercept and delegate operator-overloading method attributes used by <em>built-in operations</em> without redefining them this way. Although we know that <code>__repr__</code> is the only such name used in our specific example, this is a broader issue for delegation-based classes.</p>
+<p>Recall that built-in operations like printing and addition implicitly invoke operator-overloading methods such as <code>__repr__</code> and <code>__add__</code>. Built-in operations like these, however, do <em>not</em> route their implicit attribute fetches through generic attribute managers: neither <code>__getattr__</code> (run for undefined attributes, and used here) nor <code>__getattribute__</code> (run for all attributes, and covered later) is invoked. Moreover, the implicit <code>object</code> superclass at the top of all class trees defines defaults that can preclude <code>__getattr__</code> too.</p>
+<p>Hence, <code>Manager</code> must redefine <code>__repr__</code> redundantly, in order to route printing to the embedded <code>Person</code> object. Comment out this class’s <code>__repr__</code> method to see this live—the <code>Manager</code> instance then prints with a default instead of our custom display, because <code>__getattr__</code> is never run for printing:</p>
+<pre data-type="programlisting">$ <code><strong>python3 person-composite.py</strong></code>
+Jones
+&lt;__main__.Manager object at 0x10a292c30&gt;</pre>
+<p>Technically, built-in operations begin their implicit search for method names at the <em>class</em>, skipping the instance entirely. By contrast, explicit by-name attribute fetches are always routed to the <em>instance</em> first. Classes also inherit a default <code>__repr__</code> from their automatic <code>object</code> superclass that would prevent <code>__getattr__</code> from running too, but the more absolute <code>__getattribute__</code> doesn’t intercept the name either, and other methods <em>not</em> in <code>object</code> also won’t be caught by <code>__getattr__</code>, like <code>__add__</code> for <code>+</code>.</p>
+<p>This was a mod in Python 3.X, but isn’t a showstopper: delegation-based classes can still redefine operator-overloading methods to delegate them to wrapped objects, either manually or via tools or <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="composites" data-startref="clcmps" id="id3849"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="composites" data-startref="ihtcpm" id="id3850"></a>superclasses. It’s also too advanced to explore further in this tutorial, but watch for it to crop up in <a data-type="xref" href="ch38.html#managed_attributes">Chapter 38</a>, be solved in <a data-type="xref" href="ch39.html#decorators">Chapter 39</a>, and make a cameo appearance as a special case in the formal inheritance definition of <a data-type="xref" href="ch40.html#metaclasses_and_inheritance">Chapter 40</a>.</p>
+</div></aside>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Step 6: Using Introspection Tools"><div class="sect1" id="step_six_using_introspection_tools">
+<h1>Step 6: Using Introspection Tools</h1>
+<p>Let’s make one final tweak before we throw our objects onto a database. As they are, our classes are complete and demonstrate <a contenteditable="false" data-type="indexterm" data-primary="introspection tools" id="id3851"></a>most of the basics of OOP in Python. They still have two remaining issues we probably should iron out, though, before we go live with them:</p>
+<ul>
+<li><p>First, if you look at the display of the objects as they are right now, you’ll notice that when you print <code>pat</code> the <code>Manager</code>, the display labels it as a <code>Person</code>. That’s not technically incorrect, since <span class="keep-together"><code>Manager</code></span> is a kind of customized and specialized <code>Person</code>. Still, it would be more accurate to display an object with the most specific (that is, <em>lowest</em>) class possible: the one an object is made from.</p></li>
+<li><p>Second, and perhaps more importantly, the current display format shows <em>only</em> the attributes we include in our <code>__repr__</code>, and that might not account for future goals. For example, we can’t yet verify that <code>pat</code>’s job name has been set to <code>mgr</code> correctly by <code>Manager</code>’s constructor, because the <code>__repr__</code> we coded for <code>Person</code> does not print this field. Worse, if we ever expand or otherwise change the set of attributes assigned to our objects in <code>__init__</code>, we’ll have to remember to also update <code>__repr__</code> for new names to be displayed, or it will become out of sync over time.</p></li>
+</ul>
+<p>The last point means that, yet again, we’ve made potential extra work for ourselves in the future by introducing <em>redundancy</em> in our code. Because any disparity in <code>__repr__</code> will be reflected in the program’s output, this redundancy may be more obvious than the other forms we addressed earlier; still, avoiding extra work in the future is a generally good thing.</p>
+<section data-type="sect2" data-pdf-bookmark="Special Class Attributes"><div class="sect2" id="special_class_attributes">
+<h2>Special Class Attributes</h2>
+<p>We can address both issues with Python’s <em>introspection tools</em>—special attributes and functions that <a contenteditable="false" data-type="indexterm" data-primary="introspection tools" data-secondary="class attributes" id="ispclttb"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="introspection tools" id="atbtpt"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="attributes" data-tertiary="introspection tools" id="clttbspt"></a>give us access to some of the internals of objects’ implementations. These tools are somewhat advanced and generally used more by people writing tools for other programmers to use than by programmers developing applications. Even so, a basic knowledge of some of these tools is useful because they allow us to write code that processes classes in generic ways. In our code, for example, there are two hooks that can help us out, both of which were introduced near the end of the preceding chapter and used in earlier examples:</p>
+<ul>
+<li><p>The built-in <code><em>instance</em>.__class__</code> attribute provides a link from an instance to the class from which it was created. Classes in turn have a <code>__name__</code>, just like modules, and a <code>__bases__</code> sequence that provides access to superclasses. We can use these here to print the name of the class from which an instance is made rather than one we’ve hardcoded.<a contenteditable="false" data-type="indexterm" data-primary="__bases__ attribute" data-primary-sortas="bases attribute" id="id3852"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="__bases__ attribute" data-secondary-sortas="bases attribute" id="id3853"></a><a contenteditable="false" data-type="indexterm" data-primary="__class__ attribute" data-primary-sortas="class attribute" id="id3854"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="__class__ attribute" data-secondary-sortas="class attribute" id="id3855"></a></p></li>
+<li><p>The built-in <code><em>object</em>.__dict__</code> attribute provides a dictionary with one key/value pair for every attribute attached to a namespace object (including modules, classes, and instances). Because it is a dictionary, we can fetch its keys list, index by key, iterate over its keys, and so on, to process all attributes generically. We can use this here to print every attribute in any instance, not just those we hardcode in custom displays, much as we did in <a data-type="xref" href="ch25.html#module_odds_and_ends">Chapter 25</a>’s module tools.</p></li>
+</ul>
+<p>We met the first of these categories in the prior chapter, but here’s a quick review at Python’s interactive prompt with the latest versions of our <em>person.py</em> classes (<a data-type="xref" href="#example_twoeight_onezerodot_person_onez">Example 28-10</a>). Notice how we load <code>Person</code> at the interactive prompt with a <code>from</code> statement here—class names live in and are imported from modules, exactly like function names and other variables:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from person import Person
+</strong></code>&gt;&gt;&gt;<code> <strong>pat = Person('Pat Jones')
+</strong></code>&gt;&gt;&gt;<code> <strong>pat</strong></code>                                        <code><em># Run pat's __repr__</em></code>
+[Person: Pat Jones $0] 
+
+&gt;&gt;&gt; <code><strong>pat.__class__</strong></code>                              <code><em># Show pat's class and its name</em></code>
+&lt;class 'person.Person'&gt;
+&gt;&gt;&gt; <code><strong>pat.__class__.__name__</strong></code>
+'Person'
+
+&gt;&gt;&gt; <code><strong>list(pat.__dict__.keys())</strong></code>                  <code><em># Attributes are dict keys</em></code>
+['name', 'job', 'pay']
+
+&gt;&gt;&gt; <code><strong>for key in pat.__dict__:
+        print(key, '=&gt;', pat.__dict__[key])</strong></code>    <code><em># Index manually: no inheritance</em></code>
+
+name =&gt; Pat Jones
+job =&gt; None
+pay =&gt; 0
+
+&gt;&gt;&gt; <code><strong>for key in pat.__dict__:</strong></code>                   <code><em># obj.attr, but attr is a string</em></code>
+<code> <strong>       print(key, '=&gt;', getattr(pat, key))</strong></code>    <code><em># Runs attr inheritance
+</em></code>
+…<code><em>same as prior output</em></code>…</pre>
+<p>As noted briefly in the prior chapter, some attributes accessible from an instance might not be stored in the <code>__dict__</code> dictionary if the instance’s class defines a <code>__slots__</code>: an optional and relatively obscure feature of classes that stores attributes sequentially in the instance; may preclude an instance <code>__dict__</code> altogether; and which we won’t study in full until <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>. Since slots really belong to classes instead of instances, and since they are rarely used in any event, we can reasonably ignore them here and focus on the normal <code>__dict__</code>.</p>
+<p>As we do, though, keep in mind that some programs may need to catch exceptions for a missing <code>__dict__</code>, or use built-in functions like <code>hasattr</code>, <code>getattr</code>, and <code>dir</code> if its users might deploy slots. As you’ll learn in <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>, the next section’s code won’t fail if used by a class with slots (its lack of them is enough to guarantee a <code>__dict__</code>) but slots—and other “virtual” attributes—won’t be <a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="introspection tools" data-startref="atbtpt" id="id3856"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="attributes" data-tertiary="introspection tools" data-startref="clttbspt" id="id3857"></a>reported as instance data.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="A Generic Display Tool"><div class="sect2" id="a_generic_display_tool">
+<h2>A Generic Display Tool</h2>
+<p>We can put these interfaces to work in a superclass that displays accurate class names and formats all <a contenteditable="false" data-type="indexterm" data-primary="introspection tools" data-secondary="display tools" id="ipsdpt"></a>attributes of an instance of any class. This superclass is coded in <a data-type="xref" href="#example_twoeight_onethreedot_classtools">Example 28-13</a>—it’s a new, independent module named <em>classtools.py</em>. Because its <code>__repr__</code> display overload uses generic introspection tools, it will work on <em>any instance</em>, regardless of the instance’s attributes set. And because this is a class, it automatically becomes a general formatting tool: thanks to inheritance, it can be mixed into <em>any class</em> that wishes to use its display format.</p>
+<p>As an added bonus, if we ever want to <em>change</em> how instances are displayed we need only change this class—every class that inherits its <code>__repr__</code> will automatically pick up the new format when next used by a program.</p>
+<div data-type="example" id="example_twoeight_onethreedot_classtools">
+<h5><span class="label">Example 28-13. </span>classtools.py (new)</h5>
+<pre data-type="programlisting">"Assorted class utilities and tools"
+
+class AttrDisplay:
+    """
+    Provides an inheritable display overload method that shows
+    instances with their class names and a name=value pair for
+    each attribute stored on the instance itself (but not attrs
+    inherited from its classes). Can be mixed into any class,
+    and will work on any instance.
+    """
+    def gatherAttrs(self):
+        attrs = []
+        for key in sorted(self.__dict__):
+            attrs.append(f'{key}={getattr(self, key)}')
+        return ', '.join(attrs)
+
+    def __repr__(self):
+        return f'[{self.__class__.__name__}: {self.gatherAttrs()}]'
+
+
+if __name__ == '__main__':
+
+    class TopTest(AttrDisplay):
+        count = 0
+        def __init__(self):
+            self.attr1 = TopTest.count
+            self.attr2 = TopTest.count+1
+            TopTest.count += 2
+
+    class SubTest(TopTest):
+        pass
+
+    X, Y = TopTest(), SubTest()      <code><em># Make two instances</em></code>
+    print(X)                         <code><em># Show all instance attrs</em></code>
+    print(Y)                         <code><em># Show lowest class name</em></code></pre>
+</div>
+<p>Notice the docstrings here—because this is a general-purpose tool, we want to add some functional documentation for potential users to read. As we saw in <a data-type="xref" href="ch15.html#the_documentation_interlude">Chapter 15</a>, docstrings can be placed at the top of simple functions and modules, and also at the start of classes and any of their methods; the <code>help</code> function and the PyDoc tool extract and display these automatically. We’ll revisit docstrings for classes in <a data-type="xref" href="ch29.html#class_coding_details">Chapter 29</a>.</p>
+<p>When run directly, this module’s self-test makes two instances and prints them; the <code>__repr__</code> defined here shows the instance’s class, and all its attributes’ names and values, in sorted attribute name order:</p>
+<pre data-type="programlisting">$ <code><strong>python3 classtools.py</strong></code>
+[TopTest: attr1=0, attr2=1]
+[SubTest: attr1=2, attr2=3]</pre>
+<p>Another design note here: because this class uses <code>__repr__</code> instead of <code>__str__</code> its displays are used in all contexts, but its clients also won’t have the option of providing an alternative low-level display—they can still add a <code>__str__</code>, but this applies to <code>print</code> and <code>str</code> only. In a more general tool, using <code>__str__</code> instead limits a display’s scope, but leaves clients the option of adding a <code>__repr__</code> for a secondary display at interactive prompts and nested appearances. We’ll follow this alternative policy when we code expanded versions of this <a contenteditable="false" data-type="indexterm" data-primary="introspection tools" data-secondary="display tools" data-startref="ipsdpt" id="id3858"></a>class in <a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a>; for this demo, we’ll stick with the all-inclusive <code>__repr__</code>.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Instance Versus Class Attributes"><div class="sect2" id="instance_versus_class_attributes">
+<h2>Instance Versus Class Attributes</h2>
+<p>If you study the <code>classtools</code> module’s self-test code long enough, you’ll notice that its class <a contenteditable="false" data-type="indexterm" data-primary="introspection tools" data-secondary="instance attributes" id="ipstb"></a><a contenteditable="false" data-type="indexterm" data-primary="instances" data-secondary="attributes" id="sttbu"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="instances" id="attstc"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="classes" id="ttbclss"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="attributes" id="clsttbrt"></a>displays only <em>instance attributes</em>, attached to the <code>self</code> object at the bottom of the inheritance tree; that’s what <code>self</code>’s <code>__dict__</code> contains. As an intended consequence, we don’t see attributes inherited by the instance from classes above it in the tree.</p>
+<p>For example, the attribute <code>TopTest.count</code> used as an instance counter in this file’s self-test code is a <em>class attribute</em> that lives only on the class: it’s assigned in the class block like methods, and referenced in methods by explicit class name—much like explicit calls to customized class methods. It’s also inherited by instances, but inherited class attributes are attached to the class only, not copied down to instances. There’s more on such nonmethod class attributes in the next chapter; the main point here is that <code>count</code> won’t be displayed by <code>AttrDisplay</code>.</p>
+<p>If you ever do wish to include inherited attributes too, you can climb the <code>__class__</code> link to the instance’s class, use the <code>__dict__</code> there to fetch class attributes, and then iterate through the class’s <code>__bases__</code> attribute to climb to even higher superclasses, repeating as necessary. If you’re a fan of simple code, running a built-in <code>dir</code> call on the instance instead of using <code>__dict__</code> and climbing would have much the same effect, since <code>dir</code> results include inherited names in sorted results lists (along with built-in <code>__<em>X</em>__</code> methods that are easy to filter out as usual):</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>from person_10 import Person</strong></code>
+&gt;&gt;&gt; <code><strong>pat = Person('Pat Jones')</strong></code>
+
+&gt;&gt;&gt; <code><strong>list(pat.__dict__)</strong></code>
+['name', 'job', 'pay']
+
+&gt;&gt;&gt; <code><strong>[a for a in dir(pat) if not a.startswith('__')]</strong></code>
+['giveRaise', 'job', 'lastName', 'name', 'pay']</pre>
+<p>In the interest of space, we’ll leave optional display of inherited class attributes with either tree climbs or <code>dir</code> as suggested experiments for now. For more hints on this front, though, watch <a contenteditable="false" data-type="indexterm" data-primary="introspection tools" data-secondary="instance attributes" data-startref="ipstb" id="id3859"></a><a contenteditable="false" data-type="indexterm" data-primary="introspection tools" data-secondary="class attributes" data-startref="ispclttb" id="id3860"></a><a contenteditable="false" data-type="indexterm" data-primary="instances" data-secondary="attributes" data-startref="sttbu" id="id3861"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="instances" data-startref="attstc" id="id3862"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="classes" data-startref="ttbclss" id="id3863"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="attributes" data-startref="clsttbrt" id="id3864"></a>for the <em>classtree.py</em> inheritance-tree climber we will write in <a data-type="xref" href="ch29.html#class_coding_details">Chapter 29</a>, and the <em>lister.py</em> attribute listers and climbers we’ll code in <a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a>.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Name Considerations in Tool Classes"><div class="sect2" id="name_considerations_in_tool_classes">
+<h2>Name Considerations in Tool Classes</h2>
+<p>One last subtlety here: because our <code>AttrDisplay</code> class in the <code>classtools</code> module is a <a contenteditable="false" data-type="indexterm" data-primary="introspection tools" data-secondary="tool classes" id="id3865"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="classtools" id="id3866"></a><a contenteditable="false" data-type="indexterm" data-primary="name collisions, tool classes" id="id3867"></a>general tool designed to be mixed into other arbitrary classes, we have to be aware of the potential for unintended <em>name collisions</em> with client classes. As is, the code assumes that client subclasses may want to use both its <code>__repr__</code> and <code>gatherAttrs</code>, but the latter of these may be more than a subclass expects—if a subclass innocently defines a <code>gatherAttrs</code> name of its own, it will likely break our class, because the lower version in the subclass will be used instead of ours.</p>
+<p>To see this for yourself, add a <code>gatherAttrs</code> to <code>TopTest</code> in the file’s self-test code; unless the new method is identical, or intentionally customizes the original, our tool class will no longer work as planned—<code>self.gatherAttrs</code> within <code>AttrDisplay</code> searches anew from the <code>TopTest</code> instance:</p>
+<pre data-type="programlisting">    class TopTest(AttrDisplay):
+        …
+        def gatherAttrs(self):         <code><em># Replaces method in AttrDisplay!</em></code>
+            return 'Oops'</pre>
+<p>This isn’t necessarily bad—sometimes we want other methods to be available to subclasses, either for direct calls or for customization this way. If we really meant to provide a <code>__repr__</code> only, though, this is less than ideal.</p>
+<p>To minimize the chances of name collisions like this, Python programmers often prefix methods not meant for external use with a <em>single underscore</em>: <code>_gatherAttrs</code> in our case. This isn’t foolproof (what if another class defines its own “private” <code>_gatherAttrs</code>, too?), but it’s usually sufficient, and it’s a common Python naming convention for methods internal to a class.</p>
+<p>A better solution would be to use <em>two underscores</em> at the front of the method name only: <code>__gatherAttrs</code> for us. Python automatically expands such names to include the enclosing class’s name, which makes them truly unique when looked up by the inheritance search. This is a feature usually called <em><span class="keep-together">pseudoprivate</span> class attributes</em>, which we’ll expand on in <a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a> and deploy in an expanded version of this class there. For now, we’ll make both our methods available.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Our Classes’ Final Form"><div class="sect2" id="our_classesapostrophe_final_form">
+<h2>Our Classes’ Final Form</h2>
+<p>Now, to use the preceding section’s generic display tool in our classes, all we need to do is import it from its module, mix it in by inheritance in our top-level class, and get rid of the more specific <code>__repr__</code> we coded before. The new display overload method will be inherited by instances of <code>Person</code>, as well as <code>Manager</code>; <code>Manager</code> gets <code>__repr__</code> from <code>Person</code>, which now obtains it from the <code>AttrDisplay</code> coded in another module. <a data-type="xref" href="#example_twoeight_onefourdot_person_onef">Example 28-14</a> codes the final version of our <em>person.py</em> file with these changes applied, and imports and uses the separate <a data-type="xref" href="#example_twoeight_onethreedot_classtools">Example 28-13</a>.</p>
+<div data-type="example" id="example_twoeight_onefourdot_person_onef">
+<h5><span class="label">Example 28-14. </span>person_14.py (final)</h5>
+<pre data-type="programlisting">"""
+Record and process information about people.
+Run this file directly to test its classes.
+"""
+from classtools import AttrDisplay                    <code><em># Use generic display tool</em></code>
+
+class Person(AttrDisplay):                            <code><em># Mix in a repr at this level
+</em></code>    """
+    Create and process person records
+    """
+    def __init__(self, name, job=None, pay=0):
+        self.name = name
+        self.job  = job
+        self.pay  = pay
+
+    def lastName(self):                               <code><em># Assumes last is last</em></code>
+        return self.name.split()[-1]
+
+    def giveRaise(self, percent):                     <code><em># Percent must be 0..1
+</em></code>        self.pay = int(self.pay * (1 + percent))
+
+class Manager(Person):
+    """
+    A customized Person with special requirements
+    """
+    def __init__(self, name, pay):
+        Person.__init__(self, name, 'mgr', pay)       <code><em># Job name is implied</em></code>
+
+    def giveRaise(self, percent, bonus=.10):
+        Person.giveRaise(self, percent + bonus)
+
+if __name__ == '__main__':
+    bob = Person('Bob Smith')
+    sue = Person('Sue Jones', job='dev', pay=100000)
+    print(bob)
+    print(sue)
+    print(bob.lastName(), sue.lastName())
+    sue.giveRaise(.10)
+    print(sue)
+    pat = Manager('Pat Jones', 50000)
+    pat.giveRaise(.10)
+    print(pat.lastName())
+    print(pat)</pre>
+</div>
+<p>As this is the final revision, we’ve added a few <em>comments</em> here to document our work—docstrings for functional descriptions and <code>#</code> for smaller notes, per best-practice conventions, as well as <em>blank lines</em> between methods for readability—a generally good style choice when classes or methods grow large, which has been resisted earlier for these small classes, in part to save space and keep the code more compact.</p>
+<p>When we run this code now, we see all the attributes of our objects, not just the ones we hardcoded in the original <code>__repr__</code>. And our final issue is resolved: because <code>AttrDisplay</code> takes class names off the <code>self</code> instance directly, each object is shown with the name of its closest (lowest) class—<code>pat</code> displays as a <code>Manager</code> now, not a <code>Person</code>, and we can finally verify that job name is correctly filled in by the <code>Manager</code> constructor:</p>
+<pre data-type="programlisting">$ <code><strong>python3 person_14.py</strong></code>
+[Person: job=None, name=Bob Smith, pay=0]
+[Person: job=dev, name=Sue Jones, pay=100000]
+Smith Jones
+[Person: job=dev, name=Sue Jones, pay=110000]
+Jones
+[Manager: job=mgr, name=Pat Jones, pay=60000]</pre>
+<p>This is the more useful display we were after. From a larger perspective, though, our attribute display class has become a <em>general tool</em>, which we can mix into any class by inheritance to leverage the display format it defines. Further, all its clients will automatically pick up future changes in our tool. Later in the book, we’ll explore even more powerful class tool concepts, such as decorators and metaclasses; along with Python’s many introspection tools, they allow us to write code that augments and manages classes in structured and maintainable ways.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Step 7 (Final): Storing Objects in a Database"><div class="sect1" id="step_seven_left_parenthesisfinalright_p">
+<h1>Step 7 (Final): Storing Objects in a Database</h1>
+<p>At this point, our work is almost complete. We now have a <em>two-module system</em> that not only <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="databases, storage in" id="id3868"></a><a contenteditable="false" data-type="indexterm" data-primary="databases" data-secondary="object storage" id="id3869"></a>implements our original design goals for representing people but also provides a general attribute display tool we can use in other programs in the future. By coding functions and classes in module files, we’ve ensured that they naturally support reuse. And by coding our software as classes, we’ve ensured that it naturally supports extension.</p>
+<p>Although our classes work as planned, though, the objects they create are not real database records. That is, if we kill Python or our program, our instances will disappear—they’re transient objects in memory and are not stored in a more permanent medium like a file, so they won’t be available in future program runs. It turns out that it’s easy to make instance objects more permanent, with a Python feature called <em>object persistence</em>—making objects live on after the program that creates them exits. As a final step in this tutorial, let’s make our objects permanent.</p>
+<section data-type="sect2" data-pdf-bookmark="Pickles and Shelves"><div class="sect2" id="pickles_and_shelves">
+<h2>Pickles and Shelves</h2>
+<p>Object persistence is implemented by <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="databases, storage in" data-tertiary="pickle module" id="id3870"></a><a contenteditable="false" data-type="indexterm" data-primary="databases" data-secondary="object storage" data-tertiary="pickle module" id="id3871"></a><a contenteditable="false" data-type="indexterm" data-primary="pickle module" id="id3872"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="pickle" id="id3873"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="databases, storage in" data-tertiary="shelve module" id="id3874"></a><a contenteditable="false" data-type="indexterm" data-primary="databases" data-secondary="object storage" data-tertiary="shelve module" id="id3875"></a><a contenteditable="false" data-type="indexterm" data-primary="shelve module" id="id3876"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="shelve" id="id3877"></a>three standard-library modules, installed with Python itself:</p>
+<dl>
+<dt><code>pickle</code></dt>
+<dd>Serializes arbitrary Python objects to and from a string of bytes</dd>
+<dt><code>dbm</code></dt>
+<dd>Implements an access-by-key filesystem for storing strings</dd>
+<dt><code>shelve</code></dt>
+<dd>Uses the other two modules to store Python objects on a file by key</dd>
+</dl>
+<p>We used <code>pickle</code> and noted <code>shelve</code> briefly in <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a> when we studied file basics. They provide simple yet useful data-storage options. Although we can’t do them complete justice in this tutorial or book, they are straightforward enough that a brief introduction should suffice to get you started.</p>
+<section data-type="sect3" data-pdf-bookmark="The pickle module"><div class="sect3" id="the_pickle_module">
+<h3>The pickle module</h3>
+<p>The <code>pickle</code> module is a general formatting and deformatting tool: given a nearly arbitrary Python <em>object</em> in memory, it converts the object to a string of bytes, which it can use later to reconstruct the original object in memory. The <code>pickle</code> module can handle most Python objects—including lists, dictionaries, nested combinations thereof, and class instances. The latter are especially useful things to pickle because they provide both data (attributes) and behavior (methods); the combination is roughly equivalent to “records” and “programs.”</p>
+<p>Because <code>pickle</code> is so general, it can replace extra code you might otherwise write to create and parse custom text-file representations for your objects. By storing an object’s pickle string on a file, you effectively make it persistent: simply load and unpickle it later to re-create the original object.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="The shelve module"><div class="sect3" id="the_shelve_module">
+<h3>The shelve module</h3>
+<p>Although it’s easy to use <code>pickle</code> by itself to store objects in simple flat files and load them from <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="databases, storage in" data-tertiary="shelve module" id="id3878"></a><a contenteditable="false" data-type="indexterm" data-primary="databases" data-secondary="object storage" data-tertiary="shelve module" id="id3879"></a><a contenteditable="false" data-type="indexterm" data-primary="shelve module" id="id3880"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="shelve" id="id3881"></a>there later, the <code>shelve</code> module provides an extra layer of structure that allows you to store pickled objects by <em>key</em>. <code>shelve</code> translates an object to its pickled string with <code>pickle</code> and stores that string under a key in a <code>dbm</code> file; when later loading, <code>shelve</code> fetches the pickled string by key and re-creates the original object in memory with <code>pickle</code>. To your script a shelf of pickled objects looks like a <em>dictionary</em>—you index by key to fetch, assign to keys to store, and use dictionary tools such as <code>len</code>, <code>in</code>, and <code>dict.keys</code> to get information. Shelves automatically map most dictionary operations to pickled objects stored in a file.<sup><a data-type="noteref" id="ch28fn2-marker" href="ch28.html#ch28fn2">2</a></sup></p>
+<p>In fact, to your script, the main coding difference between shelves and normal dictionaries is that you must <em>open</em> shelves initially and must <em>close</em> them after making changes. The net effect is that <code>shelve</code> provides a simple database for storing and fetching native Python objects by keys, and thus makes them persistent across program runs. It does not support query tools such as SQL (but Python’s <code>sqlite3</code> standard-library module does) and does not have some advanced features found in enterprise-level databases such as true transaction processing (but other Python database tools do). It does, however, store native Python objects that may be processed with the full power of the Python language once they are fetched back by key.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Storing Objects on a shelve Database"><div class="sect2" id="storing_objects_on_a_shelve_database">
+<h2>Storing Objects on a shelve Database</h2>
+<p>Pickles and shelves are somewhat advanced topics, and we won’t go into all their details here; you can read more <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="databases, storage in" data-tertiary="shelve database" id="jcdgvb"></a><a contenteditable="false" data-type="indexterm" data-primary="databases" data-secondary="object storage" data-tertiary="shelve database" id="dbjgvd"></a><a contenteditable="false" data-type="indexterm" data-primary="shelve module" data-secondary="object storage" id="shvmdu"></a>about them in the standard-library manuals. This is all simpler in code than narrative, though, so let’s jump right in.</p>
+<p>First up is a new script to store objects of our classes on a shelf. Since this is a new file, we’ll need to import our classes in order to make instances to store. We used <code>from</code> to load a class earlier, but as noted in the prior chapter, there are two ways to get a class from a file (class names are variables like any other, and not at all magic in this context). As an abstract refresher:</p>
+<pre data-type="programlisting">import person                                    <code><em># Load class with import</em></code>
+bob = person.Person(…)                           <code><em># Go through module name</em></code>
+
+from person import Person                        <code><em># Load class with from</em></code>
+bob = Person(…)                                  <code><em># Use name directly</em></code></pre>
+<p>We’ll use <code>from</code> to load in our script, just because it’s less to type. To also keep this simple, we’ll duplicate some of the self-test lines from <em>person.py</em> that make instances of our classes, so we have something to store (we won’t fret over the test-code redundancy in this simple demo). Once we have some instances, it’s almost trivial to store them on a shelf. We simply import the <code>shelve</code> module, open a new shelf with an external filename, assign the objects to keys in the shelf, and close the shelf when we’re done because we’ve made changes—all per <a data-type="xref" href="#example_twoeight_onefivedot_makedbdotpy">Example 28-15</a>.</p>
+<div data-type="example" id="example_twoeight_onefivedot_makedbdotpy">
+<h5><span class="label">Example 28-15. </span>makedb.py (store Person objects in a shelve database)</h5>
+<pre data-type="programlisting">from person_14 import Person, Manager            <code><em># Load our classes</em></code>
+bob = Person('Bob Smith')                        <code><em># Re-create objects to be stored
+</em></code>sue = Person('Sue Jones', job='dev', pay=100000)
+pat = Manager('Pat Jones', 50000)
+
+import shelve
+db = shelve.open('persondb')                     <code><em># Filename where objects are stored</em></code>
+for obj in (bob, sue, pat):                     <code> <em># Use object's name attr as key</em></code>
+    db[obj.name] = obj                           <code><em># Store object in shelf by key</em></code>
+db.close()                                       <code><em># Close after making changes</em></code></pre>
+</div>
+<p>Notice how we assign objects to the shelf using their own names as keys. This is just for convenience; in a shelf, the <em>key</em> can be any string, including one we might create to be unique using tools such as process IDs and timestamps (available in the <code>os</code> and <code>time</code> standard-library modules). The only rule is that the keys must be strings and should be unique since we can store just one object per key—though that object can be a list, dictionary, or other object containing many objects itself.</p>
+<p>In fact, the <em>values</em> we store under keys can be Python objects of almost any sort: built-in types like strings, lists, tuples, and dictionaries, as well as user-defined class instances, and nested combinations of all of these and more. For example, the <code>name</code> and <code>job</code> attributes of our objects could be nested dictionaries and lists as in earlier incarnations in this book (though this would require a bit of redesign to the current code).</p>
+<p>That’s all there is to it—if this script has no output when run, it means it probably worked; we’re not printing anything, just creating and storing objects in a file-based database:</p>
+<pre data-type="programlisting">$ <code><strong>python3 makedb.py</strong></code></pre>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Exploring Shelves Interactively"><div class="sect2" id="exploring_shelves_interactively">
+<h2>Exploring Shelves Interactively</h2>
+<p>At this point, there are one or more files in the current directory whose names all start with <em>persondb</em>. The actual files created can vary, and just as in the built-in <code>open</code> function, the filename in <code>shelve.open()</code> is relative to the current working directory (CWD) unless it includes a directory path. Wherever they are stored, these files implement a keyed-access file that contains the pickled representation of our three Python objects. Don’t delete these files—they are your database and are what you’ll need to copy or transfer when you back up or move your storage.</p>
+<p>You can inspect the shelf’s files either from a file explorer, console shell, or Python REPL, but they are binary hash files, and most of their content makes little sense outside the context of the <code>shelve</code> module. For example, Python’s standard-library <code>glob</code> module allows us to get directory listings to verify the shelf (it’s just one file on macOS, <em>persondb.db</em>), and we can open it in binary mode to explore stored bytes:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import glob</strong></code>
+&gt;&gt;&gt; <code><strong>glob.glob('persondb*')</strong></code>
+['persondb.db']
+&gt;&gt;&gt; <code><strong>print(open('persondb.db', 'rb').read())</strong></code>
+b'\x00\x06\x15a\x00\x00\x00\x02\x00\x00\x04\xd2\x00\x00…<code><em>much more omitted</em></code>…</pre>
+<p>This content can vary, but it’s nearly impossible to decipher here, and doesn’t exactly qualify as a user-friendly database interface. To verify better, we can write another script, or poke around our shelf at the interactive prompt. Because shelves are Python objects containing Python objects, we can process them with normal Python syntax and development modes. Here, the REPL effectively becomes a <em>database client</em>:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>import shelve</strong></code>
+&gt;&gt;&gt; <code><strong>db = shelve.open('persondb')</strong> </code>                <code><em># Reopen the shelf</em></code>
+&gt;&gt;&gt; <code><strong>len(db)           </strong>  </code>                         <code><em># Three objects stored</em></code>
+3
+&gt;&gt;&gt; <code><strong>list(db.keys())   </strong>  </code>                         <code><em># keys is the index</em></code>
+['Bob Smith', 'Sue Jones', 'Pat Jones']
+
+&gt;&gt;&gt; <code><strong>pat = db['Pat Jones']</strong></code>                        <code><em># Fetch an object by key</em></code>
+&gt;&gt;&gt; <code><strong>pat.lastName()</strong></code>                               <code><em># Runs lastName from Person </em></code>                    
+'Jones'
+&gt;&gt;&gt; <code><strong>pat               </strong>  </code>                         <code><em># Runs __repr__ from AttrDisplay</em></code>
+[Manager: job=mgr, name=Pat Jones, pay=50000]
+
+&gt;&gt;&gt; <code><strong>for key in sorted(db):</strong>   </code>                    <code><em># Iterate, sort, fetch, print</em></code>
+        <code><strong>print(key, '=&gt;', db[key])</strong></code>
+ 
+Bob Smith =&gt; [Person: job=None, name=Bob Smith, pay=0]
+Pat Jones =&gt; [Manager: job=mgr, name=Pat Jones, pay=50000]
+Sue Jones =&gt; [Person: job=dev, name=Sue Jones, pay=100000]</pre>
+<p>Notice that we don’t have to import our <code>Person</code> or <code>Manager</code> classes here in order to load or use our stored objects. For example, we can call<code> pat</code>’s <code>lastName</code> method freely, and get its custom print display format automatically, even though we don’t have the <code>Person</code> class in scope here. This works because when Python pickles a class instance, it records the instance’s <code>self</code> attributes, along with the names of the class it was created from and the module where that class lives. When an instance is later fetched from the shelf and unpickled, Python automatically reimports the class by name and makes a new instance of it having the previously stored instance attributes.</p>
+<p>The upshot of this scheme is that class instances automatically acquire all their class behavior when they are loaded in the future. We have to import our classes only to make <em>new</em> instances, not to process existing ones. Although a deliberate feature, this scheme has somewhat mixed consequences:</p>
+<ul>
+<li><p>The <em>downside</em> is that classes and their module’s files must be <em>importable</em> when an instance is later loaded. That is, picklable classes must be coded at the top level of a module file that is accessible from a directory listed on the <code>sys.path</code> module search path (and shouldn’t live in the topmost script files’ module <code>__main__</code> unless they’re always in that module when used). Because of this external file requirement, some programs pickle simpler objects such as dictionaries or lists, especially if they are to be transferred across networks.</p></li>
+<li><p>The <em>upside</em> is that changes in a class’s source code file are automatically picked up when instances of the class are loaded again. There is often no need to update stored objects themselves since updating their class’s code changes their behavior.</p></li>
+</ul>
+<p>Shelves have other well-known limitations covered in Python’s library manual. For simple object storage, though, shelves <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="databases, storage in" data-tertiary="shelve database" data-startref="jcdgvb" id="id3882"></a><a contenteditable="false" data-type="indexterm" data-primary="databases" data-secondary="object storage" data-tertiary="shelve database" data-startref="dbjgvd" id="id3883"></a><a contenteditable="false" data-type="indexterm" data-primary="shelve module" data-secondary="object storage" data-startref="shvmdu" id="id3884"></a>and pickles are easy-to-use tools for personal databases, program configurations, and more.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Updating Objects on a Shelf"><div class="sect2" id="updating_objects_on_a_shelf">
+<h2>Updating Objects on a Shelf</h2>
+<p>One last script: let’s write a program <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="databases, storage in" data-tertiary="shelf object update" id="id3885"></a><a contenteditable="false" data-type="indexterm" data-primary="databases" data-secondary="object storage" data-tertiary="shelf object updates" id="id3886"></a><a contenteditable="false" data-type="indexterm" data-primary="shelve module" data-secondary="object storage" data-tertiary="updates" id="id3887"></a>that updates an instance (record) each time it runs, to show that our objects really are <em>persistent</em>—that their current values are available every time a Python program runs. The file coded in <a data-type="xref" href="#example_twoeight_onesixdot_updatedbdotp">Example 28-16</a> prints the database and gives a raise to one of our stored objects on each run. If you trace through what’s going on here, you’ll notice that we’re getting a lot of utility “for free”—printing our objects automatically employs the general <code>__repr__</code> overloading method, and we give raises by calling the <code>giveRaise</code> method we wrote earlier. This all just works for objects based on OOP’s inheritance model, even when they live in a file.</p>
+<div data-type="example" id="example_twoeight_onesixdot_updatedbdotp">
+<h5><span class="label">Example 28-16. </span>updatedb.py (modify Person object in a shelve database)</h5>
+<pre data-type="programlisting">import shelve
+db = shelve.open('persondb')               <code><em># Reopen shelf with same filename</em></code>
+
+for key in sorted(db):                     <code><em># Iterate to display database objects</em></code>
+    print(key, '\t=&gt;', db[key])            <code><em># Prints with custom format</em></code>
+
+sue = db['Sue Jones']                      <code><em># Index by key to fetch
+</em></code>sue.giveRaise(.10)                         <code><em># Update in memory using class's method
+</em></code>db['Sue Jones'] = sue                      <code><em># Assign to key to update in shelf
+</em></code>db.close()                                <code> <em># Close after making changes</em></code></pre>
+</div>
+<p>Because this script prints the database when it starts up, we have to run it at least twice to see our objects change. Here it is in action, displaying all records and increasing <code>sue</code>’s pay each time it is run (it’s a pretty good script for <code>sue</code>; something to schedule to run regularly as a <code>cron</code> job perhaps?):</p>
+<pre data-type="programlisting">$ <code><strong>python3 updatedb.py</strong></code>
+Bob Smith     =&gt; [Person: job=None, name=Bob Smith, pay=0]
+Pat Jones     =&gt; [Manager: job=mgr, name=Pat Jones, pay=50000]
+Sue Jones     =&gt; [Person: job=dev, name=Sue Jones, pay=100000]
+
+$ <code><strong>python3 updatedb.py</strong></code>
+Bob Smith     =&gt; [Person: job=None, name=Bob Smith, pay=0]
+Pat Jones     =&gt; [Manager: job=mgr, name=Pat Jones, pay=50000]
+Sue Jones     =&gt; [Person: job=dev, name=Sue Jones, pay=110000]
+
+$ <code><strong>python3 updatedb.py</strong></code>
+Bob Smith     =&gt; [Person: job=None, name=Bob Smith, pay=0]
+Pat Jones     =&gt; [Manager: job=mgr, name=Pat Jones, pay=50000]
+Sue Jones     =&gt; [Person: job=dev, name=Sue Jones, pay=121000]</pre>
+<p>Again, what we see here is a product of the <code>shelve</code> and <code>pickle</code> tools we get from Python, and of the behavior we coded in our classes ourselves. And once again, we can verify our script’s work at the interactive prompt—the shelf’s equivalent of a database client:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>import shelve
+</strong></code>&gt;&gt;&gt;<code> <strong>db = shelve.open('persondb')</strong></code>             <code><em># Reopen database</em></code>
+&gt;&gt;&gt; <code><strong>rec = db['Sue Jones']</strong></code>                    <code><em># Fetch object by key</em></code>
+&gt;&gt;&gt; <code><strong>rec</strong></code>
+<code><strong>[Person: job=dev, name=Sue Jones, pay=133100]</strong></code>
+&gt;&gt;&gt; <code><strong>rec.lastName(), rec.pay</strong></code>
+('Jones', 133100)</pre>
+<p class="pagebreak-before">For another example of object persistence in this book, watch for the sidebar <a data-type="xref" href="ch31.html#why_you_will_care_classes_and_persisten">“Why You Will Care: Classes and Persistence”</a>. It stores a somewhat larger composite object in a flat file with <code>pickle</code> instead of <code>shelve</code>, but the effect is similar. For more details and examples of pickles, see also <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a> (file basics) and <a data-type="xref" href="ch37.html#unicode_and_byte_strings">Chapter 37</a> (string tools and Unicode), as well as Python’s manuals.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Future Directions"><div class="sect1" id="future_directions">
+<h1>Future Directions</h1>
+<p>And that’s a wrap for this chapter’s tutorial. At this point, you’ve seen all the basics of Python’s OOP machinery in action, and you’ve learned ways to avoid redundancy and its associated maintenance issues in your code. You’ve built full-featured classes that do real work. As an added bonus, you’ve made them real database records by storing them in a Python shelf, so their information lives on persistently.</p>
+<p>There is much more we could explore here, of course. For example, we could extend our classes to make them more realistic, add new kinds of behavior to them, and so on. Giving a raise, for instance, should in practice verify that pay increase rates are between zero and one—an extension we’ll add when we meet decorators later in this book. You might also mutate this example into a personal contacts database, by changing the state information stored on objects, as well as the classes’ methods used to process it. We’ll leave this a suggested exercise open to your imagination.</p>
+<p>We could also expand our scope to use tools that either come with Python or are freely available in the open source world. For instance, GUIs, websites, or apps would make our database more accessible to nonprogrammers, and other database interfaces like <code>sqlite3</code> and content-representation schemes like JSON offer additional possibilities.</p>
+<p>While this chapter has hopefully sparked your interest for future exploration, such topics are of course beyond the scope of this tutorial and this book at large. If you want to explore any of them on your own, see the web, Python’s standard-library manuals, and follow-up application texts. First, though, let’s return to class fundamentals and finish up the rest of the Python core-language story.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00039">
+<h1>Chapter Summary</h1>
+<p>In this chapter, we explored all the fundamentals of Python classes and OOP in action, by building upon a simple but real example, step by step. We added constructors, methods, operator overloading, customization with subclasses, and introspection-based tools, and we met concepts such as composition, delegation, and polymorphism along the way.</p>
+<p>In the end, we took objects created by our classes and made them persistent by storing them on a <code>shelve</code> object database—a simple system for saving and retrieving native Python objects by key. While exploring class basics, we also encountered multiple ways to factor our code to reduce redundancy and minimize future maintenance costs.</p>
+<p>In the next chapters of this part of the book, we’ll resume our study of the details behind Python’s class model and investigate its application to some of the design concepts used to combine classes in larger programs. Before we move ahead, though, let’s work through this chapter’s quiz to review what we covered here. Since we’ve already done a lot of hands-on work in this chapter, we’ll close with a set of mostly theory-oriented questions designed to make you trace through some of the code and ponder some of the bigger ideas behind it.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000177">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>When we fetch a <code>Manager</code> object from the shelf and print it, where does the display format logic come from?</p></li>
+<li><p>When we fetch a <code>Person</code> object from a shelf without importing its module, how does the object know that it has a <code>giveRaise</code> method that we can call?</p></li>
+<li><p>Why is it so important to move processing into methods, instead of hardcoding it outside the class?</p></li>
+<li><p>Why is it better to customize by subclassing rather than copying the original and modifying?</p></li>
+<li><p>Why is it better to call back to a superclass method to run default actions, instead of copying and modifying its code in a subclass?</p></li>
+<li><p>Why is it better to use tools like <code>__dict__</code> that allow objects to be processed generically than to write more custom code for each type of class?</p></li>
+<li><p>In general terms, when might you choose to use object embedding and composition instead of inheritance?</p></li>
+<li><p>What would you have to change if the objects coded in this chapter used a dictionary for names and a list for jobs, as in similar examples earlier in this book?</p></li>
+<li><p>How might you modify the classes in this chapter to implement a personal contacts database in Python?</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000176">
+<h1>Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>In the final version of our classes, <code>Manager</code> ultimately inherits its <code>__repr__</code> printing method from <code>AttrDisplay</code> in the separate <code>classtools</code> module, and two levels up in the class tree. <code>Manager</code> doesn’t have one itself, so the inheritance search climbs to its <code>Person</code> superclass; because there is no <code>__repr__</code> there either, the search climbs higher and finds it in <code>AttrDisplay</code>. The class names listed in parentheses in a <code>class</code> statement’s header line provide the links to higher superclasses.</p></li>
+<li><p>Shelves (really, the <code>pickle</code> module they use) automatically relink an instance to the class it was created from when that instance is later loaded back into memory. Python reimports the class from its module internally and creates a new instance with the previously stored attributes. This way, loaded instances automatically obtain all their original methods (like <code>lastName</code>, <code>giveRaise</code>, and <code>__repr__</code>), even if we have not imported the instance’s class into the loading scope.</p></li>
+<li><p>It’s important to move processing into methods so that there is only one copy to change in the future, and so that the methods can be run on any instance. This is Python’s notion of <em>encapsulation</em>—wrapping up logic behind interfaces, to better support future code maintenance. If you don’t do so, you create code redundancy that can multiply your work effort as the code evolves in the future.</p></li>
+<li><p>Customizing with subclasses reduces development effort. In OOP, we code by <em>customizing</em> what has already been done, rather than copying or changing existing code. This is the real “big idea” in OOP—because we can easily extend our prior work by coding new subclasses, we can leverage what we’ve already done. This is much better than either starting from scratch each time, or introducing multiple redundant copies of code that may all have to be updated in the future.</p></li>
+<li><p>Copying and modifying code <em>doubles</em> your potential work effort in the future, regardless of the context. If a subclass method needs to perform default actions coded in a superclass method, it’s much better to call back to the original through the superclass’s name (or the <code>super</code> built-in) than to copy its code. This also holds true for superclass constructors. Again, copying code creates redundancy, which is a major issue as code evolves.</p></li>
+<li><p>Generic tools can avoid hardcoded solutions that must be kept in sync with the rest of the class as it evolves over time. A generic <code>__repr__</code> print method, for example, need not be updated each time a new attribute is added to instances in an <code>__init__</code> constructor. In addition, a generic <code>print</code> method inherited by all classes appears and need be modified in only one place—changes in the generic version are picked up by all classes that inherit from the generic class. Again, eliminating code <em>redundancy</em> cuts future development effort; that’s one of the primary assets classes bring to the table.</p></li>
+<li><p>Inheritance is best at coding extensions based on direct customization (like our <code>Manager</code> specialization of <code>Person</code>). Composition is well suited to scenarios where multiple objects are aggregated into a whole and directed by a controller-layer class. Inheritance passes calls <em>up</em> to reuse, and composition passes <em>down</em> to delegate. Inheritance and composition are not mutually exclusive; often, the objects embedded in a controller are themselves customizations based upon inheritance.</p></li>
+<li><p>Not much since this was really a first-cut prototype, but the <code>lastName</code> method would need to be updated for the new name format; the <code>Person</code> constructor would have to change the job default to an empty list; and the <code>Manager</code> class would probably need to pass along a job list in its constructor instead of a single string (self-test code would change as well, of course). The good news is that these changes would need to be made in just one place—in our classes, where such details are encapsulated. Apart from their object-construction calls, the database scripts should work as is, as shelves support arbitrarily nested data.</p></li>
+<li><p>The classes in this chapter could be used as boilerplate “template” code to implement a variety of types of databases. Essentially, you can repurpose them by modifying the constructors to record different attributes and providing whatever methods are appropriate for the target application. For instance, you might use attributes such as <code>name</code>, <code>address</code>, <code>birthday</code>, <code>phone</code>, <code>email</code>, and so on for a contacts database, and methods appropriate for this purpose. A method named <code>sendmail</code>, for example, might use Python’s standard-library <code>smtplib</code> module to send an email to one of the contacts automatically when run (see Python’s manuals or application-level books for more details on such tools). The <code>AttrDisplay</code> tool we wrote here could be used verbatim to print your objects because it is intentionally generic. Most of the <code>shelve</code> database code here can be used to store your objects, too, with minor changes.</p></li>
+</ol>
+</div></section>
+<div data-type="footnotes"><p data-type="footnote" id="ch28fn1"><sup><a href="ch28.html#ch28fn1-marker">1</a></sup> And no offense to any managers in the audience, of course. This joke was once delivered at a Python class in New Jersey, and nobody laughed. The organizers later revealed that the attendees were all managers evaluating Python. Hence the silence.</p><p data-type="footnote" id="ch28fn2"><sup><a href="ch28.html#ch28fn2-marker">2</a></sup> Terminology note: this book now uses the noun “shelf” for the object storage managed by module <code>shelve</code>, and its plural “shelves” for more than one “shelf” managed by <code>shelve</code>. In the past, the module’s verb name “shelve” was also confusingly used as the noun—much to the chagrin of this book’s editors over the years, both electronic and human.</p></div></div></section></div>
+</div>
+</body>
+</html>

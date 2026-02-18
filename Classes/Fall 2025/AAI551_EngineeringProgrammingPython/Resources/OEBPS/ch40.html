@@ -1,0 +1,1195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 40. Metaclasses and Inheritance"><div class="chapter" id="metaclasses_and_inheritance">
+<h1><span class="label">Chapter 40. </span>Metaclasses and Inheritance</h1>
+<p>In <a data-type="xref" href="ch39.html#decorators">Chapter 39</a>, we explored decorators and studied examples of their use. In this final technical chapter of the book, we’re going to continue our tool-builders focus with an in-depth review of another advanced topic: <em>metaclasses</em>, a protocol for managing class objects instead of their instances, introduced briefly in <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>.</p>
+<p>On a base level, metaclasses extend the code-insertion model of decorators. As we learned in the prior chapter, decorators allow us to augment functions and classes by intercepting their creation. Metaclasses similarly allow us to intercept and augment <em>class creation</em>—they provide a hook for inserting extra logic to be <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="class creation" id="id4894"></a>run at the conclusion of a <code>class</code> statement, albeit in different ways than decorators.</p>
+<p>Metaclasses can also provide behavior for classes with <em>methods</em> located in a separate inheritance <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="methods" id="id4895"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="metaclasses" id="id4896"></a>tree skipped for normal, nonclass instances. While this allows metaclasses to process their instance classes after creation, it also compounds class <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="inheritance" id="id4897"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="metaclasses" id="id4898"></a>semantics and convolutes <em>inheritance</em>—whose full definition can finally be fleshed out here.</p>
+<p>Like all the subjects covered in this part of the book, this is an <em>advanced topic</em> that can be studied on an as-needed basis. Metaclasses are not generally in scope for most application programmers but may be of interest to others seeking to write flexible tools. Whatever category you fall into, though, metaclasses can teach you more about Python’s classes and are a prerequisite to both code that employs them and the complete inheritance story in Python.</p>
+<p>As the last technical chapter of this book, this also begins to wrap up some threads concerning Python itself that we have met often along the way and will finalize in the conclusion that follows. Where you go after this book is up to you, but in an open source project, it’s important to keep the big picture in mind while hacking the small details.</p>
+<section data-type="sect1" class="pagebreak-before" data-pdf-bookmark="To Metaclass or Not to Metaclass"><div class="sect1" id="to_metaclass_or_not_to_metaclass">
+<h1 class="less_space">To Metaclass or Not to Metaclass</h1>
+<p>Despite the advanced status awarded to metaclasses <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="when to use" id="id4899"></a>in the preceding opener, they have a variety of potential roles. For example, they can be used to enhance classes with features like tracing, object persistence, exception logging, and more. They can also be used to construct portions of a class at runtime based on configuration files, apply function decorators to every method of a class generically, verify conformance to expected interfaces, and so on.</p>
+<p>In their more grandiose incarnations, metaclasses can even be used to implement alternative coding patterns such as aspect-oriented programming, object/relational mappers (ORMs) for databases, and more. Although there are often alternative ways to achieve such results—as you’ll see, the roles of class decorators and metaclasses often intersect—metaclasses provide a formal model tailored to those tasks. We don’t have space to explore all such applications first-hand in this chapter, of course, but you can find additional use cases on the web after studying the basics here.</p>
+<p>Probably the reason for studying metaclasses most relevant to this book is that this topic can help demystify Python’s class mechanics in general. For instance, you’ll find that they are an intrinsic part of the language’s inheritance model formalized in full here. Although you may or may not code or reuse them in your work, a cursory understanding of metaclasses can impart a deeper understanding of Python at large.</p>
+<section data-type="sect2" data-pdf-bookmark="The Downside of “Helper” Functions"><div class="sect2" id="the_downside_of_quotation_markhelperquo">
+<h2>The Downside of “Helper” Functions</h2>
+<p>Before we get to metaclass code, let’s get a better handle on its rationale. Like the decorators of <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="helper functions" id="fcthplfc"></a><a contenteditable="false" data-type="indexterm" data-primary="helper functions" id="hlpfctns"></a><a contenteditable="false" data-type="indexterm" data-primary="manager functions" id="id4900"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="manager functions" id="id4901"></a>the prior chapter, metaclasses are optional in principle. We can usually achieve the same effect by passing class objects through functions—known interchangeably as <em>helper</em> or <em>manager</em> functions—much as we can achieve the goals of decorators by passing functions and classes through manager code. Just like decorators, though, metaclasses:</p>
+<ul>
+<li><p>Provide a more uniform and explicit structure</p></li>
+<li><p>Help ensure that application programmers won’t forget to augment their classes according to an API’s requirements</p></li>
+<li><p>Avoid code redundancy and its associated maintenance costs by factoring class customization logic into a single location</p></li>
+</ul>
+<p>To illustrate, suppose we want to automatically insert a method into a set of classes. Of course, we could do this with simple <em>inheritance</em> if the subject method is known when we code the classes. In that case, we can simply code the method in a superclass and have all the classes in question inherit from it:</p>
+<pre data-type="programlisting">class Extras:
+    def extra(self, args):              <code><em># Normal inheritance: too static</em></code>
+        …
+
+class Client1(Extras): …                <code><em># Clients inherit extra methods
+</em></code>class Client2(Extras): …
+
+X = Client1()                           <code><em># Make an instance</em></code>
+X.extra()                               <code><em># Run the extra methods</em></code></pre>
+<p class="pagebreak-before">Sometimes, though, it’s impossible to predict such augmentation when classes are coded. Consider the case where classes are augmented in response to choices made in a user interface at runtime or loaded from an editable configuration file. Although we could code every class in our imaginary set to <span class="keep-together"><em>manually</em></span> check these, too, it’s a lot to ask of clients (the <code>required</code> function here is abstract—it’s something to be filled in):</p>
+<pre data-type="programlisting">def extra(self, arg): …
+
+class Client1: …                        <code><em># Client augments: too distributed
+</em></code>if required():
+    Client1.extra = extra
+
+class Client2: …
+if required():
+    Client2.extra = extra               <code><em># Add the extra method – maybe</em></code>
+
+X = Client1()
+X.extra()</pre>
+<p>We can add methods to a class after the <code>class</code> statement like this because, as we’ve learned, a class-level method is just a plain function that is associated with a class and has a first argument to receive a <code>self</code> instance when called through one. Although this works, it might become untenable for larger method sets and puts all the burden of augmentation on each client class (and assumes they’ll remember to do this at all).</p>
+<p>It would be better from a maintenance perspective to isolate the decision logic in a single place. We might encapsulate some of this extra work by routing classes through a <em>helper function</em>—a function that would extend the class as required and handle all the work of runtime testing and configuration:</p>
+<pre data-type="programlisting">def extra(self, arg): …
+
+def extras(Class):                      <code><em># Helper function: too manual
+</em></code>    if required():
+        Class.extra = extra
+
+class Client1: …
+extras(Client1)
+
+class Client2: …
+extras(Client2)
+
+X = Client1()
+X.extra()</pre>
+<p>This code runs the class through a helper function immediately after it is created. Although functions like this one can achieve our goal here, they still put a burden on class coders, who must understand the requirements and adhere to them in their code. It would be even better if there was a simple way to enforce the augmentation in the subject classes, so that they don’t need to deal with the augmentation <span class="keep-together">so explicitly</span> and would be less likely to forget to use it altogether. In other words, we’d like to be able to insert some code to run <em>automatically</em> at the end of a <code>class</code> statement to augment the class.</p>
+<p>This is exactly what <em>metaclasses</em> do—by declaring a metaclass, we tell Python to route the creation of the class object to another class we provide:</p>
+<pre class="pagebreak-before" data-type="programlisting">def extra(self, arg): …
+
+class Extras(type):
+    def __init__(Class, classname, superclasses, attributedict):
+        if required():
+            Class.extra = extra
+
+class Client1(metaclass=Extras): …      <code><em># Metaclass declaration only</em></code>
+class Client2(metaclass=Extras): …      <code><em># Client class is instance of meta</em></code>
+
+X = Client1()                           <code><em># X is instance of client class
+</em></code>X.extra()</pre>
+<p>Because Python invokes the metaclass automatically at the end of the <code>class</code> statement when the new class is <em>created</em>, it can augment, register, wrap, or otherwise manage the class as needed. Moreover, the only requirement for the client classes is that they <em>declare</em> their metaclass; every class that does so will automatically acquire whatever augmentation the metaclass provides, both now and in the future if the metaclass changes.</p>
+<p>Metaclasses can also augment their class instances with inherited <em>methods</em>, which are akin to normal class methods but not inherited by the instances of their class instances—an inheritance extension and tongue twister whose true nature requires more info ahead (and quite possibly, sedation). Through both changes and methods, though, metaclasses can customize class behavior broadly.</p>
+<p>Of course, this is the standard rationale, which you’ll need to judge for yourself—in truth, clients might forget to list a metaclass just as easily as they could forget to call a helper function! Still, <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="helper functions" data-startref="fcthplfc" id="id4902"></a><a contenteditable="false" data-type="indexterm" data-primary="helper functions" data-startref="hlpfctns" id="id4903"></a>the explicit nature of metaclasses may make this less likely. Although it may be difficult to glean from this small and hypothetical example, metaclasses generally handle such tasks better than more manual approaches.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Metaclasses Versus Class Decorators: Round 1"><div class="sect2" id="metaclasses_versus_class_decorators_rou">
+<h2>Metaclasses Versus Class Decorators: Round 1</h2>
+<p>Having said that, it’s also important to <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="class decorators comparison" id="mdtclcprs"></a><a contenteditable="false" data-type="indexterm" data-primary="class decorators" data-secondary="metaclasses comparison" id="cldcmtcpr"></a><a contenteditable="false" data-type="indexterm" data-primary="decorators" data-secondary="class decorators" data-tertiary="metaclasses comparison" id="drcdrmtpr"></a>note that the <em>class decorators</em> described in the preceding chapter sometimes overlap with metaclasses—in terms of both utility and benefit. Like metaclasses, class decorators can be used to manage both classes and their later instances, and their syntax makes their usage similarly explicit and arguably more obvious than helper-function calls.</p>
+<p>For example, suppose we recoded the last section’s helper function to <em>return</em> the augmented class instead of simply modifying it in place. This would allow a greater degree of flexibility because the manager would be free to return any type of object that implements the class’s expected interface:</p>
+<pre data-type="programlisting">def extra(self, arg): …
+
+def extras(Class):
+    if required():
+        Class.extra = extra
+    return Class               <code><em># Return the augmented class</em></code>
+
+class Client1: …
+Client1 = extras(Client1)      <code><em># Rebind to augmented class
+</em></code>
+class Client2: …
+Client2 = extras(Client2)
+
+X = Client1()
+X.extra()</pre>
+<p>If you think this is starting to look reminiscent of class decorators, you’re right. In the prior chapter, we emphasized class decorators’ role in augmenting <em>instance</em> creation calls. Because they work by automatically rebinding a class name to the result of a function, though, there’s no reason that we can’t use them to augment the class by changing it before any instances are ever created. That is, class decorators can apply extra logic to <em>classes</em>, not just <em>instances</em>, at class creation time:</p>
+<pre data-type="programlisting">def extra(self, arg): …
+
+def extras(Class):             <code><em># From helper to decorator</em></code>
+    if required():
+        Class.extra = extra
+    return Class
+
+@extras
+class Client1: …               <code><em># Client1 = extras(Client1)</em></code>
+
+@extras
+class Client2: …               <code><em># Rebinds class independent of instances</em></code>
+
+X = Client1()                  <code><em># Makes instance of augmented class</em></code>
+X.extra()                      <code><em># X is instance of original Client1</em></code></pre>
+<p>Decorators essentially automate the prior example’s manual name rebinding here. Just as for metaclasses, because this decorator returns the original class, instances are made from that class, not from a wrapper object. In fact, instance creation is not intercepted at all in this example.</p>
+<p>In this specific case—adding methods to a class when it’s created—the choice between metaclasses and decorators is arbitrary. Decorators can be used to manage both instances and classes and intersect most strongly with metaclasses in the second of these roles, but this discrimination is not absolute. In fact, the roles of each are suggested in part by their mechanics.</p>
+<p>As we’ll detail ahead, decorators technically correspond to metaclass <em>calls</em> used to make and initialize new classes. Metaclasses, though, have additional customization hooks beyond class creation. Their <em>methods</em> inherited by classes, for example, have no direct counterpart in class decorators sans extra code. This can make metaclasses more complex but also better suited for augmenting classes in some contexts.</p>
+<p>Conversely, because metaclasses are designed to manage classes, applying them to managing <em>instances</em> alone is less optimal. Because they are also responsible for making the class itself, metaclasses incur this as an <em>extra</em> step in instance-management roles and are perhaps less appropriate than decorators.</p>
+<p>We’ll explore some of these differences in <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="class decorators comparison" data-startref="mdtclcprs" id="id4904"></a><a contenteditable="false" data-type="indexterm" data-primary="class decorators" data-secondary="metaclasses comparison" data-startref="cldcmtcpr" id="id4905"></a><a contenteditable="false" data-type="indexterm" data-primary="decorators" data-secondary="class decorators" data-tertiary="metaclasses comparison" data-startref="drcdrmtpr" id="id4906"></a>working code later in this chapter. To better understand how metaclasses do their work, though, we first need to get a clearer picture of their underlying model.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="The Metaclass Model"><div class="sect1" id="the_metaclass_model">
+<h1>The Metaclass Model</h1>
+<p>To understand metaclasses, you first need to understand a bit more about both Python’s object model and what happens at the end of a <code>class</code> statement. As you’ll learn here, the two are intimately related.</p>
+<section data-type="sect2" data-pdf-bookmark="Classes Are Instances of type"><div class="sect2" id="classes_are_instances_of_type">
+<h2>Classes Are Instances of type</h2>
+<p>The first of these prerequisites was covered <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="types" id="mtcltype"></a><a contenteditable="false" data-type="indexterm" data-primary="types" data-secondary="metaclasses" data-tertiary="instances" id="typmcltc"></a>previously by <a data-type="xref" href="ch32.html#the_python_object_model">“The Python Object Model”</a>, which in turn assumes knowledge of the <em>MRO</em> (method resolution order) covered in <a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a>. You should review that content now if needed, especially if you’ve jumped into this chapter at random. We’re not going to repeat its coverage in full here, but some of its conclusions are crucial to understanding metaclasses. Namely:</p>
+<ul>
+<li><p>Instances are created from classes.</p></li>
+<li><p>Classes are instances of a metaclass.</p></li>
+<li><p>The <code>type</code> built-in is the topmost metaclass.</p></li>
+<li><p>Metaclasses customize <code>type</code> with normal <code>class</code> statements.</p></li>
+</ul>
+<p>In short, classes are types, types are classes, and metaclasses customize types. Per <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>, the relationship between metaclasses and classes is subtly different from that between classes and their <em>nonclass</em> instances. The latter do not generate more instances, and while attribute inheritance uses the same core mechanisms and MRO everywhere, classes search a metaclass tree that nonclass instances do not.</p>
+<p>We’ll study the nuts and bolts of inheritance ahead, but it’s easy to see this model’s fundamentals in code. Built-in objects like lists are actually nonclass instances made from a class, which itself is made from the built-in <code>type</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>type([]), type(type([]))</strong></code>         <code><em># List instance is created from list class</em></code>
+(&lt;class 'list'&gt;, &lt;class 'type'&gt;)     <code><em># List class is created from type class</em></code>
+
+&gt;&gt;&gt; <code><strong>type(list), type(type)</strong></code>           <code><em># Same, but with type names</em></code>
+(&lt;class 'type'&gt;, &lt;class 'type'&gt;)     <code><em># Type of type is type: top of hierarchy</em></code></pre>
+<p>Apart from the literal syntax of built-ins, this works the same way for user-defined classes, which are really just user-defined types—their nonclass instances are made from the class, which itself is made from the built-in <code>type</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Hack: pass</strong></code>                 <code><em># User-defined classes work the same</em></code>
+&gt;&gt;&gt; <code><strong>I = Hack()</strong> </code>                      <code><em># Made from class, which is made from type</em></code>
+
+&gt;&gt;&gt; <code><strong>type(I), type(type(I))</strong></code>
+(&lt;class '__main__.Hack'&gt;, &lt;class 'type'&gt;)</pre>
+<p>Although their behavior varies in ways we explored in <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>, both classes and nonclass instances are “instances” in some sense. In fact, the <code>__class__</code> attribute in both tells us what they were made from:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>[].__class__, list.__class__</strong></code>     <code><em># Instances and classes are both "instances"</em></code>
+(&lt;class 'list'&gt;, &lt;class 'type'&gt;)     <code><em># type(X) is normally same as X.__class__</em></code>
+
+&gt;&gt;&gt; <code><strong>I.__class__, Hack.__class__</strong></code>
+(&lt;class '__main__.Hack'&gt;, &lt;class 'type'&gt;)</pre>
+<p>Because classes are created from the root <code>type</code> class by default, most programmers don’t need to think about this model. However, it’s key to understanding the way that <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="types" data-startref="mtcltype" id="id4907"></a><a contenteditable="false" data-type="indexterm" data-primary="types" data-secondary="metaclasses" data-tertiary="instances" data-startref="typmcltc" id="id4908"></a>metaclasses work—as the next section explains.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Metaclasses Are Subclasses of type"><div class="sect2" id="metaclasses_are_subclasses_of_type">
+<h2>Metaclasses Are Subclasses of type</h2>
+<p>Why would we care that classes are instances of a <code>type</code> class? It turns out that this is the hook <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="types" data-tertiary="subclasses" id="id4909"></a><a contenteditable="false" data-type="indexterm" data-primary="types" data-secondary="metaclasses" data-tertiary="subclasses" id="typmcsbc"></a><a contenteditable="false" data-type="indexterm" data-primary="subclasses" data-secondary="metaclasses" id="id4910"></a>that allows us to code metaclasses. Specifically, we can create classes from <em>subclasses</em> of <code>type</code> that customize it with normal object-oriented techniques and class syntax. And these <code>type</code> subclasses are known as <em>metaclasses</em>.</p>
+<p>In other words, to control the way classes are created and augment their behavior, all we need to do is specify that a user-defined class be created from a user-defined metaclass instead of the normal and default <code>type</code> class.</p>
+<p>Before we see how, it’s important to bear in mind that this <em>type instance</em> relationship is not quite the same as normal <em>inheritance</em>. User-defined classes may also have <em>superclasses</em> from which they and their instances inherit attributes as usual. As we’ve seen, inheritance superclasses are listed in parentheses in the <code>class</code> statement, show up in a class’s <code>__bases__</code> tuple, and are searched for attributes fetched from nonclass instances.</p>
+<p>However, the type from which a class is created and of which it is an instance is a different relationship. Inheritance searches instance and class namespace dictionaries, but classes may also acquire behavior from their type that is not exposed to the normal inheritance search. In fact, metaclasses define a separate, <em>secondary</em> inheritance tree available only to classes and used as a fallback when the normal superclass search fails.</p>
+<p>To lay the groundwork for understanding this distinction, the next section describes the procedure and syntax <a contenteditable="false" data-type="indexterm" data-primary="types" data-secondary="metaclasses" data-tertiary="subclasses" data-startref="typmcsbc" id="id4911"></a>Python uses to implement this <em>instance-of</em> relationship.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Class Statements Call a type"><div class="sect2" id="class_statements_call_a_type">
+<h2>Class Statements Call a type</h2>
+<p>Subclassing the <code>type</code> class to customize it is really only half of the metaclass backstory. We still <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="class statements" data-tertiary="types" id="mtcttyp"></a><a contenteditable="false" data-type="indexterm" data-primary="types" data-secondary="metaclasses" data-tertiary="class statements" id="ypclctt"></a>need to somehow route a class’s creation to the metaclass instead of the default <code>type</code>. To comprehend the way that this is arranged, we also need to know how <code>class</code> statements do their business.</p>
+<p>We’ve already learned that when Python reaches a <code>class</code> statement, it runs its nested block of code to create the class’s attributes—all the names assigned at the top level of the nested code block generate attributes in the resulting class object. These names are usually method functions created by nested <code>def</code>s, but they can also be arbitrary attributes assigned to create class data shared by all instances.</p>
+<p>Technically speaking, Python follows a standard protocol to make this happen: at the <em>end</em> of a <code>class</code> statement, and after running all its nested code in a namespace dictionary corresponding to the class’s local scope, Python calls the <code>type</code> object to create the new class object like this:</p>
+<pre data-type="programlisting"><code><em>class</em></code> = type(<code><em>classname</em></code>, <code><em>superclasses</em></code>, <code><em>attributedict</em></code>)</pre>
+<p>The <code>type</code> object in turn defines a <code>__call__</code> operator-overloading method that runs two other methods when the <code>type</code> object is called:</p>
+<pre data-type="programlisting">type.__new__(<code><em>typeclass</em></code>, <code><em>classname</em></code>, <code><em>superclasses</em></code>, <code><em>attributedict</em></code>)
+type.__init__(<code><em>class</em></code>, <code><em>classname</em></code>, <code><em>superclasses</em></code>, <code><em>attributedict</em></code>)</pre>
+<p>The <code>__new__</code> method creates and returns the new <code>class</code> object, after which the <code>__init__</code> method initializes the newly created object. As you’ll see in a moment, these are the hooks that metaclass subclasses of <code>type</code> generally use to perform class customizations at creation time.</p>
+<p>For example, given a class definition like the following for <code>Hack</code>:</p>
+<pre data-type="programlisting">class Super: …                    <code><em># Inherited names here</em></code>
+
+class Hack(Super):                <code><em># Inherits from Super</em></code>
+    data = 1                      <code><em># Class data attribute</em></code>
+    def meth(self, arg):          <code><em># Class method attribute
+</em></code>        return self.data + arg</pre>
+<p>Python will internally run the nested code block to create two attributes of the class (<code>data</code> and <code>meth</code>), and then call the <code>type</code> object to generate the <code>class</code> object at the end of the <code>class</code> statement’s processing (extra names like <code>__module__</code> are added automatically from the code’s context):</p>
+<pre data-type="programlisting">Hack = type('Hack', (Super,), {'data': 1, 'meth': meth, '__module__': '__main__'})</pre>
+<p>In fact, you can call <code>type</code> this way yourself to create a class <em>dynamically</em>—albeit here with a fabricated method function and empty superclasses tuple (Python adds the <code>object</code> superclass automatically to topmost classes as we learned in <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>, and the enclosing module’s name is again implied):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>c = type('Hack', (), {'data': 1, 'meth': (lambda x, y: x.data + y)})
+</strong></code>&gt;&gt;&gt; <code><strong>i = c()
+</strong></code>&gt;&gt;&gt; <code><strong>c, i</strong></code>
+(&lt;class '__main__.Hack'&gt;, &lt;__main__.Hack object at 0x108077c20&gt;) 
+&gt;&gt;&gt; <code><strong>i.data, i.meth(2)</strong></code>
+(1, 3)</pre>
+<p>The class produced by a direct <code>type</code> call is exactly like that you’d get from running a <code>class</code> statement (again, if you’ve forgotten what some of the following are about, flip, click, or tap back to <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a> for a refresher):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>c.__bases__</strong></code>
+(&lt;class 'object'&gt;,)
+&gt;&gt;&gt; <code><strong>i.__class__.__mro__</strong></code>
+(&lt;class '__main__.Hack'&gt;, &lt;class 'object'&gt;)
+
+&gt;&gt;&gt; <code><strong>[a for a in dir(i) if not a.startswith('__')]</strong></code>
+['data', 'meth']
+
+&gt;&gt;&gt; <code><strong>[(a, v) for (a, v) in c.__dict__.items() if not a.startswith('__')]</strong></code>
+[('data', 1), ('meth', &lt;function &lt;lambda&gt; at 0x1082179c0&gt;)]</pre>
+<p>Because this <code>type</code> call is made automatically at the end of the <code>class</code> statement, though, it’s an ideal hook for augmenting or otherwise processing a class. The trick lies in replacing the default <code>type</code> with a custom subclass that will intercept this call. The next section shows how.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Class Statements Can Choose a type"><div class="sect2" id="class_statements_can_choose_a_type">
+<h2>Class Statements Can Choose a type</h2>
+<p>As we’ve just seen, classes are created by the <code>type</code> class by default. To tell Python to create a class with a custom <em>metaclass</em> instead, you simply need to declare a metaclass to intercept the normal instance creation call for a user-defined class. To do so, list the desired metaclass as a keyword argument in the <code>class</code> header:</p>
+<pre data-type="programlisting">class Hack(<code><strong>metaclass=<em>Meta</em></strong></code>):                   <code><em># Use Meta instead of type default</em></code></pre>
+<p>If no such declaration is present, the metaclass to be called defaults to the <code>type</code> built-in, per the prior section. When used, though, this declaration overrides the <code>type</code> default and routes the class creation call at the close of the <code>class</code> statement to <code><em>Meta</em></code> instead:</p>
+<pre data-type="programlisting"><code><em>class</em></code> = <code><strong><em>Meta</em></strong></code>(<code><em>classname</em></code>, <code><em>superclasses</em></code>, <code><em>attributedict</em></code>)</pre>
+<p>Importantly again, the <code>metaclass</code> keyword specifies an <em>instance-of</em> relationship, which implies inheritance only through the secondary metaclass tree we’ll formalize ahead. Normal <em>inheritance</em> superclasses can be listed in the header as well and take precedence by residing in the primary class tree. In the following, for example, the new class <code>Hack</code> inherits from superclass <code>Super</code> normally but is also an instance of—and is created by—metaclass <code>Meta</code>:</p>
+<pre data-type="programlisting">class Hack(<code><strong>Super</strong></code>, metaclass=Meta):            <code><em># Normal supers OK: listed first</em></code></pre>
+<p>In this form, superclasses must be listed before the metaclass; in effect, the ordering rules used for keyword arguments in function calls apply here too. This order also has implications for inheritance, which we’ll formalize soon, but first, we need to learn how to code the <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="class statements" data-tertiary="types" data-startref="mtcttyp" id="id4912"></a><a contenteditable="false" data-type="indexterm" data-primary="types" data-secondary="metaclasses" data-tertiary="class statements" data-startref="ypclctt" id="id4913"></a>metaclasses that tap into calls triggered by this special <code>class</code> syntax.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Metaclass Method Protocol"><div class="sect2" id="metaclass_method_protocol">
+<h2>Metaclass Method Protocol</h2>
+<p>When a specific metaclass is declared <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="method protocol" id="id4914"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="metaclasses" id="id4915"></a>per the prior sections’ syntax, the call to create the <code>class</code> object run at the end of the <code>class</code> statement is modified to invoke the <em>metaclass</em> instead of the <code>type</code> default, as we just saw:</p>
+<pre data-type="programlisting"><code><em>class</em></code> = <code><em>Meta</em></code>(<code><em>classname</em></code>, <code><em>superclasses</em></code>, <code><em>attributedict</em></code>)</pre>
+<p>Assuming the metaclass is a subclass of <code>type</code>, though, the <code>type</code> class’s inherited <code>__call__</code> method delegates creation and initialization of the new <code>class</code> object to the metaclass if the metaclass defines custom versions of the methods that handle these steps. In other words, the <code><em>Meta</em></code> call may wind up triggering these method calls in turn:</p>
+<pre data-type="programlisting"><code><em>class</em></code> =<code> <em>Meta</em></code>.__new__(<code><em>Meta</em></code>, <code><em>classname</em></code>, <code><em>superclasses</em></code>, <code><em>attributedict</em></code>)
+<code><em>Meta</em></code>.__init__(<code><em>class</em></code>, <code><em>classname</em></code>, <code><em>superclasses</em></code>, <code><em>attributedict</em></code>)</pre>
+<p>To demonstrate, here’s the preceding class example again, augmented with a metaclass specification:</p>
+<pre data-type="programlisting">class Hack(Super, metaclass=<code><strong>Meta</strong></code>):     <code><em># Inherits from Super, instance of Meta</em></code>
+    data = 1                           <code><em># Class data attribute</em></code>
+    def meth(self, arg):               <code><em># Class method attribute</em></code>
+        return self.data + arg</pre>
+<p>At the end of this <code>class</code> statement, Python internally runs the following to create the <code>class</code> object—again, a call you could make manually, too, but automatically run by Python’s <code>class</code> machinery:</p>
+<pre data-type="programlisting">Hack = <code><strong>Meta</strong></code>('Hack', (Super,), {'data': 1, 'meth': meth, '__module__': '__main__'})</pre>
+<p>If the metaclass defines its own versions of <code>__new__</code> or <code>__init__</code>, they will be invoked during this call by the inherited <code>type</code> class’s <code>__call__</code> method. The net effect is to automatically run methods the metaclass provides as part of the class-construction process. The next section shows how we might go about coding this final piece of the metaclass puzzle.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Coding Metaclasses"><div class="sect1" id="coding_metaclasses">
+<h1>Coding Metaclasses</h1>
+<p>So far, we’ve seen how Python routes class creation calls to a metaclass if one is specified and provided. How, though, do we actually <em>code</em> a metaclass that customizes <code>type</code>?</p>
+<p>It turns out that you already know most of the story—metaclasses are coded with normal Python <code>class</code> statements and semantics. By definition, they are simply classes that inherit from <code>type</code> (normally, at least). Their only substantial distinctions <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" id="id4916"></a>are that Python calls them <em>automatically</em> at the end of a <code>class</code> statement and that they must generally adhere to the <em>interface</em> expected by the <code>type</code> superclass if they subclass it.</p>
+<section data-type="sect2" data-pdf-bookmark="A Basic Metaclass"><div class="sect2" id="a_basic_metaclass">
+<h2>A Basic Metaclass</h2>
+<p>Perhaps the simplest metaclass you can code is simply a subclass of <code>type</code> with a <code>__new__</code> method that creates the class object by running the default method in <code>type</code>. A metaclass <code>__new__</code> like this is run by the <code>__call__</code> method inherited from <code>type</code> by virtue of normal inheritance overrides; this method <span class="keep-together">typically</span> performs whatever augmentation is required and calls the <code>type</code> superclass’s <code>__new__</code> method to create and return the new class object:</p>
+<pre data-type="programlisting">class Meta(type):
+    def __new__(meta, classname, supers, classdict):
+        <code><em># Run by inherited type.__call__
+</em></code>        return type.__new__(meta, classname, supers, classdict)</pre>
+<p>This metaclass doesn’t really do anything (we might as well let the default <code>type</code> create the class), but it demonstrates the way a metaclass taps into the metaclass hook to customize—because the metaclass is called at the end of a <code>class</code> statement, and because the <code>type</code> object’s <code>__call__</code> dispatches to the <code>__new__</code> and <code>__init__</code> methods, code we provide in these methods can manage all the classes created from the metaclass.</p>
+<p>To demo, <a data-type="xref" href="#example_fourzero_onedot_metaclassonedot">Example 40-1</a> is our inane metaclass again, but in more tangible form, with prints added to the metaclass and the file at large to trace the process.</p>
+<div data-type="example" id="example_fourzero_onedot_metaclassonedot">
+<h5><span class="label">Example 40-1. </span>metaclass1.py</h5>
+<pre data-type="programlisting">class MetaOne(type):
+    def __new__(meta, classname, supers, classdict):
+        print('In MetaOne.new:', meta, classname, supers, classdict, sep='\n...')
+        return type.__new__(meta, classname, supers, classdict)
+
+class Super:
+    pass
+
+print('Making class')
+class Hack(Super, metaclass=MetaOne):     <code><em># Inherits from Super, instance of MetaOne</em></code>
+    data = 1                              <code><em># Class data attribute</em></code>
+    def meth(self, arg):                  <code><em># Class method attribute</em></code>
+        return self.data + arg
+
+print('Making instance')
+X = Hack()
+print('Attrs:', X.data, X.meth(2))</pre>
+</div>
+<p>Here, class <code>Hack</code> inherits from <code>Super</code> and is an instance of <code>MetaOne</code>, but <code>X</code> is an instance of and inherits from <code>Hack</code>. When run, notice how the metaclass is invoked at the <em>end</em> of the <code>class</code> statement and before we ever make an instance of the new class—<em>metaclasses</em> process <em>classes</em>, and classes process <em>nonclass</em> instances:</p>
+<pre data-type="programlisting">$ <code><strong>python3 metaclass1.py</strong></code>
+Making class
+In MetaOne.new:
+...&lt;class '__main__.MetaOne'&gt;
+...Hack
+...(&lt;class '__main__.Super'&gt;,)
+...{'__module__': '__main__', 'data': 1, 'meth': &lt;function Hack.meth at 0x…&gt;}
+Making instance
+Attrs: 1 3</pre>
+<p>Presentation note: this chapter’s examples often truncate hex addresses and omit some irrelevant built-in <code>__<em>X</em>__</code> names in namespace dictionaries, both for brevity and because built-in attributes tend to change over time. Run these examples on your own for full, if transient, fidelity.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Customizing Construction and Initialization"><div class="sect2" id="customizing_construction_and_initializa">
+<h2>Customizing Construction and Initialization</h2>
+<p>Metaclasses can also tap into the <code>__init__</code> protocol invoked by the type object’s <code>__call__</code>. In general, <code>__new__</code> creates and returns <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="construction" id="id4917"></a><a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="inheritance" id="id4918"></a>the class object, and <code>__init__</code> initializes the already created class passed in as an argument. These methods work in <em>non-type</em> classes, too, but <code>__new__</code> is rare in such classes. Metaclasses can use either or both hooks to manage classes at creation time, as <a data-type="xref" href="#example_fourzero_twodot_metaclasstwodot">Example 40-2</a> illustrates.</p>
+<div data-type="example" id="example_fourzero_twodot_metaclasstwodot">
+<h5><span class="label">Example 40-2. </span>metaclass2.py</h5>
+<pre data-type="programlisting">class MetaTwo(type):
+    def __new__(meta, classname, supers, classdict):
+        print()
+        print('In MetaTwo.new:', meta, classname, supers, classdict, sep='\n...')
+        return type.__new__(meta, classname, supers, classdict)
+
+    def __init__(Class, classname, supers, classdict):
+        print()
+        print('In MetaTwo.init:', Class, classname, supers, classdict, sep='\n...')
+        print('...init class object:', list(Class.__dict__.keys()))
+
+class Super:
+    pass
+
+print('Making class')
+class Hack(Super, metaclass=MetaTwo):     <code><em># Inherits from Super, instance of MetaTwo
+</em></code>    data = 1                              <code><em># Class data attribute</em></code>
+    def meth(self, arg):                  <code><em># Class method attribute</em></code>
+       return self.data + arg
+
+print('\nMaking instance')
+X = Hack()
+print('Attrs:', X.data, X.meth(2))</pre>
+</div>
+<p>In this case, the class <em>initialization</em> method is run after the class <em>construction</em> method, but both methods run at the end of the <code>class</code> statement and before any nonclass instances are made. Conversely, an <code>__init__</code> in <code>Hack</code> would run later at <em>nonclass-instance</em> creation time and would not be affected or run by the metaclass’s <code>__init__</code>:</p>
+<pre data-type="programlisting">$ <code><strong>python3 metaclass2.py</strong></code>
+Making class
+In MetaTwo.new:
+...&lt;class '__main__.MetaTwo'&gt;
+...Hack
+...(&lt;class '__main__.Super'&gt;,)
+...{'__module__': '__main__', 'data': 1, 'meth': &lt;function Hack.meth at 0x…&gt;}
+
+In MetaTwo.init:
+...&lt;class '__main__.Hack'&gt;
+...Hack
+...(&lt;class '__main__.Super'&gt;,)
+...{'__module__': '__main__', 'data': 1, 'meth': &lt;function Hack.meth at 0x…&gt;}
+...init class object: ['__module__', 'data', 'meth', '__doc__']
+
+Making instance
+Attrs: 1 3</pre>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Other Metaclass Coding Techniques"><div class="sect2" id="other_metaclass_coding_techniques">
+<h2>Other Metaclass Coding Techniques</h2>
+<p>Although redefining the <code>type</code> superclass’s <code>__new__</code> and <code>__init__</code> methods is the most common way to insert logic into the class object creation process with the metaclass hook, other schemes are possible. They may not dovetail as neatly into the notion of metaclass methods we’ll study ahead, but they do support creation-time tasks.</p>
+<section data-type="sect3" data-pdf-bookmark="Using simple factory functions"><div class="sect3" id="using_simple_factory_functions">
+<h3>Using simple factory functions</h3>
+<p>For example, metaclasses need not really <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="factory functions" id="id4919"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="factory functions" id="id4920"></a><a contenteditable="false" data-type="indexterm" data-primary="factory functions" data-secondary="metaclasses" id="id4921"></a>be classes at all. As we’ve learned, the <code>class</code> statement issues a simple call to create a class at the conclusion of its processing. Because of this, <em>any callable object</em> can, in principle, be used as a metaclass, provided it accepts the arguments passed and returns an object compatible with the intended class. In fact, a simple object factory function may serve just as well as a <code>type</code> subclass, as <a data-type="xref" href="#example_fourzero_threedot_metaclassthre">Example 40-3</a> demonstrates.</p>
+<div data-type="example" id="example_fourzero_threedot_metaclassthre">
+<h5><span class="label">Example 40-3. </span>metaclass3.py</h5>
+<pre data-type="programlisting"><code><em># A simple function can serve as a metaclass too
+</em></code>
+def MetaFunc(classname, supers, classdict):
+    print('In MetaFunc:', classname, supers, classdict, sep='\n...')
+    return type(classname, supers, classdict)
+
+class Super:
+    pass
+
+print('Making class')
+class Hack(Super, metaclass=MetaFunc):           <code><em># Run simple function at end</em></code>
+    data = 1                                     <code><em># Function returns class</em></code>
+    def meth(self, arg):
+        return self.data + arg
+
+print('Making instance')
+X = Hack()
+print('Attrs:', X.data, X.meth(2))</pre>
+</div>
+<p>When run, the function is called at the end of the declaring <code>class</code> statement, and it returns the expected new class object. The function is simply catching the call that the <code>type</code> object’s <code>__call__</code> normally intercepts by default:</p>
+<pre data-type="programlisting">$ <code><strong>python3 metaclass3.py</strong></code>
+Making class
+In MetaFunc:
+...Hack
+...(&lt;class '__main__.Super'&gt;,)
+...{'__module__': '__main__', 'data': 1, 'meth': &lt;function Hack.meth at 0x…&gt;}
+Making instance
+Attrs: 1 3</pre>
+<p>Technically speaking, such a plain function used as a metaclass can return <em>anything</em>: whatever it returns is assigned to the new class’s name, whether it’s a <code>type</code> instance or not. Other kinds of results may not support later instance creation, but this blurs the distinction between metaclasses and class <span class="keep-together">decorators—both</span> rebind names in the end.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Overloading class creation calls with normal classes"><div class="sect3" id="overloading_class_creation_calls_with_n">
+<h3>Overloading class creation calls with normal classes</h3>
+<p>Because normal (a.k.a. <em>nonclass</em>) instances can respond to call operations with <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="nonclass instances" id="mtannas"></a><a contenteditable="false" data-type="indexterm" data-primary="nonclass instances" data-secondary="metaclasses" id="nnstmcl"></a>operator overloading, they can serve in some metaclass roles, too, much like the preceding function. The output of <a data-type="xref" href="#example_fourzero_fourdot_metaclassfourd">Example 40-4</a> is similar to the prior class-based versions, but it’s based on a simple class—one that doesn’t inherit from <code>type</code> at all and provides a <code>__call__</code> for its instances that catches the metaclass call using normal operator overloading.</p>
+<p>All classes are created from a metaclass, even if it’s the default <code>type</code> metaclass, but here we’re using a <em>nonclass instance</em> of a class for the “metaclass.” Note that <code>__new__</code> and <code>__init__</code> must use different names here, or else they will run when the <code>MetaObj</code> instance is <em>created</em>, not when that instance is later called in the role of metaclass after <code>Hack</code>’s <code>class</code> statement. The <code>__call__</code> here mimics part of what <code>type</code>’s method does.</p>
+<div data-type="example" id="example_fourzero_fourdot_metaclassfourd">
+<h5><span class="label">Example 40-4. </span>metaclass4.py</h5>
+<pre data-type="programlisting"><code><em># A normal class instance can serve as a metaclass too
+</em></code>
+class MetaObj:
+    def __call__(self, classname, supers, classdict):
+        print('In MetaObj.call:', classname, supers, classdict, sep='\n...')
+        Class = self.__New__(classname, supers, classdict)
+        self.__Init__(Class, classname, supers, classdict)
+        return Class
+
+    def __New__(self, classname, supers, classdict):
+        print('In MetaObj.new: ', classname, supers, classdict, sep='\n...')
+        return type(classname, supers, classdict)
+
+    def __Init__(self, Class, classname, supers, classdict):
+        print('In MetaObj.init:', classname, supers, classdict, sep='\n...')
+        print('...init class object:', list(Class.__dict__.keys()))
+
+class Super:
+    pass
+
+print('Making class')
+class Hack(Super, metaclass=MetaObj()):         <code><em># MetaObj() is normal class instance</em></code>
+    data = 1                                    <code><em># Called at end of statement</em></code>
+    def meth(self, arg):
+        return self.data + arg
+
+print('Making instance')
+X = Hack()
+print('Attrs:', X.data, X.meth(2))</pre>
+</div>
+<p>When run, the three methods are dispatched via the normal instance’s <code>__call__</code> inherited from its normal class, but without any dependence on <code>type</code> dispatch mechanics or semantics. This routing is largely about <code>class</code> alone:</p>
+<pre data-type="programlisting">$ <code><strong>python3 metaclass4.py</strong></code>
+Making class
+In MetaObj.call:
+...Hack
+...(&lt;class '__main__.Super'&gt;,)
+...{'__module__': '__main__', 'data': 1, 'meth': &lt;function Hack.meth at 0x…&gt;}
+In MetaObj.new: 
+...Hack
+...(&lt;class '__main__.Super'&gt;,)
+...{'__module__': '__main__', 'data': 1, 'meth': &lt;function Hack.meth at 0x…&gt;}
+In MetaObj.init:
+...Hack
+...(&lt;class '__main__.Super'&gt;,)
+...{'__module__': '__main__', 'data': 1, 'meth': &lt;function Hack.meth at 0x…&gt;}
+...init class object: ['__module__', 'data', 'meth', '__doc__']
+Making instance
+Attrs: 1 3</pre>
+<p>In fact, we can use normal superclass inheritance to acquire the call interceptor in this coding model—the superclass in <a data-type="xref" href="#example_fourzero_fivedot_metaclassfived">Example 40-5</a> serves essentially the same role as <code>type</code>, at least in terms of metaclass dispatch. Such code may be atypical, but it demos the underlying metaclass dispatch model.</p>
+<div data-type="example" id="example_fourzero_fivedot_metaclassfived">
+<h5><span class="label">Example 40-5. </span>metaclass5.py</h5>
+<pre data-type="programlisting"><code><em># Instances inherit from classes and their supers normally
+</em></code>
+class SuperMetaObj:
+    def __call__(self, classname, supers, classdict):
+        print('In SuperMetaObj.call:', classname, supers, classdict, sep='\n...')
+        Class = self.__New__(classname, supers, classdict)
+        self.__Init__(Class, classname, supers, classdict)
+        return Class
+
+class SubMetaObj(SuperMetaObj):
+    def __New__(self, classname, supers, classdict):
+        print('In SubMetaObj.new: ', classname, supers, classdict, sep='\n...')
+        return type(classname, supers, classdict)
+
+    def __Init__(self, Class, classname, supers, classdict):
+        print('In SubMetaObj.init:', classname, supers, classdict, sep='\n...')
+        print('...init class object:', list(Class.__dict__.keys()))
+
+class Super:
+    pass
+
+print('Making class')
+class Hack(Super, metaclass=SubMetaObj()):   <code><em># Invoke Sub instance via Super.__call__</em></code>
+   …<code><em>rest of file same as Example 40-4</em></code>…</pre>
+</div>
+<p>This example’s output is largely the same as that of its predecessor but reflects normal inheritance at work:</p>
+<pre data-type="programlisting">$ <code><strong>python3 metaclass5.py</strong></code> 
+Making class
+In SuperMetaObj.call:
+…<code><em>as before</em></code>…
+In SubMetaObj.new:
+…<code><em>as before</em></code>…
+In SubMetaObj.init:
+…<code><em>as before</em></code>…
+Making instance
+Attrs: 1 3</pre>
+<p>Although such alternative forms work, most metaclasses achieve their creation-time goals by redefining the <code>type</code> superclass’s <code>__new__</code> and <code>__init__</code>; in practice, this may be simpler than other schemes. Regardless of its coding, though, this metaclass role broadly intersects with class <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="nonclass instances" data-startref="mtannas" id="id4922"></a><a contenteditable="false" data-type="indexterm" data-primary="nonclass instances" data-secondary="metaclasses" data-startref="nnstmcl" id="id4923"></a>decorators—as the next section will demonstrate.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Managing Classes with Metaclasses and Decorators"><div class="sect2" id="managing_classes_with_metaclasses_and_d">
+<h2>Managing Classes with Metaclasses and Decorators</h2>
+<p>Now that we understand the hook metaclasses use to insert code to be run at class construction time, let’s put it to better use. In general, such code can be used to augment classes arbitrarily, and in many of the same ways as the <em>class decorators</em> of <a data-type="xref" href="ch39.html#decorators">Chapter 39</a>. This doesn’t make these two tools identical—metaclasses also support the notion of inherited methods coming up later—but they are functionally redundant in some roles.</p>
+<section data-type="sect3" data-pdf-bookmark="Adding methods to classes"><div class="sect3" id="adding_methods_to_classes">
+<h3>Adding methods to classes</h3>
+<p>To demo both this equivalence and more realistic usage, <a data-type="xref" href="#example_fourzero_sixdot_extend_metadotp">Example 40-6</a> uses metaclasses <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="methods" data-tertiary="adding" id="assthdd"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="classes" data-tertiary="adding to" id="odsclddg"></a><a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="methods" data-tertiary="adding" id="mclclthdd"></a>to augment the set of methods available in classes by <em>inserting</em> new methods at class-creation time as sketched in the abstract earlier—not the sort of thing most programmers do on a day-to-day basis, but potentially useful in tools and libraries nonetheless.</p>
+<div data-type="example" id="example_fourzero_sixdot_extend_metadotp">
+<h5><span class="label">Example 40-6. </span>extend_meta.py</h5>
+<pre data-type="programlisting"><code>"Extend a class with a metaclass"</code>
+
+def triple(obj):
+    return obj.value * 3                                  <code><em># Functions to insert</em></code>
+                                                          <code><em># Methods if in a class</em></code>
+def concat(obj):                                          <code><em># Where "obj" is "self"</em></code>
+    return obj.value + 'Code!'
+
+class Extender(type):
+    def __new__(meta, classname, supers, classdict):      <code><em># On client-class creation</em></code>
+        classdict['triple'] = triple                      <code><em># Add funcs as attributes</em></code> 
+        classdict['concat'] = concat
+        return type.__new__(meta, classname, supers, classdict)
+
+class Client1(metaclass=Extender):
+    def __init__(self, value):                            <code><em># Created from Extender</em></code>
+        self.value = value                                <code><em># Own + inserted methods</em></code>
+    def double(self):
+        return self.value * 2
+
+class Client2(metaclass=Extender):                        <code><em># Created from Extender</em></code>
+    value = 'grok'                                        <code><em># Inherited class data</em></code>
+
+X = Client1('hack')                                       
+print(X.double(), X.triple(), X.concat(), sep='\n')
+
+Y = Client2()                                             
+print(Y.triple(), Y.concat(), sep='\n')</pre>
+</div>
+<p>Recall again that class methods are simply <em>functions</em> that normally receive an instance through which they are called. The metaclass in this code leverages this to insert two functions into each of its client classes when those classes are made. The net effect provides methods and behavior for clients that do not exist in their <code>class</code> statements:</p>
+<pre class="pagebreak-before" data-type="programlisting">$ <code><strong>python3 extend_meta.py</strong></code>
+hackhack
+hackhackhack
+hackCode!
+grokgrokgrok
+grokCode!</pre>
+<p>Of course, the methods inserted here might be coded in a <em>superclass</em> and inherited by clients as usual, but the metaclass here is free to select inserted methods based on conditions tested whenever clients are built. As covered ahead, we can also <em>almost</em> do the same with metaclass <em>methods</em>, but these methods are inherited only by classes and wouldn’t work in this example; the methods inserted here are instead available to later class instances like <code>X</code> and <code>Y</code>.</p>
+<p>And while this may seem novel, it’s easy to accomplish the same result with class decorators. As we’ve learned, there are indeed some striking similarities between these tools:</p>
+<ul>
+<li><p><em>Class decorators</em> work by rebinding <a contenteditable="false" data-type="indexterm" data-primary="decorators" data-secondary="class decorators" id="id4924"></a><a contenteditable="false" data-type="indexterm" data-primary="class decorators" id="id4925"></a>class names to the result of a callable at the end of a <code>class</code> statement after the new class has been created.</p></li>
+<li><p><em>Metaclasses</em> work by <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="class statements" id="id4926"></a>routing class-object creation through a callable at the end of a <code>class</code> statement in order to create the new class.</p></li>
+</ul>
+<p>The sum makes these two tools functionally equivalent, at least in terms of class-creation dispatch. <a data-type="xref" href="#example_fourzero_sevendot_extend_decodo">Example 40-7</a> illustrates this equivalence by recoding the same augmentation with a class decorator instead of a metaclass.</p>
+<div data-type="example" id="example_fourzero_sevendot_extend_decodo">
+<h5><span class="label">Example 40-7. </span>extend_deco.py</h5>
+<pre data-type="programlisting"><code>"Extend a class with a decorator"</code>
+
+def triple(obj):
+    return obj.value * 3
+
+def concat(obj):
+    return obj.value + 'Code!'
+
+def extender(aClass):
+    aClass.triple = triple                   <code><em># Manages class, not instance</em></code>
+    aClass.concat = concat                   <code><em># Same as metaclass __call__</em></code>
+    return aClass
+
+@extender
+class Client1:                               <code><em># Client1 = Extender(Client1)</em></code>
+    def __init__(self, value):               <code><em># Rebound at end of class stmt</em></code>
+        self.value = value
+    def double(self):
+        return self.value * 2
+
+@extender
+class Client2:
+    value = 'grok'
+
+X = Client1('hack')                                       
+print(X.double(), X.triple(), X.concat(), sep='\n')
+
+Y = Client2()                                             
+print(Y.triple(), Y.concat(), sep='\n')</pre>
+</div>
+<p>When run, this class-decorator version’s output is identical to that of the metaclass variant in <a data-type="xref" href="#example_fourzero_sixdot_extend_metadotp">Example 40-6</a>. It works the same because both decorator and metaclass are called at the end of a <code>class</code> statement and return an object to which the class’s name is assigned. Decorators may be closest to the metaclass <code>__call__</code> because they are called to return an object, but like metaclass <code>__init__</code>, the class has already been built by the time a decorator runs. Metaclass <code>__call__</code> runs <code>__new__</code> and <code>__init__</code>, and metaclasses can augment in any of <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="methods" data-tertiary="adding" data-startref="assthdd" id="id4927"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="classes" data-tertiary="adding to" data-startref="odsclddg" id="id4928"></a><a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="methods" data-tertiary="adding" data-startref="mclclthdd" id="id4929"></a>these three methods.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Automatically decorating class methods"><div class="sect3" id="automatically_decorating_class_methods">
+<h3>Automatically decorating class methods</h3>
+<p>Perhaps more interesting, metaclasses <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="decorating class methods" id="tacldcmod"></a><a contenteditable="false" data-type="indexterm" data-primary="decorators" data-secondary="class methods" id="drtrclssm"></a>and decorators can both augment individual methods of classes. To demo, we’ll use the utility module in <a data-type="xref" href="#example_fourzero_eightdot_decoratorsdot">Example 40-8</a>, which resurrects the tracer and timer function decorators we coded in the prior chapter. This module is entirely review, so we’ll defer to <a data-type="xref" href="ch39.html#decorators">Chapter 39</a> for more details (and promise that this is the last mileage we’ll get from this code).</p>
+<div data-type="example" id="example_fourzero_eightdot_decoratorsdot">
+<h5><span class="label">Example 40-8. </span>decorators.py</h5>
+<pre data-type="programlisting">import time
+
+def tracer(func):                         <code><em># Use function, not class with __call__
+</em></code>    calls = 0                             <code><em># Else self is decorator instance only
+</em></code>    def onCall(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        print(f'call {calls} to {func.__name__}')
+        return func(*args, **kwargs)
+    return onCall
+
+def timer(label='', trace=True):                <code><em># On decorator args: retain args
+</em></code>    def onDecorator(func):                      <code><em># On @: retain decorated func</em></code>
+        def onCall(*args, **kargs):             <code><em># On calls: call original</em></code>
+            start   = time.perf_counter()       <code><em># State is scopes + func attribute</em></code>
+            result  = func(*args, **kargs)
+            elapsed = time.perf_counter() - start
+            onCall.alltime += elapsed
+            if trace:
+                funcname, alltime = func.__name__, onCall.alltime
+                print(f'{label}{funcname}: {elapsed:.5f}, {alltime:.5f}')
+            return result
+        onCall.alltime = 0
+        return onCall
+    return onDecorator</pre>
+</div>
+<p>As we learned in <a data-type="xref" href="ch39.html#decorators">Chapter 39</a>, to use these decorators manually, we simply import them from the module and decorate each function we wish to augment. While this suffices for one-off augmentations, it requires us to add decoration syntax before <em>each</em> method we wish to trace or time and to later remove that syntax when we no longer desire the extensions (or use the <code>-O</code> trick we’ll skip here). If we want to trace or time <em>every</em> method of a class, this can become tedious—and may not be possible at all in more dynamic contexts that depend upon runtime parameters.</p>
+<p>To do better, <a data-type="xref" href="#example_fourzero_ninedot_decoall_metado">Example 40-9</a> uses a metaclass to add a decorator to <em>each</em> of a class’s methods automatically. Because the metaclass controls decoration, it can predicate decoration on runtime checks. As a bonus, it can be used for <em>any</em> decoration: the decorator to apply to methods is passed as a top-level argument, and hence is allowed to vary per class.</p>
+<div data-type="example" id="example_fourzero_ninedot_decoall_metado">
+<h5><span class="label">Example 40-9. </span>decoall_meta.py</h5>
+<pre data-type="programlisting"><code>"Apply any decorator to all methods of a class, with a metaclass"</code>
+
+from types import FunctionType
+from decorators import tracer, timer
+
+def decorateAll(decorator):
+    class MetaDecorate(type):
+        def __new__(meta, classname, supers, classdict):
+            for attr, attrval in classdict.items():
+                if type(attrval) is FunctionType:
+                    classdict[attr] = decorator(attrval)
+            return type.__new__(meta, classname, supers, classdict)
+    return MetaDecorate
+
+class Person(metaclass=decorateAll(tracer)):       <code><em># Use a metaclass</em></code>
+    def __init__(self, name, pay):                 <code><em># Pass any function decorator</em></code>
+        self.name = name
+        self.pay  = pay
+    def giveRaise(self, percent):
+        self.pay *= (1.0 + percent)
+    def lastName(self):
+        return self.name.split()[-1]
+
+def tester(aPerson):
+    sue = aPerson('Sue Jones', 100_000)
+    bob = aPerson('Bob Smith', 50_000)
+    print(f'{sue.name=}, {bob.name=}')
+    sue.giveRaise(.10) 
+    print(f'{sue.pay=:,.2f}')
+    print('Last names:', sue.lastName(), bob.lastName())
+
+if __name__ == '__main__': tester(Person)</pre>
+</div>
+<p>When this code is run as is, its output traces calls to every method of the client class because every method has been automatically decorated by the metaclass:</p>
+<pre data-type="programlisting">$ <code><strong>python3 decoall_meta.py</strong></code>
+call 1 to __init__
+call 2 to __init__
+sue.name='Sue Jones', bob.name='Bob Smith'
+call 1 to giveRaise
+sue.pay=110,000.00
+call 1 to lastName
+call 2 to lastName
+Last names: Jones Smith</pre>
+<p>Really, this result reflects a <em>combination</em> of decorator and metaclass—the metaclass automatically applies the function decorator to every method at class creation time, and the function decorator automatically intercepts method calls in order to print the trace messages in this output. The combo “just works,” thanks to the generality of both tools.</p>
+<p>To apply a <em>different</em> decorator to the methods, simply replace the decorator name in the <code>class</code> header line. To use the timer function decorator shown earlier, for example, use either of the last two header lines in the following for our <code>Person</code> class—the first accepts the timer’s default arguments, and the second specifies label text (though methods may run too fast to register runtimes as is: add <code>time.sleep(<em>seconds</em>)</code> calls to pause for a better time):</p>
+<pre data-type="programlisting">class Person(metaclass=decorateAll(tracer)):               <code><em># Apply tracer</em></code>
+class Person(metaclass=decorateAll(timer())):              <code><em># Apply timer, defaults</em></code>
+class Person(metaclass=decorateAll(timer(label='**'))):    <code><em># Decorator arguments</em></code></pre>
+<p>And as you might expect by now, class decorators intersect with metaclasses here, too. <a data-type="xref" href="#example_fourzero_onezerodot_decoall_dec">Example 40-10</a> replaces the preceding example’s metaclass with a class decorator. Really, it uses a class decorator that applies a function decorator to each method of a decorated class. Python’s decorators naturally support arbitrary nesting and combinations.</p>
+<div data-type="example" id="example_fourzero_onezerodot_decoall_dec">
+<h5><span class="label">Example 40-10. </span>decoall_deco.py</h5>
+<pre data-type="programlisting"><code>"Apply any decorator to all methods of a class, with a decorator"</code>
+
+from types import FunctionType
+from decoall_meta import tester
+from decorators import tracer, timer
+
+def decorateAll(decorator):
+    def DecoDecorate(aClass):
+        for attr, attrval in aClass.__dict__.items():
+            if type(attrval) is FunctionType:
+                setattr(aClass, attr, decorator(attrval))    <code><em># Not __dict__
+</em></code>        return aClass
+    return DecoDecorate
+
+@decorateAll(tracer)                          <code><em># Use class deco, pass any func deco</em></code>
+class Person:                                 <code><em># Applies func decorator to methods</em></code>
+    def __init__(self, name, pay):            <code><em># Person = decorateAll(..)(Person)
+</em></code>        self.name = name                      <code><em># Person = DecoDecorate(Person)
+</em></code>        self.pay  = pay
+    def giveRaise(self, percent):
+        self.pay *= (1.0 + percent)
+    def lastName(self):
+        return self.name.split()[-1]
+
+if __name__ == '__main__': tester(Person)</pre>
+</div>
+<p>When this code is run, the class decorator applies the tracer function decorator to every method, which in turn produces a trace message on calls (the output is the same as that of the preceding metaclass version of this example):</p>
+<pre data-type="programlisting">$ <code><strong>python3 decoall_deco.py</strong></code>
+…<code><em>same as Example 40-9</em></code>…</pre>
+<p>Much as before, we simply mod the <code>@</code> decorator line to apply a different decorator or provide different arguments for it. Test the following on your own to see the effect (and again add sleep calls as needed to boost times):</p>
+<pre data-type="programlisting">@decorateAll(tracer)                        <code><em># Apply tracer</em></code>
+@decorateAll(timer())                       <code><em># Apply timer, defaults</em></code>
+@decorateAll(timer(label='**'))             <code><em># Decorator arguments</em></code>
+@decorateAll(timer(label='**', trace=0))    <code><em># More decorator arguments</em></code></pre>
+<p>Notice that this class decorator returns the augmented class, not a proxy wrapper. As for the metaclass version, this retains the type of the original class—an instance of <code>Person</code> is still an instance of <code>Person</code>. This may matter when type testing is used. The class’s <em>methods</em> are not their original functions because they are rebound to decorators, but this is likely less important in practice, and it’s true in the metaclass alternative as well.</p>
+<p>So far, what we’ve seen of metaclasses makes them seem largely redundant with decorators—but we have not yet seen all there is to see. As teased earlier, metaclasses may also provide behavior to their instance classes by defining <em>methods</em>, which have no direct counterpart in decorators. These methods, however, come with a twist that limits their scope. To understand both metaclasses’ methods and their limiting twist, though, we first have to factor metaclasses into Python <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="decorating class methods" data-startref="tacldcmod" id="id4930"></a><a contenteditable="false" data-type="indexterm" data-primary="decorators" data-secondary="class methods" data-startref="drtrclssm" id="id4931"></a>attribute resolution, a.k.a. <em>inheritance</em>, at large. The next section takes us down this prerequisite path.</p>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Inheritance: The Finale"><div class="sect1" id="inheritance_the_finale">
+<h1>Inheritance: The Finale</h1>
+<p>Because metaclasses are coded in similar ways to inheritance superclasses, their scope can be confusing at first glance. In short, there are really two class trees searched by Python inheritance—a <em>primary</em> tree formed by a class and that class’s superclasses, along with a <em>secondary</em> tree formed by a class’s metaclass and that metaclass’s superclasses. The secondary tree is also called the “type” tree because it stems from <code>type</code>. In more detail, here is how this pans out:</p>
+<dl>
+<dt>Metaclasses inherit from <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="inheritance" id="id4932"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="metaclasses" id="id4933"></a>the <code>type</code> class (usually)</dt>
+<dd>Although they have a special role, metaclasses are coded with normal <code>class</code> statements and follow the usual OOP model in Python. As subclasses of <code>type</code>, they can redefine the <code>type</code> object’s methods to customizing classes as needed. Per the prior section, metaclasses often redefine the <code>type</code> class’s <code>__new__</code> and <code>__init__</code> to intercept class creation and initialization. Metaclasses can also define methods for their instance classes and may be simple functions or other callables that return arbitrary objects.</dd>
+<dt>Metaclass attributes <strong>are not</strong> acquired <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="attributes" id="id4934"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="metaclasses" id="id4935"></a>by class instances</dt>
+<dd>Metaclass declarations specify an <em>instance</em> relationship, which is not quite the same as superclass <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="inheritance relationships" id="id4936"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="metaclasses" data-tertiary="inheritance relationships" id="id4937"></a>inheritance. Behavior defined in a metaclass applies to the classes made from it but <em>not</em> to these classes’ own <em>nonclass</em> instances. Inheritance for a nonclass instance searches only the instance and the <em>primary</em> tree formed by its class and that class’s superclasses; the secondary metaclass tree is never included in this search. Hence, nonclass instances get behavior from classes and superclasses but not from metaclasses.</dd>
+<dt>Metaclass attributes <strong>are</strong> acquired by classes as a fallback</dt>
+<dd>By contrast, classes <em>do</em> acquire methods of their metaclasses by virtue of the <em>instance</em> relationship. Metaclasses define a separate inheritance tree, which is a source of class behavior that processes classes themselves. For classes only, inheritance first searches the <em>primary</em> tree formed by the class and its superclasses and then falls back on the <em>secondary</em> tree formed by the class’s metaclass and <em>its</em> superclasses as a separate search. When a name is available to a class in <em>both</em> a metaclass and a superclass, the superclass version is used.</dd>
+<dt>Metaclass declarations are also inherited by subclasses</dt>
+<dd>The <code>metaclass=<em>M</em></code> declaration in a user-defined class is also <em>inherited</em> by the class’s normal subclasses in much the same way that superclass links are inherited by subclasses. Thus, the metaclass will run for the construction of each class that inherits this specification in a superclass inheritance chain.</dd>
+</dl>
+<p>This model’s conflation of classes and metaclasses can make terminology challenging, but it may be easier to understand in code than in prose. To illustrate the preceding points, consider the code in <a data-type="xref" href="#example_fourzero_oneonedot_metainstance">Example 40-11</a>.</p>
+<div data-type="example" id="example_fourzero_oneonedot_metainstance">
+<h5><span class="label">Example 40-11. </span>metainstance.py</h5>
+<pre data-type="programlisting">class Meta(type):
+    def __new__(meta, classname, supers, classdict):        <code><em># Redefine type method</em></code>
+        print('In Meta.new:', classname)
+        return type.__new__(meta, classname, supers, classdict)
+    def meth3(self):
+        return 'three!'
+
+class Super(metaclass=Meta):           <code><em># Metaclass inherited by subs too</em></code>
+    def meth2(self):                   <code><em># Meta run twice for two classes</em></code>
+        return 'two!'
+
+class Sub(Super):                      <code><em># Superclass: inheritance versus instance</em></code>
+    def meth1(self):                   <code><em># Classes inherit from superclasses
+</em></code>        return 'one!'                  <code><em># But not from metaclasses for instance access</em></code></pre>
+</div>
+<p>When this file’s code is run (as a script or module), the metaclass handles construction of <em>both</em> client classes. When those classes are later used, nonclass <em>instances</em> inherit class attributes but <em>not</em> metaclass attributes:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from metainstance import *</strong></code>         <code><em># Runs class statements: metaclass run twice!</em></code>
+In Meta.new: Super
+In Meta.new: Sub
+
+&gt;&gt;&gt; <code><strong>X = Sub()</strong></code>              <code><em># Nonclass instance of user-defined class</em></code>
+&gt;&gt;&gt; <code><strong>X.meth1()</strong></code>              <code><em># Inherited from Sub</em></code>
+'one!'
+&gt;&gt;&gt; <code><strong>X.meth2()</strong></code>              <code><em># Inherited from Super</em></code>
+'two!'
+&gt;&gt;&gt; <code><strong>X.meth3()</strong></code>              <code><em># Not inherited from metaclass!</em></code>
+AttributeError: 'Sub' object has no attribute 'meth3'. Did you mean: 'meth1'?</pre>
+<p>By contrast, <em>classes</em> both inherit <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="inheritance" id="id4938"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="metaclasses" id="id4939"></a>names from their superclasses and acquire names from their metaclass—whose linkage in this example is <em>itself</em> inherited from a superclass by <code>Sub</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>Sub.meth1(X)</strong></code>           <code><em># Own method</em></code>
+'one!'
+&gt;&gt;&gt; <code><strong>Sub.meth2(X)</strong></code>           <code><em># Inherited from Super</em></code>
+'two!'
+&gt;&gt;&gt; <code><strong>Sub.meth3()</strong></code>            <code><em># Acquired from metaclass</em></code>
+'three!'
+&gt;&gt;&gt; <code><strong>Sub.meth3(X)</strong></code>           <code><em># Not a normal instance method!</em></code>
+TypeError: Meta.meth3() takes 1 positional argument but 2 were given</pre>
+<p>Notice how the last of the preceding calls fails when we pass in an instance because the name resolves to a <em>metaclass method</em>, not a normal instance method. In fact, both the <em>source</em> of a name and the <em>object</em> through which you fetch it matter here. Methods acquired from metaclasses are bound to the subject <em>class</em>, while methods from normal classes are plain <em>functions</em> when fetched through the class but bound with an <em>instance</em> when fetched through the instance:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>Sub.meth3</strong></code>
+&lt;bound method Meta.meth3 of &lt;class 'metainstance.Sub'&gt;&gt;
+&gt;&gt;&gt; <code><strong>Sub.meth2</strong></code>
+&lt;function Super.meth2 at 0x1085f7d80&gt;
+&gt;&gt;&gt; <code><strong>X.meth2</strong></code>
+&lt;bound method Super.meth2 of &lt;metainstance.Sub object at 0x108456420&gt;&gt;</pre>
+<p>We studied the last two of these cases before in <a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a>’s bound-method coverage. The first case is reminiscent of <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>’s <em>class methods</em> but is technically new here. We’ll explore class methods in more detail later. First, though, to understand why metaclass methods aren’t available to normal instances, we need to clarify the metaclass/superclass distinction further.</p>
+<section data-type="sect2" data-pdf-bookmark="Metaclass Versus Superclass"><div class="sect2" id="metaclass_versus_superclass">
+<h2>Metaclass Versus Superclass</h2>
+<p>In even simpler terms, watch what happens <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="inheritance" data-tertiary="names acquisition" id="id4940"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="metaclasses" data-tertiary="names acquisition" id="id4941"></a><a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="superclasses comparison" id="clampcpr"></a><a contenteditable="false" data-type="indexterm" data-primary="superclasses" data-secondary="metaclasses comparison" id="pclsmtpr"></a>in the following: as an <em>instance</em> of the <code>M</code> metaclass type, class <code>C</code> acquires <code>M</code>’s attribute, but this attribute is not made available for inheritance by <code>C</code>’s own instance <code>I</code>—the acquisition of names by metaclass instances is <em>distinct</em> from the normal inheritance used for nonclass instances:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class M(type): attr = 1
+</strong></code>&gt;&gt;&gt; <code><strong>class C(metaclass=M): pass</strong></code>         <code><em># C is meta instance and acquires meta attr</em></code>
+&gt;&gt;&gt; <code><strong>I = C()</strong></code>                            <code><em># I inherits from class but not meta!
+</em></code>&gt;&gt;&gt; <code><strong>C.attr</strong></code>
+1
+&gt;&gt;&gt; <code><strong>I.attr</strong></code>
+AttributeError: 'C' object has no attribute 'attr' 
+&gt;&gt;&gt; <code><strong>'attr' in C.__dict__, 'attr' in M.__dict__</strong></code>
+(False, True)</pre>
+<p>By contrast, if <code>M</code> morphs from metaclass to superclass, then names in superclass <code>S</code> become available to later instances of <code>C</code> by <em>inheritance</em>—that is, by searching the <code>__dict__</code> attribute dictionaries of objects in the MRO of <code>I</code>’s class as usual, much like the <code>mapattrs</code> example we coded back in <a data-type="xref" href="ch31.html#example_mapping_attributes_to_inheritan">“Example: Mapping Attributes to Inheritance Sources”</a> (a nonclass-instance-only tool):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class S: attr = 1
+</strong></code>&gt;&gt;&gt; <code><strong>class C(S): pass</strong></code>                   <code><em># C is type instance and inherits from supers</em></code>
+&gt;&gt;&gt; <code><strong>I = C() </strong>  </code>                         <code><em># I inherits from class and supers</em><strong>
+</strong></code>&gt;&gt;&gt; <code><strong>C.attr</strong></code>
+1
+&gt;&gt;&gt; <code><strong>I.attr</strong></code>
+1
+&gt;&gt;&gt; <code><strong>'attr' in C.__dict__, 'attr' in S.__dict__</strong></code>
+(False, True)</pre>
+<p>This is why metaclasses often do their work by manipulating a new class’s namespace dictionary if they wish to influence the behavior of later instance objects—instances will see names in their <em>class</em> but not its <em>metaclass</em>. Watch what happens, though, if the same name is available in <em>both</em> attribute sources—the <em>inheritance</em> name in the primary superclass tree is used instead of the <em>instance</em> acquisition name in the secondary metaclass tree:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class M(type): attr = 1
+</strong></code>&gt;&gt;&gt; <code><strong>class S: attr = 2
+</strong></code>&gt;&gt;&gt; <code><strong>class C(S, metaclass=M): pass</strong></code>       <code><em># Supers have precedence over metas</em></code>
+&gt;&gt;&gt; <code><strong>I = C()  </strong>  </code>                         <code><em># Classes search supers before metas</em><strong>
+</strong></code>&gt;&gt;&gt; <code><strong>C.attr, I.attr</strong>  </code>                    <code><em># Instances search only supers</em></code>
+(2, 2)
+&gt;&gt;&gt; <code><strong>'attr' in C.__dict__, 'attr' in S.__dict__, 'attr' in M.__dict__</strong></code>
+(False, True, True)</pre>
+<p>This is true regardless of the relative height of the inheritance and instance sources—superclass inheritance always beats metaclass acquisition because primary trees are searched before secondary trees:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class M(type): attr = 1
+</strong></code>&gt;&gt;&gt; <code><strong>class S2: attr = 2
+</strong></code>&gt;&gt;&gt; <code><strong>class S1(S2): pass
+</strong></code>&gt;&gt;&gt; <code><strong>class C(S1, metaclass=M): pass</strong></code>      <code><em># Super two levels above meta: still wins</em></code>
+&gt;&gt;&gt; <code><strong>I = C()
+</strong></code>&gt;&gt;&gt; <code><strong>C.attr, I.attr</strong></code>
+(2, 2)</pre>
+<p>In fact, classes acquire metaclass attributes through their <code>__class__</code> link,<a contenteditable="false" data-type="indexterm" data-primary="__class__ attribute" data-primary-sortas="class attribute" id="id4942"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="__class__ attribute" data-secondary-sortas="class attribute" id="id4943"></a> in the same way that nonclass instances inherit from classes through their <code>__class__</code>—which makes sense, given that classes are also instances of metaclasses. The chief distinction is that instance inheritance does not also follow a class’s <code>__class__</code> but instead restricts its scope to the <code>__dict__</code> of each class in the superclass tree, following <code>__bases__</code> along the way:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>I.__class__</strong> </code>               <code><em># Followed by inheritance: instance's class
+</em></code>&lt;class '__main__.C'&gt;
+&gt;&gt;&gt; <code><strong>C.__bases__</strong></code>                <code><em># Followed by inheritance: class's supers</em></code>
+(&lt;class '__main__.S1'&gt;,) 
+&gt;&gt;&gt; <code><strong>C.__class__</strong></code>                <code><em># Followed by instance acquisition: metaclass</em></code>
+&lt;class '__main__.M'&gt;</pre>
+<p>Really, though, Python checks the <code>__dict__</code> of each class on the class’s <em>MRO</em> before falling back on doing the same for its metaclass—and runs the second of these steps only for fetches run on classes, not nonclass instances:<a contenteditable="false" data-type="indexterm" data-primary="__mro__ attribute" data-primary-sortas="mro attribute" id="id4944"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="__mro__ attribute" data-secondary-sortas="mro attribute" id="id4945"></a></p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>[x.__name__ for x in C.__mro__]</strong></code>     <code><em># See Chapter 32 for all things MRO
+</em></code>['C', 'S1', 'S2', 'object']
+&gt;&gt;&gt; <code><strong>[x.__name__ for x in M.__mro__]</strong></code>     <code><em># Primary/secondary trees: class/meta</em></code>
+['M', 'type', 'object']</pre>
+<p>These two MROs for class and metaclass are simply the flattened versions of what we called the <em>primary</em> and <em>secondary</em> class trees earlier. Nonclass-instance inheritance searches <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="superclasses comparison" data-startref="clampcpr" id="id4946"></a><a contenteditable="false" data-type="indexterm" data-primary="superclasses" data-secondary="metaclasses comparison" data-startref="pclsmtpr" id="id4947"></a>just the first, but class inheritance searches both if needed. In fact, metaclasses work in much the same way, as the next section explains.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Metaclass Inheritance"><div class="sect2" id="metaclass_inheritance">
+<h2>Metaclass Inheritance</h2>
+<p>As it turns out, instance inheritance <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="inheritance" id="mclrtch"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="metaclasses" id="rittlsse"></a>works in similar ways, whether the “instance” is a nonclass instance created from a class or a class created from a metaclass derived from <code>type</code>. While classes straddle the primary and secondary trees, both trees use the same mechanism to look up names. This yields a single attribute search procedure spanning two trees, which fosters the parallel notion of <em>metaclass</em> inheritance hierarchies.</p>
+<p>The following demos this conceptual merger. In it, instance <code>I</code> inherits from all its classes; class <code>C</code> inherits from both superclasses and metaclasses; and metaclass <code>M1</code> inherits from higher metaclasses:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class M2(type): attr4 = 4</strong></code>                 <code><em># Metaclass inheritance tree
+</em></code>&gt;&gt;&gt; <code><strong>class M1(M2):   attr3 = 3</strong></code>                 <code><em># Gets __bases__, __class__, __mro__</em></code>
+
+&gt;&gt;&gt; <code><strong>class S: attr2 = 2</strong></code>                        <code><em># Superclass inheritance tree</em></code>
+&gt;&gt;&gt; <code><strong>class C(S, metaclass=M1): attr1 = 1</strong></code>       <code><em># Gets __bases__, __class__, __mro__</em></code>
+
+&gt;&gt;&gt; <code><strong>I = C()</strong></code>                                   <code><em># I gets __class__ but not others</em></code>
+&gt;&gt;&gt; <code><strong>I.attr1, I.attr2</strong></code>                          <code><em># Instance inherits from super tree</em></code>
+(1, 2) 
+&gt;&gt;&gt; <code><strong>C.attr1, C.attr2, C.attr3, C.attr4</strong></code>        <code><em># Class gets names from both trees!</em></code>
+(1, 2, 3, 4) 
+&gt;&gt;&gt; <code><strong>M1.attr3, M1.attr4</strong></code>                        <code><em># Metaclass inherits names too!</em></code>
+(3, 4)
+&gt;&gt;&gt; <code><strong>I.attr3</strong></code>
+AttributeError: 'C' object has no attribute 'attr3'. Did you mean: 'attr1'?</pre>
+<p>The failure at the end of this listing is pivotal. Both inheritance paths—class and metaclass—employ the same links to build class MROs scanned by inheritance. But this is not applied <em>transitively</em>—instances do not inherit their class’s metaclass names, though they may request them explicitly:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>I.__class__</strong></code>                <code><em># Links used at instance with no __bases__</em></code>
+&lt;class '__main__.C'&gt;
+&gt;&gt;&gt; <code><strong>C.__bases__</strong></code>
+(&lt;class '__main__.S'&gt;,) 
+
+&gt;&gt;&gt; <code><strong>C.__class__</strong></code>                <code><em># Links used at class after its __bases__
+</em></code>&lt;class '__main__.M1'&gt;
+&gt;&gt;&gt; <code><strong>M1.__bases__</strong></code>               <code><em># Link also used in metaclass inheritance</em></code>
+(&lt;class '__main__.M2'&gt;,) 
+
+&gt;&gt;&gt; <code><strong>I.__class__.attr4</strong></code>          <code><em># Route inheritance to the class's meta tree</em></code>
+4
+&gt;&gt;&gt; <code><strong>I.attr4</strong></code>                    <code><em># Though class's __class__ not followed normally</em></code>
+AttributeError: 'C' object has no attribute 'attr4'. Did you mean: 'attr1'?</pre>
+<p>And as usual, both trees have flattened MROs and instance links actually used by inheritance:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>M1.__class__</strong></code>                        <code><em># Metaclasses are classes too</em></code>
+&lt;class 'type'&gt;
+&gt;&gt;&gt; <code><strong>[x.__name__ for x in C.__mro__]</strong></code>     <code><em># __bases__ tree from I.__class__</em></code>
+['C', 'S', 'object']
+&gt;&gt;&gt; <code><strong>[x.__name__ for x in M1.__mro__]</strong></code>    <code><em># __bases__ tree from C.__class__</em></code>
+['M1', 'M2', 'type', 'object']</pre>
+<p>If you care about metaclasses—or must use code that does—study these examples carefully. In effect, nonclass instances have no <code>__bases__</code> to search but follow <code>__class__</code> to <code>__bases__</code> once, and classes follow <code>__bases__</code> before following a single <code>__class__</code> to another <code>__bases__</code>. Because this is crucial to the meaning of attribute <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="inheritance" data-startref="mclrtch" id="id4948"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="metaclasses" data-startref="rittlsse" id="id4949"></a>names in Python, the next section begins making it more formal.<a contenteditable="false" data-type="indexterm" data-primary="__bases__ attribute" data-primary-sortas="bases attribute" id="id4950"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="__bases__ attribute" data-secondary-sortas="bases attribute" id="id4951"></a></p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Python Inheritance Algorithm: The Simple Version"><div class="sect2" id="python_inheritance_algorithm_the_simple">
+<h2>Python Inheritance Algorithm: The Simple Version</h2>
+<p>Now that we know about metaclass acquisition, we’re finally able to formalize the inheritance rules that <a contenteditable="false" data-type="indexterm" data-primary="inheritance algorithm" id="hergormth"></a>they augment. Inheritance deploys two distinct but similar lookup routines, both of which are founded on MROs computed from the prior section’s <code>__bases__</code> links per <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>. The combination yields the following first-cut definition of Python’s attribute inheritance algorithm run for explicit attribute fetches.</p>
+<p><em>To look up an attribute name</em>:</p>
+<ol>
+<li><p>From a nonclass <em>instance</em> I, search the instance, then its class, and then all its superclasses, using:</p>
+<ol type="a">
+<li><p>The <code>__dict__</code> of the instance I</p></li>
+<li><p>The <code>__dict__</code> of all classes on the <code>__mro__</code> found at I’s <code>__class__</code>, from left to right</p></li>
+</ol></li>
+<li><p>From a <em>class</em> C, search the class, then all its superclasses, and then its metaclasses tree, using:</p>
+<ol type="a">
+<li><p>The <code>__dict__</code> of all classes on the <code>__mro__</code> found at C itself, from left to right</p></li>
+<li><p>The <code>__dict__</code> of all metaclasses on the <code>__mro__</code> found at C’s <code>__class__</code>, from left to right</p></li>
+</ol></li>
+<li class="pagebreak-before"><p>In rules <em>1</em> and <em>2</em>, also allow for these exceptions covered ahead:</p>
+<ul>
+<li><p>Give precedence to <em>data descriptors</em> present in step <em>b</em> sources</p></li>
+<li><p>Skip step <em>a</em> and begin the search at step <em>b</em> for <em>built-in operations</em></p></li>
+<li><p>Perform a custom MRO search for a proxied object in <code>super</code> objects</p></li>
+</ul></li>
+</ol>
+<p>Rules <em>1</em> and <em>2</em> are applied for normal, explicit attribute fetch only, and there are exceptions for built-ins, descriptors, and <code>super</code>, which we’ll clarify in a moment. In addition, a <code>__getattr__</code> or <span class="keep-together"><code>__getattribute__</code></span> may also be used for missing or all names, respectively, per <a data-type="xref" href="ch38.html#managed_attributes">Chapter 38</a>, and attribute assignment follows different rules.</p>
+<p>The first two rules here, however, are the essentials. They specify the inheritance search of <em>two</em> separate trees, which works the same in each tree but spans trees for <em>class</em> inheritance alone. The MRO pseudocode of <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a> summarizes this even more concisely:</p>
+<pre data-type="programlisting">[I.__dict__] + [x.__dict__ for x in I.__class__.__mro__]
+
+[x.__dict__ for x in C.__mro__] + [x.__dict__ for x in C.__class__.__mro__]</pre>
+<p>In this, the first line is sources searched by rule <em>1</em> for inheritance from a nonclass instance <code>I</code>—both the <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="class trees" id="id4952"></a><a contenteditable="false" data-type="indexterm" data-primary="class trees" data-secondary="inheritance" id="id4953"></a>instance itself and the flattened version of the <em>primary</em> class tree. The second line is rule <em>2</em>’s sources for inheritance from a class <code>C</code>—the flattened versions of both the <em>primary</em> class tree and the <em>secondary</em> metaclass tree.</p>
+<p>Put another way, nonclass instances and <a contenteditable="false" data-type="indexterm" data-primary="MRO (method resolution order)" data-secondary="class trees" id="id4954"></a>classes both search a class tree’s MRO at their <code>__class__</code> as a second step, but classes first search their own MRO’s superclass tree instead of a single <code>__dict__</code> namespace dictionary. In code, <code>class</code> header lines define both of the trees searched by listing superclasses and specify links to secondary trees with <code>metaclass</code> keywords. When omitted, superclass defaults to <code>object</code> and metaclass to <code>type</code>.</p>
+<p>Most programmers need only be aware of the first of these rules (<em>1</em>) and perhaps the first step of the second (<em>2a</em>). There’s an extra acquisition step added for metaclasses (<em>2b</em>), but it’s essentially the same as others—a subtle equivalence, to be sure, but metaclass acquisition is not as novel as it may seem. It’s just one step of the procedure.</p>
+<section data-type="sect3" data-pdf-bookmark="The descriptors deviation"><div class="sect3" id="the_descriptors_deviation">
+<h3>The descriptors deviation</h3>
+<p>At least, that’s the <em>normal</em>—and sugarcoated—case. The prior section listed its exceptions <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="data descriptors" id="id4955"></a><a contenteditable="false" data-type="indexterm" data-primary="descriptors" data-secondary="data descriptors" data-tertiary="inheritance" id="id4956"></a>separately because they don’t matter in most code and complicate the algorithm substantially. First among these, inheritance also has a special-case coupling with <a data-type="xref" href="ch38.html#managed_attributes">Chapter 38</a>’s attribute descriptors. In short, <em>data descriptors</em>—those that define <code>__set__</code> methods to intercept assignments—are given precedence, such that their names override other inheritance sources.</p>
+<p>This exception ostensibly serves some practical roles. For example, it is used to ensure that the special <code>__class__</code> and <code>__dict__</code> attributes cannot be redefined by the same names in an instance’s own <code>__dict__</code>. In the following, these data-descriptor names in the class <em>override</em> same names created in the instance’s attribute dictionary:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>class C: pass</strong></code>                          <code><em># Inheritance special case...</em></code>
+&gt;&gt;&gt; <code><strong>I = C()</strong></code>                                <code><em># Class data descriptors have precedence</em></code>
+&gt;&gt;&gt; <code><strong>I.__class__, I.__dict__</strong></code>
+(&lt;class '__main__.C'&gt;, {})
+
+&gt;&gt;&gt; <code><strong>I.__dict__['book'] = 'lp6e'</strong></code>            <code><em># Dynamic data in the instance</em></code>
+&gt;&gt;&gt; <code><strong>I.__dict__['__class__'] = 'hack'</strong></code>       <code><em># Assign keys, not attributes</em></code>
+&gt;&gt;&gt; <code><strong>I.__dict__['__dict__']  = {}</strong></code>
+
+&gt;&gt;&gt; <code><strong>I.book</strong> </code>                                <code><em># I.name comes from I.__dict__ as usual</em></code>
+'lp6e'                                     <code><em># But I.__class__ and I.__dict__ do not!</em></code>
+&gt;&gt;&gt; <code><strong>I.__class__, I.__dict__</strong></code>
+(&lt;class '__main__.C'&gt;, {'book': 'lp6e', '__class__': 'hack', '__dict__': {}})</pre>
+<p>This data-descriptor exception is tested <em>before</em> the preceding two inheritance rules as a preliminary step, may be more important to Python implementers than Python programmers, and can be reasonably ignored by most application code in any event—that is, unless <em>you</em> code data descriptors of your own, which follow the same inheritance special case:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class D:
+        def __get__(self, instance, owner): print('D.__get__')
+        def __set__(self, instance, value): print('D.__set__')</strong></code>
+
+&gt;&gt;&gt; <code><strong>class C: d = D()</strong></code>            <code><em># Data-descriptor attribute</em></code>
+&gt;&gt;&gt; <code><strong>I = C()</strong></code>
+&gt;&gt;&gt; <code><strong>I.d</strong></code>                         <code><em># Inherited data descriptor access</em></code>
+D.__get__ 
+&gt;&gt;&gt; <code><strong>I.d = 1</strong></code>
+D.__set__ 
+&gt;&gt;&gt; <code><strong>I.__dict__['d'] = 'hack'</strong></code>    <code><em># Define same name in instance namespace dict</em></code>
+&gt;&gt;&gt; <code><strong>I.d</strong></code>                         <code><em># But doesn't hide data descriptor in class!</em></code>
+D.__get__</pre>
+<p>Conversely, if this descriptor did <em>not</em> define a <code>__set__</code>, the name in the instance’s dictionary <em>would</em> hide the name in its class instead, per normal inheritance:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class D:
+        def __get__(self, instance, owner): print('D.__get__')
+
+</strong></code>&gt;&gt;&gt; <code><strong>class C: d = D()
+</strong></code>&gt;&gt;&gt; <code><strong>I = C()
+</strong></code>&gt;&gt;&gt; <code><strong>I.d</strong></code>                         <code><em># Inherited nondata descriptor access</em></code>
+D.__get__ 
+&gt;&gt;&gt; <code><strong>I.__dict__['d'] = 'hack'</strong></code>    <code><em># Hides class names per normal inheritance rules</em></code>
+&gt;&gt;&gt; <code><strong>I.d</strong></code>
+'hack'</pre>
+<p>In both cases, Python automatically runs the descriptor’s <code>__get__</code> when it’s found by inheritance rather than returning the descriptor object itself—part of the implicit attribute magic we met earlier in the book. The special status afforded to data descriptors, however, also modifies the meaning of attribute <em>inheritance</em> and, thus, the meaning of names in your code. The next section’s final swing at a formal inheritance algorithm takes this into account.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" class="pagebreak-before" data-pdf-bookmark="Python Inheritance Algorithm: The Less Simple Version"><div class="sect2" id="python_inheritance_algorithm_the_less_s">
+<h2 class="less_space">Python Inheritance Algorithm: The Less Simple Version</h2>
+<p>With both the data descriptor special case and general descriptor invocation factored in with class and metaclass trees, Python’s formal inheritance algorithm can be stated as follows—a complex procedure which assumes knowledge of descriptors, metaclasses, and MROs but is the <a contenteditable="false" data-type="indexterm" data-primary="MRO (method resolution order)" data-secondary="class trees" id="id4957"></a>final arbiter of attribute names nonetheless.</p>
+<p><em>To look up an attribute name</em>:</p>
+<ol>
+<li><p>From a nonclass <em>instance</em> I, search the instance, its class, and its superclasses, as follows:</p>
+<ol type="a">
+<li><p>Search the <code>__dict__</code> of all classes on the <code>__mro__</code> found at I’s <code>__class__</code></p></li>
+<li><p>If a data descriptor was found in step <em>a</em>, call its <code>__get__</code> and exit</p></li>
+<li><p>Else, return a value in the <code>__dict__</code> of the instance I</p></li>
+<li><p>Else, call a nondata descriptor or return a value found in step <em>a</em></p></li>
+</ol></li>
+<li><p>From a <em>class</em> C, search the class, its superclasses, and its metaclasses tree as follows:</p>
+<ol type="a">
+<li><p>Search the <code>__dict__</code> of all metaclasses on the <code>__mro__</code> found at C’s <code>__class__</code></p></li>
+<li><p>If a data descriptor was found in step <em>a</em>, call its <code>__get__</code> and exit</p></li>
+<li><p>Else, call any descriptor or return a value in the <code>__dict__</code> of a class on C’s own <code>__mro__</code></p></li>
+<li><p>Else, call a nondata descriptor or return a value found in step <em>a</em></p></li>
+</ol></li>
+<li><p>In rules <em>1</em> and <em>2</em>, <em>built-in</em> operations essentially use just step <em>a</em> sources (see ahead)</p></li>
+<li><p>The <code>super</code> built-in performs a custom MRO search for a proxied object (see ahead)</p></li>
+</ol>
+<p>Some fine print here: in this procedure, items are attempted in sequence as numbered, and Python runs at most <em>one</em> (for instances) or <em>two</em> (for classes) MRO searches per name lookup—the first appearance of a name in a given MRO wins, regardless of its kind. Because each MRO (a.k.a. <code>__mro__</code>) is a flattened representation of a class tree with duplicates removed, you can also think of these as one or two <em>tree</em> searches.</p>
+<p>In addition, the implied <code>object</code> superclass provides some defaults at the top of every class and metaclass tree (that is, at the end of every MRO). And beyond all this, method <code>__getattr__</code> may be run if defined when an attribute is not found, and method <code>__getattribute__</code> may be run for every attribute fetch, though they are special-case extensions to the name lookup model (really, the latter replaces inheritance for the defining class’s instances, and can trigger the former with an attribute exception). See <a data-type="xref" href="ch38.html#managed_attributes">Chapter 38</a> for more on these tools as well as descriptors.</p>
+<p>Also, note here again that this <a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="assignment" id="id4958"></a>algorithm’s first two steps apply only to <em>normal</em> and <em>explicit</em> attribute <em>fetch</em>. The rules for attribute <em>assignment</em> vary; the <em>implicit</em> lookup of method names for <em>built-ins</em> doesn’t follow these rules in full; and the <em>proxied</em> lookup of attributes performed by <code>super</code> is entirely custom. The next sections cover these exceptions separately.</p>
+<section data-type="sect3" data-pdf-bookmark="The assignment addendum"><div class="sect3" id="the_assignment_addendum">
+<h3>The assignment addendum</h3>
+<p>The prior section defines inheritance in terms of attribute <em>reference</em> (a.k.a. fetch or lookup), but parts of it apply to attribute <em>assignment</em> as well. As we’ve learned, assignment normally changes attributes in the <em>subject</em> object itself, but inheritance is also invoked on assignment to test first for some of <a data-type="xref" href="ch38.html#managed_attributes">Chapter 38</a>’s attribute management tools, including descriptors, properties, and <code>__setattr__</code>. When present, such tools intercept attribute assignment and may implement it arbitrarily.</p>
+<p>For example, attribute assignment always invokes a <code>__setattr__</code> if present, much as a <span class="keep-together"><code>__getattribute__</code></span> is run for all references. Moreover, a <em>data descriptor</em> with a <code>__set__</code> method is acquired from a class by inheritance <a contenteditable="false" data-type="indexterm" data-primary="data descriptors" data-secondary="inheritance" id="id4959"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="data descriptors" id="id4960"></a>using the MRO and has precedence over the normal storage model. In terms of the prior section’s rules:</p>
+<ul>
+<li><p>When applied to an <em>instance</em>, attribute assignments essentially follow steps <em>a</em> through <em>c</em> of rule <em>1</em>, searching the instance’s superclass tree, though step <em>b</em> calls <code>__set__</code> instead of <code>__get__</code>, and step <em>c</em> stops and stores in the instance instead of attempting a fetch.</p></li>
+<li><p>When applied to a <em>class</em>, attribute assignments run the same procedure on the class’s metaclass tree: roughly the same as rule <em>2</em>, but step <em>c</em> stops and stores in the class.</p></li>
+</ul>
+<p>Because descriptors are also the basis for other advanced attribute tools such as <em>properties</em> and <em>slots</em>, this inheritance precheck on assignment is utilized in multiple contexts. The net effect is that descriptors are treated as an inheritance special case for <em>both</em> reference and assignment.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="The super supplement"><div class="sect3" id="the_super_supplement">
+<h3>The super supplement</h3>
+<p>Even for attribute <em>reference</em>, there <a contenteditable="false" data-type="indexterm" data-primary="super function" id="id4961"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="super function" id="id4962"></a>are two special cases that are exempt from inheritance’s normal rules. For one, the <code>super</code> built-in function we studied in <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a> does not use normal inheritance.</p>
+<p>As we learned, for the proxy objects returned by <code>super</code>, attributes are resolved by a special context-sensitive scan of a limited <em>tail</em> portion of a <em>different</em> object’s MRO. This custom scan searches the MRO of an implicit instance’s class, choosing the first descriptor or value found in a class <em>following</em> the class containing the <code>super</code> call. This scan is used <em>instead</em> of running full inheritance—which is used on the <code>super</code> object itself only if this special-case scan fails.</p>
+<p>See <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a> for more coverage of <code>super</code>. While this built-in may be convenient in some simple roles, it comes with substantial complexity in others and adds a convoluting footnote to inheritance itself.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="The built-ins bifurcation"><div class="sect3" id="the_built_ins_bifurcation">
+<h3>The built-ins bifurcation</h3>
+<p>As we’ve also learned, other <em>built-ins</em> don’t follow inheritance’s normal rules either. Instances and <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="built-ins" id="ihibltns"></a>classes may both be skipped for the <em>implicit</em> method-name fetches of built-in operations, as a special case that differs from <em>explicit</em> name references. Because this is a <em>context-specific</em> divergence, it’s easier to demonstrate in code than to weave it into a single algorithm. In the following, <code>str</code> is the built-in, <code>__str__</code> is its explicit-name equivalent, and the <em>nonclass</em> instance is inconsistently skipped by the built-in only:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class C:</strong></code>                              <code><em># Inheritance special case...
+</em></code>        <code><strong>attr = 1</strong></code>                          <code><em># Built-ins skip a step</em></code>
+        <code><strong>def __str__(self): return('class')</strong></code>
+
+&gt;&gt;&gt; <code><strong>I = C()
+</strong></code>&gt;&gt;&gt; <code><strong>I.__str__(), str(I)</strong></code>                   <code><em># Both from class if not in instance</em></code>
+('class', 'class')
+
+&gt;&gt;&gt; <code><strong>I.__str__ = lambda: 'instance'
+</strong></code>&gt;&gt;&gt; <code><strong>I.__str__(), str(I)</strong></code>                   <code><em># Explicit=&gt;instance, built-in=&gt;class!</em></code>
+('instance', 'class')
+
+&gt;&gt;&gt; <code><strong>I.attr</strong></code>                                <code><em># Asymmetric with normal or explicit names</em></code>
+1
+&gt;&gt;&gt; <code><strong>I.attr = 2; I.attr</strong></code>
+2</pre>
+<p>As you may expect by now, the same holds true for <em>classes</em>—explicit names start at the class, but built-ins start at the class’s class—which is its <em>metaclass</em>, and defaults to <code>type</code>, which provides access to an implicit default:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class D(type):
+        def __str__(self): return('D class')
+</strong></code>&gt;&gt;&gt; <code><strong>class C(D):
+        pass
+</strong></code>&gt;&gt;&gt; <code><strong>C.__str__(C), str(C)</strong></code>                  <code><em># Explicit=&gt;super, built-in=&gt;metaclass!
+</em></code>('D class', "&lt;class '__main__.C'&gt;")
+
+&gt;&gt;&gt; <code><strong>class C(D):
+        def __str__(self): return('C class')
+</strong></code>&gt;&gt;&gt; <code><strong>C.__str__(C), str(C)</strong></code>                  <code><em># Explicit=&gt;class, built-in=&gt;metaclass!</em></code>
+('C class', "&lt;class '__main__.C'&gt;")
+
+&gt;&gt;&gt; <code><strong>class C(metaclass=D):
+        def __str__(self): return('C class')
+</strong></code>&gt;&gt;&gt; <code><strong>C.__str__(C), str(C)</strong></code>                  <code><em># Built-in=&gt;user-defined metaclass</em></code>
+('C class', 'D class')</pre>
+<p>In fact, it can sometimes be nontrivial to know <em>where</em> a name comes from in this model since all classes in both trees also inherit from <code>object</code>—including the default <code>type</code> metaclass. In the following’s explicit call, <code>C</code> gets a default <code>__str__</code> from <code>object</code> instead of the metaclass, per the first source of class inheritance (the class’s own MRO, which is the primary tree); by contrast, the <code>str</code> built-in skips ahead to the metaclass as before:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class C(metaclass=D):
+        pass
+</strong></code>&gt;&gt;&gt; <code><strong>C.__str__(C), str(C)</strong></code>                  <code><em># Explicit=&gt;object, built-in=&gt;metaclass</em></code>
+("&lt;class '__main__.C'&gt;", 'D class')
+
+&gt;&gt;&gt; <code><strong>C.__str__</strong></code>
+&lt;slot wrapper '__str__' of 'object' objects&gt;
+
+&gt;&gt;&gt; <code><strong>for k in (C, C.__class__, type):</strong> </code>
+        <code><strong>print([x.__name__ for x in k.__mro__])</strong></code>
+
+['C', 'object']
+['D', 'type', 'object']
+['type', 'object']</pre>
+<p>This is why we’ve gone to such great lengths to root out the full specs of inheritance. While some code may never need to care about all its many plot twists, attribute inheritance is clearly a convoluted business in Python, and uncertainty is not generally compatible with engineering.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="The Inheritance Wrap-Up"><div class="sect2" id="the_inheritance_wrap_up">
+<h2>The Inheritance Wrap-Up</h2>
+<p>And with all those details in hand, you finally have the complete Python inheritance story—or at least as much as we can cover in this text. It’s a tangled tale that today spans instances, classes, superclasses, metaclasses, descriptors, <code>super</code>, built-ins, and MROs, and all for the sake of looking up a simple attribute name.</p>
+<p>Some practical needs warrant exceptions, of course, but you should carefully consider the implications of an object-oriented language that applies inheritance—its <em>foundational</em> operation—in such a <em>labyrinthian</em> fashion. At a minimum, this should underscore the importance of keeping your own code simple to avoid making it dependent on the darker corners of such convoluted rules. As always, your code’s users and maintainers will be glad you did.</p>
+<p>For more fidelity on this story, see Python’s internal implementation of inheritance—a low-level but complete saga chronicled today in its files <em>object.c</em> and <em>typeobject.c</em>, the former for normal instances and the latter for classes. Delving into internals shouldn’t be required to use Python, but it’s the ultimate and sometimes sole source of truth in a complex and perpetually changing system. This is especially true in boundary cases born of accrued exceptions that raise the <a contenteditable="false" data-type="indexterm" data-primary="inheritance algorithm" data-startref="hergormth" id="id4963"></a>bar for learners and users, a downside we’ll revisit briefly in the next and closing chapter.</p>
+<p>For now, let’s move on to one last bit of metaclass “magic”—its methods, which rely on its inheritance offshoot.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Metaclass Methods"><div class="sect1" id="metaclass_methods">
+<h1>Metaclass Methods</h1>
+<p>Now that we have a handle on the way that metaclasses modify the inheritance of names, we can finally turn to their <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="methods" id="id4964"></a><a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="metaclasses" id="thdtclss"></a>methods with full clarity. In short, <em>methods</em> in metaclasses are inherited by and process their instance <em>classes</em>—instead of the nonclass instances that classes make.</p>
+<p>This makes metaclass methods similar in form and function to the <em>class methods</em> we studied in <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>, though their class-focused behavior is automatic. Moreover, they are available only to classes due to the last section’s inheritance rules—the limiting “twist” alluded to earlier. Metaclass methods also have no direct analog in class decorators, though decorators’ freedom to return arbitrary objects makes nearly anything possible with imagination.</p>
+<p>To demo the basics, the following’s metaclass defines a method made available to its class’s instances by metaclass acquisition (i.e., by inheritance from the secondary metaclass tree):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class M(type):
+        def z(cls):  print('M.z', cls)</strong></code>          <code><em># A metaclass: instances=classes</em></code>
+        <code><strong>def y(cls):  print('M.y', cls)</strong></code>          <code><em># y is overridden by instance C</em></code>
+
+&gt;&gt;&gt; <code><strong>class C(metaclass=M):
+        def y(self): print('C.y', self)</strong></code>         <code><em># A simple class: nonclass instances</em></code>
+        <code><strong>def x(self): print('C.x', self)</strong></code>         <code><em># Namespace dict holds x and y</em></code></pre>
+<p>Methods fetched from the class are plain functions as usual, but those from a metaclass are automatically bound to the class from which they were fetched, as we saw in an earlier example:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>C.x</strong></code>                                       
+&lt;function C.x at 0x10eaf4b80&gt; 
+&gt;&gt;&gt; <code><strong>C.y</strong></code>                                         <code><em># x and y defined in class itself</em></code>
+&lt;function C.y at 0x10eaf4ae0&gt; 
+&gt;&gt;&gt; <code><strong>C.z              </strong>  </code>                         <code><em># z acquired from metaclass
+</em></code>&lt;bound method M.z of &lt;class '__main__.C'&gt;&gt; 
+&gt;&gt;&gt; <code><strong>C.z()</strong></code>                                       <code><em># Metaclass method call: gets class
+</em></code>M.z &lt;class '__main__.C'&gt;</pre>
+<p>As we’ve also seen, methods fetched through a nonclass instance are bound to the instance unless <code>classmethod</code> or <code>staticmethod</code> are used, though such instances are moot here because they do not inherit metaclass names:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>I = C()</strong></code>
+&gt;&gt;&gt; <code><strong>I.x()            </strong>  </code>                         <code><em># Instance method calls: get inst</em></code>
+C.x &lt;__main__.C object at 0x10e9d1400&gt; 
+&gt;&gt;&gt; <code><strong>I.y()</strong></code>
+C.y &lt;__main__.C object at 0x10e9d1400&gt;
+&gt;&gt;&gt; <code><strong>I.z()</strong></code>                                       <code><em># Instance doesn't see meta names</em></code>
+AttributeError: 'C' object has no attribute 'z'
+&gt;&gt;&gt; <code><strong>I.x</strong></code>
+&lt;bound method C.x of &lt;__main__.C object at 0x10e9d1400&gt;&gt;</pre>
+<p>The only real new things about metaclass methods is that they are inherited only by classes and are bound to a class automatically. The latter half of this is explored in the next section.</p>
+<section data-type="sect2" data-pdf-bookmark="Metaclass Methods Versus Class Methods"><div class="sect2" id="metaclass_methods_versus_class_methods">
+<h2>Metaclass Methods Versus Class Methods</h2>
+<p>Though they differ in inheritance <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="methods" data-tertiary="class methods comparison" id="id4965"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="methods" data-tertiary="metaclass comparison" id="id4966"></a>visibility, metaclass methods are designed to manage class-level data, just like the <em>class methods</em> we studied in <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>. In fact, their roles can overlap—much as metaclasses can in general with class decorators—but metaclass methods are not accessible except through the class and do not require an explicit <code>classmethod</code> class-level declaration in order to be bound with the class.</p>
+<p>In other words, metaclass methods can be thought of as <em>implicit</em> class methods, with limited <em>visibility</em>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class M(type):
+        def a(cls):</strong></code>                        <code><em># Metaclass method: gets class</em></code>
+            <code><strong>cls.x = cls.y + cls.z</strong></code>
+
+&gt;&gt;&gt; <code><strong>class C(metaclass=M):
+         y, z = 11, 22
+         @classmethod</strong> </code>                     <code><em># Class method: gets class</em></code>
+         <code><strong>def b(cls):
+             return cls.x
+
+</strong></code>&gt;&gt;&gt; <code><strong>C.a()</strong></code>            <code><em># Call metaclass method; visible to class only</em></code>
+&gt;&gt;&gt; <code><strong>C.x</strong> </code>             <code><em># Creates class data on C, accessible to normal instances</em></code>
+33
+
+&gt;&gt;&gt; <code><strong>I = C()
+</strong></code>&gt;&gt;&gt; <code><strong>I.x, I.y, I.z</strong></code>
+(33, 11, 22)
+
+&gt;&gt;&gt; <code><strong>I.b()</strong></code>            <code><em># Class method: sends class, not instance; visible to instance</em></code>
+33
+&gt;&gt;&gt; <code><strong>I.a()</strong></code>            <code><em># Metaclass methods: accessible through class only</em></code>
+AttributeError: 'C' object has no attribute 'a'</pre>
+<p>This yields two very different ways to create class methods whose asymmetry is left as suggested pondering here.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Plus one more</em>: Python 3.6 added an operator-overloading method named <code>__init_subclass__</code>. This method is called whenever the containing class is <em>subclassed</em>, and it receives a single argument: the new subclass object. It provides yet another way to manage classes, though this method is nowhere near as general as class decorators or metaclasses: it’s run only for a class’s own subclasses and only when those subclasses are created. Similar to metaclass methods, this method is also implicitly converted to a <em>class method</em>. Because we just can’t get enough of those implicit hooks!</p>
+</div>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Operator Overloading in Metaclass Methods"><div class="sect2" id="operator_overloading_in_metaclass_metho">
+<h2>Operator Overloading in Metaclass Methods</h2>
+<p>Just in case your head is not yet <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="methods" data-tertiary="operator overloading in" id="id4967"></a><a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="metaclass methods" id="id4968"></a>spinning, metaclasses, just like normal classes, may also employ operator overloading to make built-in operations applicable to their instance classes. The <code>__getitem__</code> indexing method in the following metaclass, for example, is a metaclass method designed to process <em>classes</em> themselves—the classes that are instances of the metaclass, not those classes’ own nonclass instances:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class M(type):
+        def __getitem__(cls, i):</strong></code>         <code><em># Meta method for processing classes:</em></code>
+            <code><strong>return cls.data[i]</strong></code>           <code><em>#  Built-ins skip class, use meta</em></code>
+                                         <code><em>#  Explicit names search class + meta</em></code>
+&gt;&gt;&gt; <code><strong>class C(metaclass=M):</strong></code>                <code><em>#  Data descriptors in meta used first</em></code>
+        <code><strong>data = 'hack'</strong></code>
+
+&gt;&gt;&gt; <code><strong>C[0]</strong></code>                  <code><em># Metaclass instance names: visible to class only</em></code>
+'h'
+&gt;&gt;&gt; <code><strong>C.__getitem__</strong></code>
+&lt;bound method M.__getitem__ of &lt;class '__main__.C'&gt;&gt;
+
+&gt;&gt;&gt; <code><strong>I = C()
+</strong></code>&gt;&gt;&gt; <code><strong>I.data, C.data</strong></code>        <code><em># Normal inheritance names: visible to instance and class</em></code>
+('hack', 'hack') 
+&gt;&gt;&gt; <code><strong>I[0]</strong></code>
+TypeError: 'C' object is not subscriptable</pre>
+<p>And if that’s not abstruse enough, when both class and metaclass overload the <em>same</em> operator, the former applies to classes and the latter to nonclass instances:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class C(metaclass=M):</strong></code>
+<code> <strong>       data = 'hack'</strong></code>
+<code> <strong>       def __getitem__(self, i):</strong></code>
+<code> <strong>           return self.data[i]</strong></code>
+ 
+&gt;&gt;&gt; <code><strong>I = C()</strong></code>
+&gt;&gt;&gt; <code><strong>I.data = 'code'</strong></code>
+&gt;&gt;&gt; <code><strong>C[0], I[0]</strong></code>            <code><em># C's [] from metaclass, I's [] from class</em></code> 
+('h', 'c')</pre>
+<p>All of which leads us to the closing compare-and-contrast of the next section.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Metaclass Methods Versus Instance Methods"><div class="sect2" id="metaclass_methods_versus_instance_metho">
+<h2>Metaclass Methods Versus Instance Methods</h2>
+<p>The inescapable conclusion of <a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="methods" data-tertiary="instance methods comparison" id="mclmincc"></a><a contenteditable="false" data-type="indexterm" data-primary="instance methods" data-secondary="metaclass comparison" id="cmemepa"></a>this technical novel is that metaclass methods provide a separate—and arguably redundant—way to code object behavior with classes in Python. As we’ve learned, the usual way to implement objects is with classes and their nonclass instances. Here’s the <em>normal</em> case—with class data, constructor, regular method, and operator overloading available to instances and subclasses:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Employee:    </strong>  </code>                         <code><em># A "normal" class</em></code>
+<code> <strong>       rate = 50      </strong>  </code>                         <code><em># With shared class data</em></code>
+<code> <strong>       def __init__(self, name, hours):</strong></code>          <code><em># Plus instance data and methods</em></code>
+<code> <strong>           self.name = name</strong></code>
+<code> <strong>           self.hours = hours</strong></code>
+<code> <strong>       def pay(self):</strong></code>
+<code> <strong>           print(f' <img src="assets/money-bag_1f4b0.png" width="160" height="160"/> {self.name} <img src="assets/right-arrow_27a1-fe0f.png" width="160" height="160"/> ${self.rate * self.hours:,.2f}')</strong></code>
+<code> <strong>       def __iadd__(self, hours):</strong></code>
+<code> <strong>           self.hours += hours</strong></code>
+<code> <strong>           return self</strong></code></pre>
+<p>As usual, we make an instance of a normal class like this by calling it with constructor arguments:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>pat = Employee('Pat', 2_000)</strong>   </code>               <code><em># A "normal" nonclass instance</em></code>
+&gt;&gt;&gt; <code><strong>pat.pay()          </strong>  </code>                         <code><em># Methods inherited from class</em></code>
+<img src="assets/money-bag_1f4b0.png" width="160" height="160"/> Pat <img src="assets/right-arrow_27a1-fe0f.png" width="160" height="160"/> $100,000.00
+&gt;&gt;&gt; <code><strong>pat += 1_000       </strong>  </code>                         <code><em># Updates instance data</em></code>
+&gt;&gt;&gt; <code><strong>pat.pay()</strong></code>
+<img src="assets/money-bag_1f4b0.png" width="160" height="160"/> Pat <img src="assets/right-arrow_27a1-fe0f.png" width="160" height="160"/> $150,000.00</pre>
+<p>And to make more instances, we simply call the class again:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>pat2 = Employee('Pat2', 1_000)</strong> </code>               <code><em># Another "normal" instance</em></code>
+&gt;&gt;&gt; <code><strong>pat2.pay()</strong></code>
+<img src="assets/money-bag_1f4b0.png" width="160" height="160"/> Pat2 <img src="assets/right-arrow_27a1-fe0f.png" width="160" height="160"/> $50,000.00
+&gt;&gt;&gt; <code><strong>pat2</strong></code>
+&lt;__main__.Employee object at 0x10cf5c680&gt;</pre>
+<p>The equivalent <em>metaclass</em> can also provide data, regular methods, and operator overloading. But per-instance constructors don’t quite apply; methods receive and process a class, not instances of it; and this behavior is for subclasses and instance classes in the secondary “type” tree only:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class MetaEmployee(type):</strong> </code>                    <code><em># A metaclass class</em></code>
+<code> <strong>       rate = 50</strong> </code>                                <code><em># With metaclass data and methods</em></code>
+<code> <strong>       def pay(cls):</strong></code>
+<code> <strong>           print(f'<img src="assets/money-bag_1f4b0.png" width="160" height="160"/> {cls.name} <img src="assets/right-arrow_27a1-fe0f.png" width="160" height="160"/> ${cls.rate * cls.hours:,.2f}')</strong></code>
+<code> <strong>       def __iadd__(cls, hours):</strong></code>
+<code> <strong>           cls.hours += hours</strong></code>
+<code> <strong>           return cls</strong></code></pre>
+<p>Because metaclass instances are classes, we define a new <em>class</em> per instance instead of running a call and code instance data as class attributes, though all the behavior defined in the metaclass applies to its instance classes:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class pat(metaclass=MetaEmployee):</strong>  </code>          <code><em># A metaclass instance: class</em></code>
+<code> <strong>       name = 'Pat'   </strong>  </code>                         <code><em># With class data per instance</em></code>
+<code> <strong>       hours = 2_000</strong></code>
+ 
+&gt;&gt;&gt; <code><strong>pat.pay()          </strong>  </code>                         <code><em># Methods inherited from metaclass</em></code>
+<img src="assets/money-bag_1f4b0.png" width="160" height="160"/> Pat <img src="assets/right-arrow_27a1-fe0f.png" width="160" height="160"/> $100,000.00
+&gt;&gt;&gt; <code><strong>pat += 1_000       </strong>  </code>                         <code><em># Updates class data</em></code>
+&gt;&gt;&gt; <code><strong>pat.pay()</strong></code>
+<img src="assets/money-bag_1f4b0.png" width="160" height="160"/> Pat <img src="assets/right-arrow_27a1-fe0f.png" width="160" height="160"/> $150,000.00</pre>
+<p>We haven’t made any normal instances here—just a <em>class</em> that nevertheless serves as an information record with both data and behavior methods. Coding differences aside, the main functional divergence in the metaclass approach is that <em>nonclass</em> instances created from such a class don’t inherit any of the behavior defined in a metaclass:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>pat2 = pat()</strong></code>                                  <code><em># A "normal" instance of class pat</em></code>
+&gt;&gt;&gt; <code><strong>pat2.pay()</strong></code>                                    <code><em># Metaclass behavior not available</em></code>
+AttributeError: 'pat' object has no attribute 'pay'</pre>
+<p>To make additional instances in the metaclass world, we must instead code additional classes:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class pat2(metaclass=MetaEmployee):</strong> </code>          <code><em># Metaclass instances are classes</em></code>
+        <code><strong>name = 'Pat2'</strong></code>
+<code> <strong>       hours = 1_000</strong></code>
+ 
+&gt;&gt;&gt; <code><strong>pat2.pay()        </strong>  </code>                         <code> <em># With all metaclass data+methods</em></code>
+<img src="assets/money-bag_1f4b0.png" width="160" height="160"/> Pat2 <img src="assets/right-arrow_27a1-fe0f.png" width="160" height="160"/> $50,000.00</pre>
+<p>Calling the metaclass with <em>no</em> arguments doesn’t work at all because it makes a <em>class</em>, not an instance of a class—though calling the metaclass with full <code>type</code> arguments <em>does</em> work because it’s equivalent to running a <code>class</code> statement (and yes, the fact that metaclasses are classes, too, makes some of this paragraph’s logic circular, but that’s just how Python works: metaclasses are special-cased for metaclass roles):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>pat2 = MetaEmployee('pat2', (), dict(name='Pat2', hours=1_000))</strong></code>
+&gt;&gt;&gt; <code><strong>pat2.pay()</strong></code>
+<img src="assets/money-bag_1f4b0.png" width="160" height="160"/> Pat2 <img src="assets/right-arrow_27a1-fe0f.png" width="160" height="160"/> $50,000.00
+&gt;&gt;&gt; <code><strong>pat2</strong></code>
+&lt;class '__main__.pat2'&gt;</pre>
+<p>In sum, metaclasses allow us to implement classes that work much like the nonclass instances we’ve used throughout this book. As to <em>why</em> you’d want to swap one kind of instance for another with identical functionality but different coding, we’ll have to defer to other resources to justify the <em>redundancy</em>. Given the many convolutions that metaclasses bring to the table, it’s difficult not to see this as complexity for all in the name of rare and narrow roles. While that has been a recurring theme in both Python and this book, it’s time to wrap up and <a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="metaclasses" data-startref="thdtclss" id="id4969"></a><a contenteditable="false" data-type="indexterm" data-primary="metaclasses" data-secondary="methods" data-tertiary="instance methods comparison" data-startref="mclmincc" id="id4970"></a><a contenteditable="false" data-type="indexterm" data-primary="instance methods" data-secondary="metaclass comparison" data-startref="cmemepa" id="id4971"></a>move on to the conclusion.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00051">
+<h1>Chapter Summary</h1>
+<p>In this chapter, we studied metaclasses, explored examples of them in action, and formalized the rules of inheritance that they extend. Along the way, we also saw how the roles of class decorators and metaclasses often intersect: because both run at the conclusion of a <code>class</code> statement, they can sometimes be used interchangeably. We also learned how metaclass methods define behavior for classes much like the class methods we met earlier, but are limited in scope to the secondary inheritance tree searched for classes.</p>
+<p>Since this chapter covered an advanced topic, we’ll work through just a few quiz questions to review the basics (candidly, if you’ve made it this far in a chapter on metaclasses, you probably already deserve extra credit!). Because this is the last part of the book, we’ll also forgo the end-of-part exercises. Be sure to see the appendixes that follow for Python platform pointers and the solutions to the prior parts’ exercises; the last of these includes a sampling of short application-level programs for self-study.</p>
+<p>Once you finish the quiz, you’ve officially reached the end of this book’s technical material. The next and final chapter offers some brief thoughts about Python to wrap up the book at large and closes with some fun. We’ll regroup there in the Learning Python benediction after you work through this final quiz.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000201">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>What is a metaclass?</p></li>
+<li><p>How do you declare the metaclass of a class?</p></li>
+<li><p>How do class decorators overlap with metaclasses for managing classes?</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" class="pagebreak-before" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000200">
+<h1 class="less_space">Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>A metaclass is a class used to create a class. Classes are instances of the <code>type</code> class by default. Metaclasses are usually subclasses of the <code>type</code> class, which customize classes. They may redefine class-creation protocol methods like <code>__new__</code> and <code>__init__</code>to customize the class creation call issued at the end of a <code>class</code> statement. They may also define data and methods that provide behavior for their instance classes,  but these are inherited only by classes, not their nonclass instances. Metaclasses can also be coded in other ways—as simple functions, for example—but they are responsible for making and returning an object for the new class. Finally, metaclasses constitute a secondary pathway for inheritance search used for classes alone; this allows classes to ape normal instance behavior, though it bifurcates the class story for relatively rare and narrow roles.</p></li>
+<li><p>Use a keyword argument in the <code>class</code> header line: <code>class <em>C</em>(metaclass=<em>M</em>)</code>. The <code>class</code> header line can also name normal superclasses before the <code>metaclass</code> keyword argument; these superclasses are searched before metaclasses for inheritance run from a class.</p></li>
+<li><p>Because both are automatically triggered at the end of a <code>class</code> statement, class decorators and metaclasses can both be used to manage classes. Decorators rebind a class name to a callable’s result, and metaclasses route class creation through a callable, but both hooks can be used for similar purposes. To manage classes, decorators simply augment and return the original class objects. Metaclasses augment a class after or before they create it. As noted, metaclasses can also provide behavior for their instance classes in the form of methods that are not immediately supported by decorators, though the objects returned by decorators can do anything supported by the Python language.</p></li>
+</ol>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>

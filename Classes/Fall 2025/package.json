@@ -1,0 +1,12 @@
+{
+  "type": "module",
+  "name": "obsidian-ai-teach",
+  "version": "1.0.0",
+  "description": "AI-powered teaching material generator for Obsidian lecture notes",
+  "main": "teach.js",
+  "dependencies": {
+    "fs-extra": "^11.0.0",
+    "glob": "^10.0.0",
+    "gray-matter": "^4.0.0"
+  }
+}

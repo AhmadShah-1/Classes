@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 41. All Good Things"><div class="chapter" id="all_good_things">
+<h1><span class="label">Chapter 41. </span>All Good Things</h1>
+<p>Welcome to the end of the book! Now that you’ve made it this far, this chapter says a few words in closing about Python’s evolution before turning you loose on the software field and then wraps up with a bit of fun.</p>
+<p>You’ve now had a chance to see the entire Python language yourself—including some advanced features that may seem at odds with a scripting language meant to be accessible to nonprofessionals. Though many users will understandably accept this as status quo, in an open source project, it’s crucial that some ask the “why” questions too. Ultimately, the trajectory of the Python story—and its true <span class="keep-together">conclusion—is</span> at least in part up to you.</p>
+<p>Toward that end, this chapter begins by calling out what may be one of Python’s biggest downsides: its rate of change. This topic is unavoidably subjective, and you should weigh its coverage here on whatever scale you bring to the table.</p>
+<section data-type="sect1" data-pdf-bookmark="The Python Tsunami"><div class="sect1" id="the_python_tsunami">
+<h1>The Python Tsunami</h1>
+<p>Twelve years ago, this book warned that Python was growing too convoluted and bloated—and then Python grew a lot more convoluted and bloated. Clearly, this message has not reached those behind the convoluting and bloating.</p>
+<p>Even so, this stuff still matters. To parrot the Preface, the last dozen years have hosted the rise of f-string literals, named-assignment expressions, <code>match</code> statements, type hinting, async coroutines, dictionary union, star-unpacking proliferation, underscore digit separators, module attribute hooks, exception groups, dictionary-key insertion order, positional-only function arguments, hash-based bytecode files, the <code>sys.executable</code> snub, and other superfluous additions, opinionated deprecations, and tangled mutations we’ve met along the way.</p>
+<p>Moreover, this <em>tsunami</em> of mods simply added to the flood of complexity and redundancy that came before it—including the oddly artificial MRO, the stunningly implicit <code>super</code>, and the horrifically convoluted inheritance algorithm of the preceding chapter, which elevates metaclasses and descriptors to prerequisites. The sum of these is an esoteric morass, which obfuscates the fundamental meaning of names in Python.</p>
+<p>Most of what should be said about these changes already has been said in this book, but their combined weight qualifies as <a contenteditable="false" data-type="indexterm" data-primary="tools" data-secondary="increase in" id="id4972"></a><a contenteditable="false" data-type="indexterm" data-primary="redundancy" data-secondary="increase in" id="id4973"></a>problematic for a tool that promotes itself as simpler than others. To illustrate, <a data-type="xref" href="#a_sampling_of_redundancy_and_tool_explo">Table 41-1</a> updates the prior edition’s accounting of Python’s largely unchecked growth so far—a partial but representative tally.</p>
+<table class="border" id="a_sampling_of_redundancy_and_tool_explo">
+<caption><span class="label">Table 41-1. </span>A sampling of redundancy and tool explosion in Python</caption>
+<thead>
+<tr>
+<th>Category</th>
+<th>Members</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3 major paradigms</td>
+<td>Procedural, functional, object-oriented</td>
+</tr>
+<tr>
+<td>4 string-formatting tools</td>
+<td><code>%</code> expression, <code>str.format</code>, <code>string.Template</code>, f-strings</td>
+</tr>
+<tr>
+<td>4 attribute-accessor tools</td>
+<td>properties, descriptors, <code>__getattr__</code>, <code>__getattribute__</code></td>
+</tr>
+<tr>
+<td>2 finalization statements</td>
+<td><code>try</code>/<code>finally</code>, <code>with</code> plus context managers</td>
+</tr>
+<tr>
+<td>4 varieties of comprehension</td>
+<td>List, set, dictionary, generator</td>
+</tr>
+<tr>
+<td>3 class-augmentation options</td>
+<td>Manual rebinding, <code>@</code> decorators, metaclasses</td>
+</tr>
+<tr>
+<td>4 kinds of methods</td>
+<td>Instance, static, class, metaclass</td>
+</tr>
+<tr>
+<td>2 attribute-storage systems</td>
+<td><code>__dict__</code>, <code>__slots__</code></td>
+</tr>
+<tr>
+<td>4 flavors of imports</td>
+<td>Module, package, package relative, namespace package</td>
+</tr>
+<tr>
+<td>2 superclass-reference tools</td>
+<td>Explicit class names, <code>super</code> plus MRO</td>
+</tr>
+<tr>
+<td>6 assignment forms</td>
+<td>Basic, sequence, multitarget, <code>+=</code> augmented, <code>*</code> unpacking, <code>:=</code> named</td>
+</tr>
+<tr>
+<td>3 types of functions</td>
+<td>Basic, <code>yield</code> generator, <code>async</code> coroutine</td>
+</tr>
+<tr>
+<td>6 function-argument forms</td>
+<td>Basic, <code><em>name</em>=<em>X</em></code>, <code>*<em>X</em></code>, <code>**<em>X</em></code>, keyword-only, positional-only</td>
+</tr>
+<tr>
+<td>2 class-behavior sources</td>
+<td>Superclasses, metaclasses</td>
+</tr>
+<tr>
+<td>3 multiple-choice tools</td>
+<td><code>if</code>/<code>elif</code>, dictionary indexing, <code>match</code></td>
+</tr>
+<tr>
+<td>4 state-retention options</td>
+<td>Classes, closures, function attributes, mutables</td>
+</tr>
+<tr>
+<td>2 bytecode storage schemes</td>
+<td>timestamp, hashkey</td>
+</tr>
+<tr>
+<td>3 name-string importers</td>
+<td><code>exec</code>, <code>__import__</code>, <code>importlib</code></td>
+</tr>
+<tr>
+<td>2 kinds of decorators</td>
+<td>Function, class</td>
+</tr>
+<tr>
+<td>4 dictionary-merge options</td>
+<td><code>for</code> loops, <code>update</code> method, <code>*<em>D</em></code> unpacking, <code>|</code> union operator</td>
+</tr>
+<tr>
+<td>2 exception-handler models</td>
+<td><code>except</code> singles, <code>except*</code> groups</td>
+</tr>
+<tr>
+<td>4 statement-aping expressions</td>
+<td><code>if</code>/<code>else</code>, comprehensions, <code>lambda</code> functions, <code>:=</code> assignment</td>
+</tr>
+<tr>
+<td>8 starred collectors/unpackers</td>
+<td>Assignment; function header, call; list, tuple, dict, set literal; <code>match</code></td>
+</tr>
+</tbody>
+</table>
+<p>If you care about Python, you should take a moment to browse this table. It reflects a virtual <em>explosion</em> of bifurcation, redundancy, and toolbox size—and <em>81</em> concepts that can all be required reading for both newcomers learning the language and experts reusing code written by others. Most of its categories began with just one original member in Python; many were added in part to imitate other languages; and none can be simplified today by pretending that the latest Python is the only Python that matters. Python 3.X now owns the flux in full.</p>
+<p><em>F-strings</em> are a prime example in this category. This book’s prior edition lamented the three redundant string-formatting tools of its time, but this set was subsequently expanded to a colossal four. While f-strings may be deemed a refinement by some, in truth they are a minor variation on a theme that adds yet another topic to the heap. More fundamentally, millions of programmers have written millions of programs using longer-lived options; while new code has the luxury of using new tools, pretending that the past didn’t happen constitutes a break with reality.</p>
+<p>Even extensions perhaps more unique often come loaded with surplus complexity. The <code>match</code> statement, for example, couldn’t simply provide a potentially useful multiple-choice option. It had to bolt on the conceptually tortuous and syntactically ad hoc structural pattern matching, which seems an answer to a question that nobody asked.</p>
+<p>Nor are additions the only user-unfriendly theme in Python. Its subjective <em>changes</em> and <em>deprecations</em> are now so common that they must be expected as an implicit cost of using the language. To be clear, your Python code will almost certainly break eventually when you upgrade to a new Python release—and only because a Python core developer’s whim was made mandatory for everyone else.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="The Python Sandbox"><div class="sect1" id="the_python_sandbox">
+<h1>The Python Sandbox</h1>
+<p>All of this stems from the fact that Python <a contenteditable="false" data-type="indexterm" data-primary="sandbox" id="id4974"></a>is, and probably always has been, a constantly morphing <em>sandbox</em> of ideas, which prioritizes its developers’ egos over its users’ needs. Playing in a sandbox can be fun, of course, but it’s lousy for the millions of people downstream from its churn. These people are simply trying to write software that’s reliable and durable. Like all engineering endeavors, that works best with a <em>stable base</em>, not constantly shifting sand.</p>
+<p>As a pathological example, Python’s sandbox model seems to have hit its zenith in <em>type hinting</em>—the optional, unused, out-of-place, and embarrassingly academic subdomain we glanced in <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a> but largely omitted here by design. This is unchecked convolution on parade, and leaves Python users to puzzle over the paradox of pointless type declarations in a dynamically typed language. Sadly, it’s also likely to appeal to control freaks.</p>
+<p>As we’ve also seen regularly in this book, because the sandbox is oriented toward experts, it inevitably produces tools that assume that you have to already be an expert to use them. Classes and OOP, for example, are required skills for even simple exception handling. Python is not just for its developers, but the <em>forward knowledge</em> assumptions of many of its additions embed this message and raise the bar for newcomers unnecessarily and unkindly.</p>
+<p>To be fair, it’s not just Python: the entire software field is permeated by a <em>culture of change</em> in which churn is an expected constant, and prowess often consists of flaunting the latest and greatest tools even when they are unwarranted. This doesn’t prove intelligence (and often demos its absence), but annual and mandatory mods are now a norm. Whether one breaks your PC, smartphone, or Python code, it’s difficult not to see this as divisive and rude.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="The Python Upside"><div class="sect1" id="the_python_upside">
+<h1>The Python Upside</h1>
+<p>All that being said, it’s also difficult to deny that Python, despite its warts, is still more productive and pleasant to use than other programming languages. If you’ve coded other languages, you know that many come laden with extraneous syntax and rules, which seem to reflect an assumption that programmers cannot be trusted to do their jobs. By sharp contrast, Python’s dynamic typing and innate flexibility make it more ally than obstacle.</p>
+<p>Python’s rise in <em>popularity</em> seems to attest to this value proposition, though it’s impetus may be <a contenteditable="false" data-type="indexterm" data-primary="popularity rise of Python" id="id4975"></a><a contenteditable="false" data-type="indexterm" data-primary="Python" data-secondary="popularity rise" id="id4976"></a>more practical than academic. Today’s larger Python world may naturally be less concerned with the language’s original and perhaps idealistic goals than with solving concrete problems. In the real world that hosts Python popularity, arcane language topics usually take a back seat to libraries, platforms, and schedules—calls that Python has always answered in full.</p>
+<p>Moreover, some change and complexity is <em>warranted</em> in software. Programming is a substantially challenging task (despite what you may have heard), and computer science is a field still young enough to be excused for some youthful thrashing. For Python specifically, though, complexity and thrashing should be modulated by broad appeal.</p>
+<p>In the end, the Python language remains a remarkably expressive tool that still fits both programming tasks and your brain as well as it ever did. Especially if you stick to its tried-and-true parts that propelled Python to the top of the language charts, you’ll likely find it an enabling technology that makes coding as much fun as chore.</p>
+<p>Prudent engineers, though, would do well to exercise caution when upgrading to the leading edge, and give a pass to the sandbox’s annual outflow except when clearly beneficial. Given that this is now an industry-wide requirement, it’s hardly cause to dismiss an otherwise useful tool. Bad practice, however, does not justify bad practice.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Closing Thoughts"><div class="sect1" id="closing_thoughts">
+<h1>Closing Thoughts</h1>
+<p>So there you have it: some observations from the trenches, born of three decades using, teaching, and advocating Python, and grounded in a desire to improve the Python story.</p>
+<p>None of these concerns are entirely new. Indeed, the growth of this very book over the years seems a testament to that of Python itself—if not an ironic eulogy to a mission statement that once stressed simplification of programming, and accessibility to both experts and nonprofessionals alike. Judging by language heft alone, that dream seems to have been either neglected over time or abandoned entirely.</p>
+<p>But we can do better. A well-established tool like Python can afford to focus more on its users’ needs than its changers’ hubris. Per the old adage, we simply have to stop fixing what isn’t broken. If we can, it will go far toward addressing the concerns of those vetting the language for projects that cannot afford to budget for shifting sands.</p>
+<p>More importantly, in an open source project like Python the answers to such questions must be formed anew by each wave of newcomers. Hopefully, the wave you ride in will have as much common sense as fun while plotting Python’s future.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Where to Go from Here"><div class="sect1" id="where_to_go_from_here">
+<h1>Where to Go from Here</h1>
+<p>And that’s a wrap, folks. You’ve officially reached the end of this book. Now that you know Python inside and out, your next step, should you choose to take it, is to explore the libraries, techniques, and tools available in the application domains in which you will work.</p>
+<p>Because Python is so widely used, you’ll find ample resources for using it in almost any domain you can think of—from GUIs, the web, and apps, to numeric programming, databases, and system administration. See <a data-type="xref" href="ch01.html#a_python_qampersanda_session">Chapter 1</a> and your favorite web browser for pointers to popular tools and topics.</p>
+<p>This is where Python starts to become truly fun, but this is also where this book’s story ends, and those of other resources begin. Good luck with your journey. And as always: code well!</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Encore: Print Your Own Completion Certificate!"><div class="sect1" id="encore_print_your_own_completion_certif">
+<h1>Encore: Print Your Own Completion Certificate!</h1>
+<p>And one last thing: in lieu of exercises for this part of the book, <a data-type="xref" href="#example_fourone_onedot_you_made_itdotpy">Example 41-1</a> lists a bonus <a contenteditable="false" data-type="indexterm" data-primary="completion certificate" id="complrtfc"></a>script for you to study and run on your own. A book can’t directly provide completion certificates for its readers (and the certificates would be worthless if it could), but it can include an arguably cheesy Python script that does. This one creates a simple book completion certificate in both plain-text and HTML files, and auto-opens them in a web browser or other viewer where supported.</p>
+<div data-type="example" id="example_fourone_onedot_you_made_itdotpy">
+<h5><span class="label">Example 41-1. </span>You-made-it.py</h5>
+<pre data-type="programlisting">"""
+Generate a simple class completion certificate: printed to
+the console, and saved in auto-opened text and HTML files.
+Run from a console, and print saved output files if desired.
+Works on all PCs, but may require manual opens on smartphones.
+"""
+import time, sys, html, os
+
+maxline = 60                               <code><em># Text separator lines</em></code>
+browser = True                             <code><em># Display in a browser?
+</em></code>saveto  = 'Certificate'                    <code><em># Output filenames prefix</em></code>
+
+<code><em># Template values</em></code>
+SEPT = '*' * maxline
+DATE = time.strftime('%A, %b %d, %Y, %I:%M %p')
+NAME = input('Please enter your name: ').strip() or 'An unknown reader'
+BOOK = 'Learning Python, 6th Edition'
+SITE = 'https://learning-python.com'<code> <em>      # For icon, image, link</em></code>
+
+<code><em># F-string templates work for preset in-code references
+</em></code>texttext = f"""
+{SEPT}
+
+<img src="assets/star_2b50.png" width="160" height="160"/>️ Official Certificate <img src="assets/star_2b50.png" width="160" height="160"/>️
+
+Date: {DATE}
+
+This certifies that:
+
+\t{NAME}
+
+Has survived the massive tome:
+
+\t{BOOK}
+
+And is now entitled to all privileges thereof, including
+the right to proceed on to learning how to develop websites,
+desktop GUIs, scientific models, smartphone apps, and 
+anything else that the future of computing may hold. 
+
+--Your humble <img src="assets/snake_1f40d.png" width="160" height="160"/> instructor
+
+(Note: void where obtained by skipping ahead.)
+
+{SEPT}
+"""
+
+<code><em># Interact, setup</em></code>
+for c in 'Congratulations!'.upper() + '<img src="assets/clapping-hands_1f44f.png" width="160" height="160"/>' * 3:
+    print(c, end=' ')
+    sys.stdout.flush()    <code><em># Else some shells wait for \n
+</em></code>    time.sleep(0.25)      <code><em># Reveal message slowly for fun</em></code>
+print(); time.sleep(3)
+
+<code><em># Make text-file version</em></code>
+textto = saveto + '.txt'
+fileto = open(textto, 'w', encoding='utf8')
+print(texttext, file=fileto)
+fileto.close()
+
+<code><em># Start HTML: replace text markers with tags</em></code>
+htmltext = texttext.replace(SEPT,   '&lt;div class=cert&gt;', 1)
+htmltext = htmltext.replace(SEPT,   '&lt;/div&gt;')
+htmltext = htmltext.replace('<img src="assets/star_2b50.png" width="160" height="160"/>️ ', '&lt;h1 align=center&gt;<img src="assets/star_2b50.png" width="160" height="160"/>️&amp;nbsp;', 1)
+htmltext = htmltext.replace(' <img src="assets/star_2b50.png" width="160" height="160"/>️', '&amp;nbsp;<img src="assets/star_2b50.png" width="160" height="160"/>️&lt;/h1&gt;')
+
+<code><em># Line-by-line mods</em></code>
+linemods = []
+for line in htmltext.split('\n'):
+    if line == '':
+        line = '&lt;p&gt;'
+    elif line[:1] == '\t':
+        line = f"&lt;i&gt;{'&amp;nbsp;' * 4}{html.escape(line[1:])}&lt;/i&gt;"   <code><em># 3.6+</em></code>
+    linemods.append(line)
+htmltext = '\n'.join(linemods)
+     
+<code><em># Ignorable HTML bits (mind the {{ and }} escapes)</em></code>
+preamble = f'''&lt;!doctype html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8"&gt;
+&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+&lt;link rel="icon" type="image/x-icon" href="{SITE}/favicon.ico"&gt;
+&lt;style&gt; 
+body  {{font-family: Arial, Helvetica, sans-serif;}} 
+.cert {{background-color: cornsilk; padding: 16px; border: medium solid black;}}
+&lt;/style&gt;
+&lt;title&gt;LP6E Completion Certificate&lt;/title&gt;
+&lt;/head&gt;
+'''
+
+image, page = 'lp6e-large.jpg', 'about-lp.html'
+footer = f'''
+&lt;table&gt;&lt;tr&gt;
+&lt;td&gt;&lt;a href="{SITE}/{page}"&gt;&lt;img src="{SITE}/{image}" hspace=10 height=50&gt;&lt;/a&gt;
+&lt;td&gt;&lt;a href="{SITE}/{page}" align=center&gt;&lt;i&gt;Book support site&lt;/i&gt;&lt;/a&gt;
+&lt;/tr&gt;&lt;/table&gt;
+'''
+
+<code><em># Put it all together</em></code>
+htmltext = f'{preamble}&lt;body bgcolor="#eee"&gt;{htmltext}{footer}&lt;/body&gt;&lt;/html&gt;'
+
+<code><em># Make HTML-file version</em></code>
+htmlto = saveto + '.html'
+fileto = open(htmlto, 'w', encoding='utf8')
+print(htmltext, file=fileto)
+fileto.close()
+
+<code><em># Display text results in console</em></code>
+print(f'[File: {textto}]', end='')
+print('\n' * 2, open(textto, encoding='utf8').read())
+
+<code><em># Open docs (may also fail silently)
+</em></code>if browser:
+    try:
+        import webbrowser
+        for doc in (textto, htmlto):
+            webbrowser.open('file://' + os.path.abspath(doc))
+    except Exception:
+        print('Unable to auto-open docs: open manually.')
+
+input('[Press Enter to close]')    <code><em># Keep window open if clicked</em></code></pre>
+</div>
+<p>Run this script in a console or other interface on your own, and study its code for a review of some of the ideas we’ve covered in this book. Copy/paste from emedia or fetch it from this book’s examples package as described in the <a href="preface01.html#preface">Preface</a>, but ignore its undocumented and out-of-scope HTML bits if you’re not a web developer. You won’t find any descriptors, decorators, metaclasses, or <code>super</code> calls in this code, but it’s typical Python nonetheless:</p>
+<pre data-type="programlisting">$ <code><strong>python3 You-made-it.py</strong> </code>
+Please enter your name: <strong>Some Body</strong>
+C O N G R A T U L A T I O N S ! <img src="assets/clapping-hands_1f44f.png" width="160" height="160"/> <img src="assets/clapping-hands_1f44f.png" width="160" height="160"/> <img src="assets/clapping-hands_1f44f.png" width="160" height="160"/> 
+…<code><em>etc</em></code>…</pre>
+<p>This script works in full on PCs (where code might also open files with <code>os.startfile</code>, or “open” or “xdg-open” commands in <code>os.system</code>), but on smartphones you’ll probably need to open the output files manually in file-explorer apps. When run, it generates the web page captured in the fully gratuitous <a data-type="xref" href="#html_doc_created_and_opened_by_you_made">Figure 41-1</a>. This could be much more grandiose, of course; see the web for pointers to Python support for PDFs and other document tools such as Sphinx surveyed in <a data-type="xref" href="ch15.html#the_documentation_interlude">Chapter 15</a>. But hey—if you’ve made it to the end of this book, you <a contenteditable="false" data-type="indexterm" data-primary="completion certificate" data-startref="complrtfc" id="id4977"></a>deserve another joke or two.</p>
+<figure><div id="html_doc_created_and_opened_by_you_made" class="figure">
+<img src="assets/lpy6_4101.png" alt="" width="1710" height="1186"/>
+<h6><span class="label">Figure 41-1. </span>HTML doc created and opened by You-made-it.py</h6>
+</div></figure>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>

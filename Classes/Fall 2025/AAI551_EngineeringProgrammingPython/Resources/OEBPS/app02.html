@@ -1,0 +1,1811 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="appendix" epub:type="appendix" data-pdf-bookmark="Appendix B. Solutions to End-of-Part Exercises"><div class="appendix" id="appendix_b_solutions_to_end_of_part_exe">
+<h1><span class="label">Appendix B. </span>Solutions to End-of-Part Exercises</h1>
+<p>This appendix provides solutions for the book’s end-of-part exercises. Code files named by captions or narrative in these solutions are available in the book examples package’s <em>AppendixB</em> folder, which has one subfolder per part (e.g., <em>AppendixB/Part1</em> is the first part’s files). See the <a href="preface01.html#preface">Preface</a> for more info on the examples package.</p>
+<section data-type="sect1" data-pdf-bookmark="Part I, Getting Started"><div class="sect1" id="part_icomma_getting_started">
+<h1>Part I, Getting Started</h1>
+<p>See <a data-type="xref" href="ch03.html#test_your_knowledge_part_i_exercises">“Test Your Knowledge: Part I Exercises”</a> in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a> for the exercises.</p>
+<ol>
+<li><p><em>Interaction</em>: Assuming Python is <a contenteditable="false" data-type="indexterm" data-primary="interaction" id="id5002"></a>configured properly, the interaction should look something like the following. You can run this any way you like—in IDLE, a console, an app, a notebook’s page, and so on:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+…<code><em>information lines</em></code>…
+&gt;&gt;&gt; <code><strong>'Hello World!'</strong></code>
+'Hello World!'
+&gt;&gt;&gt;                 <code><em># Use ctrl+D/ctrl+Z to exit on Unix/Windows, or close window</em></code></pre></li>
+<li><p><em>Programs</em>: Your code (i.e., module) file <a contenteditable="false" data-type="indexterm" data-primary="programs" id="id5003"></a>should look something like <a data-type="xref" href="#example_b_onedot_partonesolidusmoduleon">Example B-1</a>:</p>
+<div data-type="example" id="example_b_onedot_partonesolidusmoduleon">
+<h5><span class="label">Example B-1. </span>Part1/module1.py</h5>
+<pre data-type="programlisting">print('Hello module world!')</pre>
+</div>
+<p>And here is the sort of interaction you should have; for console launches, be sure to use your platform’s version of the “python3” command (e.g., try “py -3” on Windows):</p>
+<pre data-type="programlisting">$ <code><strong>python3 module1.py</strong></code>
+Hello module world!</pre>
+<p>Again, feel free to run this other ways—by clicking or tapping the file’s icon, by using IDLE’s <em>Run</em>→<em>Run Module</em> menu option, by UI options in web notebooks or other IDEs, and so on.</p></li>
+<li class="pagebreak-before"><p><em>Modules</em>: The following <a contenteditable="false" data-type="indexterm" data-primary="modules" id="id5004"></a>interaction listing illustrates running a module file by importing it:</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>import module1</strong></code>
+Hello module world!
+&gt;&gt;&gt;</pre>
+<p>Remember that you will need to <em>reload</em> the module to run it again without stopping and restarting the interactive interpreter (i.e., REPL). Moving the <em>.py</em> file to a different directory and importing it normally fails: Python likely generated a <em>module1.*.pyc</em> file in the <em>__pycache__</em> subdirectory of the source code file’s folder, but it won’t use it when you import the module there if the source code (<em>.py</em>) file has been moved elsewhere and to a folder not in Python’s import search path.</p>
+    
+<p>The <em>.pyc</em> file is written automatically if Python has access to the source file’s directory; it contains the compiled bytecode version of a module. See <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a> for more on modules, <a data-type="xref" href="ch02.html#how_python_runs_programs">Chapter 2</a> for more on bytecode, and <a data-type="xref" href="ch22.html#modules_the_big_picture">Chapter 22</a> ahead for more on both. To really use the saved <em>.pyc</em> sans <em>.py</em>, as of Python 3.2, you must move it up one level and rename it without the “*” part in the middle, or generate it from and alongside the source code file with the Python <code>compileall</code> module’s “legacy” (<code>-b</code>) mode. For example, the following compiles all source code files in the current directory into directly usable bytecode files (you can also list specific files or recurse into subfolders, per Python library docs):</p>
+<pre data-type="programlisting">$ <code><strong>python3 -m compileall -b -l .</strong></code></pre></li>
+<li><p><em>Scripts</em>: Assuming your <a contenteditable="false" data-type="indexterm" data-primary="scripts" id="id5005"></a>platform supports the <code>#!</code> trick, your solution will look like <a data-type="xref" href="#example_b_twodot_partonesolidusscripton">Example B-2</a>, although your <code>#!</code> line may need to list a different path to Python on your machine. This line is significant under the Windows launcher shipped and installed with Python, where it is parsed to select a version of Python to run the script, despite the Unix path syntax, and subject to a default setting; see <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a> and Python’s docs for more details. This launching scheme is optional and generally less portable than others.</p>
+<div data-type="example" id="example_b_twodot_partonesolidusscripton">
+<h5><span class="label">Example B-2. </span>Part1/script1.py</h5>
+<pre data-type="programlisting">#!/usr/local/bin/python3
+print('Hello module world!')</pre>
+</div>
+<p>Running this as a program by console command line:</p>
+<pre data-type="programlisting">$ <code><strong>chmod +x script1.py</strong>   </code>          <code><em># See also: #!/usr/bin/env python3</em></code>
+$ <code><strong>./script1.py</strong></code>                    <code><em># "./" needed only if "." not on PATH</em></code>
+Hello module world!
+
+$ <code><strong>python3 script1.py</strong></code>              <code><em># Or run normally and portably</em></code> 
+Hello module world!</pre></li>
+<li><p><em>Errors and debugging</em>: The following <a contenteditable="false" data-type="indexterm" data-primary="errors" id="id5006"></a><a contenteditable="false" data-type="indexterm" data-primary="debugging" id="id5007"></a>interaction demonstrates the sorts of error messages you’ll get when you complete this exercise. Really, you’re triggering Python exceptions; the default exception-handling behavior terminates the running Python program and prints an error message and stack trace on the screen. The stack trace shows where you were in a program when the exception occurred (if function calls are active when the error happens, the “Traceback” section displays all active call levels).</p>
+    
+    <p>In <a data-type="xref" href="ch10.html#introducing_python_statements">Chapter 10</a> and <a data-type="xref" href="part07.html#exceptions">Part VII</a>, you will learn that you can catch exceptions using <code>try</code> statements and process them arbitrarily. You’ll also learn that Python includes a full-blown source code debugger (module <code>pdb</code>) for special error-detection requirements. For now, notice that Python gives meaningful messages when programming errors occur, instead of crashing silently:</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>2 ** 500</strong></code>
+32733906078961418700131896968275991522166420460430647894832913680961337964046745
+54883270092325904157150886684127560071009217256545885393053328527589376
+
+&gt;&gt;&gt; <code><strong>1 / 0</strong></code>
+Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+ZeroDivisionError: division by zero
+
+&gt;&gt;&gt; <code><strong>oops</strong></code>
+Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+NameError: name 'oops' is not defined</pre></li>
+<li><p><em>Breaks and cycles</em>: When you type <a contenteditable="false" data-type="indexterm" data-primary="breaks" id="id5008"></a><a contenteditable="false" data-type="indexterm" data-primary="cycles" id="id5009"></a>this code:</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>L = [1, 2]</strong></code>
+&gt;&gt;&gt; <code><strong>L.append(L)</strong></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[1, 2, [...]]</pre>
+<p>you create a <em>cyclic</em> data <a contenteditable="false" data-type="indexterm" data-primary="cyclic data" id="id5010"></a>structure in Python. In Python releases before 1.5.1, the Python printer wasn’t smart enough to detect cycles in objects, and it would print an unending stream of <code>[1, 2, [1, 2, [1, 2, [1, 2</code>, and so on until you hit the Ctrl+C break-key combination on your machine (which, technically, raises a keyboard-interrupt exception that prints a default message). Beginning with Python 1.5.1, the printer is clever enough to detect cycles, prints <code>[[...]]</code> instead to let you know that it has detected a loop in the object’s structure, and avoids getting stuck printing forever.</p>
+<p>The reason for the cycle is subtle and requires information you will glean in <a data-type="xref" href="part02.html#objects_and_operations">Part II</a>, so this is something of a preview. But in short, assignments in Python always generate <em>references</em> to objects, not copies of them. You can think of objects as chunks of memory and of references as implicitly followed pointers. When you run the first assignment in the preceding code, the name <code>L</code> becomes a named reference to a two-item list object—a pointer to a piece of memory. Python lists are really arrays of object references, with an <code>append</code> method that changes the array in place by tacking on another object reference at the end. Here, the <code>append</code> call adds a reference to the front of <code>L</code> at the end of <code>L</code>, which leads to the cycle illustrated in <a data-type="xref" href="#a_cyclic_objectcomma_created_by_appendi">Figure B-1</a>: a pointer at the end of the list that points back to the front of the list.</p>
+<figure><div id="a_cyclic_objectcomma_created_by_appendi" class="figure">
+<img src="assets/lpy6_ab01.png" alt="" width="956" height="390"/>
+<h6><span class="label">Figure B-1. </span>A cyclic object, created by appending a list to itself</h6>
+</div></figure>
+<p>Besides being printed specially, as you’ll learn in <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>, cyclic objects must also be handled specially by Python’s garbage collector, or their space will remain unreclaimed even when they are no longer in use. Though rare in practice, in some programs that traverse arbitrary objects or structures, you might have to detect such cycles yourself by keeping track of where you’ve been to avoid looping. Believe it or not, cyclic data structures can sometimes be useful, despite their special-case printing.</p></li>
+</ol>
+
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Part II, Objects and Operations"><div class="sect1" id="part_iicomma_objects_and_operations">
+<h1>Part II, Objects and Operations</h1>
+<p>See <a data-type="xref" href="ch09.html#test_your_knowledge_part_ii_exercises">“Test Your Knowledge: Part II Exercises”</a> in <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a> for the exercises.</p>
+<ol>
+<li><p><em>The basics</em>: Here are the sorts of results you should get, along with a few comments about their meaning. Again, note that <code>;</code> is used in a few of these to squeeze more than one statement onto a single line (the <code>;</code> is a statement separator), and commas build up tuples displayed in parentheses. See file <em>Part2/basics.txt</em> for copy/paste sans emedia, though typing these manually is a good way to practice syntax:</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong><em># Numbers
+</em></code>
+&gt;&gt;&gt; <code><strong>2 ** 16</strong></code>                           <code><em># 2 raised to the power 16</em></code>
+65536
+&gt;&gt;&gt; <code><strong>2 / 5, 2 / 5.0</strong></code>                    <code><em># Division keep remainders</em></code>
+(0.4, 0.4) 
+
+<code><em># Strings</em></code>
+
+&gt;&gt;&gt; <code><strong>'hack' + 'code'</strong></code>                   <code><em># Concatenation</em></code>
+'hackcode'
+&gt;&gt;&gt; <code><strong>S = 'Python'</strong></code>
+&gt;&gt;&gt; <code><strong>'grok ' + S</strong></code>
+'grok Python'
+&gt;&gt;&gt; <code><strong>S * 5  </strong>  </code>                         <code><em># Repetition</em><strong></strong></code>
+'PythonPythonPythonPythonPython'
+&gt;&gt;&gt; <code><strong>S[0], S[:0], S[1:]</strong> </code>               <code><em># An empty slice at the front - [0:0]</em></code>
+('P', '', 'ython')                    <code><em># Empty of same type as object sliced</em></code>
+
+&gt;&gt;&gt; <code><strong>how = 'fun'</strong></code>
+&gt;&gt;&gt; <code><strong>'coding %s is %s!' % (S, how)</strong></code>     <code><em># Formatting: expression, method, f-string</em></code>
+'coding Python is fun!'
+&gt;&gt;&gt; <code><strong>'coding {} is {}!'.format(S, how)</strong></code>
+'coding Python is fun!'
+&gt;&gt;&gt; <code><strong>f'coding {S} is {how}!'</strong></code>
+'coding Python is fun!'
+
+<code><em># Tuples
+</em></code>
+&gt;&gt;&gt; <code><strong>('x',)[0]</strong></code>                         <code><em># Indexing a single-item tuple</em></code>
+'x'
+&gt;&gt;&gt; <code><strong>('x', 'y')[1]</strong></code>                     <code><em># Indexing a two-item tuple
+</em></code>'y'
+
+<code><em># Lists
+</em></code>
+&gt;&gt;&gt; <code><strong>L = [1, 2, 3] + [4, 5, 6]</strong></code>         <code><em># List operations</em></code>
+&gt;&gt;&gt; <code><strong>L, L[:], L[:0], L[-2], L[-2:]</strong></code>
+([1, 2, 3, 4, 5, 6], [1, 2, 3, 4, 5, 6], [], 5, [5, 6])
+&gt;&gt;&gt; <code><strong>([1, 2, 3] + [4, 5, 6])[2:4]</strong></code>
+[3, 4]
+&gt;&gt;&gt; <code><strong>[L[2], L[3]]</strong></code>                      <code><em># Fetch from offsets; store in a list</em></code>
+[3, 4]
+&gt;&gt;&gt; <code><strong>L.reverse(); L</strong></code>                    <code><em># Method: reverse list in place</em></code>
+[6, 5, 4, 3, 2, 1]
+&gt;&gt;&gt; <code><strong>L.sort(); L</strong> </code>                      <code><em># Method: sort list in place</em></code>
+[1, 2, 3, 4, 5, 6]
+&gt;&gt;&gt; <code><strong>L.index(4)</strong></code>                        <code><em># Method: offset of first 4 (search)</em></code>
+3
+
+<code><em># Dictionaries
+</em></code>
+&gt;&gt;&gt; <code><strong>{'a': 1, 'b': 2}['b']</strong></code>             <code><em># Index a dictionary by key</em></code>
+2
+&gt;&gt;&gt; <code><strong>D = {'x': 1, 'y': 2, 'z': 3}
+</strong></code>&gt;&gt;&gt; <code><strong>D['w'] = 0</strong></code>                        <code><em># Create a new entry</em></code>
+&gt;&gt;&gt; <code><strong>D['x'] + D['w']</strong></code>
+1
+&gt;&gt;&gt; <code><strong>D[(1, 2, 3)] = 4</strong></code>                  <code><em># A tuple used as a key (immutable)</em></code>
+
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'x': 1, 'y': 2, 'z': 3, 'w': 0, (1, 2, 3): 4} 
+
+&gt;&gt;&gt; <code><strong>list(D.keys()), list(D.values()), (1, 2, 3) in D</strong></code>         <code><em># Methods, key test</em></code>
+(['x', 'y', 'z', 'w', (1, 2, 3)], [1, 2, 3, 0, 4], True)
+
+<code><em># Empties
+</em></code>
+&gt;&gt;&gt; <code><strong>[[]], ["", [], (), {}, None]</strong></code>      <code><em># Lots of nothings: empty objects</em></code>
+([[]], ['', [], (), {}, None])</pre></li>
+<li><p><em>Indexing and slicing</em>: Indexing out of <a contenteditable="false" data-type="indexterm" data-primary="indexing" id="id5011"></a><a contenteditable="false" data-type="indexterm" data-primary="slicing" id="id5012"></a>bounds (e.g., <code>L[4]</code>) raises an error; Python always checks to make sure that all offsets are within the bounds of a sequence.</p>
+<p>On the other hand, slicing out of bounds (e.g., <code>L[-1000:100]</code>) works because Python scales out-of-bounds slices so that they always fit (the limits are set to zero and the sequence length, if required).</p>
+<p>Extracting a sequence in reverse, with the lower bound greater than the higher bound (e.g., <code>L[3:1]</code>), doesn’t really work. You get back an empty slice (<code>[]</code>) because Python scales the slice limits to make sure that the lower bound is always less than or equal to the upper bound (e.g., <code>L[3:1]</code> is scaled to <code>L[3:3]</code>, the empty insertion point at offset <code>3</code>). Python slices are always extracted from left to right, even if you use negative indexes (they are first converted to positive indexes by adding the sequence length). Note that Python’s three-limit slices modify this behavior somewhat. For instance, <code>L[3:1:-1]</code> does extract from right to left:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2, 3, 4]
+</strong></code>&gt;&gt;&gt; <code><strong>L[4]</strong></code>
+Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+IndexError: list index out of range
+
+&gt;&gt;&gt; <code><strong>L[-1000:100]</strong></code>
+[1, 2, 3, 4]
+&gt;&gt;&gt; <code><strong>L[3:1]</strong></code>
+[]
+
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[1, 2, 3, 4]
+&gt;&gt;&gt; <code><strong>L[3:1] = ['?']
+</strong></code>&gt;&gt;&gt; <code><strong>L</strong></code>
+[1, 2, 3, '?', 4]</pre></li>
+<li><p><em>Indexing, slicing, and <code>del</code></em>: Your interaction with the interpreter should look something like the following. Note that assigning an empty list to an offset stores an empty list object there, but assigning an empty list to a slice deletes the slice. Slice assignment expects another sequence, or you’ll get a type error; it inserts items <em>inside</em> the sequence assigned, not the sequence itself:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2, 3, 4]
+</strong></code>&gt;&gt;&gt; <code><strong>L[2] = []
+</strong></code>&gt;&gt;&gt; <code><strong>L</strong></code>
+[1, 2, [], 4]
+
+&gt;&gt;&gt; <code><strong>L[2:3] = []
+</strong></code>&gt;&gt;&gt; <code><strong>L</strong></code>
+[1, 2, 4]
+
+&gt;&gt;&gt; <code><strong>del L[0]
+</strong></code>&gt;&gt;&gt; <code><strong>L</strong></code>
+[2, 4]
+&gt;&gt;&gt; <code><strong>del L[1:]
+</strong></code>&gt;&gt;&gt; <code><strong>L</strong></code>
+[2]
+
+&gt;&gt;&gt; <code><strong>L[1:2] = 1</strong></code>
+Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+TypeError: can only assign an iterable</pre></li>
+<li><p><em>Tuple assignment</em>: The values of <code>X</code> and <code>Y</code> are swapped. When tuples appear <a contenteditable="false" data-type="indexterm" data-primary="tuples" id="id5013"></a>on the left and right of an assignment symbol (<code>=</code>), Python assigns objects on the right to targets on the left according to their positions. This is probably easiest to understand by noting that the targets on the left aren’t a real tuple, even though they look like one; they are simply a set of independent assignment targets. The items on the right are a tuple, which gets unpacked during the assignment (this tuple provides the temporary assignment needed to achieve the swap effect):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>X = 'code'
+</strong></code>&gt;&gt;&gt; <code><strong>Y = 'hack'
+</strong></code>&gt;&gt;&gt; <code><strong>X, Y = Y, X
+</strong></code>&gt;&gt;&gt; <code><strong>X</strong></code>
+'hack'
+&gt;&gt;&gt; <code><strong>Y</strong></code>
+'code'</pre></li>
+<li><p><em>Dictionary keys</em>: Any <em>immutable</em> (technically, “hashable”) object can be used as a <a contenteditable="false" data-type="indexterm" data-primary="dictionary keys" id="id5014"></a>dictionary key, including integers, tuples, strings, and so on. This really is a dictionary, even though some of its keys look like integer offsets. Mixed-type keys work fine, too:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = {}
+</strong></code>&gt;&gt;&gt; <code><strong>D[1] = 'a'
+</strong></code>&gt;&gt;&gt; <code><strong>D[2] = 'b'
+</strong></code>&gt;&gt;&gt; <code><strong>D[(1, 2, 3)] = 'c'
+</strong></code>&gt;&gt;&gt; <code><strong>D</strong></code>
+{1: 'a', 2: 'b', (1, 2, 3): 'c'}</pre></li>
+<li><p><em>Dictionary indexing</em>: Indexing a nonexistent key (<code>D['d']</code>) raises an error; assigning <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="indexing" id="id5015"></a><a contenteditable="false" data-type="indexterm" data-primary="indexing" data-secondary="dictionaries" id="id5016"></a>to a nonexistent key (<code>D['d']='hack'</code>) creates a new dictionary entry. On the other hand, out-of-bounds indexing for lists raises an error, too, but so do out-of-bounds assignments. Variable names work like dictionary keys; they must have already been assigned when referenced, but they are created when first assigned. In fact, variable names can be processed as dictionary keys if you wish (they’re made visible in the dictionaries of stack frames or module [or other object] namespaces):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = {'a': 1, 'b': 2, 'c': 3}
+</strong></code>&gt;&gt;&gt; <code><strong>D['a']</strong></code>
+1
+&gt;&gt;&gt; <code><strong>D['d']</strong></code>
+Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+KeyError: 'd'
+
+&gt;&gt;&gt; <code><strong>D['d'] = 4
+</strong></code>&gt;&gt;&gt; <code><strong>D</strong></code>
+{'a': 1, 'b': 2, 'c': 3, 'd': 4}
+
+&gt;&gt;&gt; <code><strong>L = [0, 1]
+</strong></code>&gt;&gt;&gt; <code><strong>L[2]</strong></code>
+Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+IndexError: list index out of range
+&gt;&gt;&gt; <code><strong>L[2] = 3</strong></code>
+Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+IndexError: list assignment index out of range</pre></li>
+<li><p><em>Generic operations</em>: Question answers (with some error text omitted in listings):</p>
+<ol type="a">
+<li><p>The <code>+</code> operator <a contenteditable="false" data-type="indexterm" data-primary="operators" data-secondary="generic operations" id="id5017"></a>doesn’t work on different/mixed types (e.g., string <code>+</code> list, list <code>+</code> tuple).</p></li>
+<li><p><code>+</code> doesn’t work for dictionaries, as they aren’t sequences (though <code>|</code> does).</p></li>
+<li><p>The <code>append</code> method works only for lists, not strings, and <code>keys</code> works only on dictionaries. <code>append</code> assumes its target is mutable, since it’s an in-place extension; strings are immutable. Dictionary <code>keys</code> is similarly type specific.</p></li>
+<li><p>Slicing and concatenation always return a new object of the same type as the objects processed:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>'x' + 1</strong></code>
+TypeError: illegal argument type for built-in operation
+
+&gt;&gt;&gt; <code><strong>{} + {}</strong></code>
+TypeError: bad operand type(s) for +
+
+&gt;&gt;&gt; <code><strong>[].append(9)
+</strong></code>&gt;&gt;&gt; <code><strong>''.append('s')</strong></code>
+AttributeError: attribute-less object
+
+&gt;&gt;&gt; <code><strong>list({}.keys())</strong></code>
+[]
+&gt;&gt;&gt; <code><strong>[].keys()</strong></code>
+AttributeError: keys
+
+&gt;&gt;&gt; <code><strong>[][:]</strong></code>
+[]
+&gt;&gt;&gt; <code><strong>''[:]</strong></code>
+''</pre></li>
+</ol></li>
+<li><p><em>String indexing</em>: This is a bit of a <a contenteditable="false" data-type="indexterm" data-primary="string indexing" id="id5018"></a><a contenteditable="false" data-type="indexterm" data-primary="indexing" data-secondary="string indexing" id="id5019"></a>trick question—because strings are collections of one-character strings, every time you index a string, you get back a string that can be indexed again. <code>S[0][0][0][0][0]</code> just keeps indexing the first character over and over. This generally doesn’t work for lists (lists can hold arbitrary objects) unless the list contains strings:</p>
+<pre data-type="programlisting" class="pagebreak-before">&gt;&gt;&gt; <code><strong>S = 'hack'
+</strong></code>&gt;&gt;&gt; <code><strong>S[0][0][0][0][0]</strong></code>
+'h'
+&gt;&gt;&gt; <code><strong>L = ['h', 'a']
+</strong></code>&gt;&gt;&gt; <code><strong>L[0][0][0]</strong></code>
+'h'</pre></li>
+<li><p><em>Immutable types</em>: Either of <a contenteditable="false" data-type="indexterm" data-primary="immutable types" id="id5020"></a>the following solutions works. Index assignment doesn’t because strings are immutable:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S = 'hack'
+</strong></code>&gt;&gt;&gt; <code><strong>S = S[0] + 'e' + S[2:]
+</strong></code>&gt;&gt;&gt; <code><strong>S</strong></code>
+'heck' 
+&gt;&gt;&gt; <code><strong>S = S[0] + 'i' + S[2] + S[3]
+</strong></code>&gt;&gt;&gt; <code><strong>S</strong></code>
+'hick'</pre>
+<p>(See also the <code>bytearray</code> string type in <a data-type="xref" href="ch37.html#unicode_and_byte_strings">Chapter 37</a>—it’s a mutable sequence of small integers that is essentially processed the same as a string, especially when its bytes are ASCII character code points.)</p></li>
+<li><p><em>Nesting</em>: Here is a <a contenteditable="false" data-type="indexterm" data-primary="nesting" id="id5021"></a>sample (your specs will vary):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>pat = {'name': ('Pat', 'Q', 'Jones'), 'age': None, 'job': 'engineer'}
+</strong></code>&gt;&gt;&gt; <code><strong>pat['job']</strong></code>
+'engineer'
+&gt;&gt;&gt; <code><strong>pat['name'][2]</strong></code>
+'Jones'</pre></li>
+<li><p><em>Files</em>: Examples B-3 and B-4 show one way to create and read back a text file in Python using Unicode encoding defaults on the host (which are generally moot for simple ASCII text like this):</p>
+<div data-type="example" id="example_b_threedot_parttwosolidusmakerd">
+<h5><span class="label">Example B-3. </span>Part2/maker.py</h5>
+<pre data-type="programlisting">file = open('myfile.txt', 'w')
+file.write('Hello file world!\n')        <code><em># Or: open().write()</em></code>
+file.close()                             <code><em># close not always needed</em></code></pre>
+</div>
+<div data-type="example" id="example_b_fourdot_parttwosolidusreaderd">
+<h5><span class="label">Example B-4. </span>Part2/reader.py</h5>
+<pre data-type="programlisting">file = open('myfile.txt')                <code><em># 'r' is default open mode</em></code>
+print(file.read())                       <code><em># Or print(open().read())</em></code></pre>
+</div>
+<p>When run (here, from a console command line), the file shows up in the directory you’re working in because its name has no path prefix. The <code>ls</code> here is a Unix command; use <code>dir</code> on Windows:</p>
+<pre data-type="programlisting">$ <code><strong>python3 maker.py</strong></code>
+$ <code><strong>python3 reader.py</strong></code>
+Hello file world!
+
+$ <code><strong>ls -l myfile.txt</strong></code>
+-rw-r--r--  1 me  staff  18 Aug 11 19:34 myfile.txt</pre></li>
+</ol>
+</div></section>
+<section data-type="sect1" class="pagebreak-before" data-pdf-bookmark="Part III, Statements and Syntax"><div class="sect1" id="part_iiicomma_statements_and_syntax">
+<h1 class="less_space">Part III, Statements and Syntax</h1>
+<p>See <a data-type="xref" href="ch15.html#test_your_knowledge_part_iii_exercises">“Test Your Knowledge: Part III Exercises”</a> in <a data-type="xref" href="ch15.html#the_documentation_interlude">Chapter 15</a> for the exercises.</p>
+<ol>
+<li><p><em>Coding basic loops</em>: As you work <a contenteditable="false" data-type="indexterm" data-primary="loops" id="id5022"></a>through this exercise, you’ll wind up with code that looks like the following:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S = 'hack'
+</strong></code>&gt;&gt;&gt; <code><strong>for c in S:</strong></code>
+...     <code><strong>print(ord(c))</strong></code>
+...
+104
+97
+99
+107
+
+&gt;&gt;&gt; <code><strong>x = 0
+</strong></code>&gt;&gt;&gt; <code><strong>for c in S: x += ord(c)</strong></code>             <code><em># Or: x = x + ord(c)</em></code>
+...
+&gt;&gt;&gt; <code><strong>x</strong></code>
+407
+&gt;&gt;&gt; <code><strong>chr(x)</strong></code>                              <code><em># Extra credit: non-ASCII, see Chapter 37</em></code>
+'Ɨ'
+
+&gt;&gt;&gt; <code><strong>x = []
+</strong></code>&gt;&gt;&gt; <code><strong>for c in S: x.append(ord(c))</strong>   </code>     <code><em># Manual list construction</em></code>
+...
+&gt;&gt;&gt; <code><strong>x</strong></code>
+[104, 97, 99, 107] 
+
+&gt;&gt;&gt; <code><strong>list(map(ord, S))</strong></code>
+[115, 112, 97, 109]
+&gt;&gt;&gt; <code><strong>[ord(c) for c in S]</strong></code>                 <code><em># map and listcomps automate list builders</em></code>
+[115, 112, 97, 109]</pre></li>
+<li><p><em>Coding basic selections</em>: Here is the sort of code expected. To handle out-of-range numbers, add an <code>else</code> for <code>if</code>, a <code>case _</code> for <code>match</code>, a <code>get</code> method call or <code>in</code> test for the dictionary, and a <code>try</code> handler for the list. For versions of this code that are easier to copy/paste, see file <em>Part3/selections.txt</em> in the examples package:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>month = 3</strong></code>
+&gt;&gt;&gt; <code><strong>if month == 1:</strong></code>
+...     <code><strong>print('January')</strong></code>
+... <code><strong>elif month == 2:</strong></code>
+...     <code><strong>print('February')</strong></code>
+... <code><strong>elif month == 3:</strong></code>
+...     <code><strong>print('March')</strong></code>
+... 
+March
+
+&gt;&gt;&gt; <code><strong>match month:</strong></code>
+...     <code><strong>case 1:</strong></code>
+...         <code><strong>print('January')</strong></code>
+...     <code><strong>case 2:</strong></code>
+...         <code><strong>print('February')</strong></code>
+...     <code><strong>case 3:</strong></code>
+...         <code><strong>print('March')</strong></code>
+... 
+March
+
+&gt;&gt;&gt; <code><strong>{1: 'January', 2: 'February', 3: 'March'}[month]</strong></code>
+'March'
+&gt;&gt;&gt; <code><strong>['January', 'February', 'March'][month - 1]</strong></code>
+'March'</pre></li>
+<li><p><em>Backslash characters</em>: The example <a contenteditable="false" data-type="indexterm" data-primary="backslash characters" id="id5023"></a>prints the bell character (<code>\a</code>) 50 times. Assuming your machine can handle it, and when it’s run outside of some interfaces like IDLE, you may get a series of beeps (or one sustained tone if your machine is fast enough). Hey—you were warned.</p></li>
+<li><p><em>Sorting dictionaries</em>: Here’s one way <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="sorting" id="id5024"></a>to work through this exercise (see <a data-type="xref" href="ch08.html#lists_and_dictionaries">Chapter 8</a> or <a data-type="xref" href="ch14.html#iterations_and_comprehensions">Chapter 14</a> if this doesn’t make sense). You really do have to split off the <code>keys</code> and <code>sort</code> calls like this because <code>sort</code> returns <code>None</code>. You can iterate through dictionary keys directly without calling <code>keys</code> (e.g., <code>for key in D:</code>), but the keys list will not be sorted like it is by this code. The <code>sorted</code> built-in is simpler but creates a new list object:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = {'a': 1, 'c': 3, 'e': 5, 'g': 7, 'f': 6, 'd': 4, 'b': 2}
+</strong></code>&gt;&gt;&gt; <code><strong>D</strong></code>
+{'a': 1, 'c': 3, 'e': 5, 'g': 7, 'f': 6, 'd': 4, 'b': 2}
+
+&gt;&gt;&gt; <code><strong>keys = list(D.keys())</strong> </code>               <code><em># Keys view has no sort method</em></code>
+&gt;&gt;&gt; <code><strong>keys.sort()</strong> </code>                         <code><em># Sort list in place: returns None</em><strong>
+</strong></code>&gt;&gt;&gt; <code><strong>for key in keys:</strong> </code>                    <code><em># Iterate over sorted list</em></code>
+...     <code><strong>print(key, '=&gt;', D[key])</strong></code>
+...
+a =&gt; 1
+b =&gt; 2
+c =&gt; 3
+d =&gt; 4
+e =&gt; 5
+f =&gt; 6
+g =&gt; 7
+
+&gt;&gt;&gt; <code><strong>D</strong></code>
+{'a': 1, 'c': 3, 'e': 5, 'g': 7, 'f': 6, 'd': 4, 'b': 2}
+&gt;&gt;&gt;
+&gt;&gt;&gt; <code><strong>for key in sorted(D):</strong></code>                <code><em># Simpler alternative, but a new list</em></code>
+...     <code><strong>print(key, '=&gt;', D[key])</strong></code>
+...
+…<code><em>same output</em></code>…</pre></li>
+<li><p><em>Program logic alternatives</em>: Here’s some sample code for the solutions, available in the examples package’s <em>Part3/power*.py</em>. For step <code>e</code>, assign the result of <code>2 ** X</code> to a variable outside the loops of steps <code>a</code> and <code>b</code> and use it inside the loop. Your results may vary; this exercise is mostly designed to get you playing with code alternatives, so anything reasonable gets full credit:</p>
+<pre data-type="programlisting"><code><em># a</em></code>
+
+L = [1, 2, 4, 8, 16, 32, 64]
+X = 5
+
+i = 0
+while i &lt; len(L):
+    if 2 ** X == L[i]:
+        print('at index', i)
+        break
+    i += 1
+else:
+    print(X, 'not found')
+
+<code><em># b</em></code>
+
+L = [1, 2, 4, 8, 16, 32, 64]
+X = 5
+
+for p in L:
+    if (2 ** X) == p:
+        print((2 ** X), 'was found at', L.index(p))
+        break
+else:
+    print(X, 'not found')
+
+<code><em># c</em></code>
+
+L = [1, 2, 4, 8, 16, 32, 64]
+X = 5
+
+if (2 ** X) in L:
+    print((2 ** X), 'was found at', L.index(2 ** X))
+else:
+    print(X, 'not found')
+
+<code><em># d</em></code>
+
+X = 5
+L = []
+for i in range(7): L.append(2 ** i)
+print(L)
+
+if (2 ** X) in L:
+    print((2 ** X), 'was found at', L.index(2 ** X))
+else:
+    print(X, 'not found')
+
+
+<code><em># "Deeper thoughts"</em></code>
+
+X = 5
+L = list(map(lambda x: 2 ** x, range(7)))      <code><em># Or [2 ** x for x in range(7)]</em></code>
+print(L)
+
+if (2 ** X) in L:
+    print((2 ** X), 'was found at', L.index(2 ** X))
+else:
+    print(X, 'not found')</pre></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Part IV, Functions and Generators"><div class="sect1" id="part_ivcomma_functions_and_generators">
+<h1>Part IV, Functions and Generators</h1>
+<p>See <a data-type="xref" href="ch21.html#test_your_knowledge_part_iv_exercises">“Test Your Knowledge: Part IV Exercises”</a> in <a data-type="xref" href="ch21.html#the_benchmarking_interlude">Chapter 21</a> for the exercises.</p>
+<ol>
+<li><p><em>The basics</em>: There’s not much to this one, but notice that using <code>print</code> (and hence your function) is <a contenteditable="false" data-type="indexterm" data-primary="polymorphism" id="id5025"></a>technically a <em>polymorphic</em> operation, which does the right thing for each type of object:</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>def echo(x):</strong> </code>
+        <code><strong>print(x)</strong></code>
+
+&gt;&gt;&gt; <code><strong>echo('hack')</strong></code>
+hack
+&gt;&gt;&gt; <code><strong>echo(3.12)</strong></code>
+3.12
+&gt;&gt;&gt; <code><strong>echo([1, 2, 3])</strong></code>
+[1, 2, 3]
+&gt;&gt;&gt; <code><strong>echo({'edition': 6})</strong></code>
+{'edition': 6}</pre></li>
+<li><p><em>Arguments</em>: <a data-type="xref" href="#example_b_fivedot_partfoursolidusaddero">Example B-5</a> gives a sample solution. Remember that you have <a contenteditable="false" data-type="indexterm" data-primary="arguments" id="id5026"></a>to use <code>print</code> to see results in the test calls because a file isn’t the same as code typed interactively; Python doesn’t normally echo the results of expression statements in files:</p>
+<div data-type="example" id="example_b_fivedot_partfoursolidusaddero">
+<h5><span class="label">Example B-5. </span>Part4/adder1.py</h5>
+<pre data-type="programlisting">def adder(x, y):
+    return x + y
+
+print(adder(5, 1.0))
+print(adder('hack', 'code'))
+print(adder(['a', 'b'], ['c', 'd']))</pre>
+</div>
+<p>And the output:</p>
+<pre data-type="programlisting">$ <code><strong>python3 adder1.py</strong></code>
+6.0
+hackcode
+['a', 'b', 'c', 'd']</pre></li>
+<li><p><em>Arbitrary arguments</em>: Two alternative <code>adder</code> functions are shown in <a data-type="xref" href="#example_b_sixdot_partfoursolidusaddertw">Example B-6</a>. The hard part here is figuring out how to initialize <a contenteditable="false" data-type="indexterm" data-primary="arguments" data-secondary="arbitrary" id="id5027"></a>an accumulator to an empty value of whatever type is passed in. The first solution uses manual type testing to look for an integer and an empty slice of the first argument (assumed to be a sequence) if the argument is determined not to be an integer. The second solution uses the first argument to initialize and scan items 2 and beyond, much like one of the <code>min</code> function variants shown in <a data-type="xref" href="ch18.html#arguments">Chapter 18</a>.</p>
+<p>The second solution may be better. Both of these assume all arguments are of the same type, and neither works on dictionaries (as we saw in <a data-type="xref" href="part02.html#objects_and_operations">Part II</a>, <code>+</code> doesn’t work on mixed types or dictionaries). You could add a type test and special code using <code>for</code>, <code>update</code>, <code>**</code>, or <code>|</code> to support dictionaries combos, too, but that’s extra credit; see solutions 5 and 6 ahead for related notes. And yes, there is a <code>sum(<em>iterable</em>)</code> built-in in Python that would make this even simpler, but the point here is to write code of your own; you’ll have to eventually:</p>
+<div data-type="example" id="example_b_sixdot_partfoursolidusaddertw">
+<h5><span class="label">Example B-6. </span>Part4/adder2.py</h5>
+<pre class="less_codespace1" data-type="programlisting">def adder1(*args):
+    print('adder1:', end=' ')
+    if type(args[0]) == type(0):              <code><em># Integer?
+</em></code>         sum = 0                              <code><em># Init to zero</em></code>
+    else:                                     <code><em># else sequence:</em></code>
+         sum = args[0][:0]                    <code><em># Use empty slice of arg1</em></code>
+    for arg in args:
+        sum = sum + arg
+    return sum
+
+def adder2(*args):
+    print('adder2:', end=' ')
+    sum = args[0]                             <code><em># Init to arg1</em></code>
+    for next in args[1:]:
+        sum += next                           <code><em># Add items 2..N
+</em></code>    return sum
+
+for func in (adder1, adder2):
+    print(func(2, 3, 4))
+    print(func('hack', 'code', 'well'))
+    print(func(['a', 'b'], ['c', 'd'], ['e', 'f']))</pre>
+</div>
+<p>Here’s the sort of output you should get:</p>
+<pre data-type="programlisting">$ <code><strong>python3 adder2.py</strong></code>
+adder1: 9
+adder1: hackcodewell
+adder1: ['a', 'b', 'c', 'd', 'e', 'f']
+adder2: 9
+adder2: hackcodewell
+adder2: ['a', 'b', 'c', 'd', 'e', 'f']</pre></li>
+<li><p><em>Keywords</em>: <a data-type="xref" href="#example_b_sevendot_partfoursolidusadder">Example B-7</a> gives a solution to the first part of this exercise, along <a contenteditable="false" data-type="indexterm" data-primary="keywords" id="kywords"></a>with its output in a console.</p>
+<div data-type="example" id="example_b_sevendot_partfoursolidusadder">
+<h5><span class="label">Example B-7. </span>Part4/adder3.py</h5>
+<pre data-type="programlisting">def adder(red=1, green=2, blue=3):
+    return red + green + blue
+
+print(adder())
+print(adder(5))
+print(adder(5, 6))
+print(adder(5, 6, 7))
+print(adder(blue=7, red=6, green=5))
+print(adder(blue=1, red=2))
+
+$ <code><strong>python3 adder3.py</strong></code>
+6
+10
+14
+18
+18
+5</pre>
+</div>
+<p><a data-type="xref" href="#example_b_eightdot_partfoursolidusadder">Example B-8</a> gives the second part’s solution and its output. To iterate over keyword arguments, use the <code>**args</code> form in the function header and use a loop (e.g., <code>for x in args.keys(): use args[x]</code>), or use <code>args.values()</code> to make this the same as summing <code>*args</code> positionals in exercise number 3:</p>
+<div data-type="example" id="example_b_eightdot_partfoursolidusadder">
+<h5><span class="label">Example B-8. </span>Part4/adder4.py</h5>
+<pre data-type="programlisting">def adder1(*args):                  <code><em># Sum any number of positional args</em></code>
+    tot = args[0]                   <code><em># Same as #3, for comparison and reuse</em></code>
+    for arg in args[1:]:
+        tot += arg
+    return tot
+
+def adder2(**args):                 <code><em># Sum any number of keyword args
+</em></code>    argskeys = list(args.keys())    <code><em># list required to index!</em></code>
+    tot = args[argskeys[0]]
+    for key in argskeys[1:]:
+        tot += args[key]
+    return tot
+
+def adder3(**args):                 <code><em># Same, but convert to list of values</em></code>
+    args = list(args.values())      <code><em># list needed to index!</em></code>
+    tot = args[0]
+    for arg in args[1:]:
+        tot += arg
+    return tot
+
+def adder4(**args):                 <code><em># Same, but reuse positional version</em></code>
+    return adder1(*args.values())
+
+print(adder1(1, 2, 3),       adder1('aa', 'bb', 'cc'))
+print(adder2(a=1, b=2, c=3), adder2(a='aa', b='bb', c='cc'))
+print(adder3(a=1, b=2, c=3), adder3(a='aa', b='bb', c='cc'))
+print(adder4(a=1, b=2, c=3), adder4(a='aa', b='bb', c='cc'))
+
+$ <code><strong>python3 adder4.py</strong></code>
+6 aabbcc
+…<code><em>repeated 4 times</em></code>…</pre>
+</div></li>
+<li><p>(5 and 6) <em>Dictionary tools</em>: Solutions for <a contenteditable="false" data-type="indexterm" data-primary="keywords" data-startref="kywords" id="id5028"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionary tools" id="id5029"></a>exercises 5 and 6 are combined and listed in <a data-type="xref" href="#example_b_ninedot_partfoursolidusdictto">Example B-9</a>. These are just coding exercises because Python now provides dictionary methods <code><em>D</em>.copy()</code> and <code><em>D1</em>.update(<em>D2</em>)</code> to handle things like copying and adding (merging) dictionaries. In fact, there are <em>four</em> ways to merge dictionaries today, as hinted in solution 3: <code>for</code> loops like those here, <code><em>D1</em>.update(<em>D2</em>)</code>, <code>{*<em>*D1</em>,**<em>D2</em>}</code>, and <code><em>D1</em>|<em>D2</em></code>. See <a data-type="xref" href="ch08.html#lists_and_dictionaries">Chapter 8</a> for more info on and examples of these tools. <code><em>X</em>[:]</code> doesn’t work for dictionaries, as they’re not sequences (see <a data-type="xref" href="ch08.html#lists_and_dictionaries">Chapter 8</a> for details). Also, remember that if you assign (<code>e = d</code>) rather than copying, you generate a reference to a <em>shared</em> dictionary object; changing <code>d</code> changes <code>e</code>, too:</p>
+<div data-type="example" id="example_b_ninedot_partfoursolidusdictto">
+<h5><span class="label">Example B-9. </span>Part4/dicttools.py</h5>
+<pre data-type="programlisting">def copyDict(old):
+    new = {}
+    for key in old.keys():
+        new[key] = old[key]
+    return new
+
+def addDict(d1, d2):
+    new = {}
+    for key in d1.keys():
+        new[key] = d1[key]
+    for key in d2.keys():
+        new[key] = d2[key]
+    return new</pre>
+</div>
+<p>Here is the expected behavior of this code demoed in a REPL:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>from dicttools import *
+</strong></code>&gt;&gt;&gt; <code><strong>d = {1: 1, 2: 2}
+</strong></code>&gt;&gt;&gt; <code><strong>e = copyDict(d)
+</strong></code>&gt;&gt;&gt; <code><strong>d[2] = '?'
+</strong></code>&gt;&gt;&gt; <code><strong>d</strong></code>
+{1: 1, 2: '?'}
+&gt;&gt;&gt; <code><strong>e</strong></code>
+{1: 1, 2: 2}
+
+&gt;&gt;&gt; <code><strong>x = {1: 1}
+</strong></code>&gt;&gt;&gt; <code><strong>y = {2: 2}
+</strong></code>&gt;&gt;&gt; <code><strong>z = addDict(x, y)
+</strong></code>&gt;&gt;&gt; <code><strong>z</strong></code>
+{1: 1, 2: 2}</pre></li>
+<li><p>See #5 (where solutions were combined).</p></li>
+<li><p><em>More argument-matching examples</em>: Here is the sort of interaction you should get, along with comments that explain the matching that goes on. It may be easiest to paste the functions into a file and import them all with a <code>*</code> for testing in a REPL; they’re repeated in <a data-type="xref" href="#example_b_onezerodot_partfoursolidustes">Example B-10</a> for reference (and in the examples package for copying):</p>
+<div data-type="example" id="example_b_onezerodot_partfoursolidustes">
+<h5><span class="label">Example B-10. </span>Part4/testfuncs.py</h5>
+<pre data-type="programlisting">def f1(a, b): print(a, b)            <code><em># Normal args</em></code>
+
+def f2(a, *b): print(a, b)           <code><em># Positional collectors</em></code>
+
+def f3(a, **b): print(a, b)          <code><em># Keyword collectors</em></code>
+
+def f4(a, *b, **c): print(a, b, c)   <code><em># Mixed modes</em></code>
+
+def f5(a, b=2, c=3): print(a, b, c)  <code><em># Defaults</em></code>
+
+def f6(a, b=2, *c): print(a, b, c)   <code><em># Defaults and positional collector</em></code></pre>
+</div>
+<p>The expected REPL interaction:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>from testfuncs import *</strong></code>
+&gt;&gt;&gt; <code><strong>f1(1, 2)</strong></code>                         <code><em># Matched by position (order matters)</em></code>
+1 2
+&gt;&gt;&gt; <code><strong>f1(b=2, a=1)</strong></code>                     <code><em># Matched by name (order doesn't matter)
+</em></code>1 2
+
+&gt;&gt;&gt; <code><strong>f2(1, 2, 3)</strong></code>                      <code><em># Extra positionals collected in a tuple</em></code>
+1 (2, 3)
+
+&gt;&gt;&gt; <code><strong>f3(1, x=2, y=3)</strong></code>                  <code><em># Extra keywords collected in a dictionary
+</em></code>1 {'x': 2, 'y': 3}
+
+&gt;&gt;&gt; <code><strong>f4(1, 2, 3, **dict(x=2, y=3))</strong></code>    <code><em># Extras of both kinds, star unpacking</em></code>
+1 (2, 3) {'x': 2, 'y': 3}
+
+&gt;&gt;&gt; <code><strong>f5(1)</strong></code>                            <code><em># Both defaults kick in</em></code>
+1 2 3
+&gt;&gt;&gt; <code><strong>f5(1, 4)</strong></code>                         <code><em># Only one default used</em></code>
+1 4 3
+&gt;&gt;&gt; <code><strong>f5(1, c=4)</strong>   </code>                    <code><em># Middle default applied</em><strong></strong></code>
+1 2 4
+
+&gt;&gt;&gt; <code><strong>f6(1)</strong></code>                            <code><em># One argument: matches "a"</em></code>
+1 2 ()
+&gt;&gt;&gt; <code><strong>f6(1, *[3, 4])</strong></code>                   <code><em># Extra positional collected, star unpacking</em></code>
+1 3 (4,)</pre></li>
+<li class="pagebreak-before"><p><em>Primes revisited</em>: <a data-type="xref" href="#example_b_oneonedot_partfoursolidusprim">Example B-11</a> is the primes example, wrapped up in a function and a module (file <em>primes.py</em>) so it can be run multiple times. An <code>if</code> test was added to trap negatives, <code>0</code>, and <code>1</code>. It’s crucial to use <code>//</code> floor division instead of the <code>/</code> true division we studied in <a data-type="xref" href="ch05.html#numbers_and_expressions">Chapter 5</a> to avoid fractional remainders (5 / 2 would yield a false factor 2.5, but 5 / 2 truncates down to 2). Change <code>//</code> to <code>/</code> to see the difference for yourself:</p>
+<div data-type="example" id="example_b_oneonedot_partfoursolidusprim">
+<h5><span class="label">Example B-11. </span>Part4/primes.py</h5>
+<pre data-type="programlisting">def prime(y):
+    if y &lt;= 1:                                       <code><em># For some y &gt; 1</em></code>
+        print(y, 'is nonprime')
+    else:
+        x = y // 2                                   <code><em># But / fails</em></code>
+        while x &gt; 1:
+            if y % x == 0:                           <code><em># No remainder?</em></code>
+                print(y, 'has factor', x)
+                break                                <code><em># Skip else
+</em></code>            x -= 1
+        else:
+            print(y, 'is prime')
+
+tests = (27, 24, 13, 13.0, 15, 15.0, 3, 2, 1, -3)
+for test in tests:
+    prime(test)</pre>
+</div>
+<p>Here is the module in action; the <code>//</code> operator also allows it to work for floating-point numbers by truncating to the floor (5.0 // 2 is 2.0, not 2.5):</p>
+<pre data-type="programlisting">$ <code><strong>python3 primes.py</strong></code>
+27 has factor 9
+24 has factor 12
+13 is prime
+13.0 is prime
+15 has factor 5
+15.0 has factor 5.0
+3 is prime
+2 is prime
+1 is nonprime
+-3 is nonprime</pre>
+<p>This function still isn’t very reusable—it could <em>return</em> values, instead of printing—but it’s enough to run experiments. It’s also not a strict mathematical prime (floating-point numbers work, but shouldn’t), and it’s still perhaps inefficient. Improvements are left as exercises for more mathematically minded readers. (Hint: a <code>for</code> loop over <code>range(x, 1, −1)</code> may be a bit quicker than the <code>while</code>, but the algorithm may be the real bottleneck here.) To time alternatives, use the homegrown <code>timer</code> or standard-library <code>timeit</code> modules and coding patterns like those used in <a data-type="xref" href="ch21.html#the_benchmarking_interlude">Chapter 21</a>’s benchmarking sections (and solution 10 ahead).</p></li>
+<li><p><em>Iterations and comprehensions</em>: Here is the <a contenteditable="false" data-type="indexterm" data-primary="iteration" id="id5030"></a><a contenteditable="false" data-type="indexterm" data-primary="comprehensions" id="id5031"></a>sort of code you should write; coding alternatives are notoriously subjective, so there’s no right or wrong preference (though see the next solution for an objective factor):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>values = [2, 4, 9, 16, 25]
+</strong></code>&gt;&gt;&gt; <code><strong>import math
+
+</strong></code>&gt;&gt;&gt; <code><strong>res = []
+</strong></code>&gt;&gt;&gt; <code><strong>for x in values: res.append(math.sqrt(x))</strong>  </code>     <code><em># Manual loop</em></code>
+...
+&gt;&gt;&gt; <code><strong>res</strong></code>
+[1.4142135623730951, 2.0, 3.0, 4.0, 5.0]
+
+&gt;&gt;&gt; <code><strong>list(map(math.sqrt, values))</strong></code>                    <code><em># map built-in call</em></code>
+[1.4142135623730951, 2.0, 3.0, 4.0, 5.0]
+
+&gt;&gt;&gt; <code><strong>[math.sqrt(x) for x in values]</strong>   </code>               <code><em># List comprehension</em></code>
+[1.4142135623730951, 2.0, 3.0, 4.0, 5.0]
+
+&gt;&gt;&gt; <code><strong>list(math.sqrt(x) for x in values)</strong></code>              <code><em># Generator expression</em></code>
+[1.4142135623730951, 2.0, 3.0, 4.0, 5.0]</pre></li>
+<li><p><em>Timing tools</em>: The code file in <a data-type="xref" href="#example_b_onethreedot_partfoursolidusti">Example B-13</a> times the <a contenteditable="false" data-type="indexterm" data-primary="timing tools" id="id5032"></a>three square root options. Each test takes the best of 5 runs; each run takes the total time required to call the test function 1,000 times; and each test function iterates 10,000 times. The last result of each function is printed to verify that all three do the same work.</p>
+<p>This code also uses a preview (really, cheat) to remotely access the <em>timer2.py</em> module in Chapter 21’s code folder (<a data-type="xref" href="#example_b_onetwodot_dotdotsolidusdotdot">Example B-12</a>) with an <code>import</code> run its own folder, assumed to be the examples’ <em>AppendixB/Part4</em>. Appending <code>sys.path</code> is one way to augment the search path used to find imported modules, along with <code>PYTHONPATH</code> environment settings. This avoids a file copy; we’ll explore it in this book’s next part, so take it on faith for now.</p>
+<div data-type="example" id="example_b_onetwodot_dotdotsolidusdotdot">
+<h5><span class="label">Example B-12. </span>../../Chapter21/timer2.py</h5>
+<pre data-type="programlisting">…<code><em>Example 21-7 in Chapter 21</em></code>…</pre>
+</div>
+<div data-type="example" id="example_b_onethreedot_partfoursolidusti">
+<h5><span class="label">Example B-13. </span>Part4/timesqrt.py</h5>
+<pre data-type="programlisting">import sys                          <code><em># Add timer2.py's folder to search path</em></code>
+sys.path.append('../../Chapter21')  <code><em># Assuming running in AppendixB/Part4</em></code>
+import timer2                       <code><em># A cheat! - see Part V for path info</em></code>
+
+reps = 10_000
+repslist = list(range(reps))        <code><em># Pull out range list time</em></code>
+
+from math import sqrt               <code><em># Not math.sqrt: adds attr fetch time</em></code>
+def mathMod():
+    for i in repslist:
+        res = sqrt(i)
+    return res
+
+def powCall():
+    for i in repslist:
+        res = pow(i, .5)
+    return res
+
+def powExpr():
+    for i in repslist:
+        res = i ** .5
+    return res
+
+print(sys.version)
+for test in (mathMod, powCall, powExpr):
+    elapsed, result = timer2.bestoftotal(test, _reps1=5, _reps=1000)
+    print (f'{test.__name__}: {elapsed:.5f} =&gt; {result}')</pre>
+</div>
+<p>Following are the test results for CPython 3.12 (the standard) and PyPy 7.3 (which implements Python 3.10) on macOS. In short, the <code>math</code> module is quicker than the <code>**</code> expression on both Pythons, and <code>**</code> is quicker than the <code>pow</code> built-in function in CPython but the same in PyPy:</p>
+<pre data-type="programlisting">$ <code><strong>python3 timesqrt.py</strong></code> 
+3.12.2 (v3.12.2:6abddd9f6a, Feb  6 2024, 17:02:06) [Clang 13.0.0 (clang-1300.0.29.30)]
+mathMod: 0.40860 =&gt; 99.99499987499375
+powCall: 0.68245 =&gt; 99.99499987499375
+powExpr: 0.57762 =&gt; 99.99499987499375
+
+$ <code><strong>pypy3 timesqrt.py</strong></code> 
+3.10.14 (75b3de9d9035, Apr 21 2024, 10:56:19)
+[PyPy 7.3.16 with GCC Apple LLVM 15.0.0 (clang-1500.1.0.2.5)]
+mathMod: 0.05246 =&gt; 99.99499987499375
+powCall: 0.33288 =&gt; 99.99499987499375
+powExpr: 0.33244 =&gt; 99.99499987499375</pre>
+<p>PyPy is also some 8X to 2X faster than CPython on floating-point math and iterations here, but CPython may sprout a JIT, which evens the gap (see <a data-type="xref" href="ch02.html#how_python_runs_programs">Chapter 2</a>). The results for CPython jive with the prior edition’s tests for CPython 3.3 that follow, which used different repeat counts and hosts but were relatively similar. As always, you should try this with your code and on your own machine and version of Python for more definitive results:</p>
+<pre data-type="programlisting">c:\code&gt; <code><strong>py −3 timesqrt.py</strong></code>
+3.3.0 (v3.3.0:bd8afb90ebf2, Sep 29 2012, 10:57:17) [MSC v.1600 64 bit (AMD64)]
+mathMod: 2.04481 =&gt; 99.99499987499375
+powCall: 3.40973 =&gt; 99.99499987499375
+powExpr: 2.56458 =&gt; 99.99499987499375</pre>
+<p>To time the relative speeds of <em>dictionary comprehensions</em> and equivalent <code>for</code> loops <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="comprehensions" id="id5033"></a><a contenteditable="false" data-type="indexterm" data-primary="comprehensions" data-secondary="dictionary" id="id5034"></a>interactively, you can run a session like the following. At least on this test in CPython 3.12, the two are roughly the same in speed, with a slight advantage to comprehensions—though the difference isn’t exactly earth-shattering. As verification, these results relatively match those we obtained from a <code>pybench</code> test in <a data-type="xref" href="ch21.html#example_twoone_onezerodot_pybench_tests">Example 21-10</a> (sans the slower <code>dict</code> call). Do similar to vet the speed of comprehensions with <code>if</code> and <code>for</code>. And again, rather than taking any of these results as gospel, you should investigate further on your own with your computer and your Python:</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>def dictcomp(I):
+        return {i: i for i in range(I)}
+
+</strong></code>&gt;&gt;&gt; <code><strong>def dictloop(I):
+        new = {}
+        for i in range(I): new[i] = i
+        return new
+
+</strong></code>&gt;&gt;&gt; <code><strong>dictcomp(10)</strong></code>
+{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
+&gt;&gt;&gt; <code><strong>dictloop(10)</strong></code>
+{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
+
+&gt;&gt;&gt; <code><strong>import sys; sys.path.append('../../Chapter21')</strong></code>
+&gt;&gt;&gt; <code><strong>from timer2 import bestoftotal</strong></code>
+
+&gt;&gt;&gt; <code><strong>bestoftotal(dictcomp, 10_000, _reps1=5, _reps=500)[0]</strong></code>
+0.17137739405734465
+&gt;&gt;&gt; <code><strong>bestoftotal(dictloop, 10_000, _reps1=5, _reps=500)[0]</strong></code>
+0.18112968490459025
+ 
+&gt;&gt;&gt; <code><strong>len(bestoftotal(dictcomp, 10_000, _reps1=5, _reps=500)[1])</strong></code>
+10000
+&gt;&gt;&gt; <code><strong>len(bestoftotal(dictloop, 10_000, _reps1=5, _reps=500)[1])</strong></code>
+10000</pre></li>
+<li><p><em>Recursive functions</em>: One way to <a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="functions" id="id5035"></a>code this function follows (typed in a REPL here, but also coded in file <em>Part4/countdown.py</em> of the examples package). A simple <code>range</code>, comprehension, or <code>map</code> will do the job here as well, of course, but recursion is useful enough to warrant the experimentation here:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def countdown(N):</strong></code>
+<code> <strong>       if N == 0:</strong></code>
+<code> <strong>           print('stop')</strong></code>
+<code> <strong>       else:</strong></code>
+<code> <strong>           print(N, end=' ')</strong></code>
+<code> <strong>           countdown(N - 1)</strong></code>
+
+&gt;&gt;&gt; <code><strong>countdown(5)</strong></code>
+5 4 3 2 1 stop
+&gt;&gt;&gt; <code><strong>countdown(20)</strong></code>
+20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 stop
+
+<code><em># Nonrecursive options</em></code>
+
+&gt;&gt;&gt; <code><strong>list(range(5, 0, -1))</strong></code>
+[5, 4, 3, 2, 1]
+&gt;&gt;&gt; <code><strong>t = [print(i, end=' ') for i in range(5, 0, -1)]</strong></code>
+5 4 3 2 1
+&gt;&gt;&gt; <code><strong>t = list(map(lambda x: print(x, end=' '), range(5, 0, -1)))</strong></code>
+5 4 3 2 1</pre>
+<p>A <em>generator</em>-based solution isn’t required for this exercise, but one is listed next; all the other techniques seem much simpler in this case—a good example of contexts where generators should probably be avoided. Remember that generators produce no results until iterated, so we need a <code>for</code> loop or <code>yield from</code> here (yielding <code>countdown2(N-1)</code> directly simply returns a generator, not its <span class="keep-together">products</span>):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def countdown2(N):</strong>  </code>                          <code><em># Generator function, recursive</em></code>
+        <code><strong>if N == 0:
+</strong></code>            <code><strong>yield 'stop'
+</strong></code>        <code><strong>else:</strong></code>
+            <code><strong>yield N</strong></code>
+            <code><strong>for x in countdown2(N - 1): yield x</strong>   <em># Or: yield from countdown2(N - 1)</em></code>
+
+&gt;&gt;&gt; <code><strong>list(countdown2(5))</strong></code>
+[5, 4, 3, 2, 1, 'stop']
+
+<code><em># Nonrecursive options</em></code>
+
+&gt;&gt;&gt; <code><strong>def countdown3():</strong></code>                       <code><em># Generator function, simpler</em></code>
+        <code><strong>yield from range(5, 0, -1)</strong></code>          <code><em># Or: for x in range(): yield x</em></code>
+
+&gt;&gt;&gt; <code><strong>list(countdown3())</strong></code>
+[5, 4, 3, 2, 1]
+&gt;&gt;&gt; <code><strong>list(x for x in range(5, 0, -1))</strong></code>        <code><em># Equivalent generator expression</em></code>
+[5, 4, 3, 2, 1]</pre></li>
+<li class="pagebreak-before"><p><em>Computing factorials</em>: <a data-type="xref" href="#example_b_onefourdot_partfoursolidusfac">Example B-14</a> shows one way to code this <a contenteditable="false" data-type="indexterm" data-primary="factorials" id="id5036"></a>exercise, using Python’s standard-library <code>timeit</code> module of <a data-type="xref" href="ch21.html#the_benchmarking_interlude">Chapter 21</a>. Naturally, there are many possible variations on its code; its ranges, for instance, could run from <code>2..N+1</code> to skip an iteration, and <code>fact2</code> could use <code>reduce(operator.mul, range(N, 1, −1))</code> to avoid a <code>lambda</code>. Improve freely.</p>
+<div data-type="example" id="example_b_onefourdot_partfoursolidusfac">
+<h5><span class="label">Example B-14. </span>Part4/factorials.py</h5>
+<pre data-type="programlisting">from functools import reduce
+from timeit import repeat
+import math
+
+def fact0(N):                                              <code><em># Recursive</em></code>
+    if N == 1:                                             <code><em># Fails at stack limit
+</em></code>        return N
+    else:
+        return N * fact0(N - 1)
+
+def fact1(N):
+    return N if N == 1 else N * fact1(N - 1)               <code><em># Recursive, one-liner</em></code>
+
+def fact2(N):                                              <code><em># Functional</em></code>
+    return reduce(lambda x, y: x * y, range(1, N + 1))
+
+def fact3(N):
+    res = 1
+    for i in range(1, N + 1): res *= i                     <code><em># Iterative</em></code>
+    return res
+
+def fact4(N):
+    return math.factorial(N)                               <code><em># Stdlib "batteries"</em></code>
+
+<code><em># Tests</em></code>
+print(fact0(6), fact1(6), fact2(6), fact3(6), fact4(6))    <code><em># 6*5*4*3*2*1: all 720</em></code>
+print(fact0(500) == fact1(500) == fact2(500) == fact3(500) == fact4(500))  <code><em># True</em></code>
+
+for test in (fact0, fact1, fact2, fact3, fact4):
+    print(test.__name__, min(repeat(stmt=lambda: test(500), number=1000, repeat=5)))</pre>
+</div>
+<p>This code uses Python’s <code>timeit</code> module to benchmark alternatives. Its results for CPython 3.12 on macOS:</p>
+<pre data-type="programlisting">$ <code><strong>python3 factorials.py</strong></code>
+720 720 720 720 720
+True
+fact0 0.08720566902775317
+fact1 0.08635473699541762
+fact2 0.06704489700496197
+fact3 0.05152398400241509
+fact4 0.00873392098583281</pre>
+<p>Conclusions: recursion is slowest on this Python and machine and fails once <code>N</code> reaches the maximum stack-size setting in <code>sys</code>. Per <a data-type="xref" href="ch19.html#function_odds_and_ends">Chapter 19</a>, this limit can be increased, but simple loops or the standard-library tool seem the best route here in any event, and the built-in wins soundly.</p>
+<p>This general finding holds true often. For instance, <code>''.join(reversed(S))</code> may be the preferred way to reverse a string, even though recursive solutions are possible. Time the code in <a data-type="xref" href="#example_b_onefivedot_partfoursolidusrev">Example B-15</a> to see for yourself:</p>
+<div data-type="example" id="example_b_onefivedot_partfoursolidusrev">
+<h5><span class="label">Example B-15. </span>Part4/reverses.py</h5>
+<pre data-type="programlisting">def rev1(S):
+    if len(S) == 1:
+        return S
+    else:
+        return S[-1] + rev1(S[:-1])        <code><em># Recursive</em></code>
+
+def rev2(S):
+    return ''.join(reversed(S))            <code><em># Nonrecursive iterable</em></code>
+        
+def rev3(S):
+    return S[::-1]                         <code><em># Sequence reversal by slice       </em></code></pre>
+</div></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Part V, Modules and Packages"><div class="sect1" id="part_vcomma_modules_and_packages">
+<h1>Part V, Modules and Packages</h1>
+<p>See <a data-type="xref" href="ch25.html#test_your_knowledge_part_v_exercises">“Test Your Knowledge: Part V Exercises”</a> in <a data-type="xref" href="ch25.html#module_odds_and_ends">Chapter 25</a> for the exercises.</p>
+<ol>
+<li><p><em>Import basics</em>: When you’re done, your file and REPL interaction with it should look similar to <a data-type="xref" href="#example_b_onesixdot_partfivesolidusmymo">Example B-16</a>. Remember that Python can read a whole file into a list of line strings, and the <code>len</code> built-in returns the lengths of strings and lists:</p>
+<div data-type="example" id="example_b_onesixdot_partfivesolidusmymo">
+<h5><span class="label">Example B-16. </span>Part5/mymod.py (initial code, mymod_start.py)</h5>
+<pre data-type="programlisting">def countLines(name):
+    file = open(name)
+    return len(file.readlines())
+
+def countChars(name):
+    return len(open(name).read())
+
+def test(name):                                  <code><em># Or pass file object</em></code>
+    return countLines(name), countChars(name)    <code><em># Or return a dictionary</em></code>
+
+$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>import mymod
+</strong></code>&gt;&gt;&gt; <code><strong>mymod.test('mymod.py')</strong></code>
+(10, 281)</pre>
+</div>
+<p>Your counts may vary for comments, an extra line at the end, and so on, and you don’t need to set <code>PYTHONPATH</code> if the module is in the automatically searched current working directory. Note that these functions load the entire file in memory all at once, so they won’t work for pathologically large files that are too big for your device’s memory. To be more robust, you could read line by line with iterators instead and count as you go (see <em>Part5/mymod_lines.py</em> in the examples package):</p>
+<pre data-type="programlisting">def countLines(name):
+    tot = 0
+    for line in open(name): tot += 1
+    return tot
+
+def countChars(name):
+    tot = 0
+    for line in open(name): tot += len(line)
+    return tot</pre>
+<p class="pagebreak-before">A generator expression can have the same effect (though the excessive magic may cost you some points):</p>
+<pre data-type="programlisting">def countLines(name): return sum(+1 for line in open(name))
+def countChars(name): return sum(len(line) for line in open(name))</pre>
+<p>On Unix, you can verify your output with a <code>wc</code> command; on Windows, right-click on your file to view its properties. Note that your script may report fewer characters than Windows does—for portability, Python converts Windows <code>\r\n</code> line-end markers to <code>\n</code>, thereby dropping one byte (character) per line. To match byte counts with Windows exactly, you must open in binary mode (<code>'rb'</code>) or add the number of bytes corresponding to the number of lines. See Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch09.html#tuplescomma_filescomma_and_everything_e">9</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch37.html#unicode_and_byte_strings">37</a> for more on end-of-line translations in text files.</p>
+<p>The “ambitious” part of this exercise (passing in a file object so you only open the file once) will require you to use the <code>seek</code> method of the built-in file object. It works like C’s <code>fseek</code> call (and may call it behind the scenes): <code>seek</code> resets the current position in the file to a passed-in offset. After a <code>seek</code>, future input/output operations are relative to the new position. To rewind to the start of a file without closing and reopening it, call <code>file.seek(0)</code>; the file <code>read</code> methods all pick up at the current position in the file, so you need to rewind to reread. <a data-type="xref" href="#example_b_onesevendot_partfivesolidusmy">Example B-17</a> shows what this tweak would look like, along with its output in a REPL:</p>
+<div data-type="example" id="example_b_onesevendot_partfivesolidusmy">
+<h5><span class="label">Example B-17. </span>Part5/mymod2.py</h5>
+<pre data-type="programlisting">def countLines(file):
+    file.seek(0)                                 <code><em># Rewind to start of file</em></code>
+    return len(file.readlines())
+
+def countChars(file):
+    file.seek(0)                                 <code><em># Ditto (rewind if needed)</em></code>
+    return len(file.read())
+
+def test(name):
+    file = open(name)                            <code><em># Pass file object
+</em></code>    return countLines(file), countChars(file)    <code><em># Open file only once</em></code>
+
+$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>import mymod2
+</strong></code>&gt;&gt;&gt; <code><strong>mymod2.test('mymod2.py')</strong></code>
+(12, 414)</pre>
+</div></li>
+<li><p><code>from</code><em>/</em><code>from *</code>: Here’s the <code>from *</code> part; replace <code>*</code> with <code>countChars</code> to do the rest:</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>from mymod import *
+</strong></code>&gt;&gt;&gt; <code><strong>countChars('mymod.py')</strong></code>
+281</pre></li>
+<li><p><code>__main__</code>: If you code it properly, this file works in either mode—program run or module import, as <a data-type="xref" href="#example_b_oneeightdot_partfivesolidusmy">Example B-18</a> and the REPL session following it demo:</p>
+<div data-type="example" id="example_b_oneeightdot_partfivesolidusmy">
+<h5><span class="label">Example B-18. </span>Part5/mymod.py (edited)</h5>
+<pre class="less_codespace2" data-type="programlisting">def countLines(name):
+    file = open(name)
+    return len(file.readlines())
+
+def countChars(name):
+    return len(open(name).read())
+
+def test(name):                                  <code><em># Or pass file object</em></code>
+    return countLines(name), countChars(name)    <code><em># Or return a dictionary</em></code>
+
+if __name__ == '__main__':                       <code><em># Added: self-test code</em></code>
+    print(test('mymod.py'))                      <code><em># When run, not when imported</em></code>
+
+$ <code><strong>python3 mymod.py</strong></code>
+(13, 434)</pre>
+</div>
+<p>This is where you would probably begin to consider using command-line arguments or user input to provide the filename to be counted instead of hardcoding it in the script. Examples B-19 and B-20 show the required mods (see Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch21.html#the_benchmarking_interlude">21</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch25.html#module_odds_and_ends">25</a> for more on <code>sys.argv</code>, and <a data-type="xref" href="ch10.html#introducing_python_statements">Chapter 10</a> for more on <code>input</code>):</p>
+<div data-type="example" id="example_b_oneninedot_partfivesolidusmym">
+<h5><span class="label">Example B-19. </span>Part5/mymod_argv.py (changed parts)</h5>
+<pre data-type="programlisting">…
+if __name__ == '__main__':
+    import sys                                   <code><em># Command-line argument</em></code>
+    print(test(sys.argv[1]))
+
+$ <code><strong>python3 mymod_argv.py mymod.py</strong></code>
+(13, 434)</pre>
+</div>
+<div data-type="example" id="example_b_twozerodot_partfivesolidusmym">
+<h5><span class="label">Example B-20. </span>Part5/mymod_input.py (changed parts)</h5>
+<pre data-type="programlisting">…
+if __name__ == '__main__':
+    print(test(input('Enter file name: ')))      <code><em># Console/user input</em></code>
+
+$ <code><strong>python3 mymod_input.py</strong></code>
+Enter file name: <code><strong>mymod.py</strong></code>
+(13, 434)</pre>
+</div></li>
+<li><p><em>Nested imports</em>: It’s not much, but <a data-type="xref" href="#example_b_twoonedot_partfivesolidusmycl">Example B-21</a> gives one solution and its <a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="nested" id="id5037"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="imports" id="id5038"></a>results (the point here is to experiment with importing one module from another in a variety of ways):</p>
+<div data-type="example" id="example_b_twoonedot_partfivesolidusmycl">
+<h5><span class="label">Example B-21. </span>Part5/myclient.py</h5>
+<pre data-type="programlisting">from mymod import countLines, countChars
+print(countLines('mymod.py'), countChars('mymod.py'))
+
+$ <code><strong>python3 myclient.py</strong></code>
+13 434</pre>
+</div>
+<p>As for the rest of this question, <code>mymod</code>’s functions are accessible (that is, importable) from the top level of <code>myclient</code>, since <code>from</code> simply assigns to names in the importer (it works as if <code>mymod</code>’s <code>def</code>s appeared in <code>myclient</code>). For example, another file can say:</p>
+<pre data-type="programlisting">import myclient
+myclient.countLines(…)
+
+from myclient import countChars
+countChars(…)</pre>
+<p class="pagebreak-before">If <code>myclient</code> used <code>import</code> instead of <code>from</code>, you’d need to use a path to get to the functions in <code>mymod</code> through <code>myclient</code>:</p>
+<pre data-type="programlisting">import myclient
+myclient.mymod.countLines(…)
+
+from myclient import mymod
+mymod.countChars(…)</pre>
+<p>In general, you can define <em>collector</em> modules <a contenteditable="false" data-type="indexterm" data-primary="collector modules" id="id5039"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="collector" id="id5040"></a>that import all the names from other modules so they’re available in a single convenience module. The following hypothetical code, for example, creates three different copies of the name <code>somename</code>—<code>mod1.somename</code>, <code>collector.somename</code>, and <code>__main__.somename</code>; all three share the same integer object initially, and only the name <code>somename</code> exists at the interactive prompt as is:</p>
+<pre data-type="programlisting"><code><em># File mod1.py (hypothetical)
+</em></code>somename = 99
+
+<code><em># File collector.py (hypothetical)
+</em></code>from mod1 import *                               <code><em># Collect lots of names here</em></code>
+from mod2 import *                               <code><em># "from" assigns to my names</em></code>
+from mod3 import *
+
+&gt;&gt;&gt; <code><strong>from collector import somename</strong></code></pre></li>
+<li><p><em>Package imports</em>: For this, copy the <em>mymod.py</em> solution file listed for exercise 3 (<a data-type="xref" href="#example_b_oneeightdot_partfivesolidusmy">Example B-18</a>) into a directory package. The <a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="packages" id="id5041"></a><a contenteditable="false" data-type="indexterm" data-primary="packages" data-secondary="imports" id="id5042"></a>following commands run in a Unix console set up the directory and an optional <em>__init__.py</em> file; you’ll need to interpolate for other platforms and tools (e.g., use <code>copy</code> and <code>notepad</code> on Windows instead of <code>cp</code> and <code>vi</code>). This works in any directory, and you can do some of this from a file-explorer GUI, too.</p>
+<p>When finished, you’ll have a <em>mypkg</em> subdirectory that contains the files <em>__init__.py</em> and <em>mymod.py</em>. Technically, <em>mypkg</em> is located in the “home” directory component of the module search path. Notice how a <code>print</code> statement coded in the directory’s initialization file fires only the first time it is imported, not the second. Raw strings (<code>r'…'</code>) can also avoid <code>\</code> escape issues in the file paths if you’re working on Windows, but <code>/</code> works there too:</p>
+<pre data-type="programlisting">$ <code><strong>mkdir mypkg</strong>   </code>                    <code><em># Windows: same</em></code>
+$ <code><strong>cp mymod.py mypkg/mymod.py</strong>   </code>     <code><em># Windows: copy mymod.py mypkg\mymod.py</em></code>
+$ <code><strong>vi mypkg/__init__.py</strong></code>              <code><em># Windows: notepad mypkg\__init__.py</em></code>
+…<code><em>code a print statement</em></code>…
+
+$ <code><strong>python3              </strong>  </code>                         <code><em># Windows: py -3 (probably)</em></code>
+&gt;&gt;&gt; <code><strong>import mypkg.mymod</strong></code>
+initializing mypkg
+&gt;&gt;&gt; <code><strong>mypkg.mymod.countLines('mypkg/mymod.py')</strong></code>      <code><em># Windows: same</em></code>
+13
+&gt;&gt;&gt; <code><strong>from mypkg.mymod import countChars</strong></code>
+&gt;&gt;&gt; <code><strong>countChars('mypkg/mymod.py')</strong>   </code>               <code><em># Windows: same</em></code>
+434</pre>
+<p>If you copy the module to <em>__main__.py</em>, the copy will run if you run the directory as a whole (though there may be no reason to do so in practice, as the original module can be run directly too):</p>
+<pre data-type="programlisting">$ <code><strong>cp mypkg/mymod.py mypkg/__main__.py</strong>   </code>          <code><em># Windows: copy</em></code>
+$ <code><strong>python3 mypkg</strong></code>
+(13, 434)
+$ <code><strong>python3 mypkg/mymod.py</strong></code>
+(13, 434)</pre></li>
+<li><p><em>Reloads</em>: This exercise just asks you to experiment with changing the <em>changer.py</em> example in the book’s <a data-type="xref" href="ch23.html#example_twothree_onezerodot_changerdotp">Example 23-10</a>, so there’s nothing to show here.</p></li>
+<li><p><em>Circular imports</em>: The short <a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="circular" id="id5043"></a><a contenteditable="false" data-type="indexterm" data-primary="recursion" id="id5044"></a>story is that importing <code>recur2</code> first works because the recursive import then happens at the import in <code>recur1</code>, not at a <code>from</code> in <code>recur2</code>.</p>
+<p>The long story goes like this: importing <code>recur2</code> first works because the recursive import from <code>recur1</code> to <code>recur2</code> fetches <code>recur2</code> as a whole instead of getting specific names. <code>recur2</code> is incomplete when it’s imported from <code>recur1</code>, but because it uses <code>import</code> instead of <code>from</code>, you’re safe: Python finds and returns the already created <code>recur2</code> module object and continues to run the rest of <code>recur1</code> without a glitch. When the <code>recur2</code> import resumes, the second <code>from</code> finds the name <code>Y</code> in <code>recur1</code> (it’s been run completely), so no error is reported.</p>
+<p>Running a file as a <em>script</em> is not the same as importing it as a module; these cases are the same as running the first <code>import</code> or <code>from</code> in the script interactively. For instance, running <code>recur1</code> as a script works because it is the same as importing <code>recur2</code> interactively, as <code>recur2</code> is the first module imported in <code>recur1</code>. Running <code>recur2</code> as a script fails for the same reason—it’s the same as running its first import interactively.</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Part VI, Classes and OOP"><div class="sect1" id="part_vicomma_classes_and_oop">
+<h1>Part VI, Classes and OOP</h1>
+<p>See <a data-type="xref" href="ch32.html#test_your_knowledge_part_vi_exercises">“Test Your Knowledge: Part VI Exercises”</a> in <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a> for the exercises.</p>
+<ol>
+<li><p><em>Inheritance</em>: <a data-type="xref" href="#example_b_twotwodot_partsixsolidusadder">Example B-22</a> lists a solution for this exercise, along <a contenteditable="false" data-type="indexterm" data-primary="inheritance" id="id5045"></a>with some interactive tests. The <code>__add__</code> overload has to appear only once, in the superclass, as it invokes type-specific <code>add</code> <span class="keep-together">methods</span> in subclasses:</p>
+<div data-type="example" id="example_b_twotwodot_partsixsolidusadder">
+<h5><span class="label">Example B-22. </span>Part6/adder.py</h5>
+<pre data-type="programlisting">class Adder:
+    def add(self, x, y):
+        print('not implemented!')
+    def __init__(self, start=[]):
+        self.data = start
+    def __add__(self, other):                    <code><em># Or in subclasses?</em></code>
+        return self.add(self.data, other)        <code><em># Or return type?</em></code>
+
+class ListAdder(Adder):
+    def add(self, x, y):
+        return x + y
+
+class DictAdder(Adder):
+    def add(self, x, y):
+        new = {}
+        for k in x.keys(): new[k] = x[k]
+        for k in y.keys(): new[k] = y[k]
+        return new
+
+$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>from adder import *
+</strong></code>&gt;&gt;&gt; <code><strong>x = Adder()
+</strong></code>&gt;&gt;&gt; <code><strong>x.add(1, 2)</strong></code>
+not implemented!
+&gt;&gt;&gt; <code><strong>x = ListAdder()
+</strong></code>&gt;&gt;&gt; <code><strong>x.add([1], [2])</strong></code>
+[1, 2]
+&gt;&gt;&gt; <code><strong>x = DictAdder()
+</strong></code>&gt;&gt;&gt; <code><strong>x.add({1: 1}, {2: 2})</strong></code>
+{1: 1, 2: 2}
+
+&gt;&gt;&gt; <code><strong>x = Adder([1])
+</strong></code>&gt;&gt;&gt; <code><strong>x + [2]</strong></code>
+not implemented!
+&gt;&gt;&gt;
+&gt;&gt;&gt; <code><strong>x = ListAdder([1])
+</strong></code>&gt;&gt;&gt; <code><strong>x + [2]</strong></code>
+[1, 2]
+&gt;&gt;&gt; <code><strong>[2] + x</strong></code>
+TypeError: can only concatenate list (not "ListAdder") to list</pre>
+</div>
+<p>Notice in the last test that you get an error for expressions where a class instance appears on the right of a <code>+</code>; if you want to fix this, use <code>__radd__</code> methods, as described in <a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a>.</p>
+<p>If you are saving a value in the instance anyhow, you might as well rewrite the <code>add</code> method to take just one argument, in the spirit of other examples in this part of the book. <a data-type="xref" href="#example_b_twothreedot_partsixsolidusadd">Example B-23</a> sketches this mutation:</p>
+<div data-type="example" id="example_b_twothreedot_partsixsolidusadd">
+<h5><span class="label">Example B-23. </span>Part6/adder2.py</h5>
+<pre data-type="programlisting">class Adder:
+    def __init__(self, start=[]):
+        self.data = start
+    def __add__(self, other):              <code><em># Pass a single argument</em></code>
+        return self.add(other)             <code><em># The left side is in self</em></code>
+    def add(self, y):
+        print('not implemented!')
+
+class ListAdder(Adder):
+    def add(self, y):
+        return self.data + y
+
+class DictAdder(Adder):
+    def add(self, y):
+        d = self.data.copy()               <code><em># Change to use self.data instead of x</em></code>
+        d.update(y)                        <code><em># Or "cheat" by using quicker built-ins</em></code>
+        return d
+
+x = ListAdder([1, 2, 3])
+y = x + [4, 5, 6]
+print(y)                                   <code><em># Prints [1, 2, 3, 4, 5, 6]</em></code>
+
+z = DictAdder(dict(name='x')) + {'a': 1}
+print(z)                                   <code><em># Prints {'name': 'x', 'a': 1}</em></code></pre>
+</div>
+<p>Because values are attached to objects rather than passed around, this version is arguably more object-oriented. And, once you’ve gotten to this point, you’ll probably find that you can get rid of <code>add</code> altogether and simply define type-specific <code>__add__</code> methods in the two subclasses.</p></li>
+<li><p><em>Operator overloading</em>: The solution <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" id="id5046"></a>code and its REPL results in <a data-type="xref" href="#example_b_twofourdot_partsixsolidusmyli">Example B-24</a> demo a handful of operator-overloading methods we explored in <a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a>. Copying the initial value in the constructor is important because it may be mutable; you don’t want to change or have a reference to an object that’s possibly shared somewhere outside the class. The <code>__getattr__</code> method routes calls to the wrapped list. For tips on a possibly easier way to code this, See <a data-type="xref" href="ch32.html#extending_types_by_subclassing">“Extending Types by Subclassing”</a> in <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>:</p>
+<div data-type="example" id="example_b_twofourdot_partsixsolidusmyli">
+<h5><span class="label">Example B-24. </span>Part6/mylist.py</h5>
+<pre data-type="programlisting">class MyList:
+    def __init__(self, start):
+        #self.wrapped = start[:]                  <code><em># Copy start: no side effects</em></code>
+        self.wrapped = list(start)                <code><em># Make sure it's a list here</em></code>
+    def __add__(self, other):
+        return MyList(self.wrapped + other)
+    def __mul__(self, time):
+        return MyList(self.wrapped * time)
+    def __getitem__(self, offset):                <code><em># Also passed a slice on [:]</em></code>
+        return self.wrapped[offset]               <code><em># For iteration if no __iter__</em></code>
+    def __len__(self):
+        return len(self.wrapped)                  <code><em># Also fallback for truth tests</em></code> 
+    def append(self, node):
+        self.wrapped.append(node)
+    def __getattr__(self, name):                  <code><em># Other methods: sort/reverse/etc.</em></code>
+        return getattr(self.wrapped, name)
+    def __repr__(self):                           <code><em># Catchall display method
+</em></code>        return repr(self.wrapped)
+
+if __name__ == '__main__':
+    x = MyList('hack')
+    print(x)
+    print(x[2])
+    print(x[1:])
+    print(x + ['code'])
+    print(x * 3)
+    x.append('1'); x.extend(['z'])
+    x.sort()
+    print(' '.join(c for c in x))
+
+$ <code><strong>python3 mylist.py</strong></code>
+['h', 'a', 'c', 'k']
+c
+['a', 'c', 'k']
+['h', 'a', 'c', 'k', 'code']
+['h', 'a', 'c', 'k', 'h', 'a', 'c', 'k', 'h', 'a', 'c', 'k']
+1 a c h k z</pre>
+</div>
+<p>Note that it’s also important to copy the start value by calling <code>list</code> instead of slicing here, because otherwise the result may not be a true <em>list</em>, and so will not respond to expected list methods, such as <code>append</code> (e.g., slicing a string returns another string, not a list). You would be able to copy a <code>MyList</code> start value by slicing because its class overloads the slicing operation and provides the expected list interface; however, you need to avoid slice-based copying for objects such as strings.</p></li>
+<li><p><em>Subclassing</em>: One solution <a contenteditable="false" data-type="indexterm" data-primary="subclassing" id="id5047"></a>appears in <a data-type="xref" href="#example_b_twofivedot_partsixsolidusmysu">Example B-25</a>; your solution will be similar. You can also use <code>super</code> here instead of explicit superclass names for methods and attributes, as partly noted in the code’s comments:</p>
+<div data-type="example" id="example_b_twofivedot_partsixsolidusmysu">
+<h5><span class="label">Example B-25. </span>Part6/mysub.py</h5>
+<pre data-type="programlisting">from mylist import MyList
+
+class MyListSub(MyList):
+    calls = 0                                      <code><em># Shared by instances</em></code>
+    def __init__(self, start):
+        self.adds = 0                              <code><em># Varies in each instance</em></code>
+        MyList.__init__(self, start)               <code><em># Or: super().__init__(start)</em></code>
+
+    def __add__(self, other):
+        print('add: ' + str(other))
+        MyListSub.calls += 1                       <code><em># Class-wide counter</em></code>
+        self.adds += 1                             <code><em># Per-instance counts</em></code>
+        return MyList.__add__(self, other)         <code><em># Or: super().__add__(other)</em></code>
+
+    def stats(self):
+        return self.calls, self.adds               <code><em># All adds, my adds</em></code>
+
+if __name__ == '__main__':
+    x = MyListSub('read')
+    y = MyListSub('code')
+    print(x[2])
+    print(x[1:])
+    print(x + ['lp6e'])
+    print(x + ['book'])
+    print(y + ['py312'])
+    print(x.stats())
+
+$ <code><strong>python3 mysub.py</strong></code>
+a
+['e', 'a', 'd']
+add: ['lp6e']
+['r', 'e', 'a', 'd', 'lp6e']
+add: ['book']
+['r', 'e', 'a', 'd', 'book']
+add: ['py312']
+['c', 'o', 'd', 'e', 'py312']
+(3, 2)</pre>
+</div></li>
+<li><p><em>Attribute methods</em>: The following works through this exercise. As noted in <a data-type="xref" href="ch28.html#a_more_realistic_example">Chapter 28</a> and elsewhere, <code>__getattr__</code> is <em>not</em> called for built-in operations in Python 3.X, so the expressions aren’t intercepted at all here; a class like this must somehow redefine <code>__<em>X</em>__</code> operator-overloading methods explicitly. You can find more on this limitation in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch28.html#a_more_realistic_example">28</a>, <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch31.html#designing_with_classes">31</a>, <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch32.html#class_odds_and_ends">32</a>, and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch38.html#managed_attributes">38</a>, as well as <em>workarounds</em> for it in <a data-type="xref" href="ch39.html#decorators">Chapter 39</a> and its <em>inheritance</em> special case in <a data-type="xref" href="ch40.html#metaclasses_and_inheritance">Chapter 40</a>. Its impacts are potentially broad but can be addressed with code:</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>class Attrs:
+        def __getattr__(self, name):
+            print('get:', name)
+        def __setattr__(self, name, value):
+            print('set:', name, value)
+
+</strong></code>&gt;&gt;&gt; <code><strong>x = Attrs()
+</strong></code>&gt;&gt;&gt; <code><strong>x.append</strong></code>
+get append
+&gt;&gt;&gt; <code><strong>x.lang = 'py312'</strong></code>
+set: lang py312
+&gt;&gt;&gt; <code><strong>x + 2</strong></code>
+TypeError: unsupported operand type(s) for +: 'Attrs' and 'int'
+&gt;&gt;&gt; <code><strong>x[1]</strong></code>
+TypeError: 'Attrs' object is not subscriptable
+&gt;&gt;&gt; <code><strong>x[1:5]</strong></code>
+TypeError: 'Attrs' object is not subscriptable</pre></li>
+<li><p><em>Set objects</em>: Here’s the sort of <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="sets" id="id5048"></a>interaction you should get. To make the import of <em>Chapter32/setwrapper.py</em> work, either run this in the folder where this file resides, copy this file to your working directory, or add this file’s folder to your import search path per <a data-type="xref" href="part05.html#modules_and_packages">Part V</a>. Comments explain which methods are called. Also, bear in mind that sets are a built-in type in Python, so this is mostly just a coding exercise (see <a data-type="xref" href="ch05.html#numbers_and_expressions">Chapter 5</a> for more on sets):</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>from setwrapper import Set</strong></code>     <code><em># Run there, copy here, or mod path</em><strong>
+</strong></code>&gt;&gt;&gt; <code><strong>x = Set([1, 2, 3, 4])</strong></code>          <code><em># Runs __init__</em></code>
+&gt;&gt;&gt; <code><strong>y = Set([3, 4, 5])</strong></code>
+
+&gt;&gt;&gt; <code><strong>x &amp; y</strong></code>                          <code><em># __and__, intersect, then __repr__</em></code>
+Set:[3, 4]
+&gt;&gt;&gt; <code><strong>x | y</strong></code>                          <code><em># __or__, union, then __repr__</em></code>
+Set:[1, 2, 3, 4, 5]
+
+&gt;&gt;&gt; <code><strong>z = Set('hello')</strong></code>               <code><em># __init__ removes duplicates</em></code>
+&gt;&gt;&gt; <code><strong>z[0], z[-1], z[2:]</strong></code>             <code><em># __getitem__</em></code>
+('h', 'o', ['l', 'o'])
+
+&gt;&gt;&gt; <code><strong>for c in z: print(c, end=' ')</strong></code>  <code><em># __iter__ (else __getitem__)</em></code>
+...
+h e l o
+&gt;&gt;&gt; <code><strong>''.join(c.upper() for c in z)</strong></code>  <code><em># __iter__ (else __getitem__)</em></code>
+'HELO'
+&gt;&gt;&gt; <code><strong>len(z), z</strong> </code>                     <code><em># __len__, __repr__</em></code>
+(4, Set:['h', 'e', 'l', 'o'])
+
+&gt;&gt;&gt; <code><strong>z &amp; 'mello', z | 'mello'</strong></code>
+(Set:['e', 'l', 'o'], Set:['h', 'e', 'l', 'o', 'm'])</pre>
+<p>A solution to the multiple-operand extension subclass looks like the class in <a data-type="xref" href="#example_b_twosixdot_partsixsolidusmulti">Example B-26</a>. It needs to replace only two methods in the original set. The class’s documentation string explains how it works:</p>
+<div data-type="example" id="example_b_twosixdot_partsixsolidusmulti">
+<h5><span class="label">Example B-26. </span>Part6/multiset.py</h5>
+<pre data-type="programlisting" class="less_codespace2">from setwrapper import Set
+
+class MultiSet(Set):
+    """
+    Inherits all Set names, but extends intersect and union to support
+    multiple operands.  Note that "self" is still the first argument
+    (stored in the *args argument now).  Also note that the inherited
+    &amp; and | operators call the new methods here with 2 arguments, but
+    processing more than 2 requires a method call, not an expression.
+    intersect doesn't remove duplicates here: the Set constructor does.
+    """
+    def intersect(self, *others):
+        res = []
+        for x in self:                         <code><em># Scan first sequence</em></code>
+            for other in others:               <code><em># For all other args
+</em></code>                if x not in other: break       <code><em># Item in each one?</em></code>
+            else:                              <code><em># No: break out of loop
+</em></code>                res.append(x)                  <code><em># Yes: add item to end</em></code>
+        return Set(res)
+
+    def union(*args):                          <code><em># self is args[0]</em></code>
+        res = []
+        for seq in args:                       <code><em># For all args
+</em></code>            for x in seq:                      <code><em># For all nodes</em></code>
+                if not x in res:
+                    res.append(x)              <code><em># Add new items to result</em></code>
+        return Set(res)</pre>
+</div>
+<p>Your interaction with this extension will look something like the following. Note that you can intersect by using <code>&amp;</code> or calling <code>intersect</code>, but you must call <code>intersect</code> for three or more operands; <code>&amp;</code> is a binary (two-sided) operator. Also, note that we could have called <code>MultiSet</code> simply <code>Set</code> to make this change more transparent if we used <code>setwrapper.Set</code> to refer to the original within <span class="keep-together"><code>multiset</code></span> (the <code>as</code> clause in an import could rename the class too if desired):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from multiset import *
+</strong></code>&gt;&gt;&gt; <code><strong>x = MultiSet([1, 2, 3, 4])
+</strong></code>&gt;&gt;&gt; <code><strong>y = MultiSet([3, 4, 5])
+</strong></code>&gt;&gt;&gt; <code><strong>z = MultiSet([0, 1, 2])
+
+</strong></code>&gt;&gt;&gt; <code><strong>x &amp; y, x | y</strong></code>                               <code><em># Two operands</em></code>
+(Set:[3, 4], Set:[1, 2, 3, 4, 5])
+
+&gt;&gt;&gt; <code><strong>x.intersect(y, z)</strong></code>                          <code><em># Three operands</em></code>
+Set:[]
+&gt;&gt;&gt; <code><strong>x.union(y, z)</strong></code>
+Set:[1, 2, 3, 4, 5, 0]
+&gt;&gt;&gt; <code><strong>x.intersect([1,2,3], [2,3,4], [1,2,3])</strong></code>     <code><em># Four operands</em></code>
+Set:[2, 3]
+&gt;&gt;&gt; <code><strong>x.union(range(10))</strong> </code>                        <code><em># Non-MultiSets work, too</em></code>
+Set:[1, 2, 3, 4, 0, 5, 6, 7, 8, 9]
+
+&gt;&gt;&gt; <code><strong>w = MultiSet('soap')</strong></code>                       <code><em># String sets</em></code>
+&gt;&gt;&gt; <code><strong>w</strong></code>
+Set(['s', 'o', 'a', 'p'])
+&gt;&gt;&gt; <code><strong>''.join(w | 'super')</strong></code>
+'soapuer''
+&gt;&gt;&gt; <code><strong>(w | 'super') &amp; MultiSet('slots')</strong></code>
+Set(['s', 'o'])</pre></li>
+<li><p><em>Class tree links</em>: <a data-type="xref" href="#example_b_twosevendot_partsixsoliduslis">Example B-27</a> lists one way to change the lister <a contenteditable="false" data-type="indexterm" data-primary="class trees" data-secondary="OOP" id="id5049"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="class trees" id="id5050"></a>class in <a data-type="xref" href="ch31.html#example_threeone_onezerodot_listinstanc">Example 31-10</a>, along with a rerun of the associated tester to show its augmented format. For full credit, do the same for the <code>dir</code>-based version, and also do this when formatting class objects in the tree-climber variant.</p>
+
+<p>To import <em>testmixin.py</em> as a test, either copy it over from the Chapter 31 examples folder or add that folder to <code>sys.path</code> as we did earlier in <a data-type="xref" href="part04.html#functions_and_generators">Part IV</a>’s solutions. It was copied here for variety:</p>
+<div data-type="example" id="example_b_twosevendot_partsixsoliduslis">
+<h5><span class="label">Example B-27. </span>Part6/listinstance-mod.py</h5>
+<pre class="widows18" data-type="programlisting">class ListInstance:
+    def __attrnames(self):
+        …<code><em>unchanged</em></code>…
+
+    def __str__(self):
+        return (f'&lt;Instance of {self.__class__.__name__}'       <code><em># My class's name</em></code>
+                f'({self.__supers()}), '                        <code><em># My class's supers</em></code>
+                f'address {id(self):#x}:'                       <code><em># My address (hex)</em></code>
+                f'{self.__attrnames()}&gt;')                       <code><em># name=value list</em></code>
+
+    def __supers(self):
+        names = []
+        for super in self.__class__.__bases__:            <code><em># One level up from class</em></code>
+            names.append(super.__name__)                  <code><em># name, not str(super)</em></code>
+        return ', '.join(names)
+
+<code> <em>       # Or: ', '.join(super.__name__ for super in self.__class__.__bases__)</em></code>
+
+if __name__ == '__main__':
+    import testmixin                    <code><em># Assume testmixin.py copied to "."</em></code>
+    testmixin.tester(ListInstance)      <code><em># Test class in this module</em></code>
+
+$ <code><strong>python3 listinstance-mod.py</strong></code>
+&lt;Instance of Sub(Super, ListInstance), address 0x10edc66c0:
+    data1='code'
+    data2='Python'
+    data3=3.12
+&gt;</pre>
+</div></li>
+<li><p><em>Composition</em>: A full-points solution is coded in <a data-type="xref" href="#example_b_twoeightdot_partsixsoliduslun">Example B-28</a>, with comments from the description mixed in with the code. This is one case where it’s probably easier to express a problem in code than it is in narrative:</p>
+<div data-type="example" id="example_b_twoeightdot_partsixsoliduslun">
+<h5><span class="label">Example B-28. </span>Part6/lunch.py</h5>
+<pre data-type="programlisting">class Lunch:
+    def __init__(self):                          <code><em># Make/embed Customer, Employee</em></code>
+        self.cust = Customer()
+        self.empl = Employee()
+    def order(self, foodName):                   <code><em># Start Customer order simulation</em></code>
+        self.cust.placeOrder(foodName, self.empl)
+    def result(self):                            <code><em># Ask the Customer about its Food</em></code>
+        self.cust.printFood()
+
+class Customer:
+    def __init__(self):                          <code><em># Initialize my food to None</em></code>
+        self.food = None
+    def placeOrder(self, foodName, employee):    <code><em># Place order with Employee</em></code>
+        self.food = employee.takeOrder(foodName)
+    def printFood(self):                         <code><em># Print the name of my food</em></code>
+        print(self.food.name)
+
+class Employee:
+    def takeOrder(self, foodName):               <code><em># Return Food, with desired name</em></code>
+        return Food(foodName)
+
+class Food:
+    def __init__(self, name):                    <code><em># Store food name</em></code>
+        self.name = name
+
+if __name__ == '__main__':
+    x = Lunch()                                  <code><em># Self-test code</em></code>
+    x.order('burritos')                          <code><em># If run, not imported</em></code>
+    x.result()
+    x.order('pizza')
+    x.result()</pre>
+</div>
+<p class="pagebreak-before">When run, customers place orders and get food from employees. This could be much more involved, but it suffices to demo the routing of messages between objects that’s typical in OOP code:</p>
+<pre data-type="programlisting">$ <code><strong>python3 lunch.py</strong></code>
+burritos
+pizza</pre></li>
+<li><p><em>Zoo animal hierarchy</em>: <a data-type="xref" href="#example_b_twoninedot_partsixsoliduszood">Example B-29</a> shows one way to code the taxonomy in Python; it’s artificial, but the general coding pattern applies to many real structures, from GUIs to employee databases to spacecraft. Notice that the <code>self.speak</code> call in <code>Animal</code> triggers an independent inheritance search, which generally finds <code>speak</code> in a subclass. Test this interactively by calling the <code>reply</code> method for instances per the exercise description. Try extending this hierarchy with new classes and making instances of various classes in the tree:</p>
+<div data-type="example" id="example_b_twoninedot_partsixsoliduszood">
+<h5><span class="label">Example B-29. </span>Part6/zoo.py</h5>
+<pre data-type="programlisting">class Animal:
+    def reply(self):   self.speak()              <code><em># Back to subclass</em></code>
+    def speak(self):   print('blah')             <code><em># Custom message</em></code>
+
+class Mammal(Animal):
+    def speak(self):   print('huh?')
+
+class Cat(Mammal):
+    def speak(self):   print('meow')
+
+class Dog(Mammal):
+    def speak(self):   print('bark')
+
+class Primate(Mammal):
+    def speak(self):   print('Hello world!')
+
+class Hacker(Primate): pass                      <code><em># Inherit from Primate</em></code></pre>
+</div></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Part VII, Exceptions"><div class="sect1" id="part_viicomma_exceptions">
+<h1>Part VII, Exceptions</h1>
+<p>See <a data-type="xref" href="ch36.html#test_your_knowledge_part_vii_exercises">“Test Your Knowledge: Part VII Exercises”</a> in <a data-type="xref" href="ch36.html#exception_odds_and_ends">Chapter 36</a> for the exercises.</p>
+<ol>
+<li><p><code>try</code><em>/</em><code>except</code>: One possible coding of the <code>oops</code> function is listed in <a data-type="xref" href="#example_b_threezerodot_partsevensolidus">Example B-30</a>. As for the noncoding questions, changing <code>oops</code> to raise a <code>KeyError</code> instead of an <code>IndexError</code> means that the <code>try</code> handler won’t catch the exception—it “percolates” to the top level and triggers Python’s default error message. The names <code>KeyError</code> and <code>IndexError</code> come from the outermost built-in names scope (the <em>B</em> in “LEGB”). Import <code>builtins</code> and pass it as an argument to the <code>dir</code> function to see this for yourself, per <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>.</p>
+<div data-type="example" id="example_b_threezerodot_partsevensolidus">
+<h5><span class="label">Example B-30. </span>Part7/oops.py</h5>
+<pre data-type="programlisting">def oops():
+    raise IndexError()
+
+def doomed():
+    try:
+        oops()
+    except IndexError:
+        print('caught an index error!')
+    else:
+        print('no error caught...')
+
+if __name__ == '__main__': doomed()
+
+$ <code><strong>python3 oops.py</strong></code>
+caught an index error!</pre>
+</div></li>
+<li><p><em>Exception objects and lists</em>: <a data-type="xref" href="#example_b_threeonedot_partsevensoliduso">Example B-31</a> is one way to extend this module for an exception of its own:</p>
+<div data-type="example" id="example_b_threeonedot_partsevensoliduso">
+<h5><span class="label">Example B-31. </span>Part7/oops2.py</h5>
+<pre data-type="programlisting">class MyError(Exception): pass
+
+def oops():
+    raise MyError('Hack!')
+
+def doomed():
+    try:
+        oops()
+    except IndexError:
+        print('caught an index error!')
+    except MyError as exc:
+        print('caught error:', MyError, exc)
+    else:
+        print('no error caught...')
+
+if __name__ == '__main__':
+    doomed()
+
+$ <code><strong>python3 oops2.py</strong></code>
+caught error: &lt;class '__main__.MyError'&gt; Hack!</pre>
+</div>
+<p>Like all class exceptions, the raised instance is accessible via the <code>as</code> variable <code>data</code>; the error message shows both the class’s (<code>&lt;...&gt;</code>) and its instance’s (<code>Hack!</code>) displays. The instance must be inheriting both an <code>__init__</code> and a <code>__repr__</code> or <code>__str__</code> from Python’s <code>Exception</code> class, or it would print much as the class does. See <a data-type="xref" href="ch35.html#exception_objects">Chapter 35</a> for details on how these defaults work in built-in exception classes.</p></li>
+<li><p><em>Error handling</em>: <a data-type="xref" href="#example_b_threetwodot_partsevensoliduse">Example B-32</a> is one way to solve this exercise. It codes <a contenteditable="false" data-type="indexterm" data-primary="error handling" id="id5051"></a>tests in a file rather than interactively, but the results are similar enough for full credit. Notice that the empty <code>except</code> and <code>sys.exc_info</code> approach used here will catch exit-related exceptions that listing <code>Exception</code> with an <code>as</code> variable won’t; that’s probably not ideal in most applications code but might be useful in a tool like this designed to work as a sort of exceptions firewall.</p>
+<div data-type="example" id="example_b_threetwodot_partsevensoliduse">
+<h5><span class="label">Example B-32. </span>Part7/exctools.py</h5>
+<pre data-type="programlisting">import sys, traceback
+
+def safe(callee, *pargs, **kargs):
+    try:
+        callee(*pargs, **kargs)            <code><em># Catch everything else</em></code>
+    except:                                <code><em># Or "except Exception as E:"</em></code>
+        traceback.print_exc()
+        print(f'Got {sys.exc_info()[0]} {sys.exc_info()[1]}')
+
+if __name__ == '__main__':
+    import oops2
+    safe(oops2.oops)
+
+$ <code><strong>python3 exctools.py</strong></code>
+Traceback (most recent call last):
+  File "/…/LP6E/AppendixB/Part7/exctools.py", line 5, in safe
+    callee(*pargs, **kargs)            # Catch everything else
+    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/…/LP6E/AppendixB/Part7/oops2.py", line 4, in oops
+    raise MyError('Hack!')
+oops2.MyError: Hack!
+Got &lt;class 'oops2.MyError'&gt; Hack!</pre>
+</div>
+<p>Bonus points: the sort of code in <a data-type="xref" href="#example_b_threethreedot_partsevensolidu">Example B-33</a> could turn this into a <em>function decorator</em> that could wrap and catch exceptions raised by any function, using techniques introduced briefly in <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>, but covered more fully in <a data-type="xref" href="ch39.html#decorators">Chapter 39</a>—it augments a function, rather than expecting it to be passed in explicitly, and produces similar output when run (there’s an extra call level, and filenames differ):</p>
+<div data-type="example" id="example_b_threethreedot_partsevensolidu">
+<h5><span class="label">Example B-33. </span>Part7/exctools_deco.py</h5>
+<pre data-type="programlisting">import sys, traceback
+
+def safe(callee):
+    def callproxy(*pargs, **kargs):
+        try:
+            return callee(*pargs, **kargs)
+        except Exception as E:
+            traceback.print_exc()
+            print(f'Got {E.__class__} {E}')
+    return callproxy
+
+if __name__ == '__main__':
+    import oops2
+
+    @safe
+    def test():                <code><em># test = safe(test)</em></code>
+        oops2.oops()
+
+    test()</pre>
+</div></li>
+<li><p><em>Self-study examples</em>: In closing, Examples <a data-xrefstyle="select:labelnumber" data-type="xref" href="#example_b_threefourdot_partsevensolidus">B-34</a> through <a data-type="xref" data-xrefstyle="select:labelnumber" href="#example_b_fourthreedot_partsevensolidus">B-43</a> are 10 examples for you to study on your own. Their code and supporting files are in the <em>Self-Study-Demos</em> subfolder of the examples package’s <em>AppendixB/Part7</em> folder. These require no extra installs as they use standard-library tools, though <code>tkinter</code> is sketchy on phones (see <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a>). For more examples, see follow-up books and resources for the application domains you’ll be exploring next:</p>
+<div data-type="example" id="example_b_threefourdot_partsevensolidus">
+<h5><span class="label">Example B-34. </span>Part7/Self-Study-Demos/largest-dir.py</h5>
+<pre data-type="programlisting"><code><em># Find the largest Python source file in a single directory</em></code>
+
+import os, glob
+dirname = '/Users/me/Downloads'    <code><em># Edit me to use (or use input() or sys.argv)
+</em></code>
+allsizes = []
+allpy = glob.glob(dirname + os.sep + '*.py')
+for filename in allpy:
+    filesize = os.path.getsize(filename)
+    allsizes.append((filesize, filename))
+
+allsizes.sort()
+print(allsizes[:2])
+print(allsizes[-2:])</pre>
+</div>
+<div data-type="example" id="example_b_threefivedot_partsevensolidus">
+<h5><span class="label">Example B-35. </span>Part7/Self-Study-Demos/largest-tree.py</h5>
+<pre data-type="programlisting"><code><em># Find the largest Python source file in an entire directory tree
+</em></code>
+import sys, os, pprint
+if sys.platform[:3] == 'win':
+    dirname = r'C:\Users\me\Downloads'    <code><em># Edit me to use</em></code>
+else:
+    dirname = '/Users/me/Downloads'
+
+allsizes = []
+for (thisDir, subsHere, filesHere) in os.walk(dirname):
+    for filename in filesHere:
+        if filename.endswith('.py'):
+            fullname = os.path.join(thisDir, filename)
+            fullsize = os.path.getsize(fullname)
+            allsizes.append((fullsize, fullname))
+
+allsizes.sort()
+pprint.pprint(allsizes[:2])
+pprint.pprint(allsizes[-2:])</pre>
+</div>
+<div data-type="example" id="example_b_threesixdot_partsevensoliduss">
+<h5><span class="label">Example B-36. </span>Part7/Self-Study-Demos/largest-import.py<strong></strong></h5>
+<pre data-type="programlisting"><code><em># Find the largest Python source file on the module import search path</em></code>
+
+import sys, os, pprint
+visited  = {}
+allsizes = []
+for srcdir in sys.path:
+    for (thisDir, subsHere, filesHere) in os.walk(srcdir):
+        thisDir = os.path.normpath(thisDir)
+        if thisDir.upper() in visited:
+            continue
+        else:
+            visited[thisDir.upper()] = True
+        for filename in filesHere:
+            if filename.endswith('.py'):
+                pypath  = os.path.join(thisDir, filename)
+                try:
+                    pysize = os.path.getsize(pypath)
+                except:
+                    print('skipping', pypath)
+                allsizes.append((pysize, pypath))
+
+allsizes.sort()
+pprint.pprint(allsizes[:3])
+pprint.pprint(allsizes[-3:])</pre>
+</div>
+<div data-type="example" id="example_b_threesevendot_partsevensolidu">
+<h5><span class="label">Example B-37. </span>Part7/Self-Study-Demos/summer1.py</h5>
+<pre data-type="programlisting"><code><em># Sum columns in a text file separated by commas
+</em></code>
+filename = 'data.txt'    <code><em># Edit me for others</em></code>
+sums = {}
+
+for line in open(filename):
+    cols = line.split(',')
+    nums = [int(col) for col in cols]
+    for (ix, num) in enumerate(nums):
+        sums[ix] = sums.get(ix, 0) + num
+
+for key in sorted(sums):
+    print(key, '=', sums[key])</pre>
+</div>
+<div data-type="example" id="example_b_threeeightdot_partsevensolidu">
+<h5><span class="label">Example B-38. </span>Part7/Self-Study-Demos/summer2.py</h5>
+<pre data-type="programlisting"><code><em># Similar to summer1, but using lists instead of dictionaries for sums
+</em></code>
+import sys
+filename = sys.argv[1]            <code><em># "python3 summer2.py data.txt 3"</em></code>
+numcols  = int(sys.argv[2])
+totals   = [0] * numcols
+
+for line in open(filename):
+    cols = line.split(',')
+    nums = [int(x) for x in cols]
+    totals = [(x + y) for (x, y) in zip(totals, nums)]
+
+print(totals)</pre>
+</div>
+<div data-type="example" id="example_b_threeninedot_partsevensolidus">
+<h5><span class="label">Example B-39. </span>Part7/Self-Study-Demos/regrtest.py</h5>
+<pre data-type="programlisting"><code><em># Simple test for regressions in the output of a set of scripts
+</em></code>
+import os
+testscripts = [dict(script='test1.py', args=''),       <code><em># Edit me to use (or glob)</em></code>
+               dict(script='test2.py', args='-opt')]   <code><em># Add encodings if needed</em></code>
+
+for testcase in testscripts:
+    commandline = '%(script)s %(args)s' % testcase
+    output = os.popen(commandline).read()
+    result = testcase['script'] + '.result'
+    if not os.path.exists(result):
+        open(result, 'w').write(output)
+        print('Created:', result)
+    else:
+        priorresult = open(result).read()
+        if output != priorresult:
+            print('FAILED:', testcase['script'])
+            print(output)
+        else:
+            print('Passed:', testcase['script'])</pre>
+</div>
+<div data-type="example" class="pagebreak-before" id="example_b_fourzerodot_partsevensoliduss">
+<h5 class="less_space"><span class="label">Example B-40. </span>Part7/Self-Study-Demos/gui1.py</h5>
+<pre data-type="programlisting">"""
+Build a GUI with tkinter having buttons that change color and grow.
+Caution: this GUI may grow until you close its window manually!
+"""
+
+from tkinter import *
+import random
+fontsize = 25
+colors = ['red', 'green', 'blue', 'yellow', 'orange', 'white', 'cyan', 'purple']
+
+def reply(text):
+    print(text)
+    popup = Toplevel()
+    color = random.choice(colors)
+    Label(popup, text='Popup', bg='black', fg=color).pack()
+    L.config(fg=color)
+
+def cycle():
+    L.config(fg=random.choice(colors))
+    win.after(250, cycle)
+
+def grow():
+    global fontsize
+    fontsize += 5
+    L.config(font=('arial', fontsize, 'italic'))
+    win.after(100, grow)
+
+win = Tk()
+L = Label(win, text='Hack',
+          font=('arial', fontsize, 'italic'), fg='yellow', bg='navy',
+          relief=RAISED)
+L.pack(side=TOP, expand=YES, fill=BOTH)
+Button(win, text='popup', command=(lambda: reply('new'))).pack(side=BOTTOM, fill=X)
+Button(win, text='cycle', command=cycle).pack(side=BOTTOM, fill=X)
+Button(win, text='grow', command=grow).pack(side=BOTTOM, fill=X)
+win.mainloop()</pre>
+</div>
+<div data-type="example" id="example_b_fouronedot_partsevensolidusse">
+<h5><span class="label">Example B-41. </span>Part7/Self-Study-Demos/gui2.py</h5>
+<pre data-type="programlisting">"""
+Similar to gui1, but use classes so each window has own state info.
+Caution: this GUI may grow until you press Stop or kill its window!
+"""
+
+from tkinter import *
+import random
+
+class MyGui:
+    """
+    A GUI with buttons that change color and make the label grow
+    """
+    colors = ['blue', 'green', 'orange', 'red', 'brown', 'yellow']
+
+    def __init__(self, parent, title='popup'):
+        parent.title(title)
+        self.growing = False
+        self.fontsize = 10
+        self.lab = Label(parent, text='Hack2', fg='white', bg='navy')
+        self.lab.pack(expand=YES, fill=BOTH)
+        Button(parent, text='Hack', command=self.reply).pack(side=LEFT)
+        Button(parent, text='Grow', command=self.grow).pack(side=LEFT)
+        Button(parent, text='Stop', command=self.stop).pack(side=LEFT)
+
+    def reply(self):
+        "change the button's color at random on Hack presses"
+        self.fontsize += 5
+        color = random.choice(self.colors)
+        self.lab.config(bg=color,
+                font=('courier', self.fontsize, 'bold italic'))
+
+    def grow(self):
+        "start making the label grow on Grow presses"
+        self.growing = True
+        self.grower()
+
+    def grower(self):
+        "multiple presses schedule multiple growers"
+        if self.growing:
+            self.fontsize += 5
+            self.lab.config(font=('courier', self.fontsize, 'bold'))
+            self.lab.after(500, self.grower)
+
+    def stop(self):
+        "stop all button grower loops on Stop presses"
+        self.growing = False
+
+class MySubGui(MyGui):
+    colors = ['black', 'purple']           <code><em># Customize to change color choices</em></code>
+
+MyGui(Tk(), 'main')
+MyGui(Toplevel())
+MySubGui(Toplevel())
+mainloop()</pre>
+</div>
+<div data-type="example" id="example_b_fourtwodot_partsevensolidusse">
+<h5><span class="label">Example B-42. </span>Part7/Self-Study-Demos/popmail.py</h5>
+<pre data-type="programlisting">"""
+POP email inbox scanning and deletion utility.
+Scan pop email box, fetching just headers, allowing
+deletions without downloading the complete message.
+"""
+
+import poplib, getpass, sys
+
+mailserver = 'your pop email server name here'   <code><em># Edit me: your pop.server.net
+</em></code>mailuser   = 'your pop email user name here'     <code><em># Edit me: your userid
+</em></code>mailpasswd = getpass.getpass(f'Password for {mailserver}? ')
+
+print('Connecting...')
+server = poplib.POP3(mailserver)
+server.user(mailuser)
+server.pass_(mailpasswd)
+
+try:
+    print(server.getwelcome())
+    msgCount, mboxSize = server.stat()
+    print('There are', msgCount, 'mail messages, size ', mboxSize)
+    msginfo = server.list()
+    print(msginfo)
+    for i in range(msgCount):
+        msgnum  = i+1
+        msgsize = msginfo[1][i].split()[1]
+        resp, hdrlines, octets = server.top(msgnum, 0)         <code><em># Get hdrs only
+</em></code>        print('-'*80)
+        print('[%d: octets=%d, size=%s]' % (msgnum, octets, msgsize))
+        for line in hdrlines: print(line)
+
+        if input('Print?') in ['y', 'Y']:
+            for line in server.retr(msgnum)[1]: print(line)    <code><em># Get whole msg</em></code>
+        if input('Delete?') in ['y', 'Y']:
+            print('deleting')
+            server.dele(msgnum)                                <code><em># Delete on srvr</em></code>
+        else:
+            print('skipping')
+finally:
+    server.quit()                                  <code><em># Make sure we unlock mbox</em></code>
+input('Bye.')                                      <code><em># Keep window up on Windows</em></code></pre>
+</div>
+<div data-type="example" id="example_b_fourthreedot_partsevensolidus">
+<h5><span class="label">Example B-43. </span>Part7/Self-Study-Demos/sqldbase.py</h5>
+<pre data-type="programlisting"><code><em># Database script to populate and query an SQLite database, stored in people.db</em></code>
+
+import sqlite3, time
+conn = sqlite3.connect('people.db')    <code><em># Filename for database storage</em></code>
+curs = conn.cursor()                   <code><em># Submit SQL through cursor</em></code>
+
+<code><em># Make+fill table if doesn't yet exist</em></code>
+tbl = curs.execute('select name from sqlite_master where name = \'people\'')
+if tbl.fetchone() is None:
+    print('Making table anew')
+    curs.execute('create table people (name, job, pay)')
+
+    recs = [('Pat', 'mgr', 40000), ('Sue', 'dev', 60000), ('Bob', 'dev', 50000)]
+    for rec in recs:
+        curs.execute('insert into people values (?, ?, ?)', rec)
+    conn.commit()
+
+<code><em># Show all rows</em></code>
+print('Rows:')
+curs.execute('select * from people')
+for row in curs.fetchall():
+    print(row)
+
+<code><em># Show just devs</em></code>
+print('Devs:')
+curs.execute("select name, pay from people where job = 'dev'")
+colnames = [desc[0] for desc in curs.description]
+while row := curs.fetchone():
+    print('-' * 30)
+    for (name, value) in zip(colnames, row):
+        print(f'{name:&lt;4} =&gt; {value}')
+
+<code><em># Update devs' pay: shown on next run</em></code>
+secs = int(time.time())  <code><em># UTC!</em></code>
+curs.execute('update people set pay = ? where job = ?', [secs, 'dev'])
+conn.commit()</pre>
+</div></li>
+</ol>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>

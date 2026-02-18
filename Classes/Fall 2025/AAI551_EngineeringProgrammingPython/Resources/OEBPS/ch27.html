@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 27. Class Coding Basics"><div class="chapter" id="class_coding_basics">
+<h1><span class="label">Chapter 27. </span>Class Coding Basics</h1>
+<p>Now that we’ve talked about OOP in the abstract, it’s time to see how this translates to actual code. This chapter begins to fill in the syntax details behind the class model in Python.</p>
+<p>If you’ve never been exposed to OOP in the past, classes can seem somewhat complicated if taken in a single dose. To make class coding easier to absorb, we’ll begin our detailed exploration of OOP by taking a first look at some basic classes in action in this chapter. We’ll expand on the details introduced here in later chapters of this part of the book, but in their basic form, Python classes are easy to <span class="keep-together">understand</span>.</p>
+<p>In fact, classes have just three primary distinctions. At a base level, they are mostly just namespaces, much like the modules we studied in <a data-type="xref" href="part05.html#modules_and_packages">Part V</a>. Unlike modules, though, classes also have support for generating multiple objects, for namespace inheritance, and for operator overloading. Let’s begin our <code>class</code> statement tour by exploring each of these three distinctions in turn.</p>
+<section data-type="sect1" data-pdf-bookmark="Classes Generate Multiple Instance Objects"><div class="sect1" id="classes_generate_multiple_instance_obje">
+<h1>Classes Generate Multiple Instance Objects</h1>
+<p>To understand how the multiple objects idea works, you have to first understand that there are two kinds of objects in Python’s OOP model: <em>class</em> objects and <em>instance</em> objects. Class objects provide default behavior and are used to create instance objects. Instance objects are the tangible objects your programs process—each is a namespace in its own right but inherits (i.e., has automatic access to) names in the class from which it was created. Class objects come from <a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="class objects" id="id3736"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="instances" id="id3737"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="class objects" id="id3738"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="instance objects" id="id3739"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="objects" id="id3740"></a><a contenteditable="false" data-type="indexterm" data-primary="instance objects" id="id3741"></a>statements, and instances come from calls; each time you call a class, you get a new instance of that class.</p>
+<p>This object-generation concept is very different from most of the other program constructs we’ve seen so far in this book. In effect, classes are essentially <em>factories</em> for generating multiple instances. By contrast, only one copy of each module is ever imported into a single program. In fact, this is why <code>reload</code> works as it <a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="reloading" id="id3742"></a><a contenteditable="false" data-type="indexterm" data-primary="reloading modules" data-secondary="OOP" id="id3743"></a>does, updating a single instance and shared object in place. With classes, each instance can have its own independent data, supporting multiple versions of the object that the class models.</p>
+<p>In this role, class instances are similar to the per-call state of the <em>closure</em> (a.k.a. factory) functions of <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>, but this is a natural part of the class model, and state in classes is explicit attributes instead of implicit scope references. Moreover, this is just part of what classes do—they also support customization by inheritance, operator overloading, and multiple behaviors via methods. Hence, classes are a more complete programming tool, though OOP and <em>functional programming</em> are not mutually exclusive paradigms. We may combine them by using functional tools in methods, by <a contenteditable="false" data-type="indexterm" data-primary="functional programming" id="id3744"></a>coding methods that are themselves generators, by writing user-defined iterators, and so on.</p>
+<p>The following is a quick summary of the bare essentials of Python OOP in terms of its two object types. As you’ll see, Python classes are in some ways similar to both <code>def</code>s and modules, but they may be quite different from what you’re used to in other languages.</p>
+<section data-type="sect2" data-pdf-bookmark="Class Objects Provide Default Behavior"><div class="sect2" id="class_objects_provide_default_behavior">
+<h2>Class Objects Provide Default Behavior</h2>
+<p>When we run a <code>class</code> statement, we get a class object. Here’s a rundown of the main properties of <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="objects" data-tertiary="default behavior" id="id3745"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="class objects" data-tertiary="default behavior" id="id3746"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="class objects" data-tertiary="default behavior" id="id3747"></a>Python classes:</p>
+<ul>
+<li><p><strong>The</strong> <code><strong>class</strong></code> <strong>statement creates a class object and assigns it a name.</strong> Just like the function <code>def</code> statement, the Python <code>class</code> is an executable statement. When reached and run, it generates a new class object and assigns it to the first name in the <code>class</code> header. Also, like <code>def</code>s, <code>class</code> statements typically run when the files they are coded in are first imported or run as a top-level script.</p></li>
+<li><p><strong>Assignments inside</strong> <code><strong>class</strong></code> <strong>statements make class attributes.</strong> Just like in module files, top-level assignments within a <code>class</code> statement (not nested in a <code>def</code>) generate attributes in a class object. Technically, the <code>class</code> statement defines a local scope that <em>morphs</em> into the attribute namespace of the class object, just like a module’s global scope. After running a <code>class</code> statement, class attributes may be accessed by name qualification: <code><em>class</em>.<em>name</em></code>.</p></li>
+<li><p><strong>Class attributes provide object state and behavior.</strong> Attributes of a class object record state information and behavior to be shared by all instances created from the class. Most notably and commonly, function <code>def</code> statements nested inside a <code>class</code> generate <em>methods</em>, which process instances.</p></li>
+</ul>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Instance Objects Are Concrete Items"><div class="sect2" id="instance_objects_are_concrete_items">
+<h2>Instance Objects Are Concrete Items</h2>
+<p>When we call a class object, we get <a contenteditable="false" data-type="indexterm" data-primary="instance objects" id="id3748"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="instance objects" id="id3749"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="instance objects" id="id3750"></a>an instance object. Here’s an overview of the key points behind class instances:</p>
+<ul>
+<li><p><strong>Calling a class object like a function makes a new instance object.</strong> Each time a class is called, it creates and returns a new instance object. Instances represent material items in your program’s domain.</p></li>
+<li><p><strong>Each instance object inherits class attributes and gets its own namespace.</strong> Instance objects created from classes are new namespaces; they start out empty but inherit attributes that live in the class objects from which they were generated.</p></li>
+<li><p><strong>Assignments to attributes of</strong> <code><strong>self</strong></code> <strong>in methods make per-instance attributes.</strong> Inside a class’s method functions, the first argument (called <code>self</code> by convention) references the instance object being processed; assignments to attributes of <code>self</code> create or change data in the instance, not the class.</p></li>
+</ul>
+<p>The end result is that classes define common, shared data and behavior, and generate instances. Instances reflect palpable application entities and record per-instance data that may vary per object.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="A First Example"><div class="sect2" id="a_first_example-id00001">
+<h2>A First Example</h2>
+<p>Let’s turn to a real example to show how these ideas work in practice. To begin, let’s define a class named <code>FirstClass</code> by running a Python <code>class</code> statement interactively in any REPL:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class FirstClass:</strong> </code>              <code><em># Define a class object</em></code>
+        <code><strong>def setdata(self, value):</strong></code>   <code><em># Define class's methods</em></code>
+            <code><strong>self.data = value</strong></code>       <code><em># self is the instance</em></code>
+        <code><strong>def display(self):
+            print(self.data)</strong></code>        <code><em># self.data: per instance</em></code></pre>
+<p>We’re working interactively here, but typically, such a statement would be run when the module file it is coded in is imported. Like functions created with <code>def</code>s, this class won’t even exist until Python reaches and runs this statement.</p>
+<p>Like all compound statements, the <code>class</code> starts with a header line that lists the class name, followed by a body of one or more nested and (usually) indented statements. Here, the nested statements are <code>def</code>s; they define functions that implement the behavior the class means to export.</p>
+<p>As we learned in <a data-type="xref" href="part04.html#functions_and_generators">Part IV</a>, <code>def</code> is really an assignment. Here, it assigns function objects to the names <code>setdata</code> and <code>display</code> in the <code>class</code> statement’s scope, and so generates attributes attached to the class—<code>FirstClass.setdata</code> and <code>FirstClass.display</code>. In fact, any name assigned at the top level of the class’s nested block becomes an attribute of the class.</p>
+<p>Functions inside a class are usually <a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="methods" id="id3751"></a><a contenteditable="false" data-type="indexterm" data-primary="methods (OOP)" id="id3752"></a>and traditionally called <em>methods</em>. They’re coded with normal <code>def</code>s, and they support everything we’ve learned about functions already—they can have defaults, return values, yield items on request, and so on. But in a method function, the first argument automatically receives an implied instance object when called—the subject of the call. Let’s create a couple of instances of our class to see how this works:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x = FirstClass()</strong></code>                <code><em># Make two instances</em></code>
+&gt;&gt;&gt; <code><strong>y = FirstClass()</strong></code>                <code><em># Each is a new namespace</em></code></pre>
+<p>By <em>calling</em> the class this way (notice the parentheses), we generate instance objects, which are just namespaces that have access to their classes’ attributes. Properly speaking, at this point, we have three objects: two instances and a class. And really, we have three linked namespaces, as sketched in <a data-type="xref" href="#classes_and_instances_namespaces_in_a_c">Figure 27-1</a>. In OOP terms, we say that <code>x</code> “is a” <code>FirstClass</code>, as is <code>y</code>—they both inherit names attached to the class.</p>
+<figure><div id="classes_and_instances_namespaces_in_a_c" class="figure">
+<img src="assets/lpy6_2701.png" alt="" width="767" height="349"/>
+<h6><span class="label">Figure 27-1. </span>Classes and instances: namespaces in a class tree searched by inheritance</h6>
+</div></figure>
+<p>The two instances start out empty but have links back to the class from which they were generated. If we qualify an instance with the name of an attribute that lives in the class object, Python fetches the name from the class by inheritance search (unless it also lives in the instance):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x.setdata('coding')</strong></code>             <code><em># Call methods: self is x</em></code>
+&gt;&gt;&gt; <code><strong>y.setdata(3.14159)</strong></code>              <code><em># Runs: FirstClass.setdata(y, 3.14159)</em></code></pre>
+<p>Neither <code>x</code> nor <code>y</code> has a <code>setdata</code> attribute of its own, so to find it, Python follows the link from instance to class. And that’s about all there is to inheritance in Python: it happens at attribute qualification time, and it just involves looking up names in linked objects—here, by following the is-a links in <a data-type="xref" href="#classes_and_instances_namespaces_in_a_c">Figure 27-1</a>.</p>
+<p>In the <code>setdata</code> function inside <code>FirstClass</code>, the value passed in is assigned to <code>self.data</code>. Within a method, <code>self</code>—the name given to the leftmost argument by convention—automatically refers to the instance being processed (<code>x</code> or <code>y</code> at this point), so the assignments store values in the instances’ namespaces, not the class’s. That’s how the <code>data</code> names in <a data-type="xref" href="#classes_and_instances_namespaces_in_a_c">Figure 27-1</a> are created.</p>
+<p>Because classes can generate multiple instances, methods must go through the <code>self</code> argument to get to the instance to be processed. When we call the class’s <code>display</code> method to print <code>self.data</code>, we see that it’s different in each instance; on the other hand, the name <code>display</code> itself is the same in <code>x</code> and <code>y</code>, as it comes (is inherited) from the class:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x.display()</strong></code>                     <code><em># Runs: FirstClass.display(x)</em></code> 
+coding
+&gt;&gt;&gt; <code><strong>y.display()</strong></code>                     <code><em># self.data differs in each instance</em></code>
+3.14159</pre>
+<p>Notice that we stored different object types in the <code>data</code> member in each instance—a string and a floating-point number. As with everything else in Python, instance attributes (sometimes called <em>members</em>) are not predeclared and have no type constraints; they spring into existence the first time they are assigned values, just like simple variables. In fact, if we were to call <code>display</code> on one of our instances <em>before</em> calling <code>setdata</code>, we would trigger an undefined name error—the attribute named <code>data</code> doesn’t even exist in memory until it is assigned within the <code>setdata</code> method.</p>
+<p>As another way to appreciate how dynamic this model is, consider that we can change instance attributes either inside the class itself, by assigning to <code>self</code> in methods, or <em>outside</em> the class, by assigning to an explicit instance object:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x.data = 'hacking'</strong>  </code>            <code><em># Can get/set attributes</em></code>
+&gt;&gt;&gt; <code><strong>x.display()</strong></code>                     <code><em># Outside the class too</em></code>
+hacking</pre>
+<p>Although less common, we could even generate an entirely <em>new</em> attribute in the instance’s namespace by assigning to its name outside the class’s method functions:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x.anothername = 'apps'</strong></code>          <code><em># Can set new attributes here too!</em></code></pre>
+<p>This would attach a new attribute called <code>anothername</code>, which may or may not be used by any of the class’s methods, to the instance object <code>x</code>. Classes usually create all of the instance’s attributes by assignment to the <code>self</code> argument, but they don’t have to—programs can fetch, change, or create attributes on any objects to which they have references.</p>
+<p>It usually doesn’t make sense to add data that the class cannot use, and it’s possible to prevent this with extra “privacy” code based on attribute-access operator overloading, as we’ll discuss elsewhere in this book (in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch30.html#operator_overloading-id000103">30</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch39.html#decorators">39</a>). Still, free attribute access translates to less syntax, and there are cases where it’s even useful—for example, in coding data records of the sort we’ll build later in this chapter.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Classes Are Customized by Inheritance"><div class="sect1" id="classes_are_customized_by_inheritance">
+<h1>Classes Are Customized by Inheritance</h1>
+<p>Let’s move on to the second <a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="classes" data-tertiary="inheritance" id="ooclhta"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP" data-tertiary="inheritance" id="clspohtc"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="OOP" data-tertiary="class customization" id="ihtcsmz"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="classes" data-tertiary="customization" id="ihctclsz"></a>major distinction of classes. Besides serving as factories for generating multiple instance objects, classes also allow us to make changes by introducing new components (called <em>subclasses</em>), instead of changing existing components in place.</p>
+<p>As we’ve seen, instance objects generated from a class inherit the class’s attributes. Python also allows classes to inherit from other classes, opening the door to coding <em>hierarchies</em> of classes that specialize behavior—by redefining attributes in subclasses that appear lower in the hierarchy, we override the more general definitions of those attributes higher in the tree. In effect, the further down the hierarchy we go, the more specific the software becomes. Here, too, there is no parallel with modules, whose attributes live in a single, flat namespace that is not as amenable to customization.</p>
+<p>In Python, instances inherit from classes, and classes inherit from superclasses. Here are the key ideas behind the machinery of attribute inheritance:</p>
+<ul>
+<li><p><strong>Superclasses are listed <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP" data-tertiary="superclasses" id="id3753"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="classes" data-tertiary="superclasses" id="id3754"></a><a contenteditable="false" data-type="indexterm" data-primary="superclasses" id="id3755"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="subclasses" id="id3756"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="classes" data-tertiary="subclasses" id="id3757"></a><a contenteditable="false" data-type="indexterm" data-primary="subclasses" id="id3758"></a>in parentheses in a</strong> <code><strong>class</strong></code> <strong>header.</strong> To make a class inherit attributes from another class, just list the other class in parentheses in the new <code>class</code> statement’s header line. The class that inherits is usually called a <em>subclass</em>, and the class that is inherited from is its <em>superclass</em>.</p></li>
+<li><p><strong>Classes inherit attributes from their superclasses.</strong> Just as instances inherit the attribute names defined in their classes, classes inherit all of the attribute names defined in their superclasses. Python finds these names automatically when they’re accessed if they don’t exist in the subclasses.</p></li>
+<li><p><strong>Instances inherit attributes from all accessible classes.</strong> Each instance gets names from the class it’s generated from, as well as all of that class’s superclasses. When looking for a name, Python checks the instance, then its class, then all superclasses above its class.</p></li>
+<li><p><strong>Each</strong> <code><strong><em>object</em></strong>.<strong><em>attribute</em></strong></code> <strong>reference invokes a new, independent search.</strong> Python performs an independent search of the class tree for each attribute fetch expression. This includes references to instances and classes made outside <code>class</code> statements (e.g., <code>X.<em>attr</em></code>), as well as references to attributes of the <code>self</code> instance argument in a class’s method functions. That is, each <code>self.<em>attr</em></code> expression in a method invokes a new search for <code><em>attr</em></code> in <code>self</code> and above.</p></li>
+</ul>
+<p>The net effect—and the main purpose of all this searching—is that classes support factoring and customization of code better than any other language tool we’ve seen so far. On the one hand, they allow us to minimize code redundancy (and so reduce maintenance costs) by factoring operations into a single, shared implementation; on the other, they allow us to program by customizing what already exists, rather than changing it in place or starting from scratch.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Full inheritance disclosure</em>: Strictly speaking, Python’s <em>inheritance</em> is richer than described here, when we factor in “diamond” inheritance patterns and “metaclasses”—advanced topics we’ll study later—but we can safely restrict our scope to instances and their classes, both at this point in the book and in most Python application code. We’ll explore diamonds and the “MRO” inheritance search order that accommodates them in <a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a>, but our definition of inheritance won’t be fully complete until <a data-type="xref" href="ch40.html#metaclasses_and_inheritance">Chapter 40</a>, because it regrettably requires metaclass info that’s beyond almost all Python programmers’ interest levels and pay grades (thankfully!).</p>
+</div>
+<section data-type="sect2" data-pdf-bookmark="A Second Example"><div class="sect2" id="a_second_example">
+<h2>A Second Example</h2>
+<p>To illustrate the role of inheritance, this next example builds on the previous one. First, we’ll define a new class, <code>SecondClass</code>, that inherits all of <code>FirstClass</code>’s names and provides one of its own:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class SecondClass(FirstClass):</strong></code>                   <code><em># Inherits setdata</em></code>
+        <code><strong>def display(self):</strong></code>                           <code><em># Changes display</em></code>
+            <code><strong>print(f'Current value = "{self.data}"')</strong></code></pre>
+<p><code>SecondClass</code> defines the <code>display</code> method to print with a different format. By defining an attribute with the same name as an attribute in <code>FirstClass</code>, <code>SecondClass</code> effectively replaces the <code>display</code> attribute in its superclass.</p>
+<p>Recall that inheritance searches proceed upward from instances to subclasses to superclasses, stopping at the first appearance of the attribute name that it finds. In this case, since the <code>display</code> name in <code>SecondClass</code> will be found before the one in <code>FirstClass</code>, we say that <code>SecondClass</code> <em>overrides</em> <code>FirstClass</code>’s <span class="keep-together"><code>display</code></span>. Sometimes we call this act of replacing attributes by redefining them lower in the tree <span class="keep-together"><em>overloading</em></span>.</p>
+<p>The net effect here is that <code>SecondClass</code> specializes <code>FirstClass</code> by changing the behavior of the <code>display</code> method. On the other hand, <code>SecondClass</code> (and any instances created from it) still inherits the <code>setdata</code> method in <code>FirstClass</code> verbatim. Let’s make a new instance to demonstrate:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>z = SecondClass()
+</strong></code>&gt;&gt;&gt; <code><strong>z.setdata('LP6e')</strong></code>       <code><em># Finds setdata in FirstClass
+</em></code>&gt;&gt;&gt; <code><strong>z.display()</strong></code>             <code><em># Finds overridden method in SecondClass</em></code>
+Current value = "LP6e"</pre>
+<p>As before, we make a <code>SecondClass</code> instance object by calling it. The <code>setdata</code> call still runs the version in <code>FirstClass</code>, but this time the <code>display</code> attribute comes from <code>SecondClass</code> and prints a custom message. <a data-type="xref" href="#specialization_overriding_inherited_nam">Figure 27-2</a> sketches the namespaces involved.</p>
+<figure><div id="specialization_overriding_inherited_nam" class="figure">
+<img src="assets/lpy6_2702.png" alt="" width="1402" height="456"/>
+<h6><span class="label">Figure 27-2. </span>Specialization: overriding inherited names by redefining them in subclasses</h6>
+</div></figure>
+<p>Now, here’s a crucial thing to notice about OOP: the specialization introduced in <code>SecondClass</code> is completely <em>external</em> to <code>FirstClass</code>. That is, it doesn’t affect existing or future <code>FirstClass</code> objects, like the <code>x</code> from the prior example (assuming we’re continuing the same REPL session):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x.display()</strong></code>             <code><em># x is still a FirstClass instance (old message)</em></code>
+hacking</pre>
+<p>Rather than <em>changing</em> <code>FirstClass</code>, we <em>customized</em> it. Naturally, this is an artificial example, but as a rule, because inheritance allows us to make changes <a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="classes" data-tertiary="inheritance" data-startref="ooclhta" id="id3759"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP" data-tertiary="inheritance" data-startref="clspohtc" id="id3760"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="OOP" data-tertiary="class customization" data-startref="ihtcsmz" id="id3761"></a><a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="classes" data-tertiary="customization" data-startref="ihctclsz" id="id3762"></a>like this in external components (i.e., in subclasses), classes often support extension and reuse better than functions or modules can.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Classes Are Attributes in Modules"><div class="sect2" id="classes_are_attributes_in_modules">
+<h2>Classes Are Attributes in Modules</h2>
+<p>Before we move on, remember that there’s nothing magic about a class name. It’s just a variable assigned to an <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="attributes" data-tertiary="classes" id="mdttbc"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="modules" data-tertiary="classes" id="atmdsscl"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="module attributes" id="clsmdtt"></a>object when the <code>class</code> statement runs, and the object can be referenced with any normal expression. For instance, if our <code>FirstClass</code> were coded in a module file instead of being typed interactively, we could import it and use its name normally in a <code>class</code> header line:</p>
+<pre data-type="programlisting">from <code><em>modulename</em></code> import FirstClass           <code><em># Copy name into my scope</em></code>
+class SecondClass(FirstClass):              <code><em># Use class name directly</em></code>
+    def display(self): …</pre>
+<p>Or equivalently:</p>
+<pre data-type="programlisting">import <code><em>modulename</em></code>                           <code><em># Access the whole module</em></code>
+class SecondClass(<code><em>modulename</em></code>.FirstClass):  <code> <em># Qualify to reference</em></code>
+    def display(self): …</pre>
+<p>Like everything else, class names always live within a module, so they must follow all the rules we studied in <a data-type="xref" href="part05.html#modules_and_packages">Part V</a>. For example, more than one class can be coded in a single module file—like other statements in a module, <code>class</code> statements are run during imports to define names, and these names become distinct module attributes. More generally, each module may arbitrarily mix <em>any number</em> of variables, functions, and classes, and all names in a module behave the same way. The following hypothetical file demonstrates:</p>
+<pre data-type="programlisting"><code><em># names.py
+</em></code>var1 = 6                 <code><em># names.var1
+</em></code>var2 = 3.12             
+def func1(): …           <code><em># names.func1</em></code>
+def func2(): …               
+class Cls1: …            <code><em># names.Cls1</em></code>
+class Cls2: …            <code><em># names.Cls2</em></code></pre>
+<p>This holds true even if the module and class happen to have the same name. For example, given the following imaginary file, <em>person.py</em>:</p>
+<pre data-type="programlisting">class person: …</pre>
+<p>we need to go through the module to fetch the class as usual:</p>
+<pre data-type="programlisting">import person                                 <code><em># Import module</em></code>
+x = person.person()                           <code><em># Class within module</em></code></pre>
+<p>Although this path may look redundant, it’s required: <code>person.person</code> refers to the <code>person</code> class inside the <code>person</code> module. Saying just <code>person</code> gets the module, not the class, unless the <code>from</code> statement is used:</p>
+<pre data-type="programlisting">from person import person                     <code><em># Get class from module</em></code>
+x = person()                                  <code><em># Use class name</em></code></pre>
+<p>As with any other variable, we can never see a class in a file without first importing and somehow fetching it from its enclosing file. If this seems confusing, don’t use the same name for a module and a class within it. In fact, common convention in Python recommends that class names should begin with an <em>uppercase</em> letter, and module names with a <em>lowercase</em> letter, to help make them more distinct (it’s not required, but nearly common enough to be a rule):</p>
+<pre data-type="programlisting">import person                                 <code><em># Lowercase for modules</em></code>
+x = person.Person()                           <code><em># Uppercase for classes</em></code></pre>
+<p>Also, keep in mind that although classes and modules are both namespaces for attaching attributes, they correspond to very different source code structures: a module reflects an entire <em>file</em>, but a class is a <em>statement</em> within a file. We’ll <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="attributes" data-tertiary="classes" data-startref="mdttbc" id="id3763"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="modules" data-tertiary="classes" data-startref="atmdsscl" id="id3764"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="module attributes" data-startref="clsmdtt" id="id3765"></a>say more about such distinctions later in this part of the book.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Classes Can Intercept Python Operators"><div class="sect1" id="classes_can_intercept_python_operators">
+<h1>Classes Can Intercept Python Operators</h1>
+<p>Let’s move on to the third and final major difference between classes and modules: operator overloading. In simple terms, <em>operator overloading</em> lets objects coded with <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP " data-tertiary="intercepting operators" id="clsspcpp"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="classes" data-tertiary="intercepting operators" id="oogmcpp"></a>classes intercept and respond to operations that work on built-in types: addition, slicing, printing, qualification, and so on. It’s mostly just an automatic dispatch mechanism—expressions and other built-in operations route control to implementations in classes. Here, too, there is nothing similar in modules: modules can implement function calls, but not the behavior of expressions (<em>apart</em>, that is, from the odd special case added in Python 3.7 for module <code>__getattr__</code> and <code>__dir__</code> functions covered in <a data-type="xref" href="ch25.html#module_odds_and_ends">Chapter 25</a>, and bemoaned there as a confusing conflation with classes—for reasons you’re about to see for yourself).</p>
+<p>Although we could implement all class behavior as normally named methods, operator overloading lets objects be more tightly integrated with Python’s object model. Moreover, because operator overloading makes our own objects act like built-ins, it tends to foster object interfaces that are more consistent and easier to learn, and it allows class-based objects to be processed by code written to expect a built-in object’s interface. Here is a quick rundown of the main ideas behind overloading operators:</p>
+<ul>
+<li><p><strong>Methods named with <a contenteditable="false" data-type="indexterm" data-primary="methods" data-secondary="double underscores" id="id3766"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="methods" data-tertiary="double underscores" id="id3767"></a>double underscores (</strong><code><strong>__<em>X</em>__</strong></code><strong>) are special hooks.</strong> In Python classes, we implement operator overloading by providing specially named methods to intercept operations. The Python language defines a fixed and unchangeable mapping from each of these operations to a specially named method.</p></li>
+<li><p><strong>Such methods are called automatically when instances appear in built-in operations.</strong> For instance, if an instance object inherits an <code>__add__</code> method, that method is called whenever the object appears in a <code>+</code> expression. The method’s return value becomes the result of the corresponding expression.</p></li>
+<li><p><strong>Classes may override most built-in type operations.</strong> There are dozens of special operator-overloading <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="built-in operation override" id="id3768"></a>method names for intercepting and implementing nearly every operation available for built-in object types. This includes expressions, but also basic operations like printing and object creation.</p></li>
+<li><p><strong>Most operator-overloading methods have no default, and none are required.</strong> If a class does not define or inherit an operator-overloading method, it just means that the corresponding operation is not supported for the class’s instances. If there is no <code>__add__</code>, for example, <code>+</code> expressions raise exceptions. As you’ll learn later, a root class named <code>object</code> that’s an implicit superclass to every class does provide defaults for some <code>__<em>X</em>__</code> methods, but not for many (e.g., <code>object</code> has a default for print strings, but not <code>+</code>).</p></li>
+</ul>
+<p>Importantly, operator overloading <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" id="id3769"></a>is an optional feature; it’s used primarily by people developing tools for other Python programmers, not by application developers. And, candidly, you probably <em>shouldn’t</em> use it just because it seems clever. Unless a class needs to mimic built-in object interfaces, it should usually stick to nonoperator method names whose calls are more explicit. Expressions like <code>*</code> and <code>+</code>, for example, may make sense for a numeric object like a matrix, but other code would generally serve its clients better with mnemonically named methods.</p>
+<p>Because of this, we won’t go into details on every operator-overloading method available in Python in this learner’s book. Still, as previewed in the prior chapter, there is one operator-overloading method you are likely to see in almost every Python class: the <code>__init__</code> method, which is known as the <em>constructor</em> method and is used to initialize instance objects’ state. Pay special attention to this method, because <code>__init__</code>, along with the <code>self</code> argument and inheritance search, turns out to be a core requirement for reading and understanding most OOP code in Python.</p>
+<section data-type="sect2" class="pagebreak-before" data-pdf-bookmark="A Third Example"><div class="sect2" id="a_third_example">
+<h2 class="less_space">A Third Example</h2>
+<p>On to another example. This time, we’ll define a subclass of the prior section’s <code>SecondClass</code> that implements three specially named attributes that Python will call automatically:</p>
+<ul>
+<li><p><code>__init__</code> is run when a new instance object is created: <code>self</code> is the new <code>ThirdClass</code> object.<sup><a data-type="noteref" id="ch27fn1-marker" href="ch27.html#ch27fn1">1</a></sup></p></li>
+<li><p><code>__add__</code> is run when a <code>ThirdClass</code> instance appears in a <code>+</code> expression.</p></li>
+<li><p><code>__str__</code> is run when an object is printed (technically, when it’s converted to its print string by the <code>str</code> built-in function or its Python-internals equivalent).</p></li>
+</ul>
+<p>Our new subclass also defines a normally named method called <code>mul</code>, which changes the instance object in place. Here’s the new subclass (copy-and-pasters: in REPLs, you may need to omit blank lines added here for clarity):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class ThirdClass(SecondClass):</strong></code>                     <code><em># Inherit from SecondClass
+</em></code>        <code><strong>def __init__(self, value):</strong></code>                     <code><em># On "ThirdClass(value)"</em></code>
+            <code><strong>self.data = value</strong></code>
+
+<code> <strong>       def __add__(self, other):</strong></code>                      <code><em># On "self + other"</em></code>
+            <code><strong>return ThirdClass(self.data + other)</strong></code>
+
+<code> <strong>       def __str__(self):</strong></code>                             <code><em># On "print(self)", "str()"</em></code>
+            <code><strong>return f'[ThirdClass: {self.data}]'</strong></code>
+
+<code> <strong>       def mul(self, other):</strong></code>                          <code><em># In-place change: named</em></code>
+            <code><strong>self.data *= other</strong></code></pre>
+<p><code>ThirdClass</code> “is a” <code>SecondClass</code>, so its instances inherit the customized <code>display</code> method from <span class="keep-together"><code>SecondClass</code></span> of the preceding section. This time, though, <code>ThirdClass</code> creation calls pass an object to the <code>value</code> argument in the <code>__init__</code> constructor, where it is assigned to <code>self.data</code>. The net effect is that <span class="keep-together"><code>ThirdClass</code></span> arranges to set the <code>data</code> attribute automatically at construction time, instead of requiring later <code>setdata</code> calls:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a = ThirdClass(3)</strong></code>               <code><em># __init__ called</em></code>
+&gt;&gt;&gt; <code><strong>a.display()</strong></code>                     <code><em># Inherited method called</em></code>
+Current value = "3"</pre>
+<p><code>ThirdClass</code> objects can also now show up in <code>+</code> expressions and <code>print</code> calls. For <code>+</code>, Python passes the instance object on the left to the <code>self</code> argument in <code>__add__</code> and the value on the right to <code>other</code>, as <span class="keep-together">illustrated</span> in <a data-type="xref" href="#operator_overloading_class_methods_are">Figure 27-3</a>; whatever <code>__add__</code> returns becomes the result of the <code>+</code> expression (more on its result in a moment):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>b = a + 3</strong> </code>                      <code><em># __add__: makes a new instance</em></code>
+&gt;&gt;&gt; <code><strong>b.display()</strong></code>                     <code><em># b has all ThirdClass methods</em></code>
+Current value = "6"</pre>
+<p>For <code>print</code>, Python passes the object being printed to <code>self</code> in <code>__str__</code>; whatever string this method returns is taken to be the print string for the object. With <code>__str__</code> (or its broader twin <code>__repr__</code>, which we’ll leverage in the next chapter), we can use a normal <code>print</code> to display objects of this class, instead of calling the <code>display</code> method. As a contrast, the added <code>mul</code> method also changes the instance in place for a named call:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>print(b)</strong></code>                        <code><em># __str__: returns display string</em></code>
+[ThirdClass: 6]
+&gt;&gt;&gt; <code><strong>a.mul(3)</strong></code>                        <code><em># mul: changes instance in place</em></code>
+&gt;&gt;&gt; <code><strong>print(a)</strong></code>                        <code><em># Print this instance's data</em></code>
+[ThirdClass: 9]</pre>
+<figure><div id="operator_overloading_class_methods_are" class="figure">
+<img src="assets/lpy6_2703.png" alt="" width="364" height="312"/>
+<h6><span class="label">Figure 27-3. </span>Operator overloading: class methods are run for operators and operations</h6>
+</div></figure>
+<p>Specially named methods such as <code>__init__</code>, <code>__add__</code>, and <code>__str__</code> are inherited by subclasses and instances, just like any other names assigned in a <code>class</code>. If they’re not coded in a class, Python looks for such names in all its superclasses, as usual. As for all attributes, the lowest (most specific) version is used.</p>
+<p>Operator-overloading method names are also not built-in or reserved words; they are just attributes that Python looks for when objects appear in various contexts. Python usually calls them automatically, but they may occasionally be called by your code as well. For example, the <code>__init__</code> method is often called manually to trigger required initialization steps in a superclass constructor, as you’ll see in the next chapter.</p>
+<section data-type="sect3" data-pdf-bookmark="Returning results—or not"><div class="sect3" id="returning_resultsem_dashor_not">
+<h3>Returning results—or not</h3>
+<p>Some operator-overloading methods <a contenteditable="false" data-type="indexterm" data-primary="operator overloading" data-secondary="results" id="id3770"></a>like <code>__str__</code> require results, but others are more flexible. For example, notice how the <code>__add__</code> method makes and returns a <em>new</em> instance object of its class, by calling <code>ThirdClass</code> with the result value—which in turn triggers <code>__init__</code> to initialize the result. This is a common convention, and explains why <code>b</code> in the listing has a <code>display</code> method; it’s a <code>ThirdClass</code> object too, because that’s what <code>+</code> returns for this class’s objects. This essentially propagates the object type.</p>
+<p>By contrast, <code>mul</code> <em>changes</em> the current instance object in place, by reassigning the <code>self</code> attribute. We could overload the <code>*</code> expression to do the same with <code>__mul__</code>, but this would be too different from the behavior of <code>*</code> for built-in types such as numbers and strings, for which it always makes new objects. Per common practice, overloaded operators should work the same way that built-in operations do. Because operator overloading is really just an expression-to-method dispatch mechanism, though, you can interpret operators any way you like in your own classes. Also, stay tuned for <a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a>’s related coverage of in-place operator methods (preview: <code>__imul__</code> handles <code>*=</code>).</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Other operator-overloading methods"><div class="sect3" id="other_operator_overloading_methods">
+<h3>Other operator-overloading methods</h3>
+<p>Although we won’t cover every operator-overloading method in this book, we’ll survey additional common operator-overloading techniques in <a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a>. Again, while this is an optional tool that doesn’t apply to most application programs, <code>__str__</code> is not uncommon, and the <code>__init__</code> constructor method is a norm that will be present in most Python classes you’ll come across. In fact, even though instance <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="OOP " data-tertiary="intercepting operators" data-startref="clsspcpp" id="id3771"></a><a contenteditable="false" data-type="indexterm" data-primary="OOP (object-oriented programming)" data-secondary="classes" data-tertiary="intercepting operators" data-startref="oogmcpp" id="id3772"></a>attributes need not be predeclared in Python, you can usually find out which attributes an instance will have by inspecting its class’s <code>__init__</code> method.</p>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="The World’s Simplest Python Class"><div class="sect1" id="the_worldapostrophes_simplest_python_cl">
+<h1>The World’s Simplest Python Class</h1>
+<p>Despite the details of the <code>class</code> statement that we’ve begun to uncover in this chapter, you should keep in mind that the basic inheritance model behind classes is very simple—all it really involves is searching for attributes in trees of linked objects. In fact, we can create a class with nothing in it at all. The following statement makes a class with no attributes attached, an empty namespace object:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class rec: pass</strong></code>              <code><em># Empty namespace object</em></code></pre>
+<p>We need the no-operation <code>pass</code> placeholder statement (discussed in <a data-type="xref" href="ch13.html#while_and_for_loops">Chapter 13</a>) here because we don’t have any methods to code. After we make the class by running this statement interactively, we can start attaching attributes to the class by assigning names to it completely outside of the original <code>class</code> <span class="keep-together">statement:</span></p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>rec.name = 'Pat'</strong></code>             <code><em># Just objects with attributes</em></code>
+&gt;&gt;&gt; <code><strong>rec.age  = 40</strong></code></pre>
+<p>And, after we’ve created these attributes by assignment, we can fetch them with the usual syntax. When used this way, a class is roughly similar to a “struct” in C, or a “record” in Pascal. It’s basically an object with field names attached to it, and may be easier to code than alternatives like dictionaries:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>print(rec.name)</strong></code>              <code><em># Like a C struct or a record
+</em></code>Pat</pre>
+<p>Notice that this works even though there are <em>no instances</em> of the class yet; classes are objects in their own right, even without instances. In fact, they are just self-contained namespaces; as long as we have a reference to a class, we can set or change its attributes anytime we wish. Watch what happens when we do create two instances, though:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x = rec()</strong></code>                    <code><em># Instances inherit class names</em></code>
+&gt;&gt;&gt; <code><strong>y = rec()</strong></code></pre>
+<p>These instances begin their lives as completely empty namespace objects. Because they remember the class from which they were made, though, they will obtain the attributes we attached to the class by inheritance:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x.name, y.name</strong></code>               <code><em># name is stored on the class only</em></code>
+('Pat', 'Pat')</pre>
+<p>Really, these instances have no attributes of their own; they simply fetch the <code>name</code> attribute from the class object where it is stored. If we do assign an attribute to an instance, though, it creates (or changes) the attribute in that object, and no other—crucially, attribute <em>references</em> kick off inheritance searches, but attribute <em>assignments</em> affect only the objects in which the assignments are made. Here, this means that <code>x</code> gets its own <code>name</code>, but <code>y</code> still inherits the <code>name</code> attached to the class above it:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x.name = 'Sue'</strong></code>               <code><em># But assignment changes x only</em></code>
+&gt;&gt;&gt; <code><strong>rec.name, x.name, y.name</strong></code>
+('Pat', 'Sue', 'Pat')</pre>
+<section data-type="sect2" data-pdf-bookmark="Classes: Under the Hood"><div class="sect2" id="classes_under_the_hood">
+<h2>Classes: Under the Hood</h2>
+<p>In fact, as we’ll explore in more detail in <a data-type="xref" href="ch29.html#class_coding_details">Chapter 29</a>, the attributes of a namespace object are usually <a contenteditable="false" data-type="indexterm" data-primary="namespaces" data-secondary="dictionaries" id="id3773"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="namespaces" id="id3774"></a>implemented as <em>dictionaries</em>, and class inheritance trees are, generally speaking, just dictionaries with links to other dictionaries. If you know where to look, you can see this explicitly.</p>
+<p>For example, the <code>__dict__</code> attribute is the namespace dictionary for most class-based objects, much as in modules. Some classes may also—or instead—define attributes in <code>__slots__</code>, an advanced and seldom-used feature called <em>slots</em> with <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="attributes" data-tertiary="slots" id="id3775"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="slots" id="id3776"></a><a contenteditable="false" data-type="indexterm" data-primary="slots" id="id3777"></a>impacts that we’ll note along the way, but whose full coverage we’ll largely postpone until <a data-type="xref" href="ch32.html#class_odds_and_ends">Chapter 32</a>. Normally, though, <code>__dict__</code> literally <em>is</em> the attribute namespace of an instance or class.</p>
+<p>To illustrate, the following inspects the namespaces of objects in the prior section’s REPL session, filtering out built-ins in the class with a generator expression as we’ve done before leaving just the names we’ve assigned:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(key for key in rec.__dict__ if not key.startswith('__'))</strong></code>
+['name', 'age'] 
+
+&gt;&gt;&gt; <code><strong>list(x.__dict__)</strong></code>
+['name']
+&gt;&gt;&gt; <code><strong>list(y.__dict__)</strong></code>
+[]</pre>
+<p>Here, the class’s namespace dictionary shows the <code>name</code> and <code>age</code> attributes we assigned to it, <code>x</code> has its own <code>name</code>, and <code>y</code> is still empty. Because of this model, an attribute can often be fetched by <em>either</em> dictionary indexing or attribute notation, but only if it’s present on the object in question—attribute notation kicks off inheritance <em>search</em>, but indexing looks in the single object <em>only</em>. As you’ll see later, both have valid roles, and the <code>dir</code> built-in collects inherited names:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x.name, x.__dict__['name']</strong></code>        <code><em># Attributes present here are dict keys</em></code>
+('Sue', 'Sue')
+
+&gt;&gt;&gt; <code><strong>x.age</strong></code>                             <code><em># But attribute fetch checks classes too</em></code>
+40
+&gt;&gt;&gt; <code><strong>x.__dict__['age']</strong></code>                 <code><em># Indexing dict does not do inheritance</em></code>
+KeyError: 'age'
+
+&gt;&gt;&gt; <code><strong>x.__dict__</strong></code>                        <code><em># Object namespace versus inheritance</em></code>
+{'name': 'Sue'}
+&gt;&gt;&gt; <code><strong>[attr for attr in dir(x) if attr[:2] != '__']</strong></code>
+['age', 'name']</pre>
+<p>In addition, to facilitate inheritance search on <a contenteditable="false" data-type="indexterm" data-primary="inheritance" data-secondary="attribute fetches" id="id3778"></a><a contenteditable="false" data-type="indexterm" data-primary="attribute fetches" data-secondary="inheritance" id="id3779"></a>attribute fetches, each instance has a link to its class that Python creates for us—it’s called <code>__class__</code><a contenteditable="false" data-type="indexterm" data-primary="__class__ attribute" data-primary-sortas="class attribute" id="id3780"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="__class__ attribute" data-secondary-sortas="class attribute" id="id3781"></a>, if you want to inspect it:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x.__class__</strong></code>                       <code><em># Instance-to-class link</em></code>
+&lt;class '__main__.rec'&gt;</pre>
+<p>Classes also have a <code>__bases__</code> attribute, which is a tuple of references to a class’s superclass objects—in this <a contenteditable="false" data-type="indexterm" data-primary="__bases__ attribute" data-primary-sortas="bases attribute" id="id3782"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="__bases__ attribute" data-secondary-sortas="bases attribute" id="id3783"></a>example just the implicit and automatic <code>object</code> root class we’ll explore later:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>rec.__bases__</strong></code>                     <code><em># Class-to-superclasses link</em></code>
+(&lt;class 'object'&gt;,)</pre>
+<p>These two attributes are how class trees are literally represented in memory by Python. Internal details like these are not required knowledge—class trees are implied by the code you run, and their search is normally automatic—but they can often help demystify the model.</p>
+<p>The main point here is that Python’s class model is extremely dynamic. Classes and instances are just linked namespace objects, with attributes created on the fly by assignment. Those assignments usually happen within the <code>class</code> statements you code, but they can occur anywhere you have a reference to one of the objects in the tree.</p>
+<p>In fact, even <em>methods</em>, normally created by a <code>def</code> nested in a <code>class</code>, can be created completely independently of any class object. The following, for example, defines a simple function outside of any class that takes one argument:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def uppername(obj):
+        return obj.name.upper()</strong></code>       <code><em># Still needs a self argument (obj)</em></code></pre>
+<p>There is nothing about a class here yet—it’s a simple function, and it can be called as such at this point, provided we pass in an object <code>obj</code> with a <code>name</code> attribute, whose value in turn has an <code>upper</code> method—our class and instances happen to fit the expected interface and kick off string uppercase conversion:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>uppername(rec), uppername(x), uppername(y)</strong></code>
+('PAT', 'SUE', 'PAT')</pre>
+<p>If we assign this simple function to an attribute of our class, though, it becomes a <em>method</em>, callable through any instance, as well as through the class name itself as long as we pass in an instance <span class="keep-together">manually—a</span> technique we’ll leverage further in the next chapter:<sup><a data-type="noteref" id="ch27fn2-marker" href="ch27.html#ch27fn2">2</a></sup></p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>rec.method = uppername</strong></code>            <code><em># Now it's a class's method!</em></code>
+
+&gt;&gt;&gt; <code><strong>x.method()</strong></code>                        <code><em># Run method to process x</em></code>
+'SUE'
+&gt;&gt;&gt; <code><strong>y.method()</strong></code>                        <code><em># Same, but pass y to self
+</em></code>'PAT'
+&gt;&gt;&gt; <code><strong>rec.method(x)</strong></code>                     <code><em># Can call through instance or class</em></code>
+'SUE'</pre>
+<p>Normally, classes are filled out by <code>class</code> statements, and instance attributes are created by assignments to <code>self</code> attributes in method functions. The point again, though, is that they don’t have to be; OOP in Python really is mostly about looking up attributes in linked namespace objects.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Records Revisited: Classes Versus Dictionaries"><div class="sect2" id="records_revisited_classes_versus_dictio">
+<h2>Records Revisited: Classes Versus Dictionaries</h2>
+<p>Although the simple classes of the prior section <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="versus dictionaries" data-secondary-sortas="dictionaries" id="clvdd"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="classes versus dictionaries" id="dcclvd"></a>are meant to illustrate class model basics, the techniques they employ can also be used for real work. For example, Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch08.html#lists_and_dictionaries">8</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch09.html#tuplescomma_filescomma_and_everything_e">9</a> showed how to use dictionaries, tuples, and lists to record properties of entities in our programs, generically called <em>records</em>. It turns out that classes can often serve better in this role—they package information like dictionaries, but can also bundle processing logic in the form of methods. For reference, here is an example for tuple- and dictionary-based records we used earlier in the book (using one of many dictionary coding techniques):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>rec = ('Pat', 40.5, ['dev', 'mgr'])</strong></code>     <code><em># Tuple-based record</em></code>
+&gt;&gt;&gt; <code><strong>print(rec[0])</strong></code>
+Pat
+
+&gt;&gt;&gt; <code><strong>rec = {}
+</strong></code>&gt;&gt;&gt; <code><strong>rec['name'] = 'Pat'</strong></code>                     <code><em># Dictionary-based record</em></code>
+&gt;&gt;&gt; <code><strong>rec['age']  = 40.5</strong></code>                      <code><em># Or {...}, dict(n=v), etc.</em></code>
+&gt;&gt;&gt; <code><strong>rec['jobs'] = ['dev', 'mgr']
+</strong></code>&gt;&gt;&gt; <code><strong>
+</strong></code>&gt;&gt;&gt; <code><strong>print(rec['name'])</strong></code>
+Pat</pre>
+<p>As we just saw, though, there are also multiple ways to do the same with classes. Perhaps the simplest is this—trading keys for attributes:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class rec: pass
+
+</strong></code>&gt;&gt;&gt; <code><strong>rec.name = 'Pat'</strong></code>                        <code><em># Class-based record</em></code>
+&gt;&gt;&gt; <code><strong>rec.age  = 40.5
+</strong></code>&gt;&gt;&gt; <code><strong>rec.jobs = ['dev', 'mgr']
+</strong></code>&gt;&gt;&gt; <code><strong>
+</strong></code>&gt;&gt;&gt; <code><strong>print(rec.name)</strong></code>
+Pat</pre>
+<p>This code has substantially less syntax than the dictionary equivalent. It uses an empty <code>class</code> statement to generate an empty namespace object, which we then fill out by assigning class attributes over time, as before. This works, but a new <code>class</code> statement will be required for each distinct record we will need. Perhaps more typically, we can instead generate <em>instances</em> of an empty class to represent each distinct entity:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class rec: pass
+
+</strong></code>&gt;&gt;&gt; <code><strong>pers1 = rec()</strong></code>                           <code><em># Instance-based records</em></code>
+&gt;&gt;&gt; <code><strong>pers1.name = 'Bob'
+</strong></code>&gt;&gt;&gt; <code><strong>pers1.jobs = ['dev', 'mgr']
+</strong></code>&gt;&gt;&gt; <code><strong>pers1.age  = 40.5
+</strong></code>&gt;&gt;&gt;<code><strong>
+</strong></code>&gt;&gt;&gt; <code><strong>pers2 = rec()
+</strong></code>&gt;&gt;&gt; <code><strong>pers2.name = 'Sue'
+</strong></code>&gt;&gt;&gt; <code><strong>pers2.jobs = ['dev', 'cto']
+</strong></code>&gt;&gt;&gt;<code><strong>
+</strong></code>&gt;&gt;&gt; <code><strong>pers1.name, pers2.name</strong></code>
+('Bob', 'Sue')</pre>
+<p>Here, we make two records from the same class. Instances start out life empty, just like classes. We then fill in the records by assigning to attributes. This time, though, there are two separate objects, and hence two separate <code>name</code> attributes. In fact, instances of the same class don’t even have to have the same set of attribute names; in this example, one has a unique <code>age</code> name. Instances really are distinct namespaces, so each has a distinct attribute dictionary. Although they are normally filled out consistently by a class’s methods, they are more flexible than you might expect.</p>
+<p>Finally, we might instead code a more full-blown class to implement the record <em>and</em> its processing—something that data-oriented dictionaries do not directly support:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>class Person:
+        def __init__(self, name, jobs, age=None):</strong></code>      <code><em># class = data + logic</em></code>
+            <code><strong>self.name = name
+            self.jobs = jobs
+            self.age  = age
+        def info(self):
+            return (self.name, self.jobs)
+
+</strong></code>&gt;&gt;&gt; <code><strong>rec1 = Person('Bob', ['dev', 'mgr'], 40.5)</strong></code>         <code><em># Construction calls</em></code>
+&gt;&gt;&gt; <code><strong>rec2 = Person('Sue', ['dev', 'cto'])</strong></code>
+&gt;&gt;&gt;
+&gt;&gt;&gt; <code><strong>rec1.jobs, rec2.info()</strong></code>                             <code><em># Attributes + methods</em></code>
+(['dev', 'mgr'], ('Sue', ['dev', 'cto']))</pre>
+<p>This scheme also makes multiple instances, but the class is not empty this time: we’ve added <em>logic</em> (methods) to initialize instances at construction time and collect attributes into a tuple on request. The constructor imposes some consistency on instances here by always setting the <code>name</code>, <code>job</code>, and <code>age</code> attributes, even though the latter can be omitted when an object is made. Together, the class’s methods and instance attributes create a package, which combines both <em>data</em> and <em>logic</em>.</p>
+<p>We could further extend this code by adding logic to compute salaries, parse names, and so on. Ultimately, we might link the class into a larger hierarchy to inherit and customize an existing set of methods via the automatic attribute search of classes, or perhaps even store instances of the class in a file with Python object pickling to make them persistent. In fact, we <em>will</em>—in the next chapter, we’ll expand on this analogy between classes and records with a more realistic running example that demonstrates class basics in action.</p>
+<p>To be fair to other tools, in this form, the two preceding class construction calls more closely resemble <em>dictionaries</em> made all at once, but still seem less cluttered and provide extra processing methods. In fact, the class’s construction calls more closely resemble <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a>’s <em>named tuples</em>—which makes sense, given that named tuples really <em>are</em> classes with extra logic to map attributes to tuple offsets:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>rec = dict(name='Pat', jobs=['dev', 'mgr'], age=40.5)</strong></code>        <code><em># Dictionaries</em></code>
+
+&gt;&gt;&gt; <code><strong>rec = {'name': 'Pat', 'jobs': ['dev', 'mgr'], 'age': 40.5}</strong>   <em># Ditto</em><strong>
+
+</strong></code>&gt;&gt;&gt; …<code><em>setup code</em></code>…
+&gt;&gt;&gt; <code><strong>rec = Rec('Pat', ['dev', 'mgr'], 40.5)</strong></code>                       <code><em># Named tuples</em></code></pre>
+<p>In the end, although types like dictionaries and tuples are flexible, classes allow us to add <em>behavior</em> to objects in ways that built-in types and simple functions do not directly support. Although we can store functions in dictionaries too (e.g., under key <code>info</code> to mimic the class’s method), using them to process implied instances is nowhere near as natural and structured as it is in classes, and key lookup has no notion of inheritance to enable customization.</p>
+<p>But to vet the purported benefits of <a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="versus dictionaries" data-secondary-sortas="dictionaries" data-startref="clvdd" id="id3784"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="classes versus dictionaries" data-startref="dcclvd" id="id3785"></a>classes firsthand, you’ll have to move ahead to the next chapter.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00038">
+<h1>Chapter Summary</h1>
+<p>This chapter introduced the basics of coding classes in Python. We studied the syntax of the <code>class</code> statement and learned how to use it to build up a class inheritance tree. We also studied how Python automatically fills in the first argument in method functions, how attributes are attached to objects in a class tree by simple assignment, and how specially named operator-overloading methods intercept and implement built-in operations for our instances (e.g., expressions and printing).</p>
+<p>Now that we’ve explored the mechanics of classes in Python, the next chapter turns to a larger and more realistic example that ties together much of what we’ve learned about OOP so far and introduces some new topics. After that, we’ll continue our look at class coding, taking a second pass over the model to fill in some of the details that were omitted here to keep things simple. First, though, let’s work through a quiz to review the basics we’ve covered so far.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000175">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>How are classes related to modules?</p></li>
+<li><p>How are instances and classes created?</p></li>
+<li><p>Where and how are class attributes created?</p></li>
+<li><p>Where and how are instance attributes created?</p></li>
+<li><p>What does <code>self</code> mean in a Python class?</p></li>
+<li><p>How is operator overloading coded in a Python class?</p></li>
+<li><p>When might you want to support operator overloading in your classes?</p></li>
+<li><p>Which operator-overloading method is most commonly used?</p></li>
+<li><p>What are the three key concepts required to understand Python OOP code?</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000174">
+<h1>Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>Classes are always nested inside a module; they are attributes of a module object. Classes and modules are both namespaces, but classes correspond to statements (not entire files) and support the OOP notions of multiple instances, inheritance, and operator overloading (modules mostly do not). In a sense, a module is like a single-instance class, without inheritance, which corresponds to an entire file of code.</p></li>
+<li><p>Classes are made by running class statements; instances are created by calling a class as though it were a function.</p></li>
+<li><p>Class attributes are created by assigning attributes to a class object. They are normally generated by top-level assignments nested in a <code>class</code> statement—each name assigned in the <code>class</code> statement block becomes an attribute of the class object (technically, the <code>class</code> statement’s local scope morphs into the class object’s attribute namespace, much like a module). Class attributes can also be created, though, by assigning attributes to the class anywhere a reference to the class object exists—even outside the <code>class</code> statement.</p></li>
+<li><p>Instance attributes are created by assigning attributes to an instance object. They are normally created within a class’s method functions coded inside the <code>class</code> statement, by assigning attributes to the <code>self</code> argument (which is always the implied instance). Again, though, they may be created by assignment anywhere a reference to the instance appears, even outside the <code>class</code> statement. Usually, all instance attributes are initialized in the <code>__init__</code> constructor method; that way, later method calls can assume the attributes already exist.</p></li>
+<li><p><code>self</code> is the name commonly given to the first (leftmost) argument in a class’s method function; Python automatically fills it in with the instance object that is the implied subject of the method call. This argument need not be called <code>self</code> (though this is a very strong convention); its position is what is significant. (Ex-C++ or Java programmers might prefer to call it <code>this</code> because in those languages that name reflects the same idea; in Python, though, this argument must always be explicit in method headers and code.)</p></li>
+<li><p>Operator overloading is coded in a Python class with specially named methods; they all begin and end with double underscores to make them unique. These are not built-in or reserved names; Python just runs them automatically when an instance appears in the corresponding operation. Python itself defines the mappings from operations to special method names.</p></li>
+<li><p>Operator overloading is useful to implement objects that resemble built-in types (e.g., sequences or numeric objects such as matrixes), and to mimic the built-in type interface expected by a piece of code. Mimicking built-in type interfaces enables you to pass in class instances that also have state information (i.e., attributes that remember data between operation calls). You generally shouldn’t use operator overloading when a simple named method will suffice, though.</p></li>
+<li><p>The <code>__init__</code> constructor method is the most commonly used; almost every class uses this method to set initial values for instance attributes and perform other startup tasks. The <code>__str__</code> method (and its <code>__repr__</code> sibling) is not uncommon, but not as much of a fixture as <code>__init__</code>.</p></li>
+<li><p>The special <code>self</code> argument in method functions, the inheritance search for attributes, and the <code>__init__</code> constructor method are the cornerstones of OOP code in Python. If you get these, you should be able to read the text of most OOP Python code—apart from these, it’s largely just packages of functions. In classes, <code>self</code> represents the automatic object argument, and <code>__init__</code> is commonly used to initialize instances.</p></li>
+</ol>
+</div></section>
+<div data-type="footnotes"><p data-type="footnote" id="ch27fn1"><sup><a href="ch27.html#ch27fn1-marker">1</a></sup> Not to be confused with the <em>__init__.py</em> files in module packages! The method here is a class constructor function used to initialize the newly created instance, not a namespace for a module-package folder. See <a data-type="xref" href="ch24.html#module_packages">Chapter 24</a> for more details.</p><p data-type="footnote" id="ch27fn2"><sup><a href="ch27.html#ch27fn2-marker">2</a></sup> In fact, this is one of the reasons the <code>self</code> argument <em>must</em> always be explicit in Python methods—because methods can be created as simple functions independent of a class, they need to include the implied instance argument explicitly. They can be called as either functions or methods, and Python can neither guess nor assume that a simple function might eventually become a class’s method. The main reason for the explicit <code>self</code> argument, though, is to make the meanings of names more apparent: names not referenced through <code>self</code> are simple variables mapped to scopes, while names referenced through <code>self</code> with attribute notation are obviously instance attributes.</p></div></div></section></div>
+</div>
+</body>
+</html>

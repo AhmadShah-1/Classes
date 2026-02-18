@@ -1,0 +1,783 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 19. Function Odds and Ends"><div class="chapter" id="function_odds_and_ends">
+<h1><span class="label">Chapter 19. </span>Function Odds and Ends</h1>
+<p>This chapter presents a medley of function-related topics: recursive functions; function attributes, annotations, and decorations; and more on both the <code>lambda</code> expression and functional-programming tools such as <code>map</code> and <code>filter</code>. These are all somewhat advanced tools that, depending on your job description, you may not encounter on a regular basis. Because of their roles in some domains, though, a basic understanding can be useful. <code>lambda</code>, for instance, makes regular appearances in GUIs, and functional programming techniques have grown common in Python code.</p>
+<p>Some of the art of using functions lies in the <em>interfaces</em> between them, so we will also explore some general function design principles here. The next chapter continues the advanced themes here with an exploration of generator functions and expressions and a revival of list comprehensions in the context of the functional tools we will study here.</p>
+<section data-type="sect1" data-pdf-bookmark="Function Design Concepts"><div class="sect1" id="function_design_concepts">
+<h1>Function Design Concepts</h1>
+<p>Now that we’ve studied function essentials in Python, let’s open this chapter with some perspective. When you start using functions in earnest, you’re faced with choices about how to glue components together—for instance, how to decompose a task into purposeful functions (known as <em>cohesion</em>), and how your functions should communicate (called <em>coupling</em>). You also need to take note of the <em>size</em> of your functions because it directly impacts code usability. Some of this falls into the category of structured analysis and design, but it applies to Python code as to any other.</p>
+<p>We explored some ideas related to function and module coupling in <a data-type="xref" href="ch17.html#scopes">Chapter 17</a> when studying scopes, but here is a review of a few general guidelines for readers new to function design principles:</p>
+<ul>
+<li><p><strong>Coupling: use arguments for <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="coupling" id="id3091"></a><a contenteditable="false" data-type="indexterm" data-primary="coupling" id="id3092"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="arguments" data-tertiary="coupling" id="id3093"></a>inputs and</strong> <code><strong>return</strong></code> <strong>for outputs.</strong> Generally, you should strive to make a function independent of the world outside of it. Arguments and <code>return</code> statements are often the best ways to isolate external dependencies to a small number of well-known places in your code.</p></li>
+<li><p><strong>Coupling: use global <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="global variables" id="id3094"></a><a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="global" data-tertiary="coupling" id="id3095"></a><a contenteditable="false" data-type="indexterm" data-primary="global variables" data-secondary="coupling" id="id3096"></a>variables only when truly necessary.</strong> As we’ve seen, global variables (i.e., names in the enclosing module) are usually a poor way for functions to communicate. They can create dependencies and timing issues that make programs difficult to debug, change, and reuse.</p></li>
+<li><p><strong>Coupling: don’t change mutable <a contenteditable="false" data-type="indexterm" data-primary="arguments" data-secondary="mutable" data-tertiary="coupling" id="id3097"></a><a contenteditable="false" data-type="indexterm" data-primary="mutable arguments" data-secondary="coupling" id="id3098"></a>arguments unless the caller expects it.</strong> As we’ve also seen, functions can change parts of passed-in mutable objects, but as with global variables, this creates a tight coupling between the caller and callee, which can make a function too specific and brittle.</p></li>
+<li><p><strong>Cohesion: each function <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="cohesion" id="id3099"></a>should have a single, unified purpose.</strong> When designed well, each of your functions should do one thing—something you can summarize in a simple declarative sentence. If that sentence is very broad (e.g., “this function implements my whole program”) or contains lots of conjunctions (e.g., “this function gives employee raises <em>and</em> submits a pizza order”), you might want to think about splitting it into separate and simpler functions. Otherwise, there is no way to reuse the code of the individual steps embedded in the function.</p></li>
+<li><p><strong>Size: each function should <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="size" id="id3100"></a>be relatively small.</strong> This naturally follows from the preceding goal, but if your functions start spanning multiple pages on your display, it’s probably time to split them. Especially given that Python code is so concise to begin with, a long or deeply nested function is often a symptom of design problems. Keep it simple, and keep it short.</p></li>
+<li><p><strong>Coupling: avoid changing variables in another module file directly.</strong> We also introduced this <a contenteditable="false" data-type="indexterm" data-primary="coupling" data-secondary="variables" id="id3101"></a>concept in <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>, and we’ll revisit it in the next part of the book when we focus on modules. For reference, though, remember that changing variables across file boundaries sets up a coupling between modules similar to how global variables couple functions—the modules become difficult to understand and reuse separately. Use accessor functions whenever possible, instead of direct assignment statements.</p></li>
+</ul>
+<p><a data-type="xref" href="#function_execution_environment">Figure 19-1</a> summarizes the ways <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="execution environment" id="id3102"></a>functions can talk to the outside world; inputs may come from items on the left side, and results may be sent out in any of the forms on the right. Nonlocals might belong in this sketch too, but they’re mostly a state-retention tool in the same category as other local variables. Despite the array of options, good function designs prefer to use only arguments for inputs and <code>return</code> statements for outputs, whenever possible.</p>
+<figure><div id="function_execution_environment" class="figure">
+<img src="assets/lpy6_1901.png" alt="" width="1442" height="663"/>
+<h6><span class="label">Figure 19-1. </span>Function execution environment</h6>
+</div></figure>
+<p>Of course, there are plenty of exceptions to the preceding design rules, including some related to Python’s OOP support. As you’ll see in <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a>, Python classes <em>depend</em> on changing a passed-in mutable object—class functions set attributes of an automatically passed-in argument called <code>self</code> to change per-object state information (e.g., <code>self.edition=6</code>). Moreover, if classes are not used, global variables are a straightforward way for functions in modules to retain single-copy state between calls. Side effects are usually dangerous only if they’re unexpected.</p>
+<p>In general though, you should strive to minimize external dependencies in functions and other program components. The more <em>self-contained</em> a function is, the easier it will be to understand, reuse, and modify. Making code as freestanding as possible is especially important when functions go multilevel with recursion, per the next section.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Recursive Functions"><div class="sect1" id="recursive_functions">
+<h1>Recursive Functions</h1>
+<p>We mentioned recursion in relation to comparisons of core types in <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a>. While discussing scope <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="recursive" data-see="recursion" id="id3103"></a>rules near the start of <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>, we also briefly noted that Python supports <em>recursive functions</em>—functions that call themselves either directly or indirectly in order to loop. In this section, we’ll explore what this looks like in our functions’ code.</p>
+<p>Recursion is a somewhat advanced topic, and it’s relatively uncommon to see in Python, partly because Python’s procedural shed includes simpler looping tools. Still, it’s a useful technique to know about, as it allows programs to traverse structures that have arbitrary and unpredictable shapes and depths—planning travel routes, analyzing language, and crawling links on the web, for example. Recursion is even an alternative to simple loops and iterations, though not necessarily the simplest or most efficient one.</p>
+<section data-type="sect2" data-pdf-bookmark="Summation with Recursion"><div class="sect2" id="summation_with_recursion">
+<h2>Summation with Recursion</h2>
+<p>Let’s turn to some examples. To sum <a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="sum function" id="recsmf"></a><a contenteditable="false" data-type="indexterm" data-primary="sum function, recursion and" id="smrcrs"></a>a list (or other sequence) of numbers, we can either use the built-in <code>sum</code> function or write a more custom version of our own. <a data-type="xref" href="#example_onenine_onedot_mysumdotpy">Example 19-1</a> shows what a custom summing function might look like when coded with recursion.</p>
+<div data-type="example" id="example_onenine_onedot_mysumdotpy">
+<h5><span class="label">Example 19-1. </span>mysum.py</h5>
+<pre data-type="programlisting">def mysum(L):
+    if not L:
+        return 0
+    else:
+        return L[0] + mysum(L[1:])       <code><em># Call myself recursively</em></code></pre>
+</div>
+<p>To use, either add self-test code to the bottom of this file and run it as a script, or import it as a module and test at the REPL (again, the file may need to be in the folder where you’re working either way, per <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a>). With the latter:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from mysum import mysum</strong></code>              <code><em># Import file as a module in a REPL</em></code>
+&gt;&gt;&gt; <code><strong>mysum([1, 2, 3, 4, 5])</strong></code>               <code><em># Sum all the numbers in any sequence</em></code>
+15</pre>
+<p>At each level, this function calls itself recursively to compute the sum of the <em>rest</em> of the list, which is later added to the item at the <em>front</em>. This recursive loop ends and zero is returned when the list becomes empty. When using recursion like this, each open level of call to the function has its own copy of the function’s local scope on the runtime call stack. Here, that means <code>L</code> is different in each level, so each remembers its own segment of the list.</p>
+<p>If this is difficult to understand (and it often is for new programmers), try adding a <code>print</code> of <code>L</code> to the function and run it again, to trace the current list at each call level; here’s the required mod pasted at the REPL for variety:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def mysum(L):
+        print(L)</strong></code>                         <code><em># Trace recursive levels</em></code>
+       <code> <strong>if not L:</strong></code>                        <code><em># L shorter at each level
+</em></code>            <code><strong>return 0
+        else:
+            return L[0] + mysum(L[1:])
+
+</strong></code>&gt;&gt;&gt; <code><strong>mysum([1, 2, 3, 4, 5])</strong></code>
+[1, 2, 3, 4, 5]
+[2, 3, 4, 5]
+[3, 4, 5]
+[4, 5]
+[5]
+[]
+15</pre>
+<p>As you can see, the list to be summed grows smaller at each recursive level, until it becomes empty—the termination of the recursive loop. The sum is then computed as the recursive calls unwind <a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="sum function" data-startref="recsmf" id="id3104"></a><a contenteditable="false" data-type="indexterm" data-primary="sum function, recursion and" data-startref="smrcrs" id="id3105"></a>on returns.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Coding Alternatives"><div class="sect2" id="coding_alternatives">
+<h2>Coding Alternatives</h2>
+<p>Interestingly, we can use <a contenteditable="false" data-type="indexterm" data-primary="if else expression" data-secondary="recursion" id="ifxpcrs"></a><a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="if else expression" id="rcrfxp"></a>Python’s <code>if</code>/<code>else</code> ternary expression (described in <a data-type="xref" href="ch12.html#if_and_match_selections">Chapter 12</a>) to save some code real estate here. We can also generalize for any summable type (which is easier if we assume at least one item in the input) and use extended-unpacking assignment to make the first/rest unpacking simpler (as covered in <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>). <a data-type="xref" href="#example_onenine_twodot_mysum_altsdotpy">Example 19-2</a> collects all three of these mods, ready to be run in a file or pasted into a REPL.</p>
+<div data-type="example" id="example_onenine_twodot_mysum_altsdotpy">
+<h5><span class="label">Example 19-2. </span>mysum_alts.py</h5>
+<pre data-type="programlisting">def mysum(L):
+    return 0 if not L else L[0] + mysum(L[1:])           <code><em># Use ternary expression</em></code>
+
+def mysum(L):
+    return L[0] if len(L) == 1 else L[0] + mysum(L[1:])  <code><em># Any type, assume one+</em></code>
+
+def mysum(L):
+    first, *rest = L
+    return first if not rest else first + mysum(rest)    <code><em># Use extended unpacking</em></code></pre>
+</div>
+<p>When tested individually, all three of these alternatives handle numeric summation the same as the original:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>mysum([1, 2, 3, 4, 5])</strong></code>
+15</pre>
+<p>Uniquely, the latter two fail for empties (e.g., <code>mysum([])</code>), but handle sequences of <em>any</em> object type that supports <code>+</code>, not just numbers (for strings, the effect is similar to <code>''.join(L)</code>):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>mysum(('h', 'a', 'c', 'k'))</strong></code>          <code><em># The last two fail on mysum([])</em></code>
+'hack'
+&gt;&gt;&gt; <code><strong>mysum(['hack', 'app', 'code'])</strong>  </code>     <code><em># But they support nonnumeric types</em></code>
+'hackappcode'</pre>
+<p>Run some tests on your own for more insight. If you study these three variants, you’ll also find that:</p>
+<ul>
+<li><p>The latter two work on a single <em>string</em> argument (e.g., <code>mysum('hack')</code>), because strings are sequences of one-character strings (though this use case isn’t very useful: you get back the same string).</p></li>
+<li><p>The third variant also works on arbitrary <em>iterables</em>, including open input files (<code>mysum(open(<em>name</em>))</code>), but the others’ indexing generally fails on nonsequences (see <a data-type="xref" href="ch14.html#iterations_and_comprehensions">Chapter 14</a> for extended-unpacking demos).</p></li>
+</ul>
+<p>You may also notice that the third variant’s unpacking assignment is similar to a <code>*</code> collector in a function header, and it’s tempting to recode it as such. This won’t quite work, though, because it would expect <em>individual</em> arguments, not a single iterable—unless we <em>also</em> star both the top-level input and recursive call. Here’s the end result, though by summing discrete arguments, it solves a different problem than both the prior versions and built-in <code>sum</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def mysum(first, *rest):</strong></code>
+<code> <strong>       return first if not rest else first + mysum(*rest)</strong></code>
+
+&gt;&gt;&gt; <code><strong>mysum(*[1, 2, 3, 4, 5])</strong></code>
+15
+&gt;&gt;&gt; <code><strong>mysum(*'hack')</strong></code>
+'hack'</pre>
+<p>Finally, bear in mind that recursion <a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="direct" id="id3106"></a><a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="indirect" id="id3107"></a><a contenteditable="false" data-type="indexterm" data-primary="direct recursion" id="id3108"></a><a contenteditable="false" data-type="indexterm" data-primary="indirect recursion" id="id3109"></a>can be either <em>direct</em>, as in the examples so far, or <em>indirect</em>, as in <a contenteditable="false" data-type="indexterm" data-primary="if else expression" data-secondary="recursion" data-startref="ifxpcrs" id="id3110"></a><a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="if else expression" data-startref="rcrfxp" id="id3111"></a>the following—a function that calls another function, which calls back to its caller. The net effect is the same, though there are two function calls at each level instead of one:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def mysum(L):
+        if not L: return 0
+        return nonempty(L)</strong></code>                  <code><em># Call a function that calls me</em></code>
+
+&gt;&gt;&gt; <code><strong>def nonempty(L):
+        return L[0] + mysum(L[1:])</strong></code>          <code><em># Indirectly recursive</em></code>
+
+&gt;&gt;&gt; <code><strong>mysum([1.1, 2.2, 3.3, 4.4])</strong></code>
+11.0</pre>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Loop Statements Versus Recursion"><div class="sect2" id="loop_statements_versus_recursion">
+<h2>Loop Statements Versus Recursion</h2>
+<p>Though recursion works for summing <a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="versus loop statements" data-secondary-sortas="loop statements" id="rcrvps"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="versus recursion" data-secondary-sortas="recursion" id="lpscrsv"></a>in the prior sections’ examples, it’s probably overkill in this context. In fact, recursion is not used nearly as often in Python as in more esoteric languages like Prolog or Lisp, because Python emphasizes simpler procedural statements like loops, which are usually more natural. The <code>while</code>, for example, often makes things more concrete, and it doesn’t require that a function be defined to allow recursive calls:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2, 3, 4, 5]</strong></code>
+&gt;&gt;&gt; <code><strong>tot = 0</strong></code>
+&gt;&gt;&gt; <code><strong>while L:</strong></code>
+<code> <strong>       tot += L[0]</strong></code>
+<code> <strong>       L = L[1:]</strong></code>
+
+&gt;&gt;&gt; <code><strong>tot</strong></code>
+15</pre>
+<p>Better yet, <code>for</code> loops iterate for us automatically, making recursion largely extraneous in many cases (and, in all likelihood, less efficient in terms of memory space and execution time):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2, 3, 4, 5]</strong></code>
+&gt;&gt;&gt; <code><strong>tot = 0</strong></code>
+&gt;&gt;&gt; <code><strong>for x in L: tot += x</strong></code>
+
+&gt;&gt;&gt; <code><strong>tot</strong></code>
+15</pre>
+<p>With looping statements, we don’t require a fresh copy of a local scope on the call stack for each iteration, and we avoid the speed costs associated with function calls in general. (Stay tuned for <a data-type="xref" href="ch21.html#the_benchmarking_interlude">Chapter 21</a>’s timer case study for ways to compare the execution <a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="versus loop statements" data-secondary-sortas="loop statements" data-startref="rcrvps" id="id3112"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="versus recursion" data-secondary-sortas="recursion" data-startref="lpscrsv" id="id3113"></a>times of alternatives like these.)</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Handling Arbitrary Structures"><div class="sect2" id="handling_arbitrary_structures">
+<h2>Handling Arbitrary Structures</h2>
+<p>On the other hand, recursion—or equivalent <a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="arbitrary structures" id="id3114"></a>and explicit stack-based algorithms we’ll explore shortly—can be <em>required</em> to traverse arbitrarily shaped structures. As a simple example of recursion’s role in this context, consider the task of computing the sum of all the numbers in a nested sublists structure like this:</p>
+<pre data-type="programlisting">[1, [2, [3, 4], 5], 6, [7, 8]]                  <code><em># Arbitrarily nested sublists</em></code></pre>
+<p>Neither our prior summers nor simple looping statements will work here because this is not a linear iteration. Nested looping statements do not suffice either—because the sublists may be nested to arbitrary <em>depth</em> and in an arbitrary <em>shape</em>, there’s no way to know how many nested loops to code to handle all cases. Instead, the function in <a data-type="xref" href="#example_onenine_threedot_sumtreedotpy">Example 19-3</a> accommodates such general nesting by using recursion to visit sublists along the way.</p>
+<div data-type="example" id="example_onenine_threedot_sumtreedotpy">
+<h5><span class="label">Example 19-3. </span>sumtree.py</h5>
+<pre data-type="programlisting">def sumtree(L, trace=False):
+    tot = 0
+    for x in L:                                 <code><em># For each item at this level</em></code>
+        if not isinstance(x, list):
+            tot += x                            <code><em># Add numbers directly</em></code>
+            if trace: print(x, end=', ')
+        else:
+            tot += sumtree(x, trace)            <code><em># Recur for sublists</em></code>
+    return tot</pre>
+</div>
+<p>In this file’s function, each recursive level runs a <code>for</code> loop to add numbers, or recur into sublists to open new levels. Recall from <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a> that <code>isinstance</code> compares object types; it’s used here to detect nested sublists.</p>
+<p>This code is also instrumented to trace items as they are added to the total: if <code>trace</code> is passed a true value, you can see how the object is scanned left to right. Because it also steps down into sublists with recursion along the way, though, the traversal is really both horizontal and vertical:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from sumtree import sumtree</strong></code>
+&gt;&gt;&gt; <code><strong>sumtree([1, [2, [3, 4], 5], 6, [7, 8]])</strong></code>
+36
+&gt;&gt;&gt; <code><strong>sumtree([1, [2, [3, 4], 5], 6, [7, 8]], trace=True)</strong></code>
+1, 2, 3, 4, 5, 6, 7, 8, 36</pre>
+<section data-type="sect3" data-pdf-bookmark="Testing with a separate script"><div class="sect3" id="testing_with_a_separate_script">
+<h3>Testing with a separate script</h3>
+<p>At this point, we could test <a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="arbitrary structures" data-tertiary="testing" id="rcrbstt"></a>other cases by typing them interactively or by adding code to the bottom of the file, but you’re probably starting to see that this can be a bit limiting. Instead, the script in <a data-type="xref" href="#example_onenine_fourdot_sumtree_testerd">Example 19-4</a> makes the process automatic and easily repeatable. As a bonus, it can be used for other summers we’ll code in a moment.</p>
+<div data-type="example" id="example_onenine_fourdot_sumtree_testerd">
+<h5><span class="label">Example 19-4. </span>sumtree_tester.py</h5>
+<pre data-type="programlisting">tests = (
+[1, [2, [3, 4], 5], 6, [7, 8]],      <code><em># Mixed nesting =&gt; 36</em></code>
+[1, [2, [3, [4, [5]]]]],             <code><em># Right-heavy nesting =&gt; 15</em></code>
+[[[[[1], 2], 3], 4], 5])             <code><em># Left-heavy nesting =&gt; 15</em></code>
+
+def tester(sumtree, trace=True):
+    for test in tests:
+        print(sumtree(test, trace))</pre>
+</div>
+<p>To use this tester, simply import both summer and tester, and pass the former to the latter. When run, our summer prints numbers as added with the final sum at the end, for each of three canned tests:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from sumtree import sumtree</strong></code>              <code><em># Get the summer</em></code>
+&gt;&gt;&gt; <code><strong>from sumtree_tester import tester</strong> </code>       <code><em># Get the tester</em></code>
+&gt;&gt;&gt; <code><strong>tester(sumtree)</strong> </code>                         <code><em># Run the tester on the summer</em></code>
+1, 2, 3, 4, 5, 6, 7, 8, 36
+1, 2, 3, 4, 5, 15
+1, 2, 3, 4, 5, 15</pre>
+<p>Within <code>tester</code>, <code>sumtree</code> refers to the summer function passed into it. Again, because functions are objects, passing them around this way is natural, and makes <a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="arbitrary structures" data-tertiary="testing" data-startref="rcrbstt" id="id3115"></a>code flexible.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Recursion versus queues and stacks"><div class="sect3" id="recursion_versus_queues_and_stacks">
+<h3>Recursion versus queues and stacks</h3>
+<p>It sometimes helps recursion newcomers to <a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="stacks" id="rcrsstk"></a><a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="queues" id="rcrsquq"></a><a contenteditable="false" data-type="indexterm" data-primary="queues" data-secondary="recursion" id="quurcr"></a>understand that internally, Python implements recursion by pushing information on a <em>call stack</em> at each recursive call, so it remembers where it must return and continue later. In fact, it’s generally possible to implement recursive-style procedures <em>without</em> recursive calls, by using an explicit stack or queue of your own to keep track of remaining steps.</p>
+<p>For instance, <a data-type="xref" href="#example_onenine_fivedot_sumtree_queuedo">Example 19-5</a> computes the same sums as the prior example, but uses an explicit list to schedule when it will visit items in the subject, instead of issuing recursive calls. The item at the front of the list is always the next to be processed and summed.</p>
+<div data-type="example" id="example_onenine_fivedot_sumtree_queuedo">
+<h5><span class="label">Example 19-5. </span>sumtree_queue.py</h5>
+<pre data-type="programlisting">def sumtree(L, trace=False):                     <code><em># Breadth-first, explicit queue</em></code>
+    tot = 0
+    items = list(L)                              <code><em># Start with copy of top level</em></code>
+    while items:
+        front = items.pop(0)                     <code><em># Fetch/delete front item</em></code>
+        if not isinstance(front, list):
+            tot += front                         <code><em># Add numbers directly</em></code>
+            if trace: print(front, end=', ')
+        else:
+            items.extend(front)                  <code><em># &lt;== Append all in nested list</em></code>
+    return tot</pre>
+</div>
+<p>Technically, this code traverses <a contenteditable="false" data-type="indexterm" data-primary="queues" data-secondary="FIFO (first-in-first-out)" id="id3116"></a><a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="breadth-first traversal" id="id3117"></a>the list in <em>breadth-first</em> fashion (across before down), because it adds nested lists’ contents to the <em>end</em> of the list—forming a FIFO (first-in-first-out) <em>queue</em>. The net effect sums by horizontal levels. To test, we can either import and use the new summer directly, or route it to the <a data-type="xref" href="#example_onenine_fourdot_sumtree_testerd">Example 19-4</a> tester to be exercised automatically with tracing:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>from sumtree_queue import sumtree</strong>  </code>          <code><em># Get the new summer</em></code>
+&gt;&gt;&gt; <code><strong>sumtree([1, [2, [3, 4], 5], 6, [7, 8]])</strong></code>
+36
+&gt;&gt;&gt; <code><strong>from sumtree_tester import tester</strong>  </code>          <code><em># Unless already imported</em></code> 
+&gt;&gt;&gt; <code><strong>tester(sumtree)   </strong>  </code>                         <code><em># Run tester on _this_ summer</em></code>
+1, 6, 2, 5, 7, 8, 3, 4, 36
+1, 2, 3, 4, 5, 15
+5, 4, 3, 2, 1, 15</pre>
+<p>Fine points: we don’t have to reimport the tester again if it’s already been imported in this session, and importing the same-named summer just works—the new summer’s filename makes it unique, and <code>sumtree</code> is always the latest version imported if you import more than one, because imports <em>assign</em> names (see <a data-type="xref" href="ch18.html#arguments">Chapter 18</a>’s print emulators for another example of this pattern at work, and watch for more on imports in this book’s next part).</p>
+<p>More importantly, notice how the order in which numbers are visited here is different than in the original recursive-call version, due to the breadth-first queue. Trace through the tester’s tests to see how this pans out.</p>
+<p>If we instead want to emulate the traversal of the recursive-call version more closely, we can change this code to perform <em>depth-first</em> traversal (down before across) simply by adding the contents of nested lists to the <em>front</em> of the list—forming a last-in-first-out (LIFO) <em>stack</em>. <a data-type="xref" href="#example_onenine_sixdot_sumtree_stackdot">Example 19-6</a> makes the required mods, but the only way it differs from the breadth-first version is the line that adds to the front instead of the end, marked with <code>&lt;==</code> in a comment.</p>
+<div data-type="example" id="example_onenine_sixdot_sumtree_stackdot">
+<h5><span class="label">Example 19-6. </span>sumtree_stack.py</h5>
+<pre data-type="programlisting">def sumtree(L, trace=False):                     <code><em># Depth-first, explicit stack</em></code>
+    tot = 0
+    items = list(L)                              <code><em># Start with copy of top level</em></code>
+    while items:
+        front = items.pop(0)                     <code><em># Fetch/delete front item</em></code>
+        if not isinstance(front, list):
+            tot += front                         <code><em># Add numbers directly</em></code>
+            if trace: print(front, end=', ')
+        else:
+            items[:0] = front                    <code><em># &lt;== Prepend all in nested list</em></code>
+    return tot</pre>
+</div>
+<p>As before, we can use this function directly, or pass it to the same tester; its file makes it distinct, and its name refers to the latest import. When run, this summer visits numbers in the same order as the recursive-calls original, but manages the traversal with an explicit stack instead of recursion:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from sumtree_stack import sumtree</strong>  </code>          <code><em># Same name, different file</em></code>
+&gt;&gt;&gt; <code><strong>sumtree([1, [2, [3, 4], 5], 6, [7, 8]])</strong></code>
+36
+&gt;&gt;&gt; <code><strong>from sumtree_tester import tester</strong>  </code>          <code><em># Optional if already imported</em></code>
+&gt;&gt;&gt; <code><strong>tester(sumtree)</strong></code>
+1, 2, 3, 4, 5, 6, 7, 8, 36
+1, 2, 3, 4, 5, 15
+1, 2, 3, 4, 5, 15</pre>
+<p>For more on the last two examples (plus another breadth-first coding variant omitted here), see file <a class="orm:hideurl" href="https://learning-python.com/LP6E/Chapter19/sumtree_etc.py"><em>sumtree_etc.py</em></a> in the book’s examples package. It adds additional tracing so you can watch it walk structures in more detail.</p>
+<p>In general, though, once you get the hang of recursive calls, they may be more natural than the explicit scheduling lists they automate, and are generally preferred unless you need to traverse structures in specialized ways. Some programs, for example, perform a <em>best-first</em> search that requires an explicit search queue ordered by relevance or other criteria. If you think of a web crawler that scores sites <a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="stacks" data-startref="rcrsstk" id="id3118"></a><a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="queues" data-startref="rcrsquq" id="id3119"></a><a contenteditable="false" data-type="indexterm" data-primary="queues" data-secondary="recursion" data-startref="quurcr" id="id3120"></a>visited by content, the applications may start to become clearer.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Cycles, paths, and stack limits"><div class="sect3" id="cyclescomma_pathscomma_and_stack_limits">
+<h3>Cycles, paths, and stack limits</h3>
+<p>As is, these programs suffice as demos, but larger recursive applications can sometimes require a bit more <a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="cycles" id="id3121"></a><a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="paths" id="id3122"></a><a contenteditable="false" data-type="indexterm" data-primary="recursion" data-secondary="stack limits" id="id3123"></a><a contenteditable="false" data-type="indexterm" data-primary="cycles" data-secondary="recursion" id="id3124"></a>infrastructure than shown here: they may need to avoid cycles or repeats, record paths taken for later use, and expand stack space when using recursive calls instead of explicit queues or stacks.</p>
+<p>For instance, neither the recursive-call nor the explicit queue/stack examples in this section do anything about avoiding <em>cycles</em>—visiting a location already visited. That’s not required here, because we’re traversing strictly hierarchical trees of list objects. If data can be a cyclic graph, though, both these schemes will fail: the recursive-call scheme will fall into an infinite recursive loop (and may run out of call-stack space), and the others will fall into simple infinite loops, re-adding the same items to their lists (and may or may not run out of general memory). In fact, it’s easy to demo the perils by creating a cyclic object with the strange code we met in an exercise at the end of <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2]</strong></code>
+&gt;&gt;&gt; <code><strong>L.append(L)</strong> </code>     <code><em># Make a cyclic object: L references itself</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[1, 2, [...]]
+
+&gt;&gt;&gt; <code><strong>from sumtree import sumtree</strong></code>
+&gt;&gt;&gt; <code><strong>sumtree(L)</strong></code>
+RecursionError: maximum recursion depth exceeded
+
+&gt;&gt;&gt; <code><strong>from sumtree_queue import sumtree</strong></code>
+&gt;&gt;&gt; <code><strong>sumtree(L)</strong></code>
+…<code><em>hang or crash, and ditto for stack</em></code>…</pre>
+<p>Some programs also need to avoid repeated processing for a state reached more than once, even if that wouldn’t lead to a loop. To do better, a recursive-call traversal might make and pass along a mutable set, dictionary, or list of states visited so far and check for repeats as it goes. We will use this scheme in later recursive examples in this book:</p>
+<pre data-type="programlisting">  if state not in visited:
+      visited.add(state)          <code><em># x.add(state), x[state]=True, or x.append(state)</em></code>
+      …<code><em>proceed</em></code>…</pre>
+<p>Nonrecursive alternatives might similarly avoid adding states already visited with code like the following. Subtly, object cycles may require <code>is</code> (not <code>in</code>), and simply checking for duplicates already on the <code>items</code> list would avoid scheduling a state twice but would not prevent revisiting a state visited earlier and hence removed from that list:</p>
+<pre data-type="programlisting">  visited.add(front)
+  …<code><em>proceed</em></code>…
+  items.extend([x for x in front if x not in visited])</pre>
+<p>This model doesn’t quite apply to this section’s use case that simply adds numbers in lists, but other applications will generally be able to identify repeated states—a URL of a previously visited web page, for instance. In fact, we’ll use such techniques to avoid cycles and repeats in the later examples listed in the next section.</p>
+<p>Some programs may also need to record complete <em>paths</em> for each state followed so they can report solutions when finished. In such cases, each item in the nonrecursive scheme’s stack or queue may be a full path list that suffices for a record of states visited, and contains the next item to explore at either end.</p>
+<p>Also note that standard Python limits the <em>depth</em> of its runtime call stack—crucial to recursive-call programs—to trap infinite recursion errors. To expand it for deeper journeys, use the <code>sys</code> module:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>sys.getrecursionlimit()</strong></code>         <code><em># 1000 calls deep default</em></code>
+1000
+&gt;&gt;&gt; <code><strong>sys.setrecursionlimit(10000)</strong></code>    <code><em># Allow deeper nesting</em></code>
+&gt;&gt;&gt; <code><strong>help(sys.setrecursionlimit)</strong></code>     <code><em># Read more about it</em></code></pre>
+<p>The maximum allowed setting can vary per platform. This isn’t required for programs that use stacks or queues to avoid recursive calls and gain more control over the traversal process (though they also won’t catch infinite loops).</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="More recursion examples"><div class="sect3" id="more_recursion_examples">
+<h3>More recursion examples</h3>
+<p>Although this section’s example is artificial, it is representative of a larger class of programs; inheritance trees and module import chains, for example, can exhibit similarly general structures, and computing tools such as permutations can require arbitrarily many nested loops. In fact, we’ll use recursion again in such roles later in this book:</p>
+<ul>
+<li><p>In <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a>’s <em>permute.py</em>, to shuffle arbitrary sequences</p></li>
+<li><p>In <a data-type="xref" href="ch25.html#module_odds_and_ends">Chapter 25</a>’s <em>reloadall.py</em>, to traverse import chains</p></li>
+<li><p>In <a data-type="xref" href="ch29.html#class_coding_details">Chapter 29</a>’s <em>classtree.py</em>, to traverse class inheritance trees</p></li>
+<li><p>In <a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a>’s <em>lister.py</em>, to traverse class inheritance trees again</p></li>
+<li><p>In <a data-type="xref" data-xrefstyle="chap-num-title" href="app02.html#appendix_b_solutions_to_end_of_part_exe">Appendix B, “Solutions to End-of-Part Exercises”</a> at the end of this part of the book: countdowns and factorials</p></li>
+</ul>
+<p>The second and third of these will also detect states already visited to avoid cycles and repeats. Although simple loops should generally be preferred to recursion for linear iterations on the grounds of simplicity and efficiency, you’ll find that recursion is essential in scenarios like those in these later examples.</p>
+<p>Moreover, you sometimes need to be aware of the potential of <em>unintended</em> recursion in your programs. As you’ll also see later in the book, some operator-overloading methods in classes such as <code>__setattr__</code> and <code>__getattribute__</code> and even <code>__repr__</code> have the potential to recursively loop if used incorrectly. Recursion is a powerful tool, but it tends to be best when both understood and expected!</p>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Function Tools: Attributes, Annotations, Etc."><div class="sect1" id="function_tools_attributescomma_annotati">
+<h1>Function Tools: Attributes, Annotations, Etc.</h1>
+<p>Let’s move on to a category of tools that may seem less ethereal than recursion to some earthlings. As we’ve seen in this part of the book, functions in Python are much more than code-generation specifications for a compiler—they are full-blown <em>objects</em>, stored in pieces of memory all their own. As such, they can be freely passed around a program and called indirectly. They also support operations that have little to do with calls at all, including attributes and annotation. We’ve sampled some of these topics earlier, but this section provides expanded coverage.</p>
+<section data-type="sect2" data-pdf-bookmark="The First-Class Object Model"><div class="sect2" id="the_first_class_object_model">
+<h2>The First-Class Object Model</h2>
+<p>Because Python functions are objects, you can write programs that process them generically. Function <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="first-class object model" id="fcfcbj"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="first-class object model" id="ojfbjm"></a><a contenteditable="false" data-type="indexterm" data-primary="first-class object model" id="fclbjmd"></a>objects may be reassigned to other names, passed to other functions, embedded in data structures, returned from one function to another, and more, as if they were simple numbers or strings. Function objects happen to support a special operation—they can be <em>called</em> by listing arguments in parentheses—but they belong to the same general category as other objects.</p>
+<p>As we’ve seen, this is usually called a <em>first-class object model</em>; it’s ubiquitous in Python, and a necessary part of <em>functional programming</em>. We’ll explore this programming <a contenteditable="false" data-type="indexterm" data-primary="functional programming" data-secondary="first-class object model" id="id3125"></a>mode more fully in this and the next chapter; because its motif is founded on the notion of applying functions, it treats functions as a kind of data.</p>
+<p>We’ve explored some generic use cases for functions in earlier examples, but a quick review helps to underscore the model. For example, there’s really nothing special about the name used in a <code>def</code> statement: it’s just a variable assigned in the current scope, as if it had appeared on the left of an <code>=</code> sign. Because the function name is simply a reference to an object after a <code>def</code> runs, you can <em>reassign</em> that object to other names freely and call it through any reference:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def exclaim(message):</strong></code>              <code><em># Name exclaim assigned to function object
+</em></code>        <code><strong>print(message + '!')
+</strong></code>
+&gt;&gt;&gt; <code><strong>exclaim('Direct call')</strong></code>             <code><em># Call object through original name</em></code>
+Direct call!
+
+&gt;&gt;&gt; <code><strong>x = exclaim</strong></code>                        <code><em># Now x references the function too</em></code>
+&gt;&gt;&gt; <code><strong>x('Indirect call')</strong></code>                 <code><em># Call object through name x by adding ()</em></code>
+Indirect call!</pre>
+<p>And because arguments are <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="passing as arguments" id="id3126"></a><a contenteditable="false" data-type="indexterm" data-primary="arguments" data-secondary="passing functions as" id="id3127"></a>passed by assigning objects, it’s just as easy to <em>pass</em> functions to other functions as arguments. The callee may then call the passed-in function just by adding arguments in parentheses (see the earlier summer tester in <a data-type="xref" href="#example_onenine_fourdot_sumtree_testerd">Example 19-4</a> for another example of this pattern):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def generic(func, arg):
+        func(arg)</strong></code>                      <code><em># Call the passed-in object by adding ()</em></code>
+
+&gt;&gt;&gt; <code><strong>generic(exclaim, 'Argument call')</strong></code>  <code><em># Pass the function to another function</em></code>
+Argument call!</pre>
+<p>You can even stuff function objects into data structures, as though they were integers or strings. The following, for example, <em>embeds</em> the function twice in a list of tuples, as a sort of actions table. Because Python compound types like these can contain any sort of object, there’s no special case here, either (<a data-type="xref" href="ch18.html#example_oneeight_twodot_minsdotpy">Example 18-2</a> used similar code):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>schedule = [ (exclaim, 'Hack'), (exclaim, 'Code') ]
+</strong></code>&gt;&gt;&gt; <code><strong>for (func, arg) in schedule:
+        func(arg)</strong></code>                      <code><em># Call functions embedded in containers
+</em></code>
+Hack!
+Code!</pre>
+<p>This code simply steps through the <code>schedule</code> list, calling the <code>exclaim</code> function with one argument each time through. As we saw in <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>’s examples, functions can also be created and <em>returned</em> for use elsewhere—the <em>closure</em> created in this mode also retains state from the enclosing scope:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>def implore(verb):</strong></code>                 <code><em># Make a function but don't call it</em></code>
+        <code><strong>def exclaim(noun):
+            print(f'{verb} {noun}!')
+        return exclaim</strong></code>
+<code><strong>
+</strong></code>&gt;&gt;&gt; <code><strong>I = implore('Hack')</strong></code>                <code><em># Label in enclosing scope is retained</em></code>
+&gt;&gt;&gt; <code><strong>I('Code')</strong></code>                          <code><em># Call the function that make returned</em></code>
+Hack Code!
+&gt;&gt;&gt; <code><strong>I('App')</strong></code>
+Hack App!</pre>
+<p>Python’s first-class object model and lack of <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="first-class object model" data-startref="fcfcbj" id="id3128"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="first-class object model" data-startref="ojfbjm" id="id3129"></a><a contenteditable="false" data-type="indexterm" data-primary="first-class object model" data-startref="fclbjmd" id="id3130"></a>type constraints make for a very flexible programming <span class="keep-together">language</span>.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Function Introspection"><div class="sect2" id="function_introspection-id00063">
+<h2>Function Introspection</h2>
+<p>In fact, functions are more flexible <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="introspection" id="id3131"></a>than you might expect. Because they are objects, we can also process functions with normal object tools. For instance, by now we know that once we make a function we can call it as usual:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def func(a):
+        b = 'Hack'
+        return b * a
+
+</strong></code>&gt;&gt;&gt; <code><strong>func(8)</strong></code>
+'HackHackHackHackHackHackHackHack'</pre>
+<p>But the call expression is just one of a set of operations defined to work on function objects. For instance, we can also inspect their attributes generically:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>func.__name__</strong></code>
+'func'
+&gt;&gt;&gt;<code> <strong>dir(func)</strong></code>
+'__annotations__', '__builtins__', '__call__', '__class__', '__closure__',
+…<code><em>more omitted: 38 total</em></code>…
+'__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__type_params__']</pre>
+<p><em>Introspection</em>—internals access—tools like this allow us to explore implementation details. For example, functions have attached <em>code objects</em>, which provide details on aspects such as the functions’ local variables and arguments:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>func.__code__</strong></code>
+&lt;code object func at 0x103ef3910, file "&lt;stdin&gt;", line 1&gt;
+
+&gt;&gt;&gt; <code><strong>dir(func.__code__)</strong></code>
+['__class__', '__delattr__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', 
+…<code><em>more omitted: 48 total</em></code>…
+'co_posonlyargcount', 'co_qualname', 'co_stacksize', 'co_varnames', 'replace']
+
+&gt;&gt;&gt; <code><strong>func.__code__.co_varnames</strong></code>
+('a', 'b')
+&gt;&gt;&gt; <code><strong>func.__code__.co_argcount</strong></code>
+1</pre>
+<p>Tool writers can make use of such information to manage functions—in fact, we will too in <a data-type="xref" href="ch39.html#decorators">Chapter 39</a>, to implement validation of function arguments with the decorators introduced ahead. Whether you code or use such tools, object introspection boosts function utility.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Function Attributes"><div class="sect2" id="function_attributes">
+<h2>Function Attributes</h2>
+<p>Nor are function objects limited to <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="attributes" data-tertiary="user-defined" id="id3132"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="user-defined" id="atusdf"></a>the system-defined attributes of the prior section: it’s also possible to attach arbitrary <em>user-defined</em> attributes to them. This topic was introduced in <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>, but this section expands on it with additional context and examples. As usual in Python, function attributes are created by simple assignments:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def func(): pass
+</strong></code>&gt;&gt;&gt; <code><strong>func
+</strong></code>&lt;function func at 0x1043771a0&gt; 
+&gt;&gt;&gt; <code><strong>func.count = 0
+</strong></code>&gt;&gt;&gt; <code><strong>func.count += 1
+</strong></code>&gt;&gt;&gt; <code><strong>func.count</strong></code>
+1
+&gt;&gt;&gt; <code><strong>func.handles = 'Button-Press'
+</strong></code>&gt;&gt;&gt; <code><strong>func.handles</strong></code>
+'Button-Press'
+&gt;&gt;&gt; <code><strong>dir(func)</strong></code>
+…<code><em>most double-underscore names omitted</em></code>…
+'__str__', '__subclasshook__', '__type_params__', 'count', 'handles']</pre>
+<p>Python’s own implementation-related data stored on functions follows naming conventions that prevent them from clashing with the more arbitrary attribute names you might assign yourself. Specifically, all function internals’ names have leading and trailing double underscores (“__<em>X</em>__”):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>len(dir(func))</strong></code>
+40
+&gt;&gt;&gt; <code><strong>[x for x in dir(func) if not x.startswith('__')]</strong></code>
+['count', 'handles']</pre>
+<p>If you’re careful not to name attributes the same way as Python, you can safely use the function’s namespace as though it were your own namespace or scope. Naturally, all of this works the same for functions made with <code>lambda</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>F = lambda: None</strong></code>
+&gt;&gt;&gt; <code><strong>len(dir(F))</strong></code>
+38
+&gt;&gt;&gt; <code><strong>F.book = 'LP6E'</strong></code>
+&gt;&gt;&gt; <code><strong>F.book</strong></code>
+'LP6E'</pre>
+<p>As covered in <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>, such attributes can be used to attach <em>state information</em> to function objects directly, instead of <a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="state information" id="id3133"></a><a contenteditable="false" data-type="indexterm" data-primary="state information, function objects" id="id3134"></a>using other techniques such as globals, nonlocals, and classes. Unlike nonlocals, such attributes are accessible anywhere the function itself is, even from outside its code.</p>
+<p>In a sense, this is also a way to emulate “static locals” in other languages—variables whose names are local to a <a contenteditable="false" data-type="indexterm" data-primary="local variables" data-secondary="static locals" id="id3135"></a><a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="local" data-tertiary="static locals" id="id3136"></a>function, but whose values are retained after a function exits. Attributes are related to objects instead of scopes (and must be referenced through the function name within its code), but the net effect is similar.</p>
+<p>Moreover, as also explored in <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>, when attributes are attached to functions generated by other <em>factory</em> functions, they also support multiple copy, writeable, and <em>per-call</em> state retention, as an alternative to closures and class-instance attributes. This makes function attributes a broadly useful tool—like the topics of the next section.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Function Annotations and Decorations"><div class="sect2" id="function_annotations_and_decorations">
+<h2>Function Annotations and Decorations</h2>
+<p>For tools roles, functions <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="annotations" id="fctannt"></a><a contenteditable="false" data-type="indexterm" data-primary="annotations, functions" id="annfct"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="decorations" id="fcndcrt"></a><a contenteditable="false" data-type="indexterm" data-primary="decoration" data-secondary="functions" id="dcrfct"></a>also support attached <em>annotations</em>—arbitrary user-defined info about a function’s arguments and result that augment the function. Python provides syntax for coding annotations, but it doesn’t do anything with them itself—annotations are completely optional, don’t impact function behavior in any way, and when present are simply attached to the function object’s <code>__annotations__</code> attribute for use by other tools.</p>
+<p>While not of general interest to most application programmers, third-party tools and libraries might use annotations in the context of enhanced error checking, or API directives. Type hinting, discussed in <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>, is also based on annotations, but is optional and unused, and doesn’t preclude other roles for annotations today (more on this ahead).</p>
+<p>We studied the formal rules for arguments in function definitions in the preceding chapter. Annotations don’t modify these rules but simply extend their syntax to allow extra expressions to be associated with named arguments and function results. Consider the following nonannotated function, coded with three arguments and a returned result:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def func(a, b, c):
+        return a + b + c
+
+</strong></code>&gt;&gt;&gt; <code><strong>func(1, 2, 3)</strong></code>
+6</pre>
+<p>Syntactically, function annotations are coded in <code>def</code> header lines (only), as arbitrary expressions associated with arguments and return values. For arguments, they appear after a colon immediately following the argument’s name; for return values, they are written after a <code>-&gt;</code> following the arguments list’s closing parenthesis. The following code, for example, annotates all three of the prior function’s arguments, as well as its return value:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def func(a: 'hack', b: (1, 10), c: float) -&gt; int:
+        return a + b + c
+
+</strong></code>&gt;&gt;&gt; <code><strong>func(1, 2, 3)</strong></code>
+6</pre>
+<p>Calls to an annotated function <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="function annotations" id="id3137"></a>work as usual, but when annotations are present Python collects them in a <em>dictionary</em> and attaches it to the function object itself as its <code>__annotations__</code>. In this, argument names become keys; the return value annotation is stored under key <code>return</code> if coded (which suffices because this reserved word can’t be used as an argument name); and the values of annotation keys are assigned to the results of the annotation expressions:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>func.__annotations__</strong></code>
+{'a': 'hack', 'b': (1, 10), 'c': &lt;class 'float'&gt;, 'return': &lt;class 'int'&gt;}</pre>
+<p>Because they are just Python objects attached to a Python object, annotations are straightforward to process. The following annotates just two of three arguments and steps through the attached annotations generically:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def func(a: 'python', b, c: 3.12):
+        return a + b + c
+
+</strong></code>&gt;&gt;&gt; <code><strong>func(1, 2, 3)</strong></code>
+6
+&gt;&gt;&gt; <code><strong>func.__annotations__</strong></code>
+{'a': 'python', 'c': 3.12}
+
+&gt;&gt;&gt; <code><strong>for arg in func.__annotations__:
+       print(arg, '=&gt;', func.__annotations__[arg])</strong></code>
+
+a =&gt; python
+c =&gt; 3.12</pre>
+<p>There are two fine points to note here. First, you can still use <em>defaults</em> for arguments if you code annotations—the annotation (and its <code>:</code> character) appears <em>before</em> the default (and its <code>=</code> character). In the following, for example, <code>a: 'hack' = 4</code> means that argument <code>a</code> defaults to <code>4</code> and is annotated with the string <code>'hack'</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def func(a: 'hack' = 4, b: (1, 10) = 5, c: float = 6) -&gt; int:
+        return a + b + c</strong></code>
+
+&gt;&gt;&gt; <code><strong>func(1, 2, 3)</strong> </code>               <code><em># No defaults used</em></code>
+6
+&gt;&gt;&gt; <code><strong>func()</strong></code>                       <code><em># a=4 + b=5 + c=6 (all defaults)</em></code>
+15
+&gt;&gt;&gt; <code><strong>func(1, c=10)</strong></code>                <code><em># 1 + b=5 + 10 (keywords work normally)</em></code>
+16
+&gt;&gt;&gt; <code><strong>func.__annotations__</strong></code>
+{'a': 'hack', 'b': (1, 10), 'c': &lt;class 'float'&gt;, 'return': &lt;class 'int'&gt;}</pre>
+<p>Second, note that the <em>blank spaces</em> in the prior example are all optional—you can use spaces between components in function headers or not, but omitting them might degrade your code’s readability to some observers (and probably improve it to others):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def func(a:'hack'=4, b:(1,10)=5, c:float=6)-&gt;int:
+        return a + b + c
+
+</strong></code>&gt;&gt;&gt; <code><strong>func(1, 2)</strong></code>                   <code><em># 1 + 2 + c=6</em></code>
+9
+&gt;&gt;&gt; <code><strong>func.__annotations__</strong></code>
+{'a': 'hack', 'b': (1, 10), 'c': &lt;class 'float'&gt;, 'return': &lt;class 'int'&gt;}</pre>
+<p>While annotations are optional and uncommon, they may be used to specify constraints for types or values, and larger APIs might use this feature as a way to register function interface information. In fact, you’ll see a potential application in <a data-type="xref" href="ch39.html#decorators">Chapter 39</a>, when we code annotations as an alternative to <em>function decorator arguments</em>—a more general concept in which augmentation info is coded <em>outside</em> the function header and so is not limited to a single role.</p>
+<section data-type="sect3" data-pdf-bookmark="Function decorators alternative: Preview "><div class="sect3" id="function_decorators_alternative_preview">
+<h3>Function decorators alternative: Preview </h3>
+<p>Because we’re going to devote an entire chapter to decorators, we’ll omit most of their story here. But as a very brief preview, decorators are simply functions that augment other functions. They are applied to another function’s <code>def</code> with an <code>@</code> prefix that rebinds the other function’s name to the result of passing it to the decorator. This syntax:</p>
+<pre data-type="programlisting">@decorator
+def func(args): …           <code><em># Decorated function def</em></code></pre>
+<p>is automatically morphed into the following equivalent, where <code>decorator</code> is a one-argument callable object (or an expression that returns one), which returns a callable object having arguments compatible with <code>func</code> (or <code>func</code> itself):</p>
+<pre data-type="programlisting">def func(args): …
+func = decorator(func)      <code><em># Rebind func to decorator's result</em></code></pre>
+<p>Decorators can use this hook to wrap another function in an extra layer of code for nearly arbitrary purposes, as in the following code that adds a message when a decorated function is called:</p>
+<pre data-type="programlisting">def echo(F):
+    def proxy(*args): 
+        print('calling', F.__name__)       <code><em># Add actions here</em></code>
+        return F(*args)                    <code><em># Run decorated function</em></code>
+    return proxy
+
+@echo
+def func(x, y):                            <code><em># Rebinds func = echo(func)</em></code>
+    print('I am running...', x, y)         <code><em># func is run by the proxy closure</em></code>
+
+&gt;&gt;&gt; <code><strong>func(1, 2)  </strong>  </code>                         <code><em># Runs a proxy, which runs func</em></code>
+calling func
+I am running... 1 2</pre>
+<p>As you’ll learn later, decorators can also take <em>arguments</em> (e.g., <code>@echo(<em>args</em>)</code>) whose utility can overlap with annotations—argument info can be sent to the decorator instead of being embedded in headers as annotations. Because this is an advanced tool that can also be applied to classes, we’ll pause this thread until Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch32.html#class_odds_and_ends">32</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch39.html#decorators">39</a>.</p>
+<p>Compared to annotations, though, decorators don’t complicate function headers themselves with extra syntax, and more naturally support multiple roles. Annotations may make functions difficult to read, and generally can have just one role—one that’s hijacked by the optional <em>type hinting</em> of <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a> in programs that choose to employ it.</p>
+<p>In fact, type hinting advocates have tried to deprecate all other roles for annotations. While these divisive (and perhaps even rude) efforts have thankfully failed to date, decorators face no such challenge, and may be a safer bet going forward. Today, though, both annotations and decorations are tools whose roles are limited only by your imagination.</p>
+<p>Finally, note that annotations and decorations work in <code>def</code> statements—but not in <code>lambda</code> expressions, whose syntax by design limits the functions they can define. Coincidentally, this <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="annotations" data-startref="fctannt" id="id3138"></a><a contenteditable="false" data-type="indexterm" data-primary="annotations, functions" data-startref="annfct" id="id3139"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="decorations" data-startref="fcndcrt" id="id3140"></a><a contenteditable="false" data-type="indexterm" data-primary="decoration" data-secondary="functions" data-startref="dcrfct" id="id3141"></a>brings us to this potpourri’s next topic.</p>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Anonymous Functions: lambda"><div class="sect1" id="anonymous_functions_lambda">
+<h1>Anonymous Functions: lambda</h1>
+<p>We first met the <code>lambda</code> expression <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="anonymous" data-seealso="lambda expression" id="id3142"></a>back in <a data-type="xref" href="ch16.html#function_basics">Chapter 16</a> and have used it in a handful of examples since then. This section reviews the basics and takes a deeper second look, to both reinforce and expand on this topic.</p>
+<p>As we’ve seen, besides the <code>def</code> statement, Python provides an expression that creates function objects. Because of its similarity to a tool in other languages, it’s called <code>lambda</code>. Like <code>def</code>, this expression creates a function to be called later, but it returns the function instead of assigning it to a name. This is why <code>lambda</code>s are sometimes known as <em>anonymous</em> functions. In <a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="inlining" id="id3143"></a><a contenteditable="false" data-type="indexterm" data-primary="inlining functions" id="id3144"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="deferring execution" id="id3145"></a><a contenteditable="false" data-type="indexterm" data-primary="execution" data-secondary="deferring" id="id3146"></a>practice, they are used to <em>inline</em> function definitions, or <em>defer</em> execution of code.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>What’s in a name?</em>: The <code>lambda</code> tends to intimidate people, largely due to the name “lambda” itself—a name that comes from the Lisp language, which got it from lambda calculus, which is a form of symbolic logic. Obscure mathematical heritage aside, though, <code>lambda</code> in Python is really just a word that introduces an expression syntactically, and its expression is simply an alternative way to code a function—albeit without statements, decorators, or annotations.</p>
+</div>
+<section data-type="sect2" data-pdf-bookmark="lambda Basics"><div class="sect2" id="lambda_basics">
+<h2>lambda Basics</h2>
+<p>As a refresher, the <code>lambda</code>’s general form is the keyword <code>lambda</code>, followed by zero or <a contenteditable="false" data-type="indexterm" data-primary="lambda expression" id="id3147"></a>more arguments (just like the arguments you enclose in parentheses in a <code>def</code> header, sans annotations), followed by an expression after a colon:</p>
+<pre data-type="programlisting">lambda <code><em>argument1</em></code>, <code><em>argument2</em></code>,… <code><em>argumentN</em></code> : <code><em>expression-using-arguments</em></code></pre>
+<p>Parentheses are not allowed <a contenteditable="false" data-type="indexterm" data-primary="parentheses" data-secondary="lambda expression" id="id3148"></a>around <code>lambda</code> arguments and are generally optional around the entire <code>lambda</code> itself, though they’re required in some contexts and may boost clarity in others. Functions returned by <code>lambda</code> work the same as those assigned by <code>def</code>, but <code>lambda</code> differs in ways that make it useful in specialized roles:</p>
+<ul>
+<li><p><code><strong>lambda</strong></code> <strong>is an expression, not a statement.</strong> Because of this, a <code>lambda</code> can appear in places a <code>def</code> is not allowed by Python’s syntax—inside a list literal or a function call’s arguments, for example. With <code>def</code>, functions can be referenced by name in such locations, but must be created elsewhere. As an expression, <code>lambda</code> returns a value (a new function) that can be assigned a name, or used where the <code>lambda</code> appears.</p></li>
+<li><p><code><strong>lambda</strong></code><strong>’s body is a single expression, not a block of statements.</strong> The <code>lambda</code>’s body is similar to what you’d put in a <code>def</code> body’s <code>return</code> statement; you simply type the result as a naked expression, instead of explicitly returning it. Because it is limited to an expression, a <code>lambda</code> is less general than a <code>def</code>—you can only squeeze so much logic into a <code>lambda</code> body without full-blown statements. This is by design, to limit program nesting: <code>lambda</code> is designed for coding simple functions, and <code>def</code> handles larger tasks.</p></li>
+</ul>
+<p>Apart from those distinctions, <code>def</code>s and <code>lambda</code>s do the same sort of work. For instance, by this point we should be pros at making a function with a <code>def</code> statement:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def func(x, y, z): return x + y + z
+</strong></code>&gt;&gt;&gt; <code><strong>func(2, 3, 4)</strong></code>
+9</pre>
+<p>But we can achieve the same effect with a <code>lambda</code> expression by explicitly assigning its result to a name through which you can later call the otherwise-anonymous function:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>func = lambda x, y, z: x + y + z
+</strong></code>&gt;&gt;&gt; <code><strong>func(2, 3, 4)</strong></code>
+9</pre>
+<p>Here, <code>func</code> is manually assigned the function object the <code>lambda</code> expression creates; this is how <code>def</code> works, too, but its assignment is automatic. Defaults <a contenteditable="false" data-type="indexterm" data-primary="lambda expression" data-secondary="argument-matching syntax" id="id3149"></a><a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="lambda expression" id="id3150"></a><a contenteditable="false" data-type="indexterm" data-primary="argument matching" data-secondary="syntax" id="id3151"></a>and other <em>argument-matching</em> syntax work in <code>lambda</code> too, just like in a <code>def</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x = (lambda a='hack', b='python', c='code': a + b + c)
+</strong></code>&gt;&gt;&gt; <code><strong>x('write')</strong></code>
+'writepythoncode'</pre>
+<p>The code in a <code>lambda</code> body also follows the same <em>scope</em> lookup rules as code inside a <code>def</code>. <code>lambda</code> expressions introduce a new local scope much like a nested <code>def</code>, which automatically sees names in enclosing functions, the module, and the built-in scope—via the LEGB rule we studied in <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>def editions(title):</strong> </code>                         <code><em># title in enclosing scope</em><strong>
+        return (lambda e: title + ', ' + e)</strong></code>      <code> <em># Return a function object</em></code>
+
+&gt;&gt;&gt; <code><strong>labeler = editions('Learning Python')</strong></code>         <code><em># Make+save nested function</em><strong>
+</strong></code>&gt;&gt;&gt; <code><strong>labeler('6E')</strong></code>                                 <code><em># '6E' passed to e in lambda</em></code>
+'Learning Python, 6E'</pre>
+<p>With those basic <code>lambda</code> “hows” in hand, the natural next question is “why,” taken up in the next <span class="keep-together">section</span>.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Why Use lambda?"><div class="sect2" id="why_use_lambdaquestion_mark">
+<h2>Why Use lambda?</h2>
+<p>Generally speaking, <code>lambda</code> is a sort of function <em>shorthand</em> that allows you to embed a function’s <a contenteditable="false" data-type="indexterm" data-primary="lambda expression" data-secondary="reasons to use" id="lmbxprs"></a>definition within the code that uses it. It is entirely optional—you can always use <code>def</code> instead, and <em>should</em> if your function requires the power of full statements that the <code>lambda</code>’s expression cannot provide. But <code>lambda</code> may be easier to use in scenarios where you just need to embed a small bit of executable code inline at the place where it is to be later used.</p>
+<p>For instance, you’ll see later that callback handlers are frequently coded as inline <code>lambda</code> expressions embedded directly in a registration call’s arguments list, instead of being defined with a <code>def</code> elsewhere in a file and referenced by name (see the sidebar <a data-type="xref" href="#why_you_will_care_lambda_callbacks">“Why You Will Care: lambda Callbacks”</a> for an example).</p>
+<p><code>lambda</code> is also commonly used to code <em>jump tables</em>, which are lists or dictionaries of actions to be performed on demand. For example:</p>
+<pre data-type="programlisting">L = [lambda x: x * 2,                <code><em># Inline function definition</em></code>
+     lambda x: x ** 2,
+     lambda x: x // 2]               <code><em># A list of three callable functions</em></code>
+
+for f in L:
+    print(f(5))                      <code><em># Prints 10, 25, and 2</em></code>
+
+print(L[1](5))                       <code><em># Prints 25</em></code></pre>
+<p>The <code>lambda</code> expression works well when you need to stuff small pieces of executable code into places where statements like <code>def</code> are not allowed. The preceding code snippet, for example, builds up a list of three functions by embedding <code>lambda</code> expressions inside a list literal; a <code>def</code> won’t work inside a literal like this because it is a statement, not an expression. The equivalent <code>def</code> coding would require temporary function names (which might clash with others) and function definitions outside the context of intended use (which might be hundreds of lines away):</p>
+<pre data-type="programlisting">def f1(x): return x * 2
+def f2(x): return x ** 2             <code><em># Define named functions</em></code>
+def f3(x): return x // 4             <code><em># Separate from their place of use
+</em></code>
+L = [f1, f2, f3]                     <code><em># Reference by name</em></code>
+
+for f in L:
+    print(f(2))                      <code><em># Also prints 10, 25, and 2</em></code></pre>
+<section data-type="sect3" data-pdf-bookmark="Multiway branches: The finale"><div class="sect3" id="multiway_branches_the_finale">
+<h3>Multiway branches: The finale</h3>
+<p>In fact, you can do the same sort of thing with dictionaries and other data structures in Python to build up more general sorts of action tables. Here’s another example to illustrate at the interactive prompt:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>key = 'loop'
+</strong></code>&gt;&gt;&gt; <code><strong>{'hack': lambda s: s.upper(),
+     'code': lambda s: s.lower(),
+     'loop': lambda s: f'{s * 4}!'}[key]('Py')</strong></code>
+'PyPyPyPy!'</pre>
+<p>Here, when Python makes the temporary dictionary, each of the nested <code>lambda</code>s generates and leaves behind a function to be called later. Indexing by key fetches one of those functions, and parentheses force the fetched function to be called. When <a contenteditable="false" data-type="indexterm" data-primary="multiway branching, dictionaries" id="id3152"></a>coded this way, a dictionary becomes a more general <span class="keep-together">multiway</span> branching tool than this book could fully reveal in <a data-type="xref" href="ch12.html#if_and_match_selections">Chapter 12</a>’s coverage of <code>if</code> statements.</p>
+<p>To make this work without <code>lambda</code>, you’d need to instead code three <code>def</code> statements somewhere else in your file, outside the dictionary in which the functions are to be used, and reference the functions by name:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def f1(s): return s.upper()
+</strong></code>&gt;&gt;&gt; <code><strong>def f2(s): return s.lower()
+</strong></code>&gt;&gt;&gt; <code><strong>def f3(s): return f'{s * 4}!'
+
+</strong></code>&gt;&gt;&gt; <code><strong>key = 'loop'</strong></code>
+&gt;&gt;&gt;<code> <strong>{'hack': f1, 'code': f2, 'loop': f3}[key]('Py')</strong></code>
+'PyPyPyPy!'</pre>
+<p>This works, too, but your <code>def</code>s may be arbitrarily far away in your file, even if they are just little bits of code. The <em>code proximity</em> that <code>lambda</code> provides <a contenteditable="false" data-type="indexterm" data-primary="lambda expression" data-secondary="code proximity and" id="id3153"></a>is especially useful for functions that will only be used in a single context—if the three functions here are not useful anywhere else, it makes sense to embed their definitions within the dictionary as <code>lambda</code>s. Moreover, the <code>def</code> form requires you to make up names for these little functions that, again, may clash with other names in this file (perhaps unlikely, but always possible).</p>
+<p>You can use the <code>match</code> statement today with similar results, but it may require even more code than the <code>def</code> scheme, especially since you’d have to nest it within a <code>def</code> to support an argument like <code>s</code>; see <a data-type="xref" href="ch12.html#if_and_match_selections">Chapter 12</a> for more info. <code>lambda</code> is also handy in function-call <em>argument lists</em> as a way to inline temporary function definitions not used anywhere else in your program; you’ll see examples of such other uses later in this chapter, when we study <code>map</code>.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>The siren song of eval</em>: In principle, you could skip the dispatch table in the preceding code if the function name is the same as its string lookup key—an <code>eval(<em>key</em>)(<em>arg</em>)</code> would kick off the call. While true in this case and sometimes useful, as we saw earlier (e.g., <a data-type="xref" href="ch10.html#introducing_python_statements">Chapter 10</a>), <code>eval</code> is relatively slow (it must compile and run code) and insecure (you must trust the string’s source). More fundamentally, jump tables are generally subsumed by <em>polymorphic</em> method dispatch in Python: calling a method does the “right thing” based <a contenteditable="false" data-type="indexterm" data-primary="lambda expression" data-secondary="reasons to use" data-startref="lmbxprs" id="id3154"></a>on the type of object that’s the subject of the call, no switching logic required. To see why, stay tuned for <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a>.</p>
+</div>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="How (Not) to Obfuscate Your Python Code"><div class="sect2" id="how_left_parenthesisnotright_parenthesi">
+<h2>How (Not) to Obfuscate Your Python Code</h2>
+<p>The fact that the body of a <code>lambda</code> has to be a single expression (not a series of statements) would seem to place severe limits on how much logic you can pack into a <code>lambda</code>. If you know what you’re doing, though, you can code most statements <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="as expression-based equivalents" id="sttxbsqv"></a>in Python as expression-based equivalents.</p>
+<p>For example, if you want to <em>print</em> from the body of a <code>lambda</code> function, simply use <code>print</code> or <code>sys.stdout.write</code> (recall from <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a> that this is what <code>print</code> really does). And to execute <em>multiple</em> actions, code a sequence like a tuple, to evaluate nested multiple expressions from left to right (tuples require parentheses in this context):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>series = lambda a, b: (print(a.upper()), print(b.lower()))</strong></code>     <code><em># &gt; 1 actions</em></code>
+&gt;&gt;&gt; <code><strong>ignore = series('Hack', 'Code')</strong></code>
+HACK
+code</pre>
+<p>Similarly, to nest logic in a <code>lambda</code>, you can use the <code>if</code>/<code>else</code> ternary expression <a contenteditable="false" data-type="indexterm" data-primary="lambda expression" data-secondary="nesting logic" id="id3155"></a>introduced in <a data-type="xref" href="ch12.html#if_and_match_selections">Chapter 12</a>, or the equivalent but trickier <code>and</code>/<code>or</code> combination also described there. As you learned earlier, the following statement:</p>
+<pre data-type="programlisting">if a:
+    b
+else:
+    c</pre>
+<p>can be emulated by either of these equivalent expressions (the second is only roughly the same, but close enough):</p>
+<pre data-type="programlisting">b if a else c
+((a and b) or c)</pre>
+<p>Because expressions like these can be placed <a contenteditable="false" data-type="indexterm" data-primary="lambda expression" data-secondary="selection logic" id="id3156"></a>inside a <code>lambda</code>, they may be used to implement <em>selection</em> logic within a <code>lambda</code> function (the <code>lambda</code> is parenthesized here only for variety and subjective clarity):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>lower = (lambda x, y: x if x &lt; y else y)</strong></code>         <code><em># Ifs in lambda: ternary</em><strong>
+</strong></code>&gt;&gt;&gt; <code><strong>lower('bb', 'aa')</strong></code>
+'aa'
+&gt;&gt;&gt; <code><strong>lower('aa', 'bb')</strong></code>
+'aa'</pre>
+<p>Furthermore, if you need to <a contenteditable="false" data-type="indexterm" data-primary="lambda expression" data-secondary="loops in" id="id3157"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="lambda expression" id="id3158"></a>perform <em>loops</em> within a <code>lambda</code>, you can also embed things like list comprehension expressions and <code>map</code> calls—tools we met in earlier chapters and will revisit in this and the next chapter:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>showall = lambda x: [print(y) for y in x]</strong>   </code>     <code><em># Loops in lambda: list comp</em><strong>
+</strong></code>&gt;&gt;&gt; <code><strong>t = showall(['lp5e', 'lp6e'])</strong></code>
+lp5e
+lp6e
+&gt;&gt;&gt; <code><strong>showall = lambda x: list(map(print, x))</strong></code>          <code><em># Loops in lambda: maps</em></code>
+&gt;&gt;&gt; <code><strong>t = showall(('py3.3', 'py3.12'))</strong></code> 
+py3.3
+py3.12
+&gt;&gt;&gt; <code><strong>showall = lambda x: print(*x, sep='', end='')</strong></code>    <code><em># Another option: *unpacking</em></code></pre>
+<p>And while it’s limited by the local scope of the function that <code>lambda</code> makes, <em>assignment</em> is in scope (pun intended) for <code>lambda</code> expressions that use the <code>:=</code> named-assignment expression:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>namer = lambda x: (res := x + 1) + res</strong> </code>          <code><em># Assignment in lambda: :=</em></code>
+&gt;&gt;&gt; <code><strong>namer(2)</strong></code>
+6
+&gt;&gt;&gt; <code><strong>res                   </strong>  </code>                         <code><em># But it doesn't persist</em></code>
+NameError: name 'res' is not defined</pre>
+<p>There is a limit to emulating statements with expressions: you can’t assign nonlocals, for instance, though tools like the <code>setattr</code> built-in, the <code>__dict__</code> of namespaces, and methods that change mutable objects in place can sometimes stand in—and can quickly lead you deep into the heart of expression-convolution darkness.</p>
+<p>But now that this book has shown you these tricks, it must also humbly implore you to use them only as a last resort. Without due care, they can yield unreadable (a.k.a. <em>obfuscated</em>) Python code, despite the language’s best intents. In general, simple is better than complex, explicit is better than implicit, and full statements are better than arcane expressions. That’s why <code>lambda</code> is limited to expressions. If you have larger logic to code, use <code>def</code>; <code>lambda</code> is for small pieces of inline code. On the other hand, you may find <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="as expression-based equivalents" data-startref="sttxbsqv" id="id3159"></a>these techniques useful—when taken in moderation.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Scopes: lambdas Can Be Nested Too"><div class="sect2" id="scopes_lambdas_can_be_nested_too">
+<h2>Scopes: lambdas Can Be Nested Too</h2>
+<p>One last <code>lambda</code> note: as we <a contenteditable="false" data-type="indexterm" data-primary="lambda expression" data-secondary="nesting" id="id3160"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="lambda expression" id="id3161"></a>saw in <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>, <code>lambda</code> is also the main beneficiary of enclosing-function scope lookup—the <em>E</em> in the LEGB scope rule. As a review, in the following the <code>lambda</code> appears inside a <code>def</code>, its typical coding, and so can access the value that name <code>x</code> had in the enclosing function’s scope during its call:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def action(x):
+        return (lambda y: x + y)</strong></code>               <code><em># Make function, remember x</em></code>
+
+&gt;&gt;&gt; <code><strong>act = action(99)
+</strong></code>&gt;&gt;&gt; <code><strong>act(2)</strong></code>                                     <code><em># Call what action returned</em></code>
+101</pre>
+<p>What wasn’t illustrated in the prior discussion of nested function scopes is that a <code>lambda</code> also has access to the names in any enclosing <code>lambda</code>. This case is somewhat obscure, but imagine if we recoded the prior <code>def</code> with a <code>lambda</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>action = (lambda x: (lambda y: x + y))</strong></code>     <code><em># lambda scopes nest too</em><strong>
+</strong></code>&gt;&gt;&gt; <code><strong>act = action(99)
+</strong></code>&gt;&gt;&gt; <code><strong>act(3)</strong></code>
+102
+&gt;&gt;&gt; <code><strong>((lambda x: (lambda y: x + y))(99))(4)</strong></code>     <code><em># Even if you don't save them</em></code>
+103</pre>
+<p>Here, the nested <code>lambda</code> structure makes a function that makes a function when called. In both cases, the nested <code>lambda</code>’s code has access to the variable <code>x</code> in the enclosing <code>lambda</code>. This works, but it seems fairly convoluted code; in the interest of readability, nested <code>lambda</code>s may be best avoided. The good news, perhaps, is that <code>def</code> cannot be nested in <code>lambda</code>: because <code>lambda</code>’s body is an expression, statements like <code>def</code> won’t work—thankfully!</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Functional Programming Tools"><div class="sect1" id="functional_programming_tools">
+<h1>Functional Programming Tools</h1>
+<p>Last up in this chapter’s gumbo is a reprisal of a category of tools we met in earlier in this book, with a few new tips to round out the topic. By most definitions, today’s Python blends support for multiple programming paradigms: <em>procedural</em> (with its basic statements), <em>object-oriented</em> (with its classes), and <em>functional</em>.<a contenteditable="false" data-type="indexterm" data-primary="functional programming" id="id3162"></a></p>
+<p>The criteria for the latter of these categories are somewhat loose, but by most measures Python’s functional programming toolbox includes its <em>first-class object</em> model, nested scope <em>closures</em>, and anonymous function <em>lambdas</em> that we met earlier; its <em>generators</em> and <em>comprehensions</em>, which we’ll be expanding on in the next chapter; and perhaps its function and class <em>decorators</em> previewed here but fleshed out in this book’s final part.</p>
+<p>This toolbox also includes built-in functions that apply other functions to iterables automatically—including functions that call other functions on an iterable’s items (<code>map</code>); select items based on a test function (<code>filter</code>); and apply functions to pairs of items and running results (<code>reduce</code>). Let’s wrap up this chapter with a quick survey of this trio.</p>
+<section data-type="sect2" data-pdf-bookmark="Mapping Functions over Iterables: map"><div class="sect2" id="mapping_functions_over_iterables_map">
+<h2>Mapping Functions over Iterables: map</h2>
+<p>One of the more common things programs do <a contenteditable="false" data-type="indexterm" data-primary="functional programming" data-secondary="map function" id="fctgmm"></a><a contenteditable="false" data-type="indexterm" data-primary="map function" id="mpfctap"></a><a contenteditable="false" data-type="indexterm" data-primary="iterable objects" data-secondary="mapping functions over" id="itrbpf"></a>with lists and other sequences is apply an operation to each item and collect the results—selecting columns in database tables, incrementing pay fields of employees in a company, parsing email attachments, and so on. Python has multiple tools that make such collection-wide operations easy to code. For instance, we’ve seen that updating all the counters in a list can be done easily with a <code>for</code> loop:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>counters = [1, 2, 3, 4]
+
+</strong></code>&gt;&gt;&gt; <code><strong>updated = []
+</strong></code>&gt;&gt;&gt; <code><strong>for x in counters:
+        updated.append(x + 10)</strong></code>                 <code><em># Add 10 to each item</em></code>
+
+&gt;&gt;&gt; <code><strong>updated, counters</strong></code>
+([11, 12, 13, 14], [1, 2, 3, 4])</pre>
+<p>But because this is such a common operation, Python also provides built-ins that do most of the work for you. Among them, the <code>map</code> function applies a passed-in function to each item in an iterable object and returns a list containing all the function-call results. For example, assuming <code>counters</code> is intact:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def inc(x): return x + 10</strong></code>                  <code><em># Function to be run</em></code>
+
+&gt;&gt;&gt; <code><strong>list(map(inc, counters))</strong></code>                   <code><em># Collect call results</em></code>
+[11, 12, 13, 14]</pre>
+<p>We met <code>map</code> briefly in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch13.html#while_and_for_loops">13</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch14.html#iterations_and_comprehensions">14</a>, as a way to apply a built-in function to items in an iterable. Here, we make more general use of it by passing in a <em>user-defined</em> function to be applied to each item in the list—<code>map</code> calls our <code>inc</code> on each list item and collects all the return values into a new list. Remember that <code>map</code> is a nonsequence iterable, so a <code>list</code> call is used to force it to produce all its results for display here (per <a data-type="xref" href="ch14.html#iterations_and_comprehensions">Chapter 14</a> coverage).</p>
+<p>Because <code>map</code> expects a function to be passed in and applied, it also happens to be one of the places where <code>lambda</code> commonly appears:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(map((lambda x: x + 3), counters))</strong></code>     <code><em># Function expression</em></code>
+[4, 5, 6, 7]</pre>
+<p>Here, the function adds 3 to each item in the <code>counters</code> list; as this little function isn’t needed elsewhere, it was written inline as a <code>lambda</code>. Because such uses of <code>map</code> are equivalent to <code>for</code> loops, with a little extra code you can always code a general mapping utility yourself:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def mymap(func, iter):
+        res = []
+        for x in iter: res.append(func(x))
+        return res</strong></code></pre>
+<p>Assuming the function <code>inc</code> is still as it was when it was shown previously, we can map it across a sequence (or other iterable) with either the built-in or our equivalent:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>list(map(inc, [1, 2, 3]))</strong></code>               <code><em># Built-in is an iterable</em></code>
+[11, 12, 13]
+&gt;&gt;&gt; <code><strong>mymap(inc, [1, 2, 3])</strong></code>                   <code><em># Ours builds a list (see generators)</em></code>
+[11, 12, 13]</pre>
+<p>However, as <code>map</code> is a built-in, it’s always available, always works the same way, and may have performance benefits (as we’ll prove in <a data-type="xref" href="ch21.html#the_benchmarking_interlude">Chapter 21</a>, it’s faster than a manually coded <code>for</code> loop in some usage modes). Moreover, <code>map</code> can be used in more advanced ways than shown here. For instance, given multiple sequence arguments, it sends items taken from sequences in parallel as distinct arguments to the function:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>pow(3, 4)</strong></code>                               <code><em># 3**4</em></code>
+81
+&gt;&gt;&gt; <code><strong>list(map(pow, [1, 2, 3], [2, 3, 4]))</strong></code>    <code><em># 1**2, 2**3, 3**4</em></code>
+[1, 8, 81]</pre>
+<p>With multiple sequences, <code>map</code> expects an N-argument function for N sequences. Here, the <code>pow</code> function takes two arguments on each call—one from each sequence passed to <code>map</code>. It’s not much extra work to simulate this multiple-sequence generality in code, too, but we’ll postpone doing so until later in the next chapter, after we’ve explored some additional iteration tools (hint: it would be better to <em>generate</em> items on demand, like the built-in).</p>
+<p>The <code>map</code> call is also similar to the list comprehension expressions we studied in <a data-type="xref" href="ch14.html#iterations_and_comprehensions">Chapter 14</a> and will revisit in the next chapter from a functional perspective:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(map(inc, [1, 2, 3, 4]))</strong></code>
+[11, 12, 13, 14]
+&gt;&gt;&gt; <code><strong>[inc(x) for x in [1, 2, 3, 4]]</strong></code> 
+[11, 12, 13, 14]</pre>
+<p>In some cases, <code>map</code> may be faster to run than a list comprehension, and it may also require less code. On the other hand, because <code>map</code> applies a <em>function</em> call to each item instead of an arbitrary <em>expression</em>, it is a somewhat less general tool, and often requires extra helper functions or <code>lambda</code>s. Moreover, wrapping a comprehension in parentheses instead of square brackets creates an object that <em>generates</em> values on request to save <a contenteditable="false" data-type="indexterm" data-primary="functional programming" data-secondary="map function" data-startref="fctgmm" id="id3163"></a><a contenteditable="false" data-type="indexterm" data-primary="map function" data-startref="mpfctap" id="id3164"></a><a contenteditable="false" data-type="indexterm" data-primary="iterable objects" data-secondary="mapping functions over" data-startref="itrbpf" id="id3165"></a>memory and increase responsiveness, much like <code>map</code>—a topic we’ll take up in the next chapter.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Selecting Items in Iterables: filter"><div class="sect2" id="selecting_items_in_iterables_filter">
+<h2>Selecting Items in Iterables: filter</h2>
+<p>The <code>map</code> function is a <a contenteditable="false" data-type="indexterm" data-primary="iterable objects" data-secondary="item selection" id="ibjtle"></a><a contenteditable="false" data-type="indexterm" data-primary="filter function" id="fltfctnio"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="filter" id="fctfltr"></a>primary and relatively straightforward representative of Python’s functional programming toolset. Its close relatives, <code>filter</code> and <code>reduce</code>, select an iterable’s items based on a test function and apply functions to item pairs, respectively.</p>
+<p>Because it also returns an iterable, <code>filter</code> (like <code>range</code>) requires a <code>list</code> call to display all its results in a REPL. For example, the following <code>filter</code> call picks out items in a sequence that are greater than zero:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(range(−5, 5))</strong></code> 
+[−5, −4, −3, −2, −1, 0, 1, 2, 3, 4]
+
+&gt;&gt;&gt; <code><strong>list(filter((lambda x: x &gt; 0), range(−5, 5)))</strong></code>
+[1, 2, 3, 4]</pre>
+<p>We met <code>filter</code> briefly earlier in the sidebar <a data-type="xref" href="ch12.html#why_you_will_care_booleans">“Why You Will Care: Booleans”</a> and while exploring iterables in <a data-type="xref" href="ch14.html#iterations_and_comprehensions">Chapter 14</a>. Items in the sequence or iterable for which the function returns a true result are added to the result list. Like <code>map</code>, this function is roughly equivalent to a <code>for</code> loop, but it is built-in, concise, and often fast:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>res = []
+</strong></code>&gt;&gt;&gt; <code><strong>for x in range(−5, 5):</strong></code>                   <code><em># The statement equivalent of filter</em></code>
+        <code><strong>if x &gt; 0: </strong>  </code>                         <code><em># Simple but slower today, probably</em><strong>
+            res.append(x)
+
+</strong></code>&gt;&gt;&gt; <code><strong>res</strong></code>
+[1, 2, 3, 4]</pre>
+<p>Also like <code>map</code>, <code>filter</code> can be emulated by <em>list comprehension</em> syntax with often simpler results (especially when it can avoid creating a new function), and with a similar <em>generator expression</em> when coded with enclosing parentheses to delay production of results—though again, the generator story will have to remain a <a contenteditable="false" data-type="indexterm" data-primary="iterable objects" data-secondary="item selection" data-startref="ibjtle" id="id3166"></a><a contenteditable="false" data-type="indexterm" data-primary="filter function" data-startref="fltfctnio" id="id3167"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="filter" data-startref="fctfltr" id="id3168"></a>teaser for the next chapter:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>[x for x in range(−5, 5) if x &gt; 0]</strong></code>
+[1, 2, 3, 4]</pre>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Combining Items in Iterables: reduce"><div class="sect2" id="combining_items_in_iterables_reduce">
+<h2>Combining Items in Iterables: reduce</h2>
+<p>The functional <code>reduce</code> call—once a <a contenteditable="false" data-type="indexterm" data-primary="iterable objects" data-secondary="combining items" id="itbjccb"></a><a contenteditable="false" data-type="indexterm" data-primary="reduce function" id="rdcfctn"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="reduce" id="fctnrduc"></a>built-in but now a resident of the <code>functools</code> standard-library module—is more complex. It accepts an iterable to process, but it’s not an iterable itself: it returns a <em>single</em> result that aggregates an iterable’s items. To demo, here are two <code>reduce</code> calls that compute the sum and product of the items in a list:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from functools import reduce</strong></code> 
+&gt;&gt;&gt; <code><strong>reduce((lambda x, y: x + y), [1, 2, 3, 4])</strong></code>
+10
+&gt;&gt;&gt; <code><strong>reduce((lambda x, y: x * y), [1, 2, 3, 4])</strong></code>
+24</pre>
+<p>At each step, <code>reduce</code> passes the <em>current</em> sum or product, along with the <em>next</em> item from the list, to the passed-in <code>lambda</code> function. By default, the first item in the sequence initializes the starting value. To make that more concrete again, here’s the <code>for</code> loop equivalent to the first of these calls, with the addition hardcoded inside the loop:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2, 3, 4]
+</strong></code>&gt;&gt;&gt; <code><strong>res = L[0]
+</strong></code>&gt;&gt;&gt; <code><strong>for x in L[1:]:
+        res += x
+
+</strong></code>&gt;&gt;&gt; <code><strong>res</strong></code>
+10</pre>
+<p>In fact, coding your own reusable and customizable version of <code>reduce</code> is fairly straightforward too. The following function emulates most of the built-in’s behavior and helps demystify its operation in general:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def myreduce(function, sequence):
+        tally = sequence[0]
+        for next in sequence[1:]:
+            tally = function(tally, next)
+        return tally
+
+</strong></code>&gt;&gt;&gt; <code><strong>myreduce((lambda x, y: x + y), [1, 2, 3, 4])</strong></code>
+10
+&gt;&gt;&gt; <code><strong>myreduce((lambda x, y: x * y), [1, 2, 3, 4])</strong></code>
+24</pre>
+<p>The built-in <code>reduce</code> also allows an optional third argument, effectively placed before the items in the sequence to serve as an initial value and a default result when the sequence is empty, but we’ll leave this extension as a suggested exercise (again, emulating built-in tools is instructive, but superfluous).</p>
+<p>If this coding technique has sparked your interest, you might also be interested in the standard-library <code>operator</code> module, which provides functions that correspond to built-in expressions and so comes in handy for some uses of functional tools (consult <code>help</code> in a REPL or Python’s library manual for more details on this module):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import operator, functools
+</strong></code>&gt;&gt;&gt; <code><strong>functools.reduce(operator.add, [2, 4, 6])</strong></code>        <code><em># Function-based +</em></code>
+12
+&gt;&gt;&gt; <code><strong>functools.reduce((lambda x, y: x + y), [2, 4, 6])</strong></code>
+12</pre>
+<p>Together, <code>map</code>, <code>filter</code>, and <code>reduce</code> support powerful functional programming techniques. As mentioned, many observers would also extend the functional programming toolset in Python to include the nested function closures and anonymous function <code>lambda</code>s we’ve explored, as well as the <em>generators</em> and <em>comprehensions</em> we’ve met in piecemeal fashion along the way. To fully grok the latter two, though, we must move on to <a contenteditable="false" data-type="indexterm" data-primary="iterable objects" data-secondary="combining items" data-startref="itbjccb" id="id3169"></a><a contenteditable="false" data-type="indexterm" data-primary="reduce function" data-startref="rdcfctn" id="id3170"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="reduce" data-startref="fctnrduc" id="id3171"></a>the next chapter.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00030">
+<h1>Chapter Summary</h1>
+<p>This chapter’s collage took us on a tour of function-related topics: function design guidelines; recursive functions; function attributes, annotations, and decorators; <code>lambda</code> expressions; and the <code>map</code>, <code>filter</code>, and <code>reduce</code> built-ins. Some of these are advanced, but most are common in Python programming. The next chapter continues the advanced-topics motif with a reprisal of comprehensions and an unmasking of generators—tools that are just as related to functional programming as to looping statements. Before you move on, though, make sure you’ve mastered the concepts covered here by working through this chapter’s quiz.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000159">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>How are <code>lambda</code> expressions and <code>def</code> statements related?</p></li>
+<li><p>What’s the point of using <code>lambda</code>?</p></li>
+<li><p>Compare and contrast <code>map</code>, <code>filter</code>, and <code>reduce</code>.</p></li>
+<li><p>What are function annotations, and how are they used?</p></li>
+<li><p>What are recursive functions, and how are they used?</p></li>
+<li><p>What are some general design guidelines for coding functions?</p></li>
+<li><p>Name three or more ways that functions can communicate results to a caller.</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000158">
+<h1>Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>Both <code>lambda</code> and <code>def</code> create function objects to be called later. Because <code>lambda</code> is an expression, though, it returns a function object instead of assigning it to a name, and it can be used to nest a function definition in places where a <code>def</code> will not work syntactically. A <code>lambda</code> allows for only a single implicit return value expression, though; because it does not support a block of statements, it is not ideal for larger functions.</p></li>
+<li class="pagebreak-before"><p><code>lambda</code> allows us to “inline” small units of executable code, defer its execution, and provide it with state in the form of default arguments and enclosing scope variables. Using a <code>lambda</code> is never required; you can always code a <code>def</code> instead and reference the function by name. <code>lambda</code> comes in handy, though, to embed small pieces of deferred code that are unlikely to be used elsewhere in a program. It commonly appears in callback-based programs such as GUIs, and has a natural affinity with functional tools like <code>map</code> and <code>filter</code> that expect a processing function.</p></li>
+<li><p>These three built-in functions all apply another function to items in a sequence (or other iterable) object and collect results. <code>map</code> passes each item to the function and collects call results, <code>filter</code> collects items for which the function returns a true value, and <code>reduce</code> computes a single value by applying the function to an accumulator and successive items. Unlike the other two, <code>reduce</code> is available in the <code>functools</code> module, not the built-in scope (in modern Python history, at least).</p></li>
+<li><p>Function annotations are syntactic embellishments of a function’s arguments and result, which are collected into a dictionary assigned to the function’s <code>__annotations__</code> attribute. Python places no semantic meaning on these annotations, but simply packages them for potential use by other tools.</p></li>
+<li><p>Recursive functions call themselves either directly or indirectly in order to loop (i.e., repeat). They may be used to traverse arbitrarily shaped structures, but they can also be used for iteration in general (though the latter role is often more simply and efficiently coded with looping statements). Recursion can often be simulated or replaced by code that uses explicit stacks or queues to have more control over traversals.</p></li>
+<li><p>Functions should generally be small and as self-contained as possible, have a single unified purpose, and communicate with other components through input arguments and return values. They may use mutable arguments to communicate results too if changes are expected, and some types of programs imply other communication mechanisms.</p></li>
+<li><p>Functions can send back results with <code>return</code> statements, by changing passed-in mutable arguments, and by setting global variables. Globals are generally frowned upon (except for very special cases, like multithreaded programs) because they can make code more difficult to understand and use. <code>return</code> statements are usually best, but changing mutables is fine (and even useful), if expected. Functions may also communicate results with system devices such as files and sockets, but these are beyond our scope here.</p></li>
+</ol>
+<aside data-type="sidebar" epub:type="sidebar"><div class="sidebar" id="why_you_will_care_lambda_callbacks">
+<h1>Why You Will Care: lambda Callbacks</h1>
+<p>Another common role for <code>lambda</code> is to define inline <em>callback</em> functions <a contenteditable="false" data-type="indexterm" data-primary="lambda expression" data-secondary="callbacks" id="id3172"></a>for Python’s <code>tkinter</code> GUI API. For example, the following creates a button that prints a message on the console when pressed, assuming <code>tkinter</code> is present in your Python (it is by default on most PCs and at least one Android app):</p>
+<pre data-type="programlisting">from tkinter import Button, mainloop
+x = Button(
+        text='Press me',
+        command=<code><strong>lambda: print('Tapped!')</strong></code>)
+x.pack()
+mainloop() <code><em># This may be optional in some REPLs</em></code></pre>
+<p>Here, we register the callback handler by passing a function generated with a <code>lambda</code> to the <code>command</code> keyword argument. The advantage of <code>lambda</code> over <code>def</code> in this is that the code that handles a button press is right here, embedded in the button-creation call.</p>
+<p>In effect, the <code>lambda</code> <em>defers</em> execution of the handler until the event occurs: the <code>print</code> call happens on button presses, not when the button is created, and effectively “knows” the string it should write when the event occurs. Real GUIs rarely print to consoles, of course, but this demos the coding pattern.</p>
+<p>Because the nested function scope rules apply to <code>lambda</code>, they automatically see names in the functions in which they are coded and hence don’t require passed-in defaults in most cases (except for loop variables, per <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>). This is especially useful for accessing the special <code>self</code> instance argument that is a local variable in enclosing class method functions (which we’ll study in <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a>, so take this as preview only):</p>
+<pre data-type="programlisting">class MyGui:
+    def makewidgets(self):
+        Button(command=<code><strong>lambda: self.onPress('Tapped!')</strong></code>)
+    def onPress(self, message):
+        …<code><em>use message</em></code>…</pre>
+<p>As you’ll see later, both class objects with <code>__call__</code> and <em>bound methods</em> often serve in callback roles too—watch for coverage of these in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch30.html#operator_overloading-id000103">30</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch31.html#designing_with_classes">31</a>.</p>
+<p>And all of this applies to coding event callbacks in other commonly used and portable GUI toolkits for Python—including <em>Kivy</em>, <em>Toga</em> (in <em>BeeWare</em>), <em>PyQT</em>, and <em>wxPython</em>. <code>tkinter</code> gets more press here only because it’s shipped with Python’s standard library. As for all tools, you should vet GUIs for yourself.</p>
+</div></aside>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,220 @@
+{
+  "main": {
+    "id": "33f39d238536bb14",
+    "type": "split",
+    "children": [
+      {
+        "id": "5a0306ef6b314b46",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "026083247660d3b8",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Classes/Spring 2025/Status.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Status"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "fb4ae48d674ac836",
+    "type": "split",
+    "children": [
+      {
+        "id": "5a73d2b5775ae9b8",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "3ac6f5d6215980ac",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "4992adda193603f6",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "96e3ba4e90e0c125",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "50165ecf48411235",
+    "type": "split",
+    "children": [
+      {
+        "id": "18b23738c8e36571",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f0a82f2f96eea381",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lectures/Lecture 1.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Lecture 1"
+            }
+          },
+          {
+            "id": "3483d9a01f0620e2",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lectures/Lecture 1.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Lecture 1"
+            }
+          },
+          {
+            "id": "2faef8fbed1b0ea9",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "b8c13b0a009fae21",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lectures/Lecture 1.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Lecture 1"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false,
+      "vscode-editor:Create Code File": false,
+      "github-sync:Sync with Remote": false
+    }
+  },
+  "active": "026083247660d3b8",
+  "lastOpenFiles": [
+    "Untitled.md",
+    "Classes/Spring 2025/Deep Learning/Lecture 2.md",
+    "Classes/Spring 2025/Deep Learning/Lecture 1.md",
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 4.md",
+    "Images/Pasted image 20260217225919.png",
+    "Images/Pasted image 20260217225247.png",
+    "Images/Pasted image 20260217225216.png",
+    "Images/Pasted image 20260217224822.png",
+    "Images/Pasted image 20260217224748.png",
+    "Images/Pasted image 20260217224710.png",
+    "Images/Pasted image 20260217224447.png",
+    "Images/Pasted image 20260217224332.png",
+    "Images/Pasted image 20260217224145.png",
+    "Images/Pasted image 20260217224133.png",
+    "Classes/Spring 2025/Modeling and Optimization (CPE 608)/Lecture 1.md",
+    "Classes/Spring 2025/Modeling and Optimization (CPE 608)/1. Syllabus/Syllabus.pdf",
+    "Classes/Spring 2025/Big Data Analytics (AAI 627)/1. Syllabus/Class Structure.md",
+    "Classes/Spring 2025/Modeling and Optimization (CPE 608)/1. Syllabus/Class Structure.md",
+    "Classes/Spring 2025/Deep Learning/1. Syllabus/Class Structure.md",
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/1. Syllabus/Class Structure.md",
+    "Classes/Spring 2025/Big Data Analytics (AAI 627)/1. Syllabus/Syllabus.pdf",
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 3.md",
+    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 3.md",
+    "General/Personal/Skin.md",
+    "General/Personal",
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 2.md",
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 1.md",
+    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 2.md",
+    "General/Projects/MLBlocks/Things to add.md",
+    "General/Projects/ProteinFolding/1. Notable Links.md",
+    "General/Projects/ProteinFolding",
+    "General/Projects/MLBlocks",
+    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 1.md",
+    "General/Learning/DSA/4_LinkedLists/2. Fast and Slow Pointers.md",
+    "General/Learning/DSA/4_LinkedLists/1. LinkedList.md",
+    "General/Learning/DSA/2_Arrays_Strings/Sliding Window.md",
+    "General/Learning/DSA/3_Hashing/Hashing.md",
+    "General/Learning/DSA/4_LinkedLists/4_ReversingLinkedList.md",
+    "General/Learning/DSA/4_LinkedLists/3. Questions.md",
+    "General/Learning/DSA/8_Graphs/1_Graphs.md",
+    "Classes/Spring 2025/Deep Learning/1. Syllabus/Syllabus.pdf",
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/1. Syllabus/Syllabus.pdf",
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lectures"
+  ]
+}

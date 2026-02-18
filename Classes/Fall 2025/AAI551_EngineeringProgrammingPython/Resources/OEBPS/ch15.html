@@ -1,0 +1,724 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 15. The Documentation Interlude"><div class="chapter" id="the_documentation_interlude">
+<h1><span class="label">Chapter 15. </span>The Documentation Interlude</h1>
+
+<p>This part of the book concludes with a brief look at techniques and tools used for documenting Python code. Although Python code is comparatively readable by itself, a few well-placed and human-accessible comments can do much to help others understand the workings of your programs—especially when code grows larger than most in this book. As you’ll see, Python includes both syntax and tools to make documentation easier. In particular, the <em>Pydoc</em> system covered here can render a code file’s documentation as either plain text in an interactive REPL, or HTML in a browser.</p>
+
+<p>While this topic is partly tools related, it’s presented here because it both involves Python’s syntax model and provides a resource for readers struggling to understand Python’s toolset. For the latter purpose, this chapter also expands on documentation pointers first given in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>. As usual, because this chapter closes out its part, it also ends with some warnings about common pitfalls and a set of exercises for this part of the text, in addition to its chapter quiz.</p>
+
+<section data-type="sect1" data-pdf-bookmark="Python Documentation Sources"><div class="sect1" id="python_documentation_sources-id00070">
+<h1>Python Documentation Sources</h1>
+
+<p>By this point in the book, you’re probably starting to realize that Python comes with an amazing amount of prebuilt functionality—built-in functions and exceptions, predefined object attributes and methods, standard-library modules, and more. And we’ve really only scratched the surface of each of these categories.</p>
+
+<p>One of the first questions that <a contenteditable="false" data-type="indexterm" data-primary="documentation" data-seealso="docstrings; Pydoc" id="id2764"></a><a contenteditable="false" data-type="indexterm" data-primary="docstrings" data-seealso="documentation" id="id2765"></a><a contenteditable="false" data-type="indexterm" data-primary="Pydoc" id="id2766"></a>bewildered beginners often ask is, How do I find information on all the built-in tools? This section provides tips on the various documentation sources available in Python. It also presents documentation strings (<em>docstrings</em>, for short), and the <em>Pydoc</em> system shipped with Python that makes use of them. These topics are somewhat peripheral to the core language itself, but they become essential knowledge as soon as your code becomes large or complex enough to challenge its readers—including yourself, six months down the road.</p>
+
+<p>As summarized in <a data-type="xref" href="#python_documentation_sources-id000104">Table 15-1</a>, there are a variety of places to look for information about Python, with generally increasing verbosity. Because documentation is such a crucial tool in practical programming, we’ll explore each of these categories in the sections that follow.</p>
+
+<table class="border" id="python_documentation_sources-id000104">
+	<caption><span class="label">Table 15-1. </span>Python documentation sources</caption>
+	<thead>
+		<tr>
+			<th>Form</th>
+			<th>Role</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><code>#</code> comments</td>
+			<td>In-file documentation</td>
+		</tr>
+		<tr>
+			<td>The <code>dir</code> function</td>
+			<td>Lists of attributes available in objects</td>
+		</tr>
+		<tr>
+			<td>Docstrings: <code>__doc__</code></td>
+			<td>In-file documentation attached to objects</td>
+		</tr>
+		<tr>
+			<td>Pydoc: the <code>help</code> function</td>
+			<td>Interactive help for objects</td>
+		</tr>
+		<tr>
+			<td>Pydoc: HTML reports</td>
+			<td>Module documentation in a browser</td>
+		</tr>
+		<tr>
+			<td>Sphinx third-party tool</td>
+			<td>Richer documentation for larger projects</td>
+		</tr>
+		<tr>
+			<td>The standard manuals</td>
+			<td>Official language and library descriptions</td>
+		</tr>
+		<tr>
+			<td>Web resources</td>
+			<td>Online tutorials, examples, and so on</td>
+		</tr>
+	</tbody>
+</table>
+
+<section data-type="sect2" data-pdf-bookmark="# Comments"><div class="sect2" id="hash_comments">
+<h2># Comments</h2>
+
+<p>As we’ve learned—and used in <a contenteditable="false" data-type="indexterm" data-primary="documentation" data-secondary="# comments" id="id2767"></a><a contenteditable="false" data-type="indexterm" data-primary="# comments" id="id2768"></a>most example listings so far—hash-mark comments are the most basic way to document your code. Python simply ignores all the text following a <code>#</code> (as long as it’s not inside a string literal), so you can follow this character with any words and descriptions meaningful to programmers. Such comments are accessible only in your source files, though; to code comments that are more widely available, you’ll use docstrings (ahead).</p>
+
+<p>In fact, current <em>best practice</em> (generally accepted convention) dictates that docstrings are best for larger functional documentation (e.g., “my script does this”), and <code>#</code> comments are best limited to smaller code documentation (e.g., “this strange expression does that”) and are best limited in scope to a statement or small group of statements within a script or function. Docstrings are a broader topic we’ll get to in a moment; first, let’s see how to explore objects.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="The dir Function"><div class="sect2" id="the_dir_function">
+<h2>The dir Function</h2>
+
+<p>As we’ve also seen, the <a contenteditable="false" data-type="indexterm" data-primary="documentation" data-secondary="dir function" id="dcdratt"></a><a contenteditable="false" data-type="indexterm" data-primary="dir function" data-secondary="object attributes" id="id2769"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="listing" id="id2770"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="attributes" id="id2771"></a>built-in <code>dir</code> function is an easy and automatic way to list all of the <em>attributes</em> available inside an object (i.e., its methods and simpler data items). It can be called with no arguments to list variables in the caller’s scope, something the next part of this book will define in full. More usefully, it can also be called with any object that has attributes, including imported modules and objects of built-in types, as well as the name of a data type itself. For example, to find out what’s available in a <em>module</em>, such as the standard library’s <code>sys</code>, import it and pass it to <code>dir</code>:</p>
+
+<pre data-type="programlisting">
+$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>import sys</strong></code>
+&gt;&gt;&gt; <code><strong>dir(sys)</strong></code>
+[…<code><em>many names here</em></code>…]</pre>
+
+<p>The list of attribute name strings you’ll get <a contenteditable="false" data-type="indexterm" data-primary="dir function" data-secondary="object attributes" data-tertiary="name strings" id="id2772"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="listing" data-tertiary="name strings" id="id2773"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="attributes" data-tertiary="name strings" id="id2774"></a>back is omitted here because it’s not small and is prone to vary per Python version; run this on your own for a better look. In fact, there are currently 110 attributes in <code>sys</code>, though we generally care only about the 97 that do not have leading double underscores (two underscores usually means interpreter-related), or the 83 that have no leading underscore at all (one underscore usually means implementation private, informally). Rooting out such numbers is a prime example of the preceding chapter’s list comprehension at work:</p>
+
+<pre data-type="programlisting">
+&gt;&gt;&gt; <code><strong>len(dir(sys))</strong></code>                                           <code><em># Number names in sys</em></code>
+110
+&gt;&gt;&gt; <code><strong>len([x for x in dir(sys) if not x.startswith('__')])</strong></code>    <code><em># Non __X names only</em></code>
+97
+&gt;&gt;&gt; <code><strong>len([x for x in dir(sys) if not x[0] == '_'])</strong></code>           <code><em># Ignore _X names too
+</em></code>83</pre>
+
+<p>To find out what attributes are provided in objects of <em>built-in types</em>, run <code>dir</code> on a literal, an existing instance, or the name of the desired type. For example, to see all text-string attributes, you can pass an empty or the type name <code>str</code>:</p>
+
+<pre data-type="programlisting">
+&gt;&gt;&gt; <code><strong>dir('')</strong></code>
+['__add__', …<code><em>more names here</em></code>…, 'zfill']
+
+&gt;&gt;&gt; <code><strong>dir(str) == dir('')</strong></code>
+True</pre>
+
+<p>The <code>dir</code> result for any built-in type includes a set of attributes that are related to the implementation of that type (mostly, for expression operators). Much as in modules, they all begin and end with double underscores to make them distinct, and you can safely ignore them at this point in the book (they’ll resurface later for OOP). For instance, there are 81 text-string attributes, but only 47 that correspond to named methods or data; lists have even fewer:</p>
+
+<pre data-type="programlisting">
+&gt;&gt;&gt; <code><strong>len(dir('')), len([x for x in dir('') if not x.startswith('__')])</strong></code>
+(81, 47)
+&gt;&gt;&gt; <code><strong>len(dir([])), len([x for x in dir([]) if not x.startswith('__')])</strong></code>
+(48, 11)</pre>
+
+<p>To list names, filter out double-underscored items that are not of common program interest by running the same list comprehensions, but print the attributes. To demo, here are the named attributes in lists and dictionaries:</p>
+
+<pre data-type="programlisting">
+&gt;&gt;&gt; <code><strong>[a for a in dir(list) if not a.startswith('__')]</strong></code>
+['append', 'clear', 'copy', 'count', 'extend', 'index', 'insert', 'pop',
+'remove', 'reverse', 'sort']
+
+&gt;&gt;&gt; <code><strong>[a for a in dir(dict) if not a.startswith('__')]</strong></code>
+['clear', 'copy', 'fromkeys', 'get', 'items', 'keys', 'pop', 'popitem', 
+'setdefault', 'update', 'values']</pre>
+
+<p>This may seem like a lot to type to get an attribute list, but beginning in the next chapter, you’ll learn how to wrap such code in a simple, importable, and reusable <em>function</em> so you don’t need to type it again.</p>
+
+<p>Aside: type names like <code>str</code>, <code>list</code>, and <code>dict</code> work in <code>dir</code> because they are <a contenteditable="false" data-type="indexterm" data-primary="dir function" data-secondary="object attributes" data-tertiary="type names" id="id2775"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="listing" data-tertiary="type names" id="id2776"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="attributes" data-tertiary="type names" id="id2777"></a>actually names of types in Python today, not just type-converter functions; calling one of these invokes its constructor to generate an instance of that type. <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a> will have more to say about constructors and operator overloading methods when we discuss classes.</p>
+
+<p>The <code>dir</code> function is mostly a memory jogger—it provides a list of attribute names, but it does not tell you anything about what those names mean. For such extra information, we need to move on to the next documentation source.</p>
+
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Attributes in IDEs</em>: Some GUIs for Python <a contenteditable="false" data-type="indexterm" data-primary="IDEs (integrated development environments)" data-secondary="attribute lists" id="id2778"></a>work, including IDLE, have features that list attributes on objects automatically, which can be viewed as alternatives to <code>dir</code>. IDLE, for example, will list an object’s attributes in a pop-up selection window when you type a period after the object’s name and pause or press Tab. This is <a contenteditable="false" data-type="indexterm" data-primary="documentation" data-secondary="dir function" data-startref="dcdratt" id="id2779"></a>mostly meant as an <em>autocomplete</em> feature, though, not an information source. <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a> and <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a> have introductory info on IDLE.</p>
+</div>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Docstrings and __doc__"><div class="sect2" id="docstrings_and_doc">
+<h2>Docstrings and __doc__</h2>
+
+<p>Besides <code>#</code> comments, Python supports documentation that is automatically attached to objects and retained at <a contenteditable="false" data-type="indexterm" data-primary="docstrings" id="id2780"></a><a contenteditable="false" data-type="indexterm" data-primary="string literals" data-secondary="docstrings" id="id2781"></a>runtime for inspection. Syntactically, such comments are coded as <em>string literals</em> of any type, except bytes and f-strings. They are located at the tops of code <em>components</em> (module files and function and class statements), and before any other executable code (<code>#</code> comments, including Unix-style <code>#!</code> lines, are OK before them). When present, the text of such strings, known as <em>docstrings</em>, is automatically stuffed into the <code>__doc__</code> attributes of the corresponding objects.</p>
+
+<section data-type="sect3" data-pdf-bookmark="User-defined docstrings"><div class="sect3" id="user_defined_docstrings">
+<h3>User-defined docstrings</h3>
+
+<p>For example, consider the file <em>docstrings.py</em> in <a data-type="xref" href="#example_onefive_onedot_docstringsdotpy">Example 15-1</a>. You can <a contenteditable="false" data-type="indexterm" data-primary="docstrings" data-secondary="user-defined" id="dcsudf"></a><a contenteditable="false" data-type="indexterm" data-primary="user-defined docstrings" id="usdfdcg"></a>safely ignore most of its code here (we’ll study functions, modules, and classes in the next three parts of this book), but notice its three string literals: because they are coded at the beginning of the file, and at the start of a function (<code>def</code>) and class (<code>class</code>) within it, they are taken as docstrings and are saved in the associated object’s <code>__doc__</code> when this file is loaded by a run or import.</p>
+
+<div data-type="example" id="example_onefive_onedot_docstringsdotpy">
+<h5><span class="label">Example 15-1. </span>docstrings.py</h5>
+
+<pre data-type="programlisting">
+"""
+Module documentation
+This module defines a name, function and class.
+"""
+
+edition = 6
+
+def square(x):
+    r'''
+    Function documentation
+    Returns the \square\ of its \numeric\ argument.
+    '''
+    return x ** 2   # power operator
+
+class PartVI:
+    "Class documentation for \U0001F40D <img src="assets/thumbs-up_1f44d.png" width="160" height="160"/>"
+    pass
+
+# Top-level code
+print(square(edition))
+print(square.__doc__)
+print(PartVI.__doc__)</pre>
+</div>
+
+<p>Some fine points about this example’s docstrings:</p>
+
+<ul>
+	<li>
+	<p><em>Literals</em>: the first of <a contenteditable="false" data-type="indexterm" data-primary="docstrings" data-secondary="literals" id="id2782"></a><a contenteditable="false" data-type="indexterm" data-primary="literals" data-secondary="docstrings" id="id2783"></a><a contenteditable="false" data-type="indexterm" data-primary="docstrings" data-secondary="triple-quoted block" id="id2784"></a>this file’s docstrings uses a <em>triple-quoted</em> block at the top of the file. This is common for docstrings as it allows for multiline comments, but any sort of text string (except f-strings) will work. Both single- or double-quoted one-liners like that in the class are fine, but don’t readily support multiline text.</p>
+	</li>
+	<li>
+	<p><em>Raw strings</em>: as <a contenteditable="false" data-type="indexterm" data-primary="docstrings" data-secondary="raw strings" id="id2785"></a><a contenteditable="false" data-type="indexterm" data-primary="raw strings" data-secondary="docstrings" id="id2786"></a>the function demos, <code>r'…'</code> strings work too—and may even be required to suppress unwanted backslash escapes and avoid a syntax warning (and eventual <em>error</em>!) for unrecognized escapes each time code is run or recompiled to bytecode (see <a data-type="xref" href="ch07.html#string_fundamentals">Chapter 7</a>’s coverage of new <code>\</code> deprecations in Python 3.12).</p>
+	</li>
+	<li>
+	<p><em>Content</em>: docstrings can <a contenteditable="false" data-type="indexterm" data-primary="docstrings" data-secondary="content" id="id2787"></a>contain any sort of text, including the class’s <em>Unicode</em> escape and raw emoji (per the Unicode intro in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a> and the whole story in <a data-type="xref" href="ch37.html#unicode_and_byte_strings">Chapter 37</a>). Notice that the <code>\U</code> Unicode escape requires backslashes to be used, so it precludes using raw strings to avoid syntax errors in the future (use <code>\\</code>).</p>
+	</li>
+</ul>
+
+<p>The whole point of this documentation protocol is that your comments are <em>retained</em> for inspection in <code>__doc__</code> attributes after the file is loaded. Thus, to display the docstrings associated with the module and the two code components it defines, we simply <em>import</em> the file and print their <code>__doc__</code> attributes, where Python has saved the text. Assuming this module is located in the directory in which we’re currently working (and deferring to <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a>’s note about imports and directories for background info on why that matters):</p>
+
+<pre data-type="programlisting">
+$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>import docstrings</strong></code>
+36
+
+    Function documentation
+    Returns the \square\ of its \numeric\ argument.
+    
+Class documentation for <img src="assets/snake_1f40d.png" width="160" height="160"/> <img src="assets/thumbs-up_1f44d.png" width="160" height="160"/>
+&gt;&gt;&gt; <code><strong>print(docstrings.__doc__)</strong></code>
+
+Module documentation
+This module defines a name, function and class.
+
+&gt;&gt;&gt; <code><strong>print(docstrings.square.__doc__)</strong></code>
+
+    Function documentation
+    Returns the \square\ of its \numeric\ argument.
+    
+&gt;&gt;&gt; <code><strong>print(docstrings.PartVI.__doc__)</strong></code>
+Class documentation for <img src="assets/snake_1f40d.png" width="160" height="160"/> <img src="assets/thumbs-up_1f44d.png" width="160" height="160"/></pre>
+
+<p>You will usually want <a contenteditable="false" data-type="indexterm" data-primary="docstrings" data-secondary="print" id="id2788"></a><a contenteditable="false" data-type="indexterm" data-primary="print, viewing docstrings" id="id2789"></a>to use <code>print</code> like this to view docstrings; otherwise, you’ll get a single string with embedded <code>\n</code> newline characters. Also note that <code>import</code> runs the file’s top-level prints (hence the output immediately following the <code>import</code>), as does launching it as a top-level script. Within the file, <code>square</code> is just <code>square</code>, a simple variable:</p>
+
+<pre data-type="programlisting">
+$ <code><strong>python3 docstrings.py</strong></code> 
+36
+
+    Function documentation
+    Returns the \square\ of its \numeric\ argument.
+    
+Class documentation for <img src="assets/snake_1f40d.png" width="160" height="160"/> <img src="assets/thumbs-up_1f44d.png" width="160" height="160"/></pre>
+
+<p>You can also attach <a contenteditable="false" data-type="indexterm" data-primary="docstrings" data-secondary="object classes" id="id2790"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="classes, docstrings" id="id2791"></a><a contenteditable="false" data-type="indexterm" data-primary="classes" data-secondary="docstrings" id="id2792"></a>docstrings to <em>methods</em> of classes (covered in <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a> too), but because, as you’ll learn, these are just <code>def</code> statements nested in <code>class</code> statements, they’re not a special case. For instance, to fetch the docstring of a method function inside a class within a module, you would simply extend the path to go through the class: <code><em>module</em>.<em>class</em>.<em>method</em>.__doc__</code>. We’ll code an example of method docstrings in <a data-type="xref" href="ch29.html#class_coding_details">Chapter 29</a>.</p>
+
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Docstrings futurism</em>: If you look <a contenteditable="false" data-type="indexterm" data-primary="docstrings" data-secondary="indentation" id="id2793"></a>closely, you’ll notice that multiline docstrings, like that of <code>square</code>, retain their leading <em>indentation</em> as it was in the code. Python 3.13, still on the drawing board as this note is being written, plans to remove leading indentation from docstrings, mostly to save space in bytecode files and memory. Even before this mod, though, you won’t normally see the indents in docs, because tools like Pydoc already strip and reformat, as <a contenteditable="false" data-type="indexterm" data-primary="docstrings" data-secondary="user-defined" data-startref="dcsudf" id="id2794"></a><a contenteditable="false" data-type="indexterm" data-primary="user-defined docstrings" data-startref="usdfdcg" id="id2795"></a>you’ll learn shortly.</p>
+</div>
+</div></section>
+
+<section data-type="sect3" data-pdf-bookmark="Docstring standards"><div class="sect3" id="docstring_standards">
+<h3>Docstring standards</h3>
+
+<p>As mentioned earlier, common <a contenteditable="false" data-type="indexterm" data-primary="docstrings" data-secondary="standards" id="id2796"></a>practice today recommends hash-mark comments for only smaller-scale documentation about an expression, statement, or small group of statements. Docstrings are better used for higher-level and broader functional documentation for a file, function, or class, and have become an expected part of Python software. Beyond these guidelines, though, you still must decide what to write.</p>
+
+<p>Although some companies have internal standards, there is no broad consensus about what should go into the text of a docstring. There have been various markup language and template proposals, including HTML, but they don’t seem to have caught on in the Python world. Frankly, convincing programmers to document their work using handcoded HTML probably won’t happen in our lifetimes, but this shouldn’t apply to documentation in general.</p>
+
+<p>Documentation tends to have a <a contenteditable="false" data-type="indexterm" data-primary="documentation" data-secondary="priorities" id="id2797"></a>lower priority than it should. Too often, if you get any docs in a file at all, you count yourself lucky (and even better if they’re accurate and up to date). While technically optional, documentation is a crucial part of well-written programs, and you’re encouraged to comment your code liberally. When you do, though, there is no standard docstring format; if you want to use them, anything goes today. Just as for writing code itself, it’s up to you to create docstring content and keep it up to date, but common sense is probably your best ally in both tasks.</p>
+</div></section>
+
+<section data-type="sect3" data-pdf-bookmark="Built-in docstrings"><div class="sect3" id="built_in_docstrings">
+<h3>Built-in docstrings</h3>
+
+<p>While it’s important to document <a contenteditable="false" data-type="indexterm" data-primary="docstrings" data-secondary="built-in" id="docbltn"></a><a contenteditable="false" data-type="indexterm" data-primary="built-in docstrings" id="bltdcstr"></a>our own code, it turns out that built-in modules and objects in Python use similar techniques to attach documentation above and beyond the attribute lists returned by <code>dir</code>. For example, to view a human-readable description of a built-in module, import it and print its <code>__doc__</code> string—as we did for our own code:</p>
+
+<pre data-type="programlisting">
+&gt;&gt;&gt; <code><strong>import sys</strong></code>
+&gt;&gt;&gt; <code><strong>print(sys.__doc__)</strong></code>
+This module provides access to some objects used or maintained by the
+interpreter and to functions that interact strongly with the interpreter.
+
+Dynamic objects:
+
+argv -- command line arguments; argv[0] is the script pathname if known
+path -- module search path; path[0] is the script directory, else ''
+modules -- dictionary of loaded modules 
+…<code><em>more text omitted</em></code>…</pre>
+
+<p>For finer-grained details, functions, classes, and methods within built-in modules have attached descriptions in their <code>__doc__</code> attributes as well:</p>
+
+<pre data-type="programlisting">
+&gt;&gt;&gt; <code><strong>print(sys.getrefcount.__doc__)</strong></code>
+Return the reference count of object.
+The count returned is generally one higher than you might expect,
+because it includes the (temporary) reference as an argument to
+getrefcount().</pre>
+
+<p>You can also read about built-in functions via their docstrings:</p>
+
+<pre data-type="programlisting">
+&gt;&gt;&gt; <code><strong>print(map.__doc__)</strong></code>
+map(func, *iterables) --&gt; map object
+Make an iterator that computes the function using arguments from
+each of the iterables.  Stops when the shortest iterable is exhausted.</pre>
+
+<p>In fact, you can get a wealth of information about built-in tools by inspecting their docstrings this <span class="keep-together">way—but</span> you don’t have to. The Python <code>help</code> function largely automates <a contenteditable="false" data-type="indexterm" data-primary="docstrings" data-secondary="built-in" data-startref="docbltn" id="id2798"></a><a contenteditable="false" data-type="indexterm" data-primary="built-in docstrings" data-startref="bltdcstr" id="id2799"></a>this for you, as the next section will explain.</p>
+</div></section>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Pydoc: The help Function"><div class="sect2" id="pydoc_the_help_function">
+<h2>Pydoc: The help Function</h2>
+
+<p>The docstring technique proved to be so useful that Python eventually added a tool that makes docstrings even easier to display. Namely, <em>Pydoc</em> is Python code that knows how to extract docstrings and associated structural information and format them into nicely arranged reports of various types. Additional tools for extracting and formatting docstrings are available in the open source domain (including third-party tools that may support structured text—search the Web for pointers), but Python ships with Pydoc in its always-present standard library.</p>
+
+<p>There are a variety of ways to launch Pydoc, but the two most prominent are the built-in <code>help</code> function and the Pydoc browser-based interface. Of these, <code>help</code> may be the most straightforward to use and is always available in a REPL.</p>
+
+<p>We met <code>help</code> briefly in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>. It invokes Pydoc to generate a simple plain-text report for any Python object. In this mode, help text looks much like a “manpage” on Unix-like systems. In fact, outside GUIs like IDLE, help text works the same way as a Unix “more” when there are multiple pages of text—press the space bar to move to the next page, Enter (or your keyboard’s equivalent) to go to the next line, and Q to quit the display. GUIs generally scroll help text instead. Let’s turn to a few examples to see how this works.</p>
+
+<section data-type="sect3" data-pdf-bookmark="Running help on built-in tools"><div class="sect3" id="running_help_on_built_in_tools">
+<h3>Running help on built-in tools</h3>
+
+<p>Because built-in tools come with the <a contenteditable="false" data-type="indexterm" data-primary="Pydoc" data-secondary="built-in tools" id="pydblt"></a>docstrings we saw earlier, <code>help</code> gives us a level of reference docs for Python, midway between <code>dir</code> lists and the full manuals. Here it is live, reporting on a standard-library module’s function:</p>
+
+<pre data-type="programlisting">
+&gt;&gt;&gt; <code><strong>import sys</strong></code>
+&gt;&gt;&gt; <code><strong>help(sys.getrefcount)</strong></code>
+Help on built-in function getrefcount in module sys:
+
+getrefcount(object, /)
+    Return the reference count of object.
+
+    The count returned is generally one higher than you might expect,
+    because it includes the (temporary) reference as an argument to
+    getrefcount().</pre>
+
+<p>You do not have to import <code>sys</code> in order to call <code>help</code>, but you generally have to import <code>sys</code> to get help on <code>sys</code> this way, because <code>help</code> expects an object reference to be passed in. Alternatively, you can also get help for a module you have not imported by quoting the module’s name as a string. For example, <code>help('sys')</code> and <code>help('sys.getrefcount')</code> both work too, without the import step.</p>
+
+<p class="pagebreak-before">For larger objects such as modules and classes, the <code>help</code> display is broken down into multiple sections, the preambles of which are shown here. Run this interactively to see the full report:</p>
+
+<pre data-type="programlisting">
+&gt;&gt;&gt; <code><strong>help(sys)</strong></code>
+Help on built-in module sys:
+
+NAME
+    sys
+
+MODULE REFERENCE
+    https://docs.python.org/3.12/library/sys.html
+    …<code><em>more omitted</em></code>…
+
+DESCRIPTION
+    This module provides access to some objects used or maintained by the
+    …<code><em>more omitted</em></code>…
+
+SUBMODULES
+    monitoring
+
+FUNCTIONS
+    __breakpointhook__ = breakpointhook(...)
+    …<code><em>more omitted</em></code>…
+
+DATA
+    __stderr__ = &lt;_io.TextIOWrapper name='&lt;stderr&gt;' mode='w' encoding='utf...
+    …<code><em>more omitted</em></code>…
+
+FILE
+    (built-in)</pre>
+
+<p>Some of the information in this report is docstrings, and some of it (e.g., function call patterns) is structural information that Pydoc gleans automatically by inspecting objects’ internals using tools available to your code too.</p>
+
+<p>Besides modules, you can also use <code>help</code> on built-in functions, methods, and types. To get help for a built-in type, try either the type name (e.g., <code>dict</code> for dictionary or <code>str</code> for string); an actual object of the type (e.g., <code>{}</code> or <code>''</code>); or a method of an actual object or type name (e.g., <code>'s'.join</code> or<code> str.join</code> ).<sup><a data-type="noteref" id="ch15fn1-marker" href="ch15.html#ch15fn1">1</a></sup> For an entire type, you’ll get a large display that describes all the methods available for that type; for a method, the help is more focused:</p>
+
+<pre data-type="programlisting">
+&gt;&gt;&gt; <code><strong>help(dict)</strong></code>
+Help on class dict in module builtins:
+class dict(object)
+ |  dict() -&gt; new empty dictionary
+ |  dict(mapping) -&gt; new dictionary initialized from a mapping object's
+ |  …<code><em>more omitted</em></code>…
+
+&gt;&gt;&gt; <code><strong>help(str.replace)</strong></code>
+Help on method_descriptor:
+replace(self, old, new, count=-1, /)
+    Return a copy with all occurrences of substring old replaced by new.
+    …<code><em>more omitted</em></code>…
+
+&gt;&gt;&gt; <code><strong>help(''.replace)</strong></code>
+Help on built-in function replace:
+
+replace(old, new, count=-1, /) method of builtins.str instance
+    Return a copy with all occurrences of substring old replaced by new.
+    …<code><em>more omitted</em></code>…
+
+&gt;&gt;&gt; <code><strong>help(ord)</strong></code>
+Help on built-in function ord in module builtins:
+ord(c, /)
+    Return the Unicode code point for a one-character string.</pre>
+
+<p>The “/” in function docs means that arguments before it must be passed by <em>position only</em> (not by name), but this is substantially above this chapter’s pay grade. See the next part of this <a contenteditable="false" data-type="indexterm" data-primary="Pydoc" data-secondary="built-in tools" data-startref="pydblt" id="id2800"></a>book for details on this function syntax.</p>
+</div></section>
+
+<section data-type="sect3" data-pdf-bookmark="Running help on your own code"><div class="sect3" id="running_help_on_your_own_code">
+<h3>Running help on your own code</h3>
+
+<p>Finally, the <code>help</code> function <a contenteditable="false" data-type="indexterm" data-primary="Pydoc" data-secondary="modules" id="pydmodu"></a>works just as well on your modules as it does on built-ins. Here it is reporting on components defined in the <em>docstrings.py</em> file we coded earlier in <a data-type="xref" href="#example_onefive_onedot_docstringsdotpy">Example 15-1</a>. Again, some of this is our docstrings, and some is information automatically extracted by inspecting objects’ structures:</p>
+
+<pre data-type="programlisting">
+&gt;&gt;&gt; <code><strong>import docstrings</strong></code>
+&gt;&gt;&gt; <code><strong>help(docstrings.square)</strong></code>
+Help on function square in module docstrings:
+square(x)
+    Function documentation
+    Returns the \square\ of its \numeric\ argument.
+
+&gt;&gt;&gt; <code><strong>help(docstrings.PartVI)</strong></code>
+Help on class PartVI in module docstrings:
+class PartVI(builtins.object)
+ |  Class documentation for <img src="assets/snake_1f40d.png" width="160" height="160"/> <img src="assets/thumbs-up_1f44d.png" width="160" height="160"/>
+ |
+ |  Data descriptors defined here:
+ |  …<code><em>more omitted</em></code>…</pre>
+
+<p>And asking for help on the entire module collects all parts at once, with your docstrings in the mix:</p>
+
+<pre data-type="programlisting">
+&gt;&gt;&gt; <code><strong>help(docstrings)</strong></code>
+Help on module docstrings:
+NAME
+    docstrings
+
+DESCRIPTION
+    Module documentation
+    This module defines a name, function and class.
+
+CLASSES
+    builtins.object
+        PartVI
+
+    class PartVI(builtins.object)
+     |  Class documentation for <img src="assets/snake_1f40d.png" width="160" height="160"/> <img src="assets/thumbs-up_1f44d.png" width="160" height="160"/>
+     |
+     |  Data descriptors defined here:
+     |  …<code><em>more omitted</em></code>…
+
+FUNCTIONS
+    square(x)
+        Function documentation
+        Returns the \square\ of its \numeric\ argument.
+
+DATA
+    edition = 6
+
+FILE
+    /Users/me/MY-STUFF/Books/Dev/6E/LP6E/LP6E/Examples/Chapter15/docstrings.py</pre>
+
+<p>If you look closely, you’ll notice that we didn’t get our file’s printed output on <code>import</code> this time, just because it was imported earlier; as noted in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a>, imports run just once per file per <a contenteditable="false" data-type="indexterm" data-primary="Pydoc" data-secondary="modules" data-startref="pydmodu" id="id2801"></a>session (more in <a data-type="xref" href="part05.html#modules_and_packages">Part V</a>).</p>
+</div></section>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Pydoc: HTML Reports"><div class="sect2" id="pydoc_html_reports">
+<h2>Pydoc: HTML Reports</h2>
+
+<p>The text displays of the <code>help</code> function are adequate in many contexts, especially at the interactive prompt. To readers who’ve grown accustomed to richer presentation mediums, though, they may seem a bit rudimentary. This section presents the HTML-based flavor of Pydoc, which renders module documentation more graphically for viewing in a web browser, and can even open one automatically for you. This browser interface scheme combines both search and display in a web page that communicates with an automatically started local server.</p>
+
+<section data-type="sect3" data-pdf-bookmark="Using Pydoc’s browser interface"><div class="sect3" id="using_pydocapostrophes_browser_interfac">
+<h3>Using Pydoc’s browser interface</h3>
+
+<p>To view docs in a browser, you’ll <a contenteditable="false" data-type="indexterm" data-primary="Pydoc" data-secondary="browser mode" id="pydbrwm"></a>usually launch Pydoc’s main script with a <code>pydoc -b</code> command line. This spawns two components running locally on your device: a documentation <em>server</em>, and a web-browser <em>client</em> that provides both page display and search input for content fetched from the server. A command line like the following starts the show:</p>
+
+<pre data-type="programlisting">
+$ <code><strong>python3 -m pydoc -b</strong></code>
+Server ready at http://localhost:53965/
+Server commands: [b]rowser, [q]uit
+server&gt; <code><strong>q</strong></code></pre>
+
+<p>This command works on all PCs; it’s known to also work on Android devices in the Pydroid 3 app’s Terminal, but is spotty on phones in general. It uses the Python <code>–m</code> argument to locate Pydoc’s <em>module</em> file on the module-import search path (covered in <a data-type="xref" href="part05.html#modules_and_packages">Part V</a> of this book), and run it as a top-level script. Per <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a> and <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a>, use <code>py</code> instead of <code>python3</code> in this command on Windows. On macOS and Linux, a <code>pydoc3 -b</code> command has the same effect, and on Windows the “Module Docs” entry in Python’s <em>Start</em> menu automatically runs Pydoc’s <code>-b</code> mode.</p>
+
+<p>However you start it, Pydoc’s browser mode opens with its index page, captured in <a data-type="xref" href="#the_top_level_index_start_page_of_the_p">Figure 15-1</a>. The index page lists all the modules available for imports and includes search boxes (e.g., Get loads a named module’s docs), as well as topic guides and reserved-word info. You’ll see links to the docs of every module on your module search path, including the directory where Pydoc is launched. Pydoc’s server runs on the local host and on a dedicated but by default arbitrary unused port, but this can be tailored; launch Pydoc without <code>-b</code> for more options.</p>
+
+<figure><div id="the_top_level_index_start_page_of_the_p" class="figure"><img alt="" src="assets/lpy6_1501.png" width="1606" height="1592"/>
+<h6><span class="label">Figure 15-1. </span>The top-level index start page of the Pydoc browser interface</h6>
+</div></figure>
+
+<p>When you click or tap on a module’s <a contenteditable="false" data-type="indexterm" data-primary="Pydoc" data-secondary="module-index page" id="id2802"></a>entry in Pydoc’s module-index page (or enter its name in Get), you get a page of docs for that module alone—which is essentially the same info that <code>help</code> provides in an interactive REPL, but formatted for display in your browser. <a data-type="xref" href="#pydoc_browser_interface_displaying_a_us">Figure 15-2</a>, for example, shows the page we get for the <em>docstrings</em> module we coded earlier in <a data-type="xref" href="#example_onefive_onedot_docstringsdotpy">Example 15-1</a>. It’s the same report created for <code>help(docstrings)</code> with a simple HTML layout.</p>
+
+<figure><div id="pydoc_browser_interface_displaying_a_us" class="figure"><img alt="" src="assets/lpy6_1502.png" width="1593" height="1560"/>
+<h6><span class="label">Figure 15-2. </span>Pydoc browser interface displaying a user-defined module’s docs</h6>
+</div></figure>
+
+<p>Experiment with Pydoc on your <a contenteditable="false" data-type="indexterm" data-primary="Pydoc" data-secondary="browser mode" data-startref="pydbrwm" id="id2803"></a>own for more insight. It’s an optional tool, but provides extra docs for both built-in tools provided by Python, as well as docstring-loaded code files that you write yourself.</p>
+</div></section>
+
+<section data-type="sect3" data-pdf-bookmark="Customizing Pydoc"><div class="sect3" id="customizing_pydoc">
+<h3>Customizing Pydoc</h3>
+
+<p>If you run this live, your Pydoc will probably look different than the screenshots in the book, because colors were customized on the machine used to capture the images. Though this is entirely optional and requires some web-development knowledge, you can customize Pydoc’s appearance, too, by editing the simple CSS file it uses to render its pages. To modify colors, edit file <em>_pydoc.css</em> stored in the <em>pydoc_data</em> folder alongside Pydoc’s module—which you can locate on any platform by importing Pydoc’s module and inspecting its <code>__file__</code> attribute:</p>
+
+<pre data-type="programlisting">
+$ <code><strong>python3 -c "import pydoc; print(pydoc.__file__)"</strong></code>
+…<code><em>foldepath</em></code>…/pydoc.py
+
+$ <code><strong>ls …</strong><em>foldepath</em><strong>…/pydoc_data</strong></code>          <code><em># Pydoc's CSS customization file is in here</em></code>
+__init__.py        topics.py
+__pycache__        <code><strong>_pydoc.css</strong></code></pre>
+
+<p>On Windows, use <code>py</code> and <code>dir</code> instead of <code>python3</code> and <code>ls</code>. This uses the Python <code>-c</code> command-line argument to submit code to be run as a string, which is handy for short bits of one-off code like this; here, the two statements separated by a semicolon run the same as they would if they were typed one at a time at a REPL’s <code>&gt;&gt;&gt;</code> prompt.</p>
+
+<p>You can also find the path to Pydoc by running <code>help('pydoc')</code>: its path shows up at the bottom of the display. Once you’ve located the CSS file, edit it to customize as you like (but save the original first as a fallback). As an example, this book’s captures use RGB color string <code>#173166</code> for <code>index-decor</code>. All of which assumes CSS skills beyond this book’s scope (plus an undocumented config file that’s prone to change or vanish in the future!), but is probably enough to get you started if you want to have a go.</p>
+</div></section>
+
+<section data-type="sect3" data-pdf-bookmark="More Pydoc tips"><div class="sect3" id="more_pydoc_tips">
+<h3>More Pydoc tips</h3>
+
+<p>Pydoc works by <em>importing</em> selected files to extract their documentation. This has two usage implications. First, Pydoc can access only files in folders included on the module <em>search path</em> used by imports. This path automatically includes Python’s <a contenteditable="false" data-type="indexterm" data-primary="Pydoc" data-secondary="imported modules" id="id2804"></a>standard library, so you can view docs for all built-in modules. It also includes the current working directory—the folder from which Pydoc was started—but that may be meaningless when started from a Windows Start button. Change your <code>PYTHONPATH</code> setting to include other code folders as needed, per <a data-type="xref" href="app01.html#appendix_a_platform_usage_tips">Appendix A</a>.</p>
+
+<p>Second, although Pydoc can render docs for both importable <em>modules</em> and runnable <em>scripts</em> in accessible folders, script docs comes with a catch: when a file is selected for help, Pydoc must import it in order to collect its documentation, and as we learned in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a>, importing <em>runs</em> a file’s top-level code. Hence, script help implies a script run.</p>
+
+<p>Imported modules normally just define tools when run, so this is usually irrelevant. If you ask for the documentation of a top-level script file, though, the script will be run, and the console window where you launched Pydoc serves as the script’s standard input and output for any user interaction. This may work better for some scripts and modes than others; script IO may appear before or after help is dismissed in console mode, before help is scrolled in a GUI like IDLE, or interleaved oddly with Pydoc’s own server-command prompts in browser mode.</p>
+
+<p>Later in the book you’ll learn ways to code top-level logic that’s kicked off only when a file is run, not when it is imported (e.g., by nesting it under a test for variable <code>__name__</code> being <code>'__main__'</code>). If scripts use these protocols, they’re safe to view in Pydoc, because it won’t run any top-level code as an inadvertent side effect of viewing docs.</p>
+
+<p>Finally, Pydoc has additional tools we’ll skip here for space, including a <code>-w</code> switch for saving HTML docs to a file for later viewing, and a <em>plain-text</em> mode run from a command line with just a topic name that works the same as <code>help</code> in a REPL. Again, run Pydoc without any command-line arguments for its full set of options.</p>
+
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Blast from the past</em>: Pydoc once had a simple GUI mode, invoked by flag <code>-g</code>, that launched a <code>tkinter</code> GUI client that communicated with the server. This was available until Python 3.2, when the current browser-only mode was deemed sufficient to warrant dropping the longstanding GUI mode in full. Browsers are GUIs too, of course, and the CSS configuration scheme for Pydoc that arose with the browser mode assumes extra web-development knowledge that many Python users won’t have. In open source, those with time and desire to change things define the future for everyone.</p>
+</div>
+</div></section>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Beyond Docstrings: Sphinx"><div class="sect2" id="beyond_docstrings_sphinx">
+<h2>Beyond Docstrings: Sphinx</h2>
+
+<p>If you’re looking for a way to <a contenteditable="false" data-type="indexterm" data-primary="documentation" data-secondary="Sphinx" id="id2805"></a><a contenteditable="false" data-type="indexterm" data-primary="Sphinx" id="id2806"></a>document your Python programs in a more sophisticated way, you may wish to check out <em>Sphinx</em>—a documentation generator system used to create Python’s standard manuals described in the next section, as well as docs for many other software projects. It uses simple <span class="keep-together"><em>reStructuredText</em></span> as <a contenteditable="false" data-type="indexterm" data-primary="reStructuredText markup language" id="id2807"></a>its markup language and inherits much from the <em>Docutils</em> suite of parsing and translating tools.</p>
+
+<p>Among other things, Sphinx supports a variety of output formats, automatic cross-references and indexes, <a contenteditable="false" data-type="indexterm" data-primary="Pygments" id="id2808"></a>and automatic code highlighting (colorization) using <em>Pygments</em>, which is itself a noteworthy Python tool. This is probably overkill for smaller programs where docstrings and <code>help</code> may suffice, but can yield higher-grade documentation for larger projects. See the web for more details on Sphinx, its related tools, and other options in the docs domain.</p>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="The Standard Manuals"><div class="sect2" id="the_standard_manuals">
+<h2>The Standard Manuals</h2>
+
+<p>As you know by now, this book is a <em>tutorial</em> that teaches by example. While its index and table of <a contenteditable="false" data-type="indexterm" data-primary="standard manuals" id="stddm"></a><a contenteditable="false" data-type="indexterm" data-primary="manuals, standard" id="mansddm"></a>contents can be used to hunt for random topics after the fact, it’s mainly designed to be read, not to serve as a reference resource. Given that, you’ll probably want to supplement this book with reference tools once you move on to real projects.</p>
+
+<p>Among these, Python’s <em>standard manuals</em> may provide the most complete and up-to-date reference to the language and its toolset. You can easily view these manuals online with the Documentation link at Python’s <a href="http://www.python.org/">website</a>. They can also be viewed via the “Manuals” entry in Python’s entry in the Start menu on Windows, and can be opened from “Python Docs” in the Help menu within the IDLE coding GUI. See your toolset for other access options.</p>
+
+<p>When first opened, the manuals display a root page with a search box, like that captured in <a data-type="xref" href="#pythonapostrophes_standard_manualscomma">Figure 15-3</a>. The two most important entries here are most likely the “Library reference” (which documents built-in types, functions, exceptions, and standard-library modules) and the “Language reference” (which provides a formal description of language-level details). Both will probably be regular companions once you start coding Python in earnest.</p>
+
+<p>Also of notable interest, the “What’s new” documents in this standard manual set chronicle Python changes made in each release beginning with Python 2.0, which came out in late 2000—useful for those porting older Python code, or older Python skills. These documents are also useful for uncovering additional details on the differences in the Python 2.X and 3.X language lines, as well as recent Python 3.X changes covered in this book.</p>
+
+<p>For both better and worse, change has been a constant in Python since its 0.X days. While the future is impossible to predict, the standard manuals’ “What’s new” docs will also cover Python mods almost certain to arise after this book’s release. It’s nearly required reading for anyone working downstream of a perpetually morphing sandbox.</p>
+
+<figure><div id="pythonapostrophes_standard_manualscomma" class="figure"><img alt="" src="assets/lpy6_1503.png" width="1424" height="1482"/>
+<h6><span class="label">Figure 15-3. </span>Python’s standard manuals, available on the web and elsewhere</h6>
+</div></figure>
+</div></section>
+
+<section data-type="sect2" data-pdf-bookmark="Web Resources"><div class="sect2" id="web_resources">
+<h2>Web Resources</h2>
+
+<p>Finally, besides the standard manuals, Python’s <a href="http://www.python.org/">website</a> also hosts additional resources, some of which cover special topics or domains, including non-English Python resources <a contenteditable="false" data-type="indexterm" data-primary="standard manuals" data-startref="stddm" id="id2809"></a><a contenteditable="false" data-type="indexterm" data-primary="manuals, standard" data-startref="mansddm" id="id2810"></a>and introductions scaled to different target audiences.</p>
+
+<p>Today you will also find a multitude of Python blogs, websites, wikis, and other resources on the web at large. Given the explosion of the web in recent decades, some online resources are naturally more authoritative and reliable than others, and some are sadly geared more toward monetization than education. This word of caution includes AI chatbots, which can only do as well as the data they’re fed and paraphrase, and are not a replacement for the deep learning needed to work in software.</p>
+
+<p>That said, there’s a wealth of Python material out there to be had—for those willing to exercise the prudence and skepticism that today’s web demands.</p>
+</div></section>
+</div></section>
+
+<section data-type="sect1" data-pdf-bookmark="Common Coding Gotchas"><div class="sect1" id="common_coding_gotchas">
+<h1>Common Coding Gotchas</h1>
+
+<p>Before the programming exercises for this part of the book, let’s run through some of the most common mistakes beginners make when coding Python statements and programs. Many of these <a contenteditable="false" data-type="indexterm" data-primary="coding gotchas" id="codtps"></a>are warnings issued earlier in this part of the book, collected here for ease of reference. You’ll learn to avoid these pitfalls once you’ve gained a bit of Python coding experience, but a few words now might help you avoid falling into some of these traps initially:</p>
+
+<ul>
+	<li>
+	<p><strong>Don’t forget the colons.</strong> Always remember to type a <code>:</code> at the end of compound <a contenteditable="false" data-type="indexterm" data-primary="colons" data-secondary="compound statement headers" id="id2811"></a>statement headers—the first line of an <code>if</code>, <code>match</code>, <code>while</code>, <code>for</code>, etc. You’ll probably forget at first (as have thousands of Python students over the years), but you can take some comfort from the fact that it will soon become an unconscious habit.</p>
+	</li>
+	<li>
+	<p><strong>Start in column 1.</strong> Be sure to start top-level (unnested) code in column 1. That includes unnested code typed into module files, as well as unnested code typed at the interactive prompt (a.k.a. REPL). Indented means nested in Python, so it doesn’t work at the top.</p>
+	</li>
+	<li>
+	<p><strong>Blank lines matter at <a contenteditable="false" data-type="indexterm" data-primary="blank lines" id="id2812"></a>the interactive prompt.</strong> Blank lines in compound statements are always irrelevant and ignored in module files, but when you’re typing code at the interactive prompt, they end the statement. In other words, blank lines tell the interactive REPL that you’ve finished a compound statement; if you want to continue, don’t hit the <code>Enter</code> key at the <code>...</code> prompt (if shown) until you’re really done. This also means you can’t paste multiline code at this prompt; it must run one full statement at a time, with blank lines as needed.</p>
+	</li>
+	<li>
+	<p><strong>Indent consistently.</strong> Avoid <a contenteditable="false" data-type="indexterm" data-primary="indentation" data-secondary="consistency" id="id2813"></a>mixing tabs and spaces in the indentation of a nested block. Otherwise, what you see in your editor may not be what Python sees when it counts tabs as a number of spaces. This is true in any block-structured language, not just Python—if the next programmer has tabs set differently, it will be difficult or impossible to understand the structure of your code. It’s safer to use all tabs or all spaces for each block.</p>
+	</li>
+	<li>
+	<p><strong>Don’t code C in Python.</strong> A reminder for C/C++ programmers: you don’t need to type parentheses around tests in <code>if</code> and <code>while</code> headers (e.g., <code>if (X==1)</code>). You <a contenteditable="false" data-type="indexterm" data-primary="parentheses" id="id2814"></a>can if you like (any expression can be enclosed in parentheses), but they are fully superfluous in this context. Also, do not terminate all your statements with semicolons; it’s technically legal to do this in Python as well, but it’s totally useless unless you’re placing more than one statement on a single line (the end of a line normally terminates a statement). And remember, don’t use <code>{}</code> around blocks (indent your nested code blocks consistently instead), and avoid embedding assignment statements in <code>while</code> loop tests unless they’re simple (even though Python now enables this with <code>:=</code>).</p>
+	</li>
+	<li>
+	<p><strong>Use simple</strong> <code><strong>for</strong></code> <strong>loops instead of</strong> <code><strong>while</strong></code> <strong>or</strong> <code><strong>range</strong></code>. Another <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="for loops" id="id2815"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="tips" id="id2816"></a>reminder: a simple <code>for</code> loop (e.g., <code>for x in y</code>) is almost always simpler to code and often quicker to run than a <code>while</code>- or <code>range</code>-based counter loop. Avoid the temptation to count things in Python; though occasionally required, it’s usually subpar.</p>
+	</li>
+	<li>
+	<p><strong>Beware of mutables in <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="mutables" id="id2817"></a><a contenteditable="false" data-type="indexterm" data-primary="mutables, assignments" id="id2818"></a>assignments.</strong> As cautioned before, be careful about using mutables in a multiple-target assignment (<code>a = b = []</code>), as well as in an augmented assignment (<code>a += [1, 2]</code>). In both cases, in-place changes may impact other variables. See <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a> for details if you’ve forgotten why this is true.</p>
+	</li>
+	<li>
+	<p><strong>Don’t expect results from functions that change objects in place.</strong> We encountered this nag earlier, too: in-place change operations like the <code>list.append</code> and <code>list.sort</code> methods presented in <a data-type="xref" href="ch08.html#lists_and_dictionaries">Chapter 8</a> do not return values (other than <code>None</code>), so you should call them without assigning the result. It’s not uncommon for beginners to say something like <code>mylist = mylist.append(X)</code> to try to get the result of an <code>append</code>, but this assigns <code>mylist</code> to <code>None</code>, not to the modified list (in fact, you’ll lose your reference to the list altogether).</p>
+	</li>
+	<li>
+	<p><strong>Always use parentheses to <a contenteditable="false" data-type="indexterm" data-primary="parentheses" data-secondary="function calls" id="id2819"></a><a contenteditable="false" data-type="indexterm" data-primary="function calls" data-secondary="parentheses" id="id2820"></a>call a function.</strong> You must add parentheses after a function name to call it, whether it takes arguments or not (e.g., use <code>function()</code>, not <code>function</code>). In the next part of this book, you’ll learn that functions are simply objects that have a special operation—a call that you trigger with the parentheses—but they can be referenced like any other object without triggering a call. This often crops up with files; it’s common for beginners to type <code>file.close</code> to close a file, rather than <code>file.close()</code>. Because it’s legal to reference a function without calling it, the first version succeeds silently, but it does not close the file.</p>
+	</li>
+	<li>
+	<p><strong>Don’t use extensions <a contenteditable="false" data-type="indexterm" data-primary="file extensions, imports" id="id2821"></a>or paths in imports and reloads.</strong> Omit directory paths and file extensions in <code>import</code> statements—say <code>import mod</code>, not <code>import mod.py</code>. We discussed module basics in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a> and will continue studying modules in <a data-type="xref" href="part05.html#modules_and_packages">Part V</a>. Because modules may have other extensions besides <em>.py</em> (e.g., <em>.pyc</em> for bytecode), hardcoding a particular extension is not only invalid syntax; it doesn’t make sense. Python picks an extension automatically, and any platform-specific directory path syntax comes from module search path settings, not the <code>import</code> statement. Until we explore this in more depth, use just a simple name in imports.</p>
+	</li>
+	<li>
+	<p><strong>And other pitfalls in other parts.</strong> Be sure to also see the built-in type warnings at the end of <a data-type="xref" href="part02.html#objects_and_operations">Part II</a>, as they may qualify as coding issues too. There are additional “gotchas” that crop up commonly in Python coding—losing a built-in function by reassigning its name, hiding a library module by using its name for one of your own, changing mutable argument defaults, and so on—but we don’t have enough background to cover them yet. To learn more about both what you should and shouldn’t do in Python, you’ll have <a contenteditable="false" data-type="indexterm" data-primary="coding gotchas" data-startref="codtps" id="id2822"></a>to read on; later parts extend the set of “gotchas” and fixes we’ve enumerated here.</p>
+	</li>
+</ul>
+</div></section>
+
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00025">
+<h1>Chapter Summary</h1>
+
+<p>This chapter toured documentation—both documentation we write ourselves in our own programs, and documentation available for tools we use. We met docstrings, explored reference resources for Python, and learned how Pydoc’s <code>help</code> function and browser-based interfaces provide extra sources of documentation. Because this is the last chapter in this part of the book, we also reviewed common coding mistakes to help you avoid them.</p>
+
+<p>In the next part of this book, we’ll start applying what we already know to larger program constructs. Specifically, the next part takes up the topic of <em>functions</em>—a tool used to group statements for reuse. Before moving on, however, be sure to work through the set of lab exercises for this part of the book that appear at the end of this chapter. And even before that, let’s run through this chapter’s quiz to review.</p>
+</div></section>
+
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000151">
+<h1>Test Your Knowledge: Quiz</h1>
+
+<ol>
+	<li>
+	<p>When should you use documentation strings instead of hash-mark comments?</p>
+	</li>
+	<li>
+	<p>Name three ways you can view documentation strings.</p>
+	</li>
+	<li>
+	<p>How can you obtain a list of the available attributes in an object?</p>
+	</li>
+	<li>
+	<p>How can you get a list of all importable modules on your computer?</p>
+	</li>
+</ol>
+</div></section>
+
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000150">
+<h1>Test Your Knowledge: Answers</h1>
+
+<ol>
+	<li>
+	<p>Documentation strings (docstrings) are considered best for larger, functional documentation, describing the use of modules, functions, classes, and methods in your code. Hash-mark comments are better limited to smaller-scale documentation about arcane expressions or statements at strategic points on your code. This is partly because docstrings are easier to find in a source file (they have specific locations), but also because they can be extracted and displayed by the Pydoc system.</p>
+	</li>
+	<li>
+	<p>You can see docstrings by printing an object’s <code>__doc__</code> attribute, by passing it to Pydoc’s <code>help</code> function, and by selecting modules in Pydoc’s HTML-based <em>browser</em> interface. The latter is launched with a <code>-b</code> command-line switch, and runs a client/server system that displays documentation in a popped-up web browser. Pydoc can also be run to save a module’s documentation in an HTML file for later viewing or printing.</p>
+	</li>
+	<li>
+	<p>The built-in <code>dir(<em>X</em>)</code> function returns a list of all the attributes attached to any object. A list comprehension like <code>[a for a in dir(<em>X</em>) if not a.startswith('__')]</code> can be used to filter out internals’ names with underscores (you’ll learn how to wrap this in a function in the next part of the book to make it reusable).</p>
+	</li>
+	<li>
+	<p>Because the index page opened for Pydoc’s browser-based <code>-b</code> mode displays every module on your import search path, this shows all the modules available for imports in your programs. This relies on configurable search-path settings that we’ll cover more fully later in this book, but it includes both the current directory and Python’s standard library by default. You can also write code of your own to achieve this using the same tools the Pydoc uses (it’s just Python code, after all), but it’s a significant manual task.</p>
+	</li>
+</ol>
+</div></section>
+
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Part III Exercises"><div class="sect1" id="test_your_knowledge_part_iii_exercises">
+<h1>Test Your Knowledge: Part III Exercises</h1>
+
+<p>Now that you know how to code basic program logic, the following exercises will ask you to implement some simple tasks with statements. Much of the work is in exercise 4, which lets you explore coding alternatives. There are always many ways to arrange statements, and part of learning Python is learning which arrangements work better than others. You’ll eventually gravitate naturally toward what experienced Python programmers call “best practice,” but best practice takes practice.</p>
+
+<p>See <a data-type="xref" href="app02.html#part_iiicomma_statements_and_syntax">“Part III, Statements and Syntax”</a> in <a data-type="xref" href="app02.html#appendix_b_solutions_to_end_of_part_exe">Appendix B</a> for solutions to the following <span class="keep-together">exercises</span>:</p>
+
+<ol>
+	<li>
+	<p><em>Coding basic loops</em>: This exercise <a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="coding" id="id2823"></a>asks you to experiment with <code>for</code> loops.</p>
+
+	<ol type="a">
+		<li>
+		<p>Write a <code>for</code> loop that prints the ASCII code point of each character in a string named <code>S</code>. Use the built-in function <code>ord(<em>character</em>)</code> to convert each character to its integer code point. This function technically returns a Unicode code point that may not fall in ASCII’s range, but if you restrict its content to ASCII characters, you’ll get back ASCII codes. (Test it interactively to see how it works, if needed.)</p>
+		</li>
+		<li>
+		<p>Next, change your loop to compute the <em>sum</em> of the ASCII code points of all the characters in a string.</p>
+		</li>
+		<li>
+		<p>Finally, modify your loop again to return a new list that <em>contains</em> the ASCII code points of each character in the string. Does the expression <code>map(ord, <em>S</em>)</code> have a similar effect? How about <code>[ord(c) for c in S]</code>? Why? (Hint: see <a data-type="xref" href="ch14.html#iterations_and_comprehensions">Chapter 14</a>.)</p>
+		</li>
+	</ol>
+	</li>
+	<li>
+	<p><em>Coding basic selections</em>: Write Python <code>if</code> and <code>match</code> statements that print the first three month names of the year, given their relative numbers. For example, given 1, the output should be January, and for 3, it should be March (or whatever months are named in your locale). Then do the same by coding the choice with both a dictionary-key index and a list-offset index. How would you handle out-of-range month numbers?</p>
+	</li>
+	<li>
+	<p><em>Backslash characters</em>: What happens on <a contenteditable="false" data-type="indexterm" data-primary="backslash characters" id="id2824"></a>your machine when you type the following code <span class="keep-together">interactively?</span></p>
+
+	<pre data-type="programlisting">
+for i in range(50):
+    print(f'hello {i}\a')</pre>
+
+	<p>Beware that if it’s run outside of some interfaces like IDLE, this example may beep at you, so you may not want to run it in a crowded room! IDLE ignores odd characters instead of beeping—spoiling much of the joke (see the backslash escape characters in <a data-type="xref" href="ch07.html#string_backslash_characters">Table 7-2</a>).</p>
+	</li>
+	<li>
+	<p><em>Sorting dictionaries</em>: In <a data-type="xref" href="ch08.html#lists_and_dictionaries">Chapter 8</a>, we <a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="sorting" id="id2825"></a>saw that dictionaries are collections that store keys by <em>insertion</em> order only. Write a <code>for</code> loop that prints a dictionary’s items in sorted (ascending) <em>key/value</em> order. (Hint: store keys in unordered fashion, and use the dictionary <code>keys</code> and list <code>sort</code> methods, or the <code>sorted</code> built-in function.)</p>
+	</li>
+	<li>
+	<p><em>Program logic alternatives</em>: Consider the <a contenteditable="false" data-type="indexterm" data-primary="logic alternatives" id="id2826"></a>following code, which uses a <code>while</code> loop and <code>found</code> flag to search a list of powers of 2 for the value of 2 raised to the fifth power (32). It’s stored in a module file called <em>power.py</em>:</p>
+
+	<pre data-type="programlisting">
+L = [1, 2, 4, 8, 16, 32, 64]
+X = 5
+
+found = False
+i = 0
+while not found and i &lt; len(L):
+   if 2 ** X == L[i]:
+       found = True
+   else:
+       i = i+1
+
+if found:
+    print('at index', i)
+else:
+    print(X, 'not found')
+
+$ <code><strong>python3 power.py</strong></code>
+at index 5</pre>
+
+	<p>As is, the example doesn’t follow normal Python coding techniques. Follow the steps outlined here to improve it (for all the transformations, you may either type your code interactively or store it in a script file run from the system command line or other interface—using a file makes this exercise much easier):</p>
+
+	<ol type="a">
+		<li>
+		<p>First, rewrite this code with a <code>while</code> loop <code>else</code> clause to eliminate the <code>found</code> flag and final <code>if</code> statement.</p>
+		</li>
+		<li>
+		<p>Next, rewrite the example to use a <code>for</code> loop with an <code>else</code> clause, to eliminate the explicit list-indexing logic. (Hint: to get the index of an item, use the list <code>index</code> method—<code>L.index(X)</code> returns the offset of the first <code>X</code> in list <code>L</code>.)</p>
+		</li>
+		<li>
+		<p>Next, remove the loop completely by rewriting the example with a simple <code>in</code> operator membership expression. (See <a data-type="xref" href="ch08.html#lists_and_dictionaries">Chapter 8</a> for more details, or type this to test: <code>2 in [1, 2, 3]</code>.)</p>
+		</li>
+		<li>
+		<p>Finally, use a <code>for</code> loop and the list <code>append</code> method to generate the powers-of-2 list (<code>L</code>) instead of hardcoding a list literal.</p>
+		</li>
+	</ol>
+
+	<p>Deeper thoughts:</p>
+
+	<ol type="a">
+		<li>
+		<p>Do you think it would improve performance to move the <code>2 ** X</code> expression outside the loops? How would you code that?</p>
+		</li>
+		<li>
+		<p>As we saw in exercise 1, Python includes a <code>map(<em>function</em>, <em>iterable</em>)</code> tool that can generate a powers-of-2 list, too: <code>map(lambda x: 2 ** x, range(7))</code>. Try typing this code interactively; you’ll meet <code>lambda</code> more formally in the next part of this book, especially in <a data-type="xref" href="ch19.html#function_odds_and_ends">Chapter 19</a>. Would a list comprehension help here (see <a data-type="xref" href="ch14.html#iterations_and_comprehensions">Chapter 14</a>)? How about a <code>:=</code> expression (see <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>)?</p>
+		</li>
+	</ol>
+	</li>
+</ol>
+</div></section>
+<div data-type="footnotes"><p data-type="footnote" id="ch15fn1"><sup><a href="ch15.html#ch15fn1-marker">1</a></sup> Note that asking for help on an actual <em>string object</em> directly (e.g., <code>help('xyz')</code>) doesn’t work as you may expect: you usually get no help, because strings are interpreted specially—as a request for help on a topic or tool by name, as described earlier. You must use the <code>str</code> type name in this context, though both an empty string (<code>help('')</code>) and string method names referenced through actual objects (<code>help(''.join)</code>) work fine. An <em>interactive</em> help mode, started by typing just <code>help()</code>, avoids manual help calls, and may avoid some of their drama.</p></div></div></section></div>
+</div>
+</body>
+</html>

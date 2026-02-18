@@ -1,0 +1,687 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 14. Iterations and Comprehensions"><div class="chapter" id="iterations_and_comprehensions">
+<h1><span class="label">Chapter 14. </span>Iterations and Comprehensions</h1>
+<p>In the prior chapter, we met Python’s two looping statements, <code>while</code> and <code>for</code>. Although they can handle most repetitive tasks programs need to perform, iterating over collections is so common and pervasive that Python provides additional tools to make it simpler and more efficient. This chapter begins our exploration of these <a contenteditable="false" data-type="indexterm" data-primary="iteration protocol" id="itrtprtc"></a>tools. Specifically, it presents Python’s <em>iteration protocol</em>, a method-call model used by the <code>for</code> loop, and fills in some details on <em>comprehensions</em>, which are a close cousin to the <code>for</code> loop that apply an expression to each item in a collection.</p>
+<p>Because these tools are related to both the <code>for</code> loop and functions, we’ll take a two-pass approach to covering them in this book—along with a postscript:</p>
+<ul>
+<li><p><em>This chapter</em> introduces their basics in the context of looping-based tools, serving as something of a continuation of the prior chapter.</p></li>
+<li><p><a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a> revisits them in the context of function-based tools, and extends the topic to include built-in and user-defined <em>generators</em>.</p></li>
+<li><p><a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a> provides a shorter final installment in this story, which will show us how to code user-defined iterable objects with <em>classes</em>.</p></li>
+</ul>
+<p>One note up front: some of the concepts presented in these chapters may seem advanced at first glance. With practice, though, you’ll find that these tools are useful and natural. Although never strictly required, they’ve also become commonplace in Python code, so a basic understanding can help if you must read programs written by others.</p>
+<section data-type="sect1" class="pagebreak-before" data-pdf-bookmark="Iterations"><div class="sect1" id="iterations">
+<h1 class="less_space">Iterations</h1>
+<p>In the preceding chapter, we learned that <a contenteditable="false" data-type="indexterm" data-primary="iteration" id="id2717"></a>the <code>for</code> loop can work on any sequence type in Python, including lists, tuples, and strings, like this (with blank lines required by REPLs after compound statements omitted for brevity):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for x in [1, 2, 3, 4]: print(x ** 2, end=' ')</strong></code>
+1 4 9 16
+
+&gt;&gt;&gt; <code><strong>for x in (1, 2, 3, 4): print(x ** 3, end=' ')</strong></code>
+1 8 27 64
+
+&gt;&gt;&gt; <code><strong>for x in 'text': print(x * 2, end=' ')</strong></code>
+tt ee xx tt</pre>
+<p>As we’ve also learned, the <code>for</code> loop is even more generic than this—it works on any <em>iterable</em> object. In fact, this is true of all iteration <em>tools</em> that scan objects from left to right in Python, including <code>for</code> loops; comprehensions of all stripes; some <code>in</code> membership tests; the <code>zip</code>,<code> enumerate</code>, and <code>map</code> built-in functions; and more. Any iterable object will do, even nonsequences like dictionaries:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for k in dict(a=1, b=2, c=3): print(k, end=' ')</strong></code>
+a b c</pre>
+<p>The concept of iterable objects was added <a contenteditable="false" data-type="indexterm" data-primary="iterable objects" id="id2718"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="iterable" data-see="iterable objects" id="id2719"></a>to Python after its inception, but it has come to permeate the language’s toolset. It’s essentially a generalization of the notion of sequences—an object is considered <em>iterable</em> if it is either a physically stored sequence or an object that produces one result at a time in the context of an iteration tool like <code>for</code>.</p>
+<p>In a sense, iterable objects include both real sequences and <em>virtual</em> sequences computed on demand. The <a contenteditable="false" data-type="indexterm" data-primary="virtual sequences" id="id2720"></a><a contenteditable="false" data-type="indexterm" data-primary="sequences" data-secondary="virtual sequences" id="id2721"></a>virtual sequences both save memory and avoid delays by producing results one at a time, instead of all at once. These are not true sequences, however: virtual iterables do not support the full range of operations defined for lists and tuples. Rather, they simply materialize a series of values over time and on request.</p>
+<p>Whether an iterable is physical or virtual, it announces its support for iterations by implementing the <em>iteration protocol</em>—a set of callable methods used by all iteration tools, and the subject of the next <span class="keep-together">section</span>.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Terminology moment</em>: The Python world <a contenteditable="false" data-type="indexterm" data-primary="iterable, definition" id="id2722"></a><a contenteditable="false" data-type="indexterm" data-primary="iterators" data-secondary="definition" id="id2723"></a>sometimes uses the terms “iterable” and “iterator” interchangeably (and confusingly!) to refer to an object that supports iteration in general. For clarity, this book uses the term <em>iterable</em> to refer to an object that has the <code>iter</code> call at the top of the protocol we’re about to meet, and <em>iterator</em> to refer to an object that has the <code>next</code> call to produce results.</p>
+<p>That is, an <em>iterable</em> returns an <em>iterator</em> that advances on <code>next</code>. This book also uses the phrase iteration <em>tool</em> for language tools that <em>run</em> an iteration, like <code>for</code> loops and <code>zip</code> calls. <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a> will muddle this jargon with the term <em>generator</em>—which refers to objects that automatically support the iteration protocol, and hence are iterable—even though all iterables generate results!</p>
+</div>
+<section data-type="sect2" data-pdf-bookmark="The Iteration Protocol"><div class="sect2" id="the_iteration_protocol">
+<h2>The Iteration Protocol</h2>
+<p>One of the easiest ways to understand the iteration protocol is to see how it works with a built-in type such as the <em>file</em> object we first explored in <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a>. In this chapter, we’ll be using the following three-line input file as a demo:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>print(open('data.txt').read())</strong></code>
+Testing file IO
+Learning Python, 6E
+Python 3.12
+
+&gt;&gt;&gt; <code><strong>open('data.txt').read()</strong></code>
+'Testing file IO\nLearning Python, 6E\nPython 3.12\n'</pre>
+<p>Recall from <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a> that open file objects have a method called <code>readline</code>, which reads one line of text from a file at a time—each time we call the <code>readline</code> method, we advance to the next line. At the end of the file, an empty string is returned, which we can detect to break out of a line-reading loop (remember, empty means false):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>f = open('data.txt')</strong></code>       <code><em># Read a three-line file in this directory</em></code>
+&gt;&gt;&gt; <code><strong>f.readline()</strong></code>               <code><em># readline loads one line on each call</em></code>
+'Testing file IO\n'
+&gt;&gt;&gt; <code><strong>f.readline()</strong></code>               <code><em># Newlines are \n everywhere in text mode</em></code>
+'Learning Python, 6E\n'
+&gt;&gt;&gt; <code><strong>f.readline()</strong></code>               <code><em># Last lines may have a \n or not</em></code>
+'Python 3.12\n'
+&gt;&gt;&gt; <code><strong>f.readline()</strong></code>               <code><em># Returns empty string at end-of-file</em></code>
+''</pre>
+<p>Files, however, also have a method <a contenteditable="false" data-type="indexterm" data-primary="iteration protocol" data-secondary="StopIteration exception" id="id2724"></a>named <code>__next__</code> that has a nearly identical effect—it returns the next line from a file each time it is called. The only noticeable difference is that <code>__next__</code> raises a built-in <code>StopIteration</code> <em>exception</em> (that is, invokes a signaling event) at end-of-file instead of returning an empty string:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>f = open('data.txt')</strong></code>       <code><em># __next__ loads one line on each call too</em></code>
+&gt;&gt;&gt; <code><strong>f.__next__()</strong></code>               <code><em># But raises an exception at end-of-file</em></code>
+'Testing file IO\n'
+&gt;&gt;&gt; <code><strong>f.__next__()</strong></code>
+'Learning Python, 6E\n'
+&gt;&gt;&gt; <code><strong>f.__next__()</strong></code>
+'Python 3.12\n'
+&gt;&gt;&gt; <code><strong>f.__next__()</strong></code>
+Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+StopIteration</pre>
+<p>And this interface is most of what we call the <em>iteration protocol</em> in Python. Any object with a <code>__next__</code> method to advance to a next result, which raises <code>StopIteration</code> at the end of the series of results, is considered an <em>iterator</em> in Python. Any such object may also be stepped through with a <code>for</code> loop or any other iteration tool, because all iteration tools normally work internally by calling <code>__next__</code> on each iteration and catching the <code>StopIteration</code> exception to know when to exit. As you’ll see in a moment, for some objects the full protocol includes an additional first step to call <code>iter</code>, but this isn’t required for files.</p>
+<p class="pagebreak-before">The upshot of all this magic is that, as mentioned in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch09.html#tuplescomma_filescomma_and_everything_e">9</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch13.html#while_and_for_loops">13</a>, the generally best way to <a contenteditable="false" data-type="indexterm" data-primary="iteration protocol" data-secondary="iteration tools" id="id2725"></a>read a text file line by line today is to <em>not read it at all</em>—instead, allow the <code>for</code> loop to automatically call <code>__next__</code> to advance to the next line on each iteration. The file object’s iterator will do the work of <span class="keep-together">automatically</span> loading lines as you go, both one at a time and efficiently. The following, for example, reads line by line, printing the uppercase version of each line along the way—without ever explicitly reading from the file at all:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for line in open('data.txt'):</strong></code>         <code><em># Use file iterators to read by lines</em></code>
+        <code><strong>print(line.upper(), end='')</strong></code>       <code><em># Calls __next__, catches StopIteration</em></code>
+  
+TESTING FILE IO
+LEARNING PYTHON, 6E
+PYTHON 3.12</pre>
+<p>Notice that the <code>print</code> uses <code>end=''</code> here to suppress adding a <code>\n</code>, because line strings already have one (without this, our output would be double-spaced). This <code>for</code> coding pattern is usually the best way to read text files line by line, for three reasons: it’s the simplest to code, might be the quickest to run, and uses memory space sparingly. Prior to the advent of the iteration protocol in Python, programmers achieved the same effect with a <code>for</code> loop by calling the file <code>readlines</code> method to load the file’s content into memory as a <em>list</em> of line strings:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for line in open('data.txt').readlines():</strong></code>
+        <code><strong>print(line.upper(), end='')</strong></code>
+   
+TESTING FILE IO
+LEARNING PYTHON, 6E
+PYTHON 3.12</pre>
+<p>This <code>readlines</code> technique still <a contenteditable="false" data-type="indexterm" data-primary="iteration protocol" data-secondary="readlines" id="id2726"></a>works, but is not considered the best practice today because it performs poorly in terms of memory usage. In fact, because this version really does load the entire file into memory all at once, it will not even work for files too big to fit into the memory space available on your device. By contrast, the iterator-based version is immune to such memory-explosion issues because it reads just one <em>line</em> at a time. The iterator version might run quicker too, though this can vary per Python release (but see the upcoming note for a few specs).</p>
+<p>As mentioned in the prior chapter’s closing sidebar, <a data-type="xref" href="ch13.html#why_you_will_care_file_scanners">“Why You Will Care: File Scanners”</a>, it’s also possible to read a file line by line with a <code>while</code> loop:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>f = open('data.txt')</strong></code>
+&gt;&gt;&gt; <code><strong>while line := f.readline():</strong></code>
+        <code><strong>print(line.upper(), end='')</strong></code>
+
+TESTING FILE IO
+LEARNING PYTHON, 6E
+PYTHON 3.12</pre>
+<p>However, this may run slower than the iterator-based <code>for</code> loop version because file iterators run at C-language speed inside the standard CPython, whereas the <code>while</code> version must run Python bytecode through the Python virtual machine. Anytime we trade Python code for C code, speed tends to increase. This is not an absolute truth, though; again, we’ll explore timing techniques in <a data-type="xref" href="ch21.html#the_benchmarking_interlude">Chapter 21</a> for measuring the relative speed of alternatives like these, though the following note ruins some of the surprise for the impatient.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Spoiler alert</em>: Per calls to <code>min(timeit.repeat(<em>code</em>, repeat=50, number=10))</code> in CPython 3.12 on macOS, the file iterator is still slightly faster than <code>readlines</code>, which is faster than the <code>while</code> loop. With a 9k-line file and this chapter’s code (using <code>pass</code> for loop bodies), the iterator, <code>readlines</code>, and <code>while</code> alternatives check in at 0.0073, 0.0077, and 0.0102 seconds, respectively. The <code>while</code> is slowest and using <code>:=</code> doesn’t help much (it’s 0.0104 sans <code>:=</code>). For more info, see the examples package and <a data-type="xref" href="ch21.html#the_benchmarking_interlude">Chapter 21</a>. Caveats: your test variables may vary, memory matters too, and 0.0029 seconds may <a contenteditable="false" data-type="indexterm" data-primary="iteration protocol" data-startref="itrtprtc" id="id2727"></a>not be enough to get excited about in some programs.</p>
+</div>
+<section data-type="sect3" data-pdf-bookmark="The iter and next built-ins"><div class="sect3" id="the_iter_and_next_built_ins">
+<h3>The iter and next built-ins</h3>
+<p>To simplify manual iteration code, Python also <a contenteditable="false" data-type="indexterm" data-primary="iteration protocol" data-secondary="iter" id="id2728"></a><a contenteditable="false" data-type="indexterm" data-primary="iteration protocol" data-secondary="next" id="id2729"></a>provides a built-in function, <code>next</code>, that has the same net effect as calling an object’s <code>__next__</code> method. That is, given an iterator object <code><em>X</em></code>, the call <code>next(<em>X</em>)</code> is the same as <code><em>X</em>.__next__()</code>, but is noticeably simpler to type and read (and actually runs slightly faster in CPython 3.12 for tested cases). With files, for instance, either form may be used:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>f = open('data.txt')</strong></code>
+&gt;&gt;&gt; <code><strong>f.__next__()</strong></code>                   <code><em># Call iteration method directly</em></code>
+'Testing file IO\n'
+&gt;&gt;&gt; <code><strong>next(f)</strong></code>                        <code><em># next(f) is the same as f.__next__()</em></code>
+'Learning Python, 6E\n'
+&gt;&gt;&gt; <code><strong>next(f)</strong></code>
+'Python 3.12\n'
+&gt;&gt;&gt; <code><strong>next(f)</strong></code>
+…<code><em>exception text omitted from here on</em></code>…
+StopIteration</pre>
+<p>Technically, there is one more piece to the iteration protocol alluded to earlier. When the <code>for</code> loop begins, it first obtains an <em>iterator</em> from an <em>iterable</em> object, by calling the iterable’s <code>__iter__</code> method. The object returned by this call in turn has the required <code>__next__</code> method to advance. For convenience again, the <code>iter</code> built-in function internally runs the equivalent of the <code>__iter__</code> method, much as <code>next</code> runs the equivalent of <code>__next__</code>.</p>
+<p>Hence, <code>for</code> loops run the internal equivalent of the following, though the <code>iter</code> step is moot and optional for files—they are their own iterators, because files don’t support multiple scans per <code>open</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>f = open('data.txt')</strong></code>
+&gt;&gt;&gt; <code><strong>I = iter(f)</strong></code>                    <code><em># Fetch an iterator from an iterable</em></code>
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>                        <code><em># Fetch the next result from the iterator</em></code>
+'Testing file IO\n'
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>                        <code><em># Files iterables are iterators themselves</em></code>
+'Learning Python, 6E\n'
+…<code><em>etc</em></code>…</pre>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="The full iteration protocol"><div class="sect3" id="the_full_iteration_protocol">
+<h3>The full iteration protocol</h3>
+<p>With all these pieces in place, <a data-type="xref" href="#the_iteration_protocolcomma_used_by_for">Figure 14-1</a> sketches this full iteration protocol, used by <a contenteditable="false" data-type="indexterm" data-primary="iteration protocol" data-secondary="full iteration protocol" id="rtpfll"></a>every iteration tool in Python and supported by a wide variety of object types. It’s based on <em>two objects</em> used in two distinct steps by iteration tools:</p>
+<ul>
+<li><p>The <em>iterable</em> object for which iteration is requested. Calling this object’s <code>__iter__</code> returns an iterator, and is the same as calling <code>iter</code>.</p></li>
+<li><p>The <em>iterator</em> object returned by the iterable. Calling this object’s <code>__next__</code> produces results during the iteration and raises <code>StopIteration</code> when no more results remain, and is the same as calling <code>next</code>.</p></li>
+</ul>
+<figure><div id="the_iteration_protocolcomma_used_by_for" class="figure">
+<img src="assets/lpy6_1401.png" alt="" width="1182" height="798"/>
+<h6><span class="label">Figure 14-1. </span>The iteration protocol, used by <code>for</code> loops, comprehensions, maps, and more</h6>
+</div></figure>
+<p>These steps are orchestrated automatically by iteration tools in most cases, but it helps to understand these two objects’ roles. For example, in some cases these two objects are the <em>same</em> when only a single scan is supported (e.g., files), and the <em>iterator</em> object is often a temporary, used internally by the iteration tool.</p>
+<p>Moreover, some objects are <em>both</em> an iteration <em>tool</em> (they iterate) and an iterable <em>object</em> (their results are iterable)—including the <code>enumerate</code> and <code>zip</code> built-ins, and <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a>’s generator expressions. Such iterables already avoid constructing result lists in memory themselves, but applying them to other iterables saves even more space. When such tools are combined, no work is done until an iteration tool requests results.</p>
+<p>In code, the protocol’s first step becomes obvious if we look at how <code>for</code> loops internally process built-in sequence types such as lists (<code>for</code> uses the internal equivalents of the “__” methods, but you use either in your code):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2]</strong></code>
+&gt;&gt;&gt; <code><strong>I = iter(L)</strong></code>                 <code><em># Obtain an iterator object from an iterable
+</em></code>&gt;&gt;&gt; <code><strong>next(I)</strong></code>                     <code><em># Call next(iterator) to advance to next item</em></code>
+1
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>                     <code><em># Or use L.__iter__() and I.__next__() calls</em></code>
+2
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>
+StopIteration</pre>
+<p>As we saw earlier, the initial <code>iter</code> step is not required for files, because a file object supports just one scan and hence  is its own iterator. You can see this yourself with <code>is</code> (recall from <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a> that this means object <em>identity</em>—the same exact piece of object memory, not just the same value):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>f = open('data.txt')</strong></code>
+&gt;&gt;&gt; <code><strong>iter(f) is f</strong> </code>               <code><em># Files are iterators themselves: iter() optional</em></code>
+True
+&gt;&gt;&gt; <code><strong>iter(f) is f.__iter__()</strong></code>     <code><em># Both calls return file object f itself</em></code>
+True
+&gt;&gt;&gt; <code><strong>next(f)</strong></code>                     <code><em># Which responds to next requests directly</em></code>
+'Testing file IO\n'</pre>
+<p>Lists and many other built-in objects, though, are not their own iterators because they do support multiple open iterations—there may be any number of iterations active in nested loops, and all may <a contenteditable="false" data-type="indexterm" data-primary="iteration protocol" data-secondary="full iteration protocol" data-startref="rtpfll" id="id2730"></a>be at different positions at a given point in time. For such objects, we must call <code>iter</code> to start iterating <span class="keep-together">manually</span>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2, 3]</strong></code>
+&gt;&gt;&gt; <code><strong>iter(L) is L</strong> </code>               <code><em># Lists are not their own iterators: use iter()
+</em></code>False
+&gt;&gt;&gt; <code><strong>next(L)</strong></code>
+TypeError: 'list' object is not an iterator
+
+&gt;&gt;&gt; <code><strong>I = iter(L)</strong>  </code>               <code><em># Same as L.__iter__()</em></code>
+&gt;&gt;&gt; <code><strong>next(I)</strong> </code>                    <code><em># Same as I.__next__()</em></code>
+1</pre>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Manual iteration"><div class="sect3" id="manual_iteration">
+<h3>Manual iteration</h3>
+<p>Although Python iteration tools <a contenteditable="false" data-type="indexterm" data-primary="iteration protocol" data-secondary="manual iteration" id="id2731"></a><a contenteditable="false" data-type="indexterm" data-primary="manual iteration" id="id2732"></a>call these functions automatically, we can also use them to apply the iteration protocol manually when needed. The following demonstrates the equivalence between automatic and manual iteration (again, <code>for</code> runs the internal equivalent of <code>I.__next__</code> instead of the <code>next(I)</code> used here, but the effect is the same):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2, 3]</strong></code>
+&gt;&gt;&gt;
+&gt;&gt;&gt; <code><strong>for X in L:</strong></code>                   <code><em># Automatic iteration</em></code>
+        <code><strong>print(X ** 2, end=' ')</strong></code>    <code><em># Obtain iter, call __next__, catch exceptions
+</em></code>
+1 4 9
+
+&gt;&gt;&gt; <code><strong>I = iter(L)</strong></code>                   <code><em># Manual iteration: what for loops usually do</em></code>
+&gt;&gt;&gt; <code><strong>while True:</strong></code>                   <code><em># Use try statements to catch stop exception</em></code>
+        <code><strong>try:</strong></code>
+            <code><strong>X = next(I)</strong></code>
+        <code><strong>except StopIteration:</strong></code>
+            <code><strong>break</strong></code>
+        <code><strong>print(X ** 2, end=' ')</strong></code>
+   
+1 4 9</pre>
+<p>To understand this code, you need to know that <code>try</code> statements run an action and catch exceptions that occur while the action runs (we met exceptions briefly in <a data-type="xref" href="ch10.html#introducing_python_statements">Chapter 10</a> but will explore them in depth in <a data-type="xref" href="part07.html#exceptions">Part VII</a>).</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="More on iter and next"><div class="sect3" id="more_on_iter_and_next">
+<h3>More on iter and next</h3>
+<p>For full fidelity, it should also be <a contenteditable="false" data-type="indexterm" data-primary="iteration protocol" data-secondary="iter" id="rtptre"></a><a contenteditable="false" data-type="indexterm" data-primary="iteration protocol" data-secondary="next" id="id2733"></a>noted that <code>for</code> loops and other iteration tools can sometimes work differently for user-defined classes—repeatedly <em>indexing</em> an object instead of running the iteration protocol—but they prefer the iteration protocol when supported (more on this story when we study operator overloading in <a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a>).</p>
+<p>Though not commonly used, it’s also worth noting that <code>next</code> accepts an optional second <em>default</em> argument for an exit value; if passed, it’s returned at the end instead of raising a stop exception:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1]</strong></code>
+&gt;&gt;&gt; <code><strong>I = iter(L)     </strong>  </code>                         <code><em># Result instead of exception</em></code>
+&gt;&gt;&gt; <code><strong>next(I, 'end of list')</strong></code>
+1
+&gt;&gt;&gt; <code><strong>next(I, 'end of list')</strong></code>
+'end of list'</pre>
+<p>Combined with the <code>:=</code> named-assignment expression, this can shave multiple lines off the preceding manual-iteration code—but will also fail if the passed default can appear as a valid result:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>I = iter(L)</strong></code>
+&gt;&gt;&gt; <code><strong>while (X := next(I, None)) != None:</strong>   </code>     <code><em># Same effect, less code</em></code>
+        <code><strong>print(X ** 2, end=' ')</strong>  </code>               <code><em># Assuming None is safe!</em></code></pre>
+<p>Though also uncommon, <code>iter</code> accepts a second <em>sentinel</em> argument to signal stop from a callable. This very different mode provides an arguably tricky way to use <code>for</code> to read files by blocks—but requires info on functions or <code>lambda</code>, which we don’t yet have:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>f = open('data.txt')</strong></code>
+&gt;&gt;&gt; <code><strong>I = iter(lambda: f.read(5), '')</strong>  </code>          <code><em># Callables and sentinels</em></code>
+&gt;&gt;&gt; <code><strong>for block in I: print(block, end='')</strong>  </code>     <code><em># Assuming you know lambda!</em></code></pre>
+<p>Watch for <code>lambda</code> in the next <a contenteditable="false" data-type="indexterm" data-primary="iteration protocol" data-secondary="iter" data-startref="rtptre" id="id2734"></a>part of this book, and see Python’s docs for more on <code>next</code> and <code>iter</code> modes.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Other Built-in Iterables"><div class="sect2" id="other_built_in_iterables">
+<h2>Other Built-in Iterables</h2>
+<p>Besides files and physical sequences like lists, many other objects in Python have useful iterators as well. Now that we have a better handle on how the iteration protocol works, this section revisits some tools we’ve already seen in this context, and introduces a handful of additional iterables along the way.</p>
+<section data-type="sect3" data-pdf-bookmark="Reprise: Dictionaries, range, enumerate, and zip"><div class="sect3" id="reprise_dictionariescomma_rangecomma_en">
+<h3>Reprise: Dictionaries, range, enumerate, and zip</h3>
+<p>As we saw in the last chapter, the usual way to step through the keys of a dictionary is with a <code>for</code> loop:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>D = dict(a=1, b=2)</strong></code>
+&gt;&gt;&gt; <code><strong>for key in D:</strong> </code>               <code><em># Dictionaries are implicitly iterable</em></code>
+        <code><strong>print(key, D[key])</strong></code>
+   
+a 1
+b 2</pre>
+<p>This works simply because dictionaries are <a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="dictionaries" id="id2735"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="iteration" id="id2736"></a>iterables with an iterator that automatically returns one key at a time in an iteration tool like <code>for</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>I = iter(D)</strong>   </code>               <code><em># Which just means they support the protocol</em></code>
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>
+'a'
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>
+'b'
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>
+StopIteration</pre>
+<p>The iteration protocol is also the reason <a contenteditable="false" data-type="indexterm" data-primary="range object" data-secondary="iteration protocol" id="id2737"></a><a contenteditable="false" data-type="indexterm" data-primary="iteration protocol" data-secondary="range object" id="id2738"></a>that we’ve had to wrap <code>range</code> results in a <code>list</code> call to see their values all at once in a REPL. Objects that are nonsequence iterables return results one at a time, not in a physical list:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>R = range(5)</strong></code>
+&gt;&gt;&gt; <code><strong>R</strong></code>
+range(0, 5)
+&gt;&gt;&gt; <code><strong>I = iter(R)</strong></code>                  <code><em># Use iteration protocol to produce results</em></code>
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>
+0
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>
+1
+&gt;&gt;&gt; <code><strong>list(range(5))</strong></code>               <code><em># Or use list() to collect all results at once</em></code>
+[0, 1, 2, 3, 4]</pre>
+<p>Note that the <code>list</code> call here is not needed <em>and shouldn’t be used</em> in contexts where iteration happens automatically—such as within <code>for</code> loops. It is needed for displaying values all at once, though, and may also be required when list-like behavior or multiple scans are required for objects that normally<a contenteditable="false" data-type="indexterm" data-primary="iteration protocol" data-secondary="lists" id="id2739"></a><a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="iteration protocol" id="id2740"></a> produce results on demand (more on this later).</p>
+<p>Now that you have a better understanding of this protocol, you should also be able to see how it explains why the <code>enumerate</code> tool introduced in the prior chapter works the way it does:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>E = enumerate('text')</strong></code>        <code><em># enumerate is an iterable too</em></code>
+&gt;&gt;&gt; <code><strong>E</strong></code>
+&lt;enumerate object at 0x1010ab880&gt;
+&gt;&gt;&gt; <code><strong>I = iter(E)</strong></code>
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>                      <code><em># Generate results with iteration protocol</em></code>
+(0, 't')
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>                      <code><em># Or use list() to force generation to run</em></code>
+(1, 'e')
+&gt;&gt;&gt; <code><strong>list(enumerate('text'))</strong></code>
+[(0, 't'), (1, 'e'), (2, 'x'), (3, 't')]</pre>
+<p>Unlike <code>range</code>, the <code>enumerate</code> built-in’s result is its own iterator, much like files. This means it supports just one scan per call, and <code>iter</code> is optional (more on this ahead too):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>R = range(5)</strong></code>
+&gt;&gt;&gt; <code><strong>iter(R) is R</strong></code>
+False
+
+&gt;&gt;&gt; <code><strong>E = enumerate('text')</strong></code>
+&gt;&gt;&gt; <code><strong>iter(E) is E</strong></code>
+True
+&gt;&gt;&gt; <code><strong>next(E)</strong></code>
+(0, 't')</pre>
+<p>The <code>zip</code> built-in, covered in the <a contenteditable="false" data-type="indexterm" data-primary="zip object" data-secondary="iteration protocol" id="id2741"></a><a contenteditable="false" data-type="indexterm" data-primary="iteration protocol" data-secondary="zip object" id="id2742"></a>prior chapter, works the same way in iteration tools. Like <code>enumerate</code>, <code>zip</code> is also its own iterator, so we have to call it again to iterate again:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>Z = zip((1, 2, 3), (10, 20, 30))</strong></code>
+&gt;&gt;&gt; <code><strong>Z</strong></code>
+&lt;zip object at 0x101236240&gt;
+&gt;&gt;&gt; <code><strong>I = iter(Z)</strong></code>
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>
+(1, 10)
+&gt;&gt;&gt; <code><strong>next(I)</strong></code>
+(2, 20)
+
+&gt;&gt;&gt; <code><strong>I is Z</strong></code>
+True
+&gt;&gt;&gt; <code><strong>list(Z)</strong></code>
+[(3, 30)]
+&gt;&gt;&gt; <code><strong>list(zip((1, 2, 3), (10, 20, 30)))</strong></code>
+[(1, 10), (2, 20), (3, 30)]</pre>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Iterator nesting"><div class="sect3" id="iterator_nesting">
+<h3>Iterator nesting</h3>
+<p>More interestingly, <code>zip</code> is <em>both</em> iteration tool and iterable: it iterates over its <a contenteditable="false" data-type="indexterm" data-primary="iterators" data-secondary="nesting" id="id2743"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="iterators" id="id2744"></a>arguments’ results, but also returns an iterable object with an iterator for its own results. In the following, for example, it’s a tool that <em>receives</em> results from two <code>range</code> iterables, but its own results are <em>produced</em> on demand as well. In other words, there are three iterables and <em>two levels</em> of iteration at work here:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>Z = zip(range(1, 4), range(10, 40))</strong></code>
+&gt;&gt;&gt; <code><strong>next(Z)</strong></code>
+(1, 10)
+&gt;&gt;&gt; <code><strong>next(Z)</strong></code>
+(2, 11)
+&gt;&gt;&gt; <code><strong>next(Z)</strong></code>
+(3, 12)
+&gt;&gt;&gt; <code><strong>list(zip(range(1, 4), range(10, 40)))</strong></code>
+[(1, 10), (2, 11), (3, 12)]</pre>
+<p>In fact, iterators can be nested arbitrarily. Because <code>enumerate</code> is both iteration tool and object too, in the following, <code>range</code>, <code>enumerate</code>, and <code>zip</code> all produce their results on demand, and <code>list</code> makes all the dances run:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(enumerate(range(1, 4)))</strong></code>
+[(0, 1), (1, 2), (2, 3)]
+
+&gt;&gt;&gt; <code><strong>list(zip(enumerate(range(1, 4)), enumerate(range(5, 8))))</strong></code>
+[((0, 1), (0, 5)), ((1, 2), (1, 6)), ((2, 3), (2, 7))]</pre>
+<p>Similarly, the following enumerates the zipped results of ranges—but only when requested by <code>for</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for x in enumerate(zip(range(1, 4), range(5, 8))): print(x)</strong></code>
+... 
+(0, (1, 5))
+(1, (2, 6))
+(2, (3, 7))</pre>
+<p>There are <em>three</em> levels of iterables in this, all deferring their results until they are activated. In practice, this works naturally, but nothing happens in such code until a tool like <code>list</code> or <code>for</code> asks for results at the top. In response, all the actors here return just one result at a time, to minimize memory requirements and avoid delays.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Functional iterables: map and filter"><div class="sect3" id="functional_iterables_map_and_filter">
+<h3>Functional iterables: map and filter</h3>
+<p>Like <code>range</code>, <code>enumerate</code>, and <code>zip</code>, the <code>map</code> and <code>filter</code> built-ins <a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="map built-in" id="itmpap"></a><a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="filter built-in" id="ttrflb"></a>produce their results individually to conserve space and avoid pauses. Like <code>enumerate</code> and <code>zip</code>, these tools also are both iterable tools and iterable objects themselves: they scan other iterables, and produce their own results on demand.</p>
+<p>Unlike other iterables we’ve met, though, <code>map</code> and <code>filter</code> apply <em>function calls</em> instead of expressions, so their complete story requires function-coding skills we won’t gain until the next part of the book. Still, we can preview their fundamentals here using built-in functions without having to code new functions of our own.</p>
+<p>For example, the <code>map</code> built-in, which made a brief cameo appearance in <a data-type="xref" href="ch08.html#lists_and_dictionaries">Chapter 8</a> (and has nothing directly to do with mappings like dictionaries!), calls a provided function for each item in a provided iterable, and returns the collected results as another iterable. In the following, it applies the <code>ord</code> built-in to collect character code points:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>ord('p') </strong>  </code>                         <code><em># Return a single character's code point</em></code>
+112
+&gt;&gt;&gt; <code><strong>M = map(ord, 'py3')</strong></code>                 <code><em># map returns an iterable, not a list</em></code>
+&gt;&gt;&gt; <code><strong>M        </strong>  </code>                         <code><em># Runs ord(x) for every x in iterable</em></code>
+&lt;map object at 0x101227550&gt;
+&gt;&gt;&gt; <code><strong>next(M)</strong></code>                             <code><em># Iterating manually: exhausts results</em></code>
+112                                     <code><em># map supports no sequence ops like [i]</em></code>
+&gt;&gt;&gt; <code><strong>next(M)</strong></code>
+121
+&gt;&gt;&gt; <code><strong>next(M)</strong></code>
+51
+&gt;&gt;&gt; <code><strong>next(M)</strong></code>
+StopIteration</pre>
+<p>As usual, you can force results with <code>list</code> if you must treat them as a list, and <code>for</code> automates iterations:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(map(ord, 'py3'))</strong> </code>              <code><em># Force a real list - only if needed</em></code>
+[112, 121, 51]
+
+&gt;&gt;&gt; <code><strong>M = map(ord, 'py3')</strong>  </code>               <code><em># Must call again to scan again</em></code>
+&gt;&gt;&gt; <code><strong>for x in M: print(x, end=' ')</strong>  </code>     <code><em># Iteration tools auto call next()</em></code>
+112 121 51</pre>
+<p>The <code>filter</code> built-in, which we met momentarily in <a data-type="xref" href="ch12.html#if_and_match_selections">Chapter 12</a> and will study more fully in the next part of this book, is analogous. It returns items in an iterable for which a passed-in function returns <code>True</code>. In the following, we’re leveraging concepts we’ve already learned—<code>True</code> includes nonempty and nonzero objects, the <code>bool</code> built-in returns a single object’s truth value, and the <code>str</code> string’s <code>isdigit</code> method is true for all-digit text:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>filter(bool, ['lp6e', '', 2024])</strong></code>
+&lt;filter object at 0x101227850&gt;
+
+&gt;&gt;&gt; <code><strong>list(filter(bool, ['lp6e', '', 2024]))</strong> </code>          <code><em># Collect "true" items</em></code>
+['lp6e', 2024]
+
+&gt;&gt;&gt; <code><strong>list(filter(str.isdigit, ['lp6e', '2024']))</strong> </code>     <code><em># Collect all-digit strings</em></code>
+['2024']</pre>
+<p>Like most of the tools discussed in this section, <code>filter</code> both <em>accepts</em> an iterable to process and <em>returns</em> an iterable to generate results. It doesn’t do any work until code like a <code>for</code> loop asks it to. As a preview, both <code>map</code> and <code>filter</code> can be emulated roughly with list <em>comprehensions</em> and more closely with <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a>’s <em>generator</em> expressions; but to grok the following code in full, we have to await this chapter’s presentation <a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="map built-in" data-startref="itmpap" id="id2745"></a><a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="filter built-in" data-startref="ttrflb" id="id2746"></a>of comprehensions coming up soon:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>[ord(x) for x in 'py3']</strong></code>
+[112, 121, 51]
+
+&gt;&gt;&gt; <code><strong>[x for x in ['lp6e', '2024'] if x.isdigit()]</strong></code>
+['2024']</pre>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Multiple-pass versus single-pass iterables"><div class="sect3" id="multiple_pass_versus_single_pass_iterab">
+<h3>Multiple-pass versus single-pass iterables</h3>
+<p>We’ve noted a few times that some iterables that don’t allow multiple scans are their own iterables. Since this is a <a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="multiple-pass iterables" id="ittmpsst"></a><a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="single-pass iterables" id="ttrsgptr"></a>subtle difference that can impact the way you’ll use them, it’s worth a separate callout here.</p>
+<p>In particular, the <code>range</code> built-in’s result, along with objects like dictionaries and lists, differs from other built-ins described in this section. They are <em>not</em> their own iterators (you must make one with <code>iter</code> when iterating manually), and they support multiple iterators (each remembers its position independently):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>R = range(3)</strong></code>                           <code><em># range allows multiple iterators</em></code>
+&gt;&gt;&gt; <code><strong>next(R)</strong></code>
+TypeError: range object is not an iterator
+
+&gt;&gt;&gt; <code><strong>I1 = iter(R)</strong></code>
+&gt;&gt;&gt; <code><strong>next(I1)</strong></code>
+0
+&gt;&gt;&gt; <code><strong>next(I1)</strong></code>
+1
+&gt;&gt;&gt; <code><strong>I2 = iter(R)</strong></code>                           <code><em># Two iterators on one range</em></code>
+&gt;&gt;&gt; <code><strong>next(I2)</strong></code>
+0
+&gt;&gt;&gt; <code><strong>next(I1)</strong></code>                               <code><em># I1 is at a different spot than I2</em></code>
+2</pre>
+<p>By contrast, the results of <code>enumerate</code>, <code>zip</code>, <code>map</code>, <code>filter</code>, as well as <code>open</code> for files, <em>are</em> their own iterators, because none of these tools support multiple active iterations on the same call result. Because of this, the <code>iter</code> call is optional for stepping through such objects’ results (though harmless: their <code>iter</code> is themselves), and we must call these tools again to begin a fresh iteration from the start:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>Z = zip((1, 2, 3), (10, 11, 12))</strong></code>
+&gt;&gt;&gt; <code><strong>I1 = iter(Z)</strong></code>
+&gt;&gt;&gt; <code><strong>I2 = iter(Z)</strong></code>                           <code><em># Two iterators on one zip
+</em></code>&gt;&gt;&gt; <code><strong>next(I1)</strong></code>
+(1, 10)
+&gt;&gt;&gt; <code><strong>next(I1)</strong></code>
+(2, 11)
+&gt;&gt;&gt; <code><strong>next(I2)</strong></code>                               <code><em># But I2 is at same spot as I1!</em></code>
+(3, 12)
+
+&gt;&gt;&gt; <code><strong>M = map(ord, 'py3')</strong></code>                    <code><em># Ditto for map (and others)</em></code>
+&gt;&gt;&gt; <code><strong>I1, I2 = iter(M), iter(M)</strong></code>
+&gt;&gt;&gt; <code><strong>next(I1), next(I1)</strong></code>
+(112, 121)
+&gt;&gt;&gt; <code><strong>next(I2)</strong></code>
+51
+
+&gt;&gt;&gt; <code><strong>L = [0, 1, 2]</strong></code>                          <code><em># But lists (and others) do many scans</em></code>
+&gt;&gt;&gt; <code><strong>I1, I2 = iter(L), iter(L)</strong></code>
+&gt;&gt;&gt; <code><strong>next(I1), next(I1)</strong></code>
+(0, 1)
+&gt;&gt;&gt; <code><strong>next(I2)</strong></code>                               <code><em># Multiple active scans, like range</em></code>
+0</pre>
+<p>When we code our own iterable objects with classes later in the book (<a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a>), you’ll see that multiple iterators are usually supported by returning <em>new</em> objects for the <code>iter</code> call; a single iterator generally means an object returns <em>itself</em> and supports <code>next</code> directly. In <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a>, you’ll also find that <em>generator</em> functions and expressions behave like <code>map</code> and <code>zip</code> instead of <code>range</code> in this regard, supporting just a single active iteration scan. Also in that chapter, you’ll see some subtle implications of single-pass iterators in loops that attempt to scan multiple times—code that treats these as lists may fail <a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="multiple-pass iterables" data-startref="ittmpsst" id="id2747"></a><a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="single-pass iterables" data-startref="ttrsgptr" id="id2748"></a>without manual list conversions.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Standard-library iterables in Python"><div class="sect3" id="standard_library_iterables_in_python">
+<h3>Standard-library iterables in Python</h3>
+<p>Finally, while out of scope here, and <a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="standard-library iterables" id="id2749"></a>technically part of its standard library instead of its language, Python provides additional tools that support the iteration protocol and thus may also be used in <code>for</code> loops and other iteration tools.</p>
+<p>For instance, <em>shelves</em> (an access-by-key filesystem for Python objects), as well as the results of <code>os.popen</code> (a tool for reading the output of shell commands), are iterables that can be processed with the full set of iteration tools. The standard directory (a.k.a. folder) walker in Python, <code>os.walk</code>, is iterable too, but we’ll save details and an example until <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a>’s coverage of this tool’s basis—generators and <code>yield</code>.</p>
+<p>Ultimately, all such tools implement the <code>iter</code>/<code>next</code> interface defined by the iteration protocol. We don’t normally see this machinery because <code>for</code> and its kin run it for us automatically to step through results. In fact, everything that scans left to right in Python employs the iteration protocol in the same way—including the topic of the next section.</p>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Comprehensions"><div class="sect1" id="comprehensions-id00087">
+<h1>Comprehensions</h1>
+<p>Now that we’ve seen how the iteration protocol works, let’s turn to one of its most common use cases. Together with <code>for</code> loops, list <em>comprehensions</em> are one of the most prominent contexts in which the iteration protocol is applied.</p>
+<p>In the previous chapter, we learned how to use <code>range</code> to change a list as we step across it:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2, 3, 4, 5]</strong></code>
+&gt;&gt;&gt; <code><strong>for i in range(len(L)):</strong></code>
+        <code><strong>L[i] += 10</strong></code>
+   
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[11, 12, 13, 14, 15]</pre>
+<p>This works, but as mentioned there, it may not be the optimal “best practice” approach in Python. Today, the list comprehension expression makes many such prior coding patterns obsolete. Here, for example, we can replace the loop with a single expression that produces the desired result list:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [x + 10 for x in L]</strong></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[21, 22, 23, 24, 25]</pre>
+<p>The net result is similar, but it requires less coding on our part and is likely to run substantially faster—in fact, it’s often <em>twice</em> as fast as tested in CPython 3.12. The list comprehension isn’t exactly the same as the <code>for</code> loop statement version because it makes a <em>new</em> list object, which might matter if there are multiple references to the original list, but it’s close enough for most applications and is a common and convenient enough approach to merit a closer look here.</p>
+<section data-type="sect2" data-pdf-bookmark="List Comprehension Basics"><div class="sect2" id="list_comprehension_basics">
+<h2>List Comprehension Basics</h2>
+<p>The list comprehension was introduced in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>, and it’s been demoed often. Syntactically, its syntax is derived <a contenteditable="false" data-type="indexterm" data-primary="comprehensions" data-secondary="list comprehensions" id="id2750"></a><a contenteditable="false" data-type="indexterm" data-primary="list comprehensions" id="id2751"></a>from a construct in set theory notation that applies an operation to each item in a set, but you don’t have to know set theory to use this tool. In Python, most people find that a list comprehension simply looks like a backward <code>for</code> loop.</p>
+<p>To get a handle on the syntax, let’s dissect the prior section’s example in more detail:</p>
+<pre data-type="programlisting">L = [x + 10 for x in L]</pre>
+<p>List comprehensions are written in square brackets because they are ultimately a way to construct a new list. They begin with an arbitrary expression that we make up, which uses a loop variable that we make up (<code>x + 10</code>). That is followed by what you should now recognize as the header of a <code>for</code> loop, which names the loop variable, and an iterable object (<code>for x in L</code>).</p>
+<p>To run the expression, Python executes an <a contenteditable="false" data-type="indexterm" data-primary="iteration" data-secondary="list comprehensions" id="id2752"></a>iteration across <code>L</code> inside the interpreter, assigning <code>x</code> to each item in turn, and collects the results of running the items through the expression on the left side. The result list we get back is exactly what the list comprehension says—a new list containing <code>x + 10</code>, for every <code>x</code> in <code>L</code>.</p>
+<p>Technically speaking, list comprehensions are never really required because we can always build up a list of expression results manually with <code>for</code> loops that append results as we go:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>res = []</strong></code>
+&gt;&gt;&gt; <code><strong>for x in L:</strong></code>
+        <code><strong>res.append(x + 10)</strong></code>
+   
+&gt;&gt;&gt; <code><strong>res</strong></code>
+[31, 32, 33, 34, 35]</pre>
+<p>In fact, this is exactly what the list comprehension does internally (using internal equivalents, of course).</p>
+<p>However, list comprehensions are more concise to write, and widely useful in Python programs because building result lists is such a common task. Moreover, depending on your Python and code, list comprehensions might run much faster than manual <code>for</code> loop statements (often 2X as stated earlier) because their iterations are performed at the speed of optimized (and usually compiled) code inside the interpreter, rather than with manual Python code. Especially for larger data sets, there is often a major performance advantage to using this expression.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="List Comprehensions and Files"><div class="sect2" id="list_comprehensions_and_files">
+<h2>List Comprehensions and Files</h2>
+<p>Let’s work through another common <a contenteditable="false" data-type="indexterm" data-primary="comprehensions" data-secondary="list comprehensions" data-tertiary="files" id="clcfl"></a><a contenteditable="false" data-type="indexterm" data-primary="list comprehensions" data-secondary="files" id="lcflsph"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="list comprehensions" id="flelspcm"></a>application of list comprehensions to explore them in more detail. Recall that the file object has a <code>readlines</code> method that loads the file into a list of line strings all at once:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>f = open('data.txt')</strong></code>
+&gt;&gt;&gt; <code><strong>lines = f.readlines()</strong></code>
+&gt;&gt;&gt; <code><strong>lines</strong></code>
+['Testing file IO\n', 'Learning Python, 6E\n', 'Python 3.12\n']</pre>
+<p>This works as we saw earlier, but the lines in the result all include the newline character (<code>\n</code>) at the end. For many programs, the newline character gets in the way—we have to be careful to avoid double-spacing when printing, and so on. It would be nice if we could get rid of these newlines all at once, wouldn’t it?</p>
+<p>Anytime we start thinking about performing an operation on each item in a sequence, we’re in the realm of list comprehensions. For example, assuming the variable <code>lines</code> is as it was in the prior interaction, the following code does the job by running each line in the list through the string <code>rstrip</code> method to remove whitespace on the right side (a <code>line[:−1]</code> slice would work, too, but only if we can be sure all lines are properly <code>\n</code> terminated, and this may not always be the case for the last line in a file):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>lines = [line.rstrip() for line in lines]</strong></code>
+&gt;&gt;&gt; <code><strong>lines</strong></code>
+['Testing file IO', 'Learning Python, 6E', 'Python 3.12']</pre>
+<p>This works as planned. Because list comprehensions are an iteration <em>tool</em> just like <code>for</code> loop statements, though, we don’t even have to open the file ahead of time. If we open it inside the expression, the list comprehension will automatically use the iteration protocol we met earlier in this chapter. That is, it will read one line from the file at a time by calling the file’s <code>next</code> handler method, run the line through the <code>rstrip</code> expression, and add it to the result list. Again, we get what we ask for—the <code>rstrip</code> result of a line, for every line in the file:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>lines = [line.rstrip() for line in open('data.txt')]</strong></code>
+&gt;&gt;&gt; <code><strong>lines</strong></code>
+['Testing file IO', 'Learning Python, 6E', 'Python 3.12']</pre>
+<p>This expression does a lot implicitly, but we’re getting a lot of work for free here—Python scans the file line by line and builds a list of operation results automatically. It’s also an <em>efficient</em> way to code this operation: because most of this work is done inside the Python interpreter, it’s likely faster than an equivalent <code>for</code> statement. Just as importantly, its use of file iterators means that it won’t load the file into memory all at once, like <code>readlines</code> does. Again, especially for large files, the advantages of list comprehensions can be significant.</p>
+<p>Besides their efficiency, list comprehensions are also remarkably expressive. In our example, we can run any string operation on a file’s lines as we iterate. To illustrate, here’s the list comprehension equivalent to the file iterator uppercase example we met earlier, along with a few other representative operations to sample the possibilities:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>[line.upper() for line in open('data.txt')]</strong></code>
+['TESTING FILE IO\n', 'LEARNING PYTHON, 6E\n', 'PYTHON 3.12\n'] 
+
+&gt;&gt;&gt; <code><strong>[line.rstrip().upper() for line in open('data.txt')]</strong></code>
+['TESTING FILE IO', 'LEARNING PYTHON, 6E', 'PYTHON 3.12'] 
+
+&gt;&gt;&gt; <code><strong>[line.split() for line in open('data.txt')]</strong></code>
+[['Testing', 'file', 'IO'], ['Learning', 'Python,', '6E'], ['Python', '3.12']]
+
+&gt;&gt;&gt; <code><strong>[line.replace('\n', '!') for line in open('data.txt')]</strong></code>
+['Testing file IO!', 'Learning Python, 6E!', 'Python 3.12!'] 
+
+&gt;&gt;&gt; <code><strong>[('Py' in line, line.split()[0]) for line in open('data.txt')]</strong></code>
+[(False, 'Testing'), (True, 'Learning'), (True, 'Python')]</pre>
+<p>Recall that the method <em>chaining</em> in the second of these examples works because string methods return a new string, to which we can apply another string method. The last of these shows how we can also collect <em>multiple</em> results, as long as they’re wrapped in a collection like a tuple or list.</p>
+<p>One fine point here: recall from <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a> that file objects <em>close</em> themselves automatically in CPython when garbage-collected if still open. Hence, these list comprehensions will also automatically close the file when their temporary file object is garbage-collected after the expression runs. Outside CPython, though, you may want to code these to close manually if this is run in a loop, to ensure <a contenteditable="false" data-type="indexterm" data-primary="comprehensions" data-secondary="list comprehensions" data-tertiary="files" data-startref="clcfl" id="id2753"></a><a contenteditable="false" data-type="indexterm" data-primary="list comprehensions" data-secondary="files" data-startref="lcflsph" id="id2754"></a><a contenteditable="false" data-type="indexterm" data-primary="files" data-secondary="list comprehensions" data-startref="flelspcm" id="id2755"></a>that file resources are freed immediately: open before the comprehension, and close after. See <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a> for more on file close calls if you need a refresher on this.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Extended List Comprehension Syntax"><div class="sect2" id="extended_list_comprehension_syntax">
+<h2>Extended List Comprehension Syntax</h2>
+<p>Handy as they may already seem, list comprehensions can be even richer in practice, and even constitute a sort of <em>iteration mini-language</em> in their fullest forms. Let’s take a quick look at their extra syntax tools here.</p>
+<section data-type="sect3" data-pdf-bookmark="Filter clauses: if"><div class="sect3" id="filter_clauses_if">
+<h3>Filter clauses: if</h3>
+<p>As one particularly useful extension, the <code>for</code> loop nested in a comprehension expression can have an <a contenteditable="false" data-type="indexterm" data-primary="comprehensions" data-secondary="list comprehensions" data-tertiary="if clause" id="id2756"></a><a contenteditable="false" data-type="indexterm" data-primary="list comprehensions" data-secondary="if clause" id="id2757"></a><a contenteditable="false" data-type="indexterm" data-primary="if statements" data-secondary="list comprehensions" id="id2758"></a>associated <code>if</code> clause to <em>filter out</em> of the result items for which the test is not true. (It’s really a <em>filter in</em>, but it works out the same.)</p>
+<p>For example, suppose we want to repeat the prior section’s file-scanning example, but we need to collect only lines that begin with the letters <em>L</em> or <em>P</em> (perhaps the first character on each line is an action code of some sort). Adding a simple <code>if</code> filter clause to our expression does the trick:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>lines = [line.rstrip() for line in open('data.txt') if line[0] in 'LP']</strong></code>
+&gt;&gt;&gt; <code><strong>lines</strong></code>
+['Learning Python, 6E', 'Python 3.12']</pre>
+<p>Here, the <code>if</code> clause checks each line read from the file to see whether its first character matches; if not, the line is omitted from the result list, and the iteration continues. This is a fairly big expression, but it’s easy to understand if we translate it to its simple <code>for</code> loop statement equivalent:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>res = []</strong></code>
+&gt;&gt;&gt; <code><strong>for line in open('data.txt'):</strong></code>
+        <code><strong>if line[0] in 'LP':</strong></code>
+            <code><strong>res.append(line.rstrip())</strong></code>
+   
+&gt;&gt;&gt; <code><strong>res</strong></code>
+['Learning Python, 6E', 'Python 3.12']</pre>
+<p>In general, we can always translate a list comprehension to a <code>for</code> statement by <em>appending</em> as we go and further <em>indenting</em> each successive part. The converse isn’t true: <code>for</code> statements are more general and can address additional roles out of scope for comprehensions, but the latter’s results collection is a very common task.</p>
+<p>This <code>for</code> statement equivalent works, but it takes up four lines instead of one and may run slower. In fact, you can squeeze a substantial amount of logic into a list comprehension when you need to—the following works like the prior but selects only lines that <em>end in a digit</em> (before the newline at the end), by filtering with a more sophisticated expression on the right side (which uses <code>[-1:]</code> instead of <code>[-1]</code> to handle files with blank lines empty after <code>rstrip</code>):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>[line.rstrip() for line in open('data.txt') if line.rstrip()[-1:].isdigit()]</strong></code>
+['Python 3.12']</pre>
+<p>As another <code>if</code> filter example, the first result in the following gives the total lines in a text file, and the second strips whitespace on both ends to <em>omit blank lines</em> in the tally in just one line of code:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>fname = 'data-blank-lines.txt'</strong></code>
+&gt;&gt;&gt; <code><strong>len(open(fname).readlines())</strong></code>                                 <code><em># All lines</em></code>
+5
+&gt;&gt;&gt; <code><strong>len([line for line in open(fname) if line.strip() != ''])</strong></code>    <code><em># Nonblank lines</em></code>
+3</pre>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Nested loops: for"><div class="sect3" id="nested_loops_for">
+<h3>Nested loops: for</h3>
+<p>List comprehensions can become even <a contenteditable="false" data-type="indexterm" data-primary="comprehensions" data-secondary="list comprehensions" data-tertiary="nested for loops" id="id2759"></a><a contenteditable="false" data-type="indexterm" data-primary="list comprehensions" data-secondary="nested for loops" id="id2760"></a><a contenteditable="false" data-type="indexterm" data-primary="loops" data-secondary="for loops" data-tertiary="nested" id="id2761"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="nested" data-tertiary="list comprehensions" id="id2762"></a>more complex if we need them to—for instance, they may contain <em>nested loops</em>, coded as a series of <code>for</code> clauses. In fact, their full syntax allows for any number of <code>for</code> clauses, each of which can have an optional associated <code>if</code> clause.</p>
+<p>For example, the following builds a list of the concatenation of <code>x + y</code> for every <code>x</code> in one string and every <code>y</code> in another. It effectively collects all the <em>ordered combinations</em> of the characters in two strings:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>[x + y for x in 'abc' for y in '123']</strong></code>
+['a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'c3']</pre>
+<p>Again, one way to understand this expression is to convert it to statement form by indenting its parts. The following is an equivalent, but likely slower, alternative way to achieve the same effect (it’s the same as the first nested <code>for</code> example in the prior chapter, but builds a list of results instead of simply printing them):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>res = []</strong></code>
+&gt;&gt;&gt; <code><strong>for x in 'abc':</strong></code>
+        <code><strong>for y in '123':</strong></code>
+            <code><strong>res.append(x + y)</strong></code>
+   
+&gt;&gt;&gt; <code><strong>res</strong></code>
+['a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'c3']</pre>
+<p>Beyond this complexity level, though, list comprehension expressions can sometimes become too compact for their own good. In general, they are intended for simple types of iterations; for more involved work, a simpler <code>for</code> statement structure will probably be easier to understand and modify in the future. As usual in programming, if something is difficult for you to understand, it’s probably not the best idea.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Comprehensions Cliff-Hanger"><div class="sect2" id="comprehensions_cliff_hanger">
+<h2>Comprehensions Cliff-Hanger</h2>
+<p>Because comprehensions are generally better taken in multiple doses, we’ll cut this story short here for now. We’ll revisit list comprehensions in <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a> in the context of functional programming tools, and will define their syntax more formally and explore additional examples there. As you’ll find, comprehensions turn out to be just as related to <em>functions</em> as they are to looping <em>statements</em>.</p>
+<p>List comprehensions are also related to—and predate—the <em>set</em> and <em>dictionary</em> comprehensions introduced in this book’s prior part, as well as the <em>generator</em> expression you’ll meet later that produces items on request instead of building a list. All share the same syntax, but are coded slightly differently and produce different sorts of stuff:</p>
+<pre data-type="programlisting">[x + 10 for x in L if x &gt; 0]         <code><em># List comprehension</em></code>
+{x + 10 for x in L if x &gt; 0}         <code><em># Set comprehension</em></code>
+{x: x + 10 for x in L if x &gt; 0}      <code><em># Dictionary comprehension</em></code>
+(x + 10 for x in L if x &gt; 0)         <code><em># Generator expression</em></code></pre>
+<p>We’ll put the last three of these to work on files briefly in the next section. To better expand this plotline to generators, though, we have to move on to this book’s next part.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Speed disclaimer</em>: As a blanket qualification for all performance claims in this book, the relative speed of code depends much on the exact code tested and version of Python used, and is prone to vary and change. For example, list comprehensions have been consistently twice as fast as corresponding <code>for</code> loops on most tests for all CPythons through 3.12, but may be just marginally quicker on some tests, and perhaps even slower when <code>if</code> filter clauses are used. You’ll learn how to time your own code and Python in <a data-type="xref" href="ch21.html#the_benchmarking_interlude">Chapter 21</a>. For now, keep in mind that absolutes in performance benchmarks are as elusive as consensus in open source projects.</p>
+</div>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Iteration Tools"><div class="sect1" id="iteration_tools">
+<h1>Iteration Tools</h1>
+<p>Later in this book, you’ll learn how user-defined classes can implement the iteration protocol too. Because of this, it’s sometimes important to know which built-in tools make use of it—any tool <a contenteditable="false" data-type="indexterm" data-primary="iteration tools" id="ittool"></a>that employs the iteration protocol will automatically work on any built-in type or user-defined class that provides it. This section closes out this chapter with a summary and sort of “grand finale” of tools in this domain.</p>
+<p>So far, we’ve mostly seen iterators at work in the context of the <code>for</code> loop statement, because this part of the book is focused on statements. Keep in mind, though, that <em>every</em> built-in tool that scans from left to right across collection objects uses the iteration protocol. This includes the <code>for</code> loops we’ve seen:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>for line in open('data.txt'):</strong></code> 
+        <code><strong>print(line.upper(), end='')</strong></code>
+   
+TESTING FILE IO
+LEARNING PYTHON, 6E
+PYTHON 3.12</pre>
+<p>But also much more. For instance, the prior section’s list <em>comprehensions</em> and the <code>map</code> built-in function we met earlier use the same protocol as their <code>for</code> loop cousin. When applied to a file, they both leverage the file object’s iterator automatically to scan line by line, fetching an iterator with <code>__iter__</code> and calling <code>__next__</code> each time through:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>uppers = [line.upper() for line in open('data.txt')]</strong></code>
+&gt;&gt;&gt; <code><strong>uppers</strong></code>
+['TESTING FILE IO\n', 'LEARNING PYTHON, 6E\n', 'PYTHON 3.12\n'] 
+
+&gt;&gt;&gt; <code><strong>list(map(str.upper, open('data.txt')))</strong></code>
+['TESTING FILE IO\n', 'LEARNING PYTHON, 6E\n', 'PYTHON 3.12\n']</pre>
+<p>As we saw earlier, the <code>map</code> built-in applies a function call to each item in an iterable object. <code>map</code> is similar to a list comprehension but is more limited because it requires a function instead of an arbitrary expression. It also <em>returns</em> an iterable object, so we must wrap it in a <code>list</code> call to force it to give us all its values at once. Because <code>map</code>, like the list comprehension, is related to both <code>for</code> loops and functions, watch for its revival in <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a>.</p>
+<p>Many of Python’s other built-ins process iterables, too. We’ve seen how <code>zip</code> combines items from iterables, <code>enumerate</code> pairs items in an iterable with relative positions, and <code>filter</code> selects items for which a function is true. In addition, <code>sorted</code> sorts items in an iterable, and <code>reduce</code> (now oddly relegated to a module) runs pairs of items in an iterable through a function. All of these <em>accept</em> iterables, and <code>zip</code>, <code>enumerate</code>, and <code>filter</code> also <em>return</em> an iterable like <code>map</code>. Here they are in action running the file’s iterator automatically to read line by line:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>sorted(open('data.txt'))</strong></code>
+['Learning Python, 6E\n', 'Python 3.12\n', 'Testing file IO\n']
+
+&gt;&gt;&gt; <code><strong>list(zip(range(99), open('data.txt')))</strong></code>
+[(0, 'Testing file IO\n'), (1, 'Learning Python, 6E\n'), (2, 'Python 3.12\n')]
+
+&gt;&gt;&gt; <code><strong>list(enumerate(open('data.txt')))</strong></code>
+[(0, 'Testing file IO\n'), (1, 'Learning Python, 6E\n'), (2, 'Python 3.12\n')] 
+
+&gt;&gt;&gt; <code><strong>list(filter(bool, open('data.txt')))</strong></code>
+['Testing file IO\n', 'Learning Python, 6E\n', 'Python 3.12\n'] 
+
+&gt;&gt;&gt; <code><strong>import functools, operator</strong></code>
+&gt;&gt;&gt; <code><strong>functools.reduce(operator.add, open('data.txt'))</strong></code>
+'Testing file IO\nLearning Python, 6E\nPython 3.12\n'</pre>
+<p>All of these are iteration tools, but they have unique roles. We met <code>zip</code> and <code>enumerate</code> in this chapter; <code>filter</code> and <code>reduce</code> are in <a data-type="xref" href="ch19.html#function_odds_and_ends">Chapter 19</a>’s functional programming domain, so we’ll defer their details for now; the point to notice here is their use of the iteration protocol for files and other iterables.</p>
+<p>We first saw the <code>sorted</code> function used here at work in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>, and we used it in <a data-type="xref" href="ch08.html#lists_and_dictionaries">Chapter 8</a>. <code>sorted</code> is a built-in that employs the iteration protocol—it’s like the original list <code>sort</code> method, but it returns the new sorted list as a result and runs on any iterable object. Notice that, unlike <code>map</code> and others, <code>sorted</code> returns an actual <em>list</em> instead of an iterable. Per the prior chapter’s closer, its <code>reversed</code> cohort returns an iterable but does not run the iteration protocol.</p>
+<p>In general, though, <em>everything</em> in Python’s built-in toolset that scans object is defined to use the iteration protocol on their subject. This even includes tools such as the <code>list</code> and <code>tuple</code> built-in functions (which build new objects from iterables), and <a data-type="xref" href="ch07.html#string_fundamentals">Chapter 7</a>’s string <code>join</code> method (which makes a new string by putting a substring between strings in an iterable). Hence, these will also work on an open file and automatically read one line at a time:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(open('data.txt'))</strong></code>
+['Testing file IO\n', 'Learning Python, 6E\n', 'Python 3.12\n'] 
+
+&gt;&gt;&gt; <code><strong>tuple(open('data.txt'))</strong></code>
+('Testing file IO\n', 'Learning Python, 6E\n', 'Python 3.12\n') 
+
+&gt;&gt;&gt; <code><strong>'&amp;&amp;'.join(open('data.txt'))</strong></code>
+'Testing file IO\n&amp;&amp;Learning Python, 6E\n&amp;&amp;Python 3.12\n'</pre>
+<p>Even some tools you might not expect fall into this category. For example, <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>’s sequence assignment (original and starred), the <code>in</code> membership test, slice assignment, the list’s <code>extend</code> method, and single-star literal unpacking also leverage the iteration protocol to scan, and thus read a file by lines automatically:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a, b, c = open('data.txt')</strong></code>              <code><em># Sequence assignment
+</em></code>&gt;&gt;&gt;<code> <strong>b, c</strong></code>
+('Learning Python, 6E\n', 'Python 3.12\n') 
+
+&gt;&gt;&gt; <code><strong>a, *b = open('data.txt')</strong></code>                <code><em># Extended-unpacking assignment</em></code>
+&gt;&gt;&gt; <code><strong>a, b</strong></code>
+('Testing file IO\n', ['Learning Python, 6E\n', 'Python 3.12\n'])
+
+&gt;&gt;&gt; <code><strong>'Python 2.7\n' in open('data.txt')</strong></code>      <code><em># Membership test</em></code>
+False
+&gt;&gt;&gt; <code><strong>'Python 3.12\n' in open('data.txt')</strong></code>
+True
+
+&gt;&gt;&gt; <code><strong>L = [11, 22, 33, 44]</strong></code>                    <code><em># Slice assignment</em></code>
+&gt;&gt;&gt; <code><strong>L[1:3] = open('data.txt')</strong></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[11, 'Testing file IO\n', 'Learning Python, 6E\n', 'Python 3.12\n', 44]
+
+&gt;&gt;&gt; <code><strong>L = [11]</strong></code>
+&gt;&gt;&gt; <code><strong>L.extend(open('data.txt'))</strong></code>              <code><em># list.extend method</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[11, 'Testing file IO\n', 'Learning Python, 6E\n', 'Python 3.12\n']
+
+&gt;&gt;&gt; <code><strong>L = [11, *open('data.txt'), 44]</strong>  </code>       <code><em># List-literal unpacking</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[11, 'Testing file IO\n', 'Learning Python, 6E\n', 'Python 3.12\n', 44]</pre>
+<p>Remember that <code>extend</code> iterates automatically, but <code>append</code> does not—though you can use the latter to add an iterable to a list without iterating, and iterate across it later:</p>
+<pre class="pagebreak-before" data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [11]</strong></code>
+&gt;&gt;&gt; <code><strong>L.append(open('data.txt'))</strong></code>
+&gt;&gt;&gt; <code><strong>list(L[-1])</strong></code>
+['Testing file IO\n', 'Learning Python, 6E\n', 'Python 3.12\n']</pre>
+<p>Nor does the iteration grand finale end here. In the prior chapter, we saw that the built-in <code>dict</code> call accepts an iterable <code>zip</code> result too. For that matter, so does the <code>set</code> call, as well as the set and dictionary comprehension expressions we met earlier and will revisit later:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>set(open('data.txt'))</strong></code>
+{'Python 3.12\n', 'Learning Python, 6E\n', 'Testing file IO\n'}
+
+&gt;&gt;&gt; <code><strong>{line for line in open('data.txt')}</strong></code>
+{'Python 3.12\n', 'Learning Python, 6E\n', 'Testing file IO\n'}
+
+&gt;&gt;&gt; <code><strong>{ix: line for ix, line in enumerate(open('data.txt'))}</strong></code>
+{0: 'Testing file IO\n', 1: 'Learning Python, 6E\n', 2: 'Python 3.12\n'}</pre>
+<p>As noted, both set and dictionary comprehensions support the extended syntax of list comprehensions we met earlier in this chapter, including <code>if</code> tests:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>{line for line in open('data.txt') if line[0] in 'LP'}</strong></code>
+{'Python 3.12\n', 'Learning Python, 6E\n'}
+
+&gt;&gt;&gt; <code><strong>{ix: line for (ix, line) in enumerate(open('data.txt')) if line[0] in 'LP'}</strong></code>
+{1: 'Learning Python, 6E\n', 2: 'Python 3.12\n'}<strong></strong></pre>
+<p>Like the list comprehension, both of these scan the file line by line and pick out lines that begin with the specific letters. They also happen to build sets and dictionaries in the end, but we get a lot of work “for free” by combining file iteration and comprehension syntax. In the next part of this book, you’ll meet a relative of comprehensions—<em>generator expressions</em>—that deploys the same syntax and works on iterables too, but is also iterable itself:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(line.upper() for line in open('data.txt'))</strong></code>
+['TESTING FILE IO\n', 'LEARNING PYTHON, 6E\n', 'PYTHON 3.12\n']</pre>
+<p>Other built-in functions support the iteration protocol as well, but frankly, some are harder to cast in interesting examples related to files. For example, the <code>sum</code> call computes the sum of all the numbers in any iterable; the <code>any</code> and <code>all</code> built-ins return <code>True</code> if any or all items in an iterable are <code>True</code>, respectively; and <code>max</code> and <code>min</code> return the largest and smallest item in an iterable, respectively. Like <code>reduce</code>, all of the tools in the following examples accept any iterable as an argument and use the iteration protocol to scan it, but return a single result:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>sum(range(5))</strong> </code>               <code><em># Punt (requires numbers)</em></code>
+10
+&gt;&gt;&gt; <code><strong>any(open('data.txt'))</strong>   </code>     <code><em># Any/all lines true (nonempty)</em></code>
+True
+&gt;&gt;&gt; <code><strong>all(open('data.txt'))</strong>   </code>     <code><em># Mostly pointless for files</em></code>
+True
+&gt;&gt;&gt; <code><strong>max(open('data.txt'))</strong>   </code>     <code><em># Line with highest string value</em></code>
+'Testing file IO\n'
+&gt;&gt;&gt; <code><strong>min(open('data.txt'))</strong>   </code>     <code><em># Use cases wanted!
+</em></code>'Learning Python, 6E\n'</pre>
+<p>There’s one last iteration tool worth mentioning, although it’s a preview of this book’s next part: in <a data-type="xref" href="ch18.html#arguments">Chapter 18</a>, you’ll learn that a special <code>*</code> form can be used in function calls to unpack a collection of values into individual arguments, much as it does in list (and other) literals. As you can probably predict by now, this accepts any iterable too:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>def f(a, b, c):</strong></code>                    <code><em># See Part IV</em></code> 
+        <code><strong>print(a, b, c, sep='&amp;')</strong>   </code>
+   
+&gt;&gt;&gt; <code><strong>f(*open('data.txt'))</strong></code>               <code><em># Iterates by lines too!
+</em></code>Testing file IO
+&amp;Learning Python, 6E
+&amp;Python 3.12</pre>
+<p>In fact, because this argument-unpacking syntax in calls accepts iterables, it’s also possible to use the <code>zip</code> built-in to <em>unzip</em> zipped tuples, by making prior or nested <code>zip</code> results arguments for another <code>zip</code> call (warning: you probably shouldn’t read the following example if you plan to operate heavy machinery anytime soon!):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>X, Y = (1, 2), (3, 4)</strong></code>
+&gt;&gt;&gt; <code><strong>list(zip(X, Y))</strong></code>                    <code><em># Zip tuples: returns an iterable</em></code>
+[(1, 3), (2, 4)]
+
+&gt;&gt;&gt; <code><strong>A, B = zip(*zip(X, Y))</strong></code>             <code><em># Unzip a zip, really!</em></code>
+&gt;&gt;&gt; <code><strong>A, B</strong></code>
+((1, 2), (3, 4))</pre>
+<p>And that concludes our iteration-tools finale. It’s probably not complete, but you probably get the point.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Other Iteration Topics"><div class="sect1" id="other_iteration_topics">
+<h1>Other Iteration Topics</h1>
+<p>As mentioned in this chapter’s introduction, there is more coverage of both list comprehensions and iterables in <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a>, in conjunction with functions, and again in <a data-type="xref" href="ch30.html#operator_overloading-id000103">Chapter 30</a> when we study classes. As you’ll see later:</p>
+<ul>
+<li><p>User-defined functions can be turned into iterable <em>generator functions</em>, with <code>yield</code> statements.</p></li>
+<li><p>List comprehensions morph into iterable <em>generator expressions</em> when coded in parentheses.</p></li>
+<li><p>User-defined classes are made iterable with <code>__iter__</code> or <code>__getitem__</code> in <em>operator overloading</em>.</p></li>
+</ul>
+<p>In particular, user-defined iterables defined with classes allow arbitrary objects and operations to be used in <a contenteditable="false" data-type="indexterm" data-primary="iteration tools" data-startref="ittool" id="id2763"></a>any of the iteration tools we’ve met in this chapter. By supporting just a single operation—<span class="keep-together"><em>iteration</em>—</span>objects may be used in a wide variety of contexts and tools.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00024">
+<h1>Chapter Summary</h1>
+<p>In this chapter, we explored concepts related to looping in Python. We took our first substantial look at the <em>iteration protocol</em> in Python—a way for nonsequence objects to take part in iteration loops—and at <em>list comprehensions</em>. As we saw, a list comprehension is an expression similar to a <code>for</code> loop that applies another expression to all the items in any iterable object. Along the way, we also saw many of the other built-in iteration tools in Python’s arsenal.</p>
+<p>This wraps up our tour of specific procedural statements and related tools. The next chapter closes out this part of the book by discussing documentation options for Python code. Though a bit of a diversion from the more detailed aspects of coding, documentation is also part of the general syntax model, and it’s an important component of well-written programs. In the next chapter, we’ll also dig into a set of exercises for this part of the book before we turn our attention to larger structures such as functions. As usual, though, let’s first exercise what we’ve learned here with a quiz.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000149">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>How are <code>for</code> loops and iterable objects related?</p></li>
+<li><p>How are <code>for</code> loops and list comprehensions related?</p></li>
+<li><p>Name four iteration tools in the Python language.</p></li>
+<li><p>What is the best way to read line by line from a text file today?</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000148">
+<h1>Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>The <code>for</code> loop normally uses the <em>iteration protocol</em> to step through items in the iterable object across which it is iterating. It first fetches an iterator from the iterable by calling the iterable’s <code>__iter__</code>, and then calls this iterator object’s <code>__next__</code> method on each iteration to advance and catches its <code>StopIteration</code> exception to determine when to stop looping. Any object that supports this model works in a <code>for</code> loop and in all other iteration tools. The protocol’s methods can also be run manually with built-ins <code>iter</code> and <code>next</code>. For some objects that are their own iterator, the initial <code>iter</code> call is extraneous but harmless.</p></li>
+<li><p>Both are iteration <em>tools</em>. List comprehensions are a concise and often efficient way to perform a common <code>for</code> loop task: collecting the results of applying an expression to all items in an iterable object. It’s always possible to translate a list comprehension to a <code>for</code> loop, and part of the list comprehension expression looks like the header of a <code>for</code> loop syntactically. The <code>for</code> loop, however, can be used in additional looping roles that comprehensions do not address.</p></li>
+<li><p>Iteration tools in Python include the <code>for</code> loop; list comprehensions; the <code>map</code> built-in function; the <code>in</code> membership test expression; and the built-in functions <code>sorted</code>, <code>sum</code>, <code>any</code>, and <code>all</code>. This category also includes the <code>list</code> and <code>tuple</code> built-ins, string <code>join</code> methods, and sequence assignments (starred or not), all of which use the iteration protocol (see answer #1) to step across iterable objects one item at a time.</p></li>
+<li><p>The “best” way to read lines from a text file today is to not read it explicitly at all: instead, open the file within an iteration tool such as a <code>for</code> loop or list comprehension, and let the iteration tool automatically scan one line at a time by running the file’s <code>next</code> handler method on each iteration. This approach is generally best in terms of coding simplicity, memory space, and possibly execution speed requirements.</p></li>
+</ol>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>

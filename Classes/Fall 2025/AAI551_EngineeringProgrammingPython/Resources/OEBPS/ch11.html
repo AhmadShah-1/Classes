@@ -1,0 +1,985 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 11. Assignments, Expressions, and Prints"><div class="chapter" id="assignmentscomma_expressionscomma_and_p">
+<h1><span class="label">Chapter 11. </span>Assignments, Expressions, and Prints</h1>
+<p>Now that we’ve had a first introduction to Python statement syntax, this chapter begins our in-depth tour of specific Python statements. We’ll begin with the basics: assignment statements, expression statements, and print operations. We’ve already seen all of these in action, but here we’ll fill in important details we’ve skipped so far. Although they’re relatively simple, as you’ll see, there are optional variations for each of these statement types that will come in handy once you begin writing realistic Python programs.</p>
+<section data-type="sect1" data-pdf-bookmark="Assignments"><div class="sect1" id="assignments">
+<h1>Assignments</h1>
+<p>We’ve been using the Python assignment statement for a while to retain objects in examples. In its basic form, you write the <em>target</em> of an assignment on the left of an equals sign, and the <em>object</em> to be assigned on the right. The target on the left may be a name or object component, and the object on the right can be an arbitrary expression that creates an object. For the most part, assignments are straightforward, but here are a few key properties to note up front:</p>
+<ul>
+<li><p><strong>Assignments create object references.</strong> As discussed in <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>, Python assignments <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="object references" id="id2471"></a><a contenteditable="false" data-type="indexterm" data-primary="objects" data-secondary="references" data-tertiary="assignments" id="id2472"></a>store references to objects in names or data structure components. They always create <em>references</em> to objects instead of copying the objects. Because of that, Python variables are more like pointers than data storage areas.</p></li>
+<li><p><strong>Names are created when first assigned.</strong> Python creates a variable name the first time you <em>assign</em> it a value (i.e., an object reference), so there’s no <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="names" id="id2473"></a><a contenteditable="false" data-type="indexterm" data-primary="names" data-secondary="assignments" id="id2474"></a>need to predeclare names ahead of time. Some (but not all) data structure slots are created when assigned, too (e.g., dictionary entries, some object attributes). Once assigned, a name is replaced with the value it references whenever it appears in an expression.</p></li>
+<li><p><strong>Names must be assigned before being referenced.</strong> It’s an error to use a name to which you haven’t yet assigned a value. Python raises an exception if you try, rather than returning some sort of ambiguous <em>default</em> value. This turns out to be crucial in Python because names are not predeclared—if Python provided default values for unassigned names used in your program instead of treating them as errors, it would be much more difficult for you to spot name typos in your code.</p></li>
+<li class="pagebreak-before"><p><strong>Some operations <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="implicit" id="id2475"></a>perform assignments implicitly.</strong> In this section, we’re concerned with the <code>=</code> statement and its <code>:=</code> expression relative, but assignment occurs in many contexts in Python. For instance, you’ll see later that module imports, function and class definitions, <code>for</code> loop variables, and function arguments are all implicit assignments. Because assignment works the same everywhere it pops up, all these contexts simply <em>bind</em> (i.e., assign) names and object components to object references at runtime.</p></li>
+</ul>
+<p>With those preliminaries in hand, let’s move on to the code.</p>
+<section data-type="sect2" data-pdf-bookmark="Assignment Syntax Forms"><div class="sect2" id="assignment_syntax_forms">
+<h2>Assignment Syntax Forms</h2>
+<p>Although assignment is a general and pervasive concept in Python, in this chapter we are primarily interested <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="statements" id="id2476"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="assignments" id="id2477"></a>in assignment <em>statements</em>, plus one limited <em>expression</em>. <a data-type="xref" href="#assignment_statement_and_expression_for">Table 11-1</a> illustrates the different syntax forms available for coding assignments in Python.</p>
+<table class="border" id="assignment_statement_and_expression_for">
+<caption><span class="label">Table 11-1. </span>Assignment statement and expression forms</caption>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>target = 'Hack'</code></td>
+<td>Basic assignment</td>
+</tr>
+<tr>
+<td><code>code, hack = 'py', 'PY'</code></td>
+<td>Tuple assignment</td>
+</tr>
+<tr>
+<td><code>[code, hack] = ['py', 'PY']</code></td>
+<td>List assignment</td>
+</tr>
+<tr>
+<td><code>a, b, c, d = 'hack'</code></td>
+<td>Sequence assignment</td>
+</tr>
+<tr>
+<td><code>a, *b = 'hack'</code></td>
+<td>Extended-unpacking assignment</td>
+</tr>
+<tr>
+<td><code>code = hack = 'python'</code></td>
+<td>Multiple-target assignment</td>
+</tr>
+<tr>
+<td><code>code += 1, hack *= 2</code></td>
+<td>Augmented assignments</td>
+</tr>
+<tr>
+<td><code>(python := 3.12) + 0.01</code></td>
+<td>Named assignment expression</td>
+</tr>
+</tbody>
+</table>
+<p>The <em>basic</em> form atop <a data-type="xref" href="#assignment_statement_and_expression_for">Table 11-1</a> is by far the most common: binding a single target (a name or data structure component) to a single object (an expression result). In fact, you could get all your work done with this form alone. The other table entries represent forms that are all optional, but that programmers often find convenient in practice:</p>
+<dl>
+<dt>Tuple and list assignments</dt>
+<dd>The second and third forms in the <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="tuples" id="id2478"></a><a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="lists" id="id2479"></a><a contenteditable="false" data-type="indexterm" data-primary="tuples" data-secondary="assignments" id="id2480"></a><a contenteditable="false" data-type="indexterm" data-primary="lists" data-secondary="assignments" id="id2481"></a>table are related. When you code a tuple or list on the left side of the <code>=</code>, Python <em>pairs</em> objects on the right side with targets on the left by <em>position</em> and assigns them from left to right. For example, in the second line of <a data-type="xref" href="#assignment_statement_and_expression_for">Table 11-1</a>, both sides are tuples (sans parentheses), and the names <code>code</code> and <code>hack</code> are assigned <code>'py'</code> and <code>'PY'</code>, respectively. The left of the <code>=</code> is special syntax but the right is a real object, which is why this is called “unpacking” assignment—components on the right are unpacked into targets on the left.</dd>
+<dt>Sequence assignment</dt>
+<dd>Tuple and list assignments were <a contenteditable="false" data-type="indexterm" data-primary="sequence assignments" id="id2482"></a><a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="sequences" id="id2483"></a>later generalized into instances of what we now call <em>sequence assignment</em>—any sequence of targets can be assigned to any sequence (really, iterable) of values, and Python assigns the items one at a time by position. We can even mix and match the types of the sequences involved. The fourth line in <a data-type="xref" href="#assignment_statement_and_expression_for">Table 11-1</a>, for example, pairs a tuple of names with a string of characters: <code>a</code> is assigned <code>'h'</code>, <code>b</code> is assigned <code>'a'</code>, and so on. Despite this flexibility, the item on the left of the <code>=</code> is still a tuple or list of assignment targets.</dd>
+<dt>Extended-unpacking assignment</dt>
+<dd>An even later assignment form allows <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="extended-unpacking" id="id2484"></a><a contenteditable="false" data-type="indexterm" data-primary="unpacking assignments" id="id2485"></a>more flexibility in how we assign portions of a sequence—or other iterable—to a sequence of targets. The fifth line in <a data-type="xref" href="#assignment_statement_and_expression_for">Table 11-1</a>, for example, matches <code>a</code> with the first character in the string on the right, and the <em>starred</em> name <code>b</code> with the rest: <code>a</code> is assigned <code>'h'</code>, and <code>b</code> is assigned <code>['a', 'c', 'k']</code>. This provides an alternative to assigning the results of slicing operations. Starred collectors like this have also somewhat usurped the term <em>unpacking</em>, though this is an artifact more historical than technical.</dd>
+<dt>Multiple-target assignment</dt>
+<dd>The sixth line in <a data-type="xref" href="#assignment_statement_and_expression_for">Table 11-1</a> shows the multiple-target form of assignment. In this <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="multiple-targets" id="id2486"></a><a contenteditable="false" data-type="indexterm" data-primary="multiple-target assignments" id="id2487"></a>form, Python assigns a reference to the same object (the object farthest to the right) to all the targets on the left. In the table, the names <code>code</code> and <code>hack</code> are both assigned references to the same string object, <code>'python'</code>. The effect is the same as if we had run <code>hack = 'python'</code> followed by <code>code = hack</code>, as <code>hack</code> evaluates to the original string object (i.e., not a separate copy of that object).</dd>
+<dt>Augmented assignments</dt>
+<dd>The second-to-last <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="augmented" id="id2488"></a><a contenteditable="false" data-type="indexterm" data-primary="augmented assignments" id="id2489"></a>line in <a data-type="xref" href="#assignment_statement_and_expression_for">Table 11-1</a> is an example of <em>augmented assignment</em>—a shorthand that combines an expression and an assignment in a concise way. Saying <code>code += 1</code>, for example, has the same effect as <code>code = code + 1</code>, but the augmented form requires less typing and is generally quicker to run. In addition, if the target of the assignment is <em>mutable</em>, an augmented assignment may run even quicker by choosing an <em>in-place</em> update operation instead of an object copy. As you’ll see, there is one augmented assignment statement for most binary expression operators in Python (even the unused <code>@</code>!).</dd>
+<dt>Named assignment expression</dt>
+<dd>New in Python 3.8, the <code>:=</code> operator allows you to code assignment as an <em>expression</em>, which <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="named assignment expression" id="id2490"></a><a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="named assignment expression" id="id2491"></a><a contenteditable="false" data-type="indexterm" data-primary="named assignment expression" id="id2492"></a>returns the value it assigns to a name. This expression can be nested in places where assignment statements don’t work syntactically, and in common roles allows you to both assign a name and use its value in the same place in your code.</dd>
+</dl>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Basic Assignments"><div class="sect2" id="basic_assignments">
+<h2>Basic Assignments</h2>
+<p>Let’s turn to examples at the REPL prompt as usual. We’ve already used <a data-type="xref" href="#assignment_statement_and_expression_for">Table 11-1</a>’s <em>basic</em> assignment in this book, so you should be familiar with its <a contenteditable="false" data-type="indexterm" data-primary="basic assignment" id="bscssgn"></a><a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="basic assignment" id="asgbsg"></a>basics. In short, it assigns a single <em>target</em> to a single value, where the target may be a name, index, slice, or attribute, and the value is any expression:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>L = [1, 2]</strong></code>             <code><em># Name target</em></code>
+&gt;&gt;&gt; <code><strong>L[0] = 3</strong></code>               <code><em># Index target</em></code>
+&gt;&gt;&gt; <code><strong>L[-1:] = [4, 5]</strong></code>        <code><em># Slice target</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[3, 4, 5]</pre>
+<p>Attribute targets crop up for classes; we haven’t studied these yet, but the assignment is straightforward:</p>
+<pre data-type="programlisting"><code><strong>object.attr = L</strong></code>            <code><em># Attribute target (see Part VI)</em></code></pre>
+<p>Though <em>names</em> are common and dominate examples here, any of these four types of assignment targets can be used in any form of assignment, except where noted ahead (named assignment expressions, for example, allow only names).</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>Name annotations</em>: Basic assignment <a contenteditable="false" data-type="indexterm" data-primary="name annotations, basic assignment" id="id2493"></a>statements can also have an <em>annotation</em> expression introduced by a colon immediately after the target on the left. This statement form allows only a single target, and is used for <em>type hinting</em>, described near the end of <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>. As noted there, because this is optional, convoluted, completely unused by Python, and fundamentally at odds with the language’s core idiom, we’re skipping it in this book. See Python’s docs for more details if you ever stumble in the wild onto the curious case of type declarations <a contenteditable="false" data-type="indexterm" data-primary="basic assignment" data-startref="bscssgn" id="id2494"></a><a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="basic assignment" data-startref="asgbsg" id="id2495"></a>in a dynamically typed language.</p>
+</div>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Sequence Assignments"><div class="sect2" id="sequence_assignments">
+<h2>Sequence Assignments</h2>
+<p>Next up, here are a few simple and <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="sequence assignments" id="asgqssgn"></a><a contenteditable="false" data-type="indexterm" data-primary="sequence assignments" id="sqgmnt"></a>comparable examples of tuple and list assignment (a.k.a. <em>sequence</em> assignment) in action, unpacking items into individual variables:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>first  = 1</strong></code>                      <code><em># Basic assignment
+</em></code>&gt;&gt;&gt; <code><strong>second = 2</strong></code>
+
+&gt;&gt;&gt; <code><strong>A, B = first, second</strong></code>            <code><em># Tuple assignment
+</em></code>&gt;&gt;&gt; <code><strong>A, B</strong></code>                            <code><em># Similar to A = first; B = second</em></code>
+(1, 2)
+
+&gt;&gt;&gt; <code><strong>[C, D] = [first, second]</strong></code>        <code><em># List assignment</em></code>
+&gt;&gt;&gt;<code> <strong>C, D</strong></code>
+(1, 2)</pre>
+<p>Notice that we really are coding two tuples in the third line in this interaction—we’ve just omitted their enclosing parentheses. Python pairs the <em>values</em> in the tuple on the right side of the assignment operator with the <em>variables</em> in the tuple on the left side and assigns the values one at a time. The same goes when <code>=</code> is surrounded by lists.</p>
+<p>Tuple assignment leads to a common coding trick in Python that was introduced in a solution to the exercises at the end of <a data-type="xref" href="part02.html#objects_and_operations">Part II</a>. Because Python creates a temporary tuple that saves the original values of the variables on the right while the statement runs, unpacking assignments are also an easy way to <em>swap</em> two variables’ values without creating a temporary variable of your own—the tuple on the right remembers the prior values of the variables automatically:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>first  = 1</strong></code>
+&gt;&gt;&gt; <code><strong>second = 2</strong></code>
+&gt;&gt;&gt; <code><strong>first, second = second, first</strong></code>    <code><em># Tuples: swaps values</em></code>
+&gt;&gt;&gt; <code><strong>first, second</strong></code>                    <code><em># Like T = first; first = second; second = T</em></code>
+(2, 1)</pre>
+<p>As already noted, the original tuple and list assignment forms in Python were eventually generalized to accept <em>any</em> type of sequence (really, <em>iterable</em>) on the right as long as it is of the same length as the sequence on the left. You can assign a tuple of values to a list of variables, a string of characters to a tuple of variables, and so on. In all cases, Python assigns items in the sequence on the right to targets in the sequence on the left by position—from left to right:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>[a, b, c] = (1, 2, 3)</strong></code>          <code><em># Assign tuple of values to list of names
+</em></code>&gt;&gt;&gt; <code><strong>a, c</strong></code>
+(1, 3)
+&gt;&gt;&gt; <code><strong>(a, b, c) = 'ABC'</strong></code>              <code><em># Assign string of characters to tuple names</em></code>
+&gt;&gt;&gt; <code><strong>a, c</strong></code>
+('A', 'C')</pre>
+<p>More broadly, while the left side of a sequence assignment is still a sequence (a tuple or list of targets), the right side may be any <em>iterable</em> object, not just any sequence. This is a more general category that includes collections both physical (e.g., lists) and virtual (e.g., a file’s lines), which was first defined in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a> and has popped up in passing ever since. We’ll firm up this term when we explore iterables in Chapters <a data-xrefstyle="select:labelnumber" data-type="xref" href="ch14.html#iterations_and_comprehensions">14</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch20.html#comprehensions_and_generations">20</a>, and apply it to unpack a <code>range</code> iterable in the next section. For now, the “sequence” in assignment is best associated with what’s on the left of the <code>=</code>.</p>
+<section data-type="sect3" data-pdf-bookmark="Advanced sequence-assignment patterns"><div class="sect3" id="advanced_sequence_assignment_patterns">
+<h3>Advanced sequence-assignment patterns</h3>
+<p>Although we can mix and match <a contenteditable="false" data-type="indexterm" data-primary="patterns" data-secondary="sequence assignments" id="id2496"></a>sequence types around the <code>=</code> symbol, we must generally have the <em>same number</em> of items on the right as we have targets on the left, or we’ll get an error. As you’ll see in the next section, Python allows us to be more general with extended-unpacking <code>*</code> syntax, but the number of items in the assignment target and subject must normally match:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>string = 'TEXT'</strong></code>
+&gt;&gt;&gt; <code><strong>a, b, c, d = string</strong></code>                            <code><em># Same number on both sides
+</em></code>&gt;&gt;&gt; <code><strong>a, b, c, d</strong></code>
+('T', 'E', 'X', 'T') 
+
+&gt;&gt;&gt; <code><strong>a, b, c = string</strong></code>                               <code><em># Error if not</em></code>
+ValueError: too many values to unpack (expected 3)</pre>
+<p>To be more flexible, we can always <em>slice</em>. There are a variety of ways to employ slicing to make this last case work:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a, b, c = string[0], string[1], string[2:]</strong></code>     <code><em># Index and slice</em></code>
+&gt;&gt;&gt; <code><strong>a, b, c             </strong>  </code>                         <code><em># a, b, c = ('T', 'E', 'XT')</em></code>
+('T', 'E', 'XT')
+
+&gt;&gt;&gt; <code><strong>a, b, c = list(string[:2]) + [string[2:]]</strong></code>      <code><em># Slice and concatenate</em></code>
+&gt;&gt;&gt; <code><strong>a, b, c             </strong>  </code>                         <code><em># a, b, c = ['T', 'E', 'XT']</em></code>
+('T', 'E', 'XT')
+
+&gt;&gt;&gt; <code><strong>a, b = string[:2]</strong></code>                              <code><em># Slice and unpack directly</em></code>
+&gt;&gt;&gt; <code><strong>c = string[2:]      </strong>  </code>                         <code><em># a, b = 'TE'; c = 'XT'</em></code>
+&gt;&gt;&gt; <code><strong>a, b, c</strong></code>
+('T', 'E', 'XT')
+
+&gt;&gt;&gt; <code><strong>(a, b), c = string[:2], string[2:]</strong></code>             <code><em># Nested sequences</em></code>
+&gt;&gt;&gt; <code><strong>a, b, c             </strong>  </code>                         <code><em># (a, b), c = 'TE', 'XT'</em></code>
+('T', 'E', 'XT')</pre>
+<p>As the last example in this interaction <a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="assigning nested sequences" id="id2497"></a>demonstrates, we can even assign <em>nested</em> sequences, and Python unpacks their parts according to their shape, as expected. In this case, we are assigning a tuple of two items, where the first item is a nested sequence (a string), exactly as though we had coded it this way:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>((a, b), c) = ('TE', 'XT')</strong></code>                     <code><em># Paired by shape and position
+</em></code>&gt;&gt;&gt; <code><strong>a, b, c</strong></code>
+('T', 'E', 'XT')</pre>
+<p>Python pairs the first string on the right (<code>'TE'</code>) with the first tuple on the left (<code>(a, b)</code>) and assigns one character at a time, before assigning the entire second string (<code>'XT'</code>) to the variable <code>c</code> all at once. In this event, the sequence-nesting shape of the object on the left must match that of the object on the right. Nested sequence assignment like this is somewhat rare to see, but it can be convenient for picking out the parts of data structures with known shapes.</p>
+<p>For example, you’ll see in <a data-type="xref" href="ch13.html#while_and_for_loops">Chapter 13</a> that this technique also works in <code>for</code> loops, because loop items are assigned to the target given in the loop header just as if an <code>=</code> statement had been run:</p>
+<pre data-type="programlisting">for (a, b, c) in [(1, 2, 3), (4, 5, 6)]: …          <code><em># Simple tuple assignment</em></code>
+
+for ((a, b), c) in [((1, 2), 3), ((4, 5), 6)]: …    <code><em># Nested tuple assignment</em></code></pre>
+<p>Such nested sequence assignments can also be achieved with the <code>match</code> statement of the next chapter, but we’ll hold back the details until then. Sequence-unpacking assignments also give rise to another common coding idiom in Python—assigning an integer series to a set of variables:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>red, green, blue = range(3)</strong></code>
+&gt;&gt;&gt; <code><strong>red, blue</strong></code>
+(0, 2)</pre>
+<p>This code initializes the three names on the left of <code>=</code> to the integers <code>0</code>, <code>1</code>, and <code>2</code>, respectively. Because each name gets a unique value, it’s Python’s simplest equivalent to the <em>enumerated</em> data types you may have seen in other languages. To make sense of this, you need to recall that the <code>range</code> built-in function returns an <em>iterable</em>, which generates a list of successive integers (wrap it in a <code>list</code> if you wish to display its values at the REPL all at once like this):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(range(3))</strong></code>                       <code><em># list() required for display
+</em></code>[0, 1, 2]</pre>
+<p>This call was previewed briefly in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a>; because <code>range</code> is commonly used in <code>for</code> loops, we’ll say more about it in <a data-type="xref" href="ch13.html#while_and_for_loops">Chapter 13</a>. Another place you may see a tuple assignment at work is for splitting a sequence into its front and the rest, in loops like the following’s <code>while</code>, introduced in the prior chapter:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2, 3, 4]</strong></code>
+&gt;&gt;&gt; <code><strong>while L:  </strong>  </code>                         <code><em># Reapeat until L becomes empty (false)</em></code>
+...     <code><strong>front, L = L[0], L[1:]</strong></code>           <code><em># See next section for * alternative</em></code>
+...     <code><strong>print(front, L)</strong></code>
+...
+1 [2, 3, 4]
+2 [3, 4]
+3 [4]
+4 []</pre>
+<p>The tuple assignment in the loop here could be coded as the following two lines instead, but it’s often more convenient to string them together:</p>
+<pre data-type="programlisting">...     <code><strong>front = L[0]</strong></code>
+...     <code><strong>L = L[1:]</strong></code></pre>
+<p>Notice that this code is using the list as a sort of <em>stack</em> data structure, which can often also be achieved with the <code>append</code> and <code>pop</code> methods of list objects; here, <code>front = L.pop(0)</code> would have much the same effect as the tuple assignment statement, but it would be an in-place change. You’ll learn <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="sequence assignments" data-startref="asgqssgn" id="id2498"></a><a contenteditable="false" data-type="indexterm" data-primary="sequence assignments" data-startref="sqgmnt" id="id2499"></a>more about <code>while</code> loops, and other (and often better) ways to step through a sequence with <code>for</code> loops, in <a data-type="xref" href="ch13.html#while_and_for_loops">Chapter 13</a>.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Extended-Unpacking Assignments"><div class="sect2" id="extended_unpacking_assignments">
+<h2>Extended-Unpacking Assignments</h2>
+<p>The prior section demonstrated how to use manual slicing to make sequence assignments more general. In <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="extended-unpacking" id="asxpck"></a><a contenteditable="false" data-type="indexterm" data-primary="unpacking assignments" id="upkssg"></a><a contenteditable="false" data-type="indexterm" data-primary="extended-unpacking assignments" id="expkssg"></a>later Pythons, sequence assignment was further extended to make this easier. In short, a <em>starred target</em>, <code>*<em>X</em></code>, can be used on the left of <code>=</code> in order to specify a more general matching against the iterable on the right—the starred target is assigned a list, which collects all items in the iterable not assigned to other targets. This is especially handy for common coding patterns such as splitting a sequence into its “front” and “rest,” as in the preceding example.</p>
+<section data-type="sect3" data-pdf-bookmark="Extended unpacking in action"><div class="sect3" id="extended_unpacking_in_action">
+<h3>Extended unpacking in action</h3>
+<p>Let’s jump right into an example to demo how this works. As already shown, sequence assignments normally require exactly as many targets on the left as there are items in the object on the right. We get an error if the lengths disagree, unless we manually slice on the right, as shown in the prior section:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>seq = [1, 2, 3, 4]</strong></code>
+&gt;&gt;&gt; <code><strong>a, b, c, d = seq</strong></code>
+&gt;&gt;&gt;<code> <strong>a, d</strong></code>
+(1, 4)
+
+&gt;&gt;&gt; <code><strong>a, b = seq</strong></code>
+ValueError: too many values to unpack (expected 2)</pre>
+<p>We can, however, use a single starred target in this example to match more generally. In the following continuation of our interactive session, <code>a</code> matches the first item in the sequence, and <code>b</code> matches the rest:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a, *b = seq</strong></code>
+&gt;&gt;&gt; <code><strong>a</strong></code>
+1
+&gt;&gt;&gt; <code><strong>b</strong></code>
+[2, 3, 4]</pre>
+<p>When a starred target is used (like name <code>b</code> here), the number of items on the left need not match the length of the iterable on the right (like sequence <code>seq</code> here). In fact, the starred target can appear <em>anywhere</em> on the left. For instance, in the next interaction <code>b</code> matches the last item in the sequence, and <code>a</code> matches everything before the last:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>*a, b = seq</strong></code>
+&gt;&gt;&gt; <code><strong>a</strong></code>
+[1, 2, 3]
+&gt;&gt;&gt; <code><strong>b</strong></code>
+4</pre>
+<p>When the starred target appears in the <em>middle</em>, it collects everything between the other targets listed. Thus, in the following interaction, <code>a</code> and <code>c</code> are assigned the first and last items, and <code>b</code> gets everything in between them:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a, *b, c = seq</strong></code>
+&gt;&gt;&gt; <code><strong>a</strong></code>
+1
+&gt;&gt;&gt; <code><strong>b</strong></code>
+[2, 3]
+&gt;&gt;&gt; <code><strong>c</strong></code>
+4</pre>
+<p>More generally, wherever the starred target shows up, it will be assigned a list that collects every unassigned item at that position:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a, b, *c = seq</strong></code>
+&gt;&gt;&gt; <code><strong>a</strong></code>
+1
+&gt;&gt;&gt; <code><strong>b</strong></code>
+2
+&gt;&gt;&gt; <code><strong>c</strong></code>
+[3, 4]</pre>
+<p>Naturally, like normal sequence assignment, extended-unpacking syntax works for any sequence types (really, again, any <em>iterable</em>), not just lists. Here it is unpacking characters in a string and an iterable <code>range</code>—which generates values 0…3 on demand:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a, *b = 'hack'</strong></code>
+&gt;&gt;&gt; <code><strong>a, b</strong></code>
+('h', ['a', 'c', 'k']) 
+
+&gt;&gt;&gt; <code><strong>a, *b, c = 'hack'</strong></code>
+&gt;&gt;&gt; <code><strong>a, b, c</strong></code>
+(('h', ['a', 'c'], 'k')
+
+&gt;&gt;&gt; <code><strong>a, *b, c = range(4)</strong></code>
+&gt;&gt;&gt; <code><strong>a, b, c</strong></code>
+(0, [1, 2], 3)</pre>
+<p>This is similar in spirit to <em>slicing</em>, but not exactly the same—a sequence unpacking assignment always returns a <em>list</em> for matched items, whereas slicing returns a sequence of the same type as the object sliced:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S = 'hack'</strong></code> 
+
+&gt;&gt;&gt; <code><strong>a, b, c = S[0], S[1:-1], S[-1]</strong> </code>     <code><em># Slices are type specific</em></code>
+&gt;&gt;&gt; <code><strong>a, b, c</strong></code>
+('h', 'ac', 'k')
+
+&gt;&gt;&gt; <code><strong>a, *b, c = S</strong></code>                        <code><em># But * always returns a list</em></code>
+&gt;&gt;&gt; <code><strong>a, b, c</strong></code>
+('h', ['a', 'c'], 'k')</pre>
+<p>Finally, the closing example of the prior section <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="extended-unpacking" data-startref="asxpck" id="id2500"></a><a contenteditable="false" data-type="indexterm" data-primary="unpacking assignments" data-startref="upkssg" id="id2501"></a><a contenteditable="false" data-type="indexterm" data-primary="extended-unpacking assignments" data-startref="expkssg" id="id2502"></a>becomes even simpler with this extension, since we don’t have to manually slice to get the first and rest of the items (though the “rest” <code>L</code> always becomes a list after the first <code>*</code>):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2, 3, 4]</strong></code>
+&gt;&gt;&gt; <code><strong>while L:</strong></code>
+...     <code><strong>front, *L = L</strong></code>                   <code><em># Get first, rest without slicing</em></code>
+...     <code><strong>print(front, L)</strong></code>
+...
+1 [2, 3, 4]
+2 [3, 4]
+3 [4]
+4 []</pre>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Boundary cases"><div class="sect3" id="boundary_cases-id00005">
+<h3>Boundary cases</h3>
+<p>Although extended unpacking is <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="extended-unpacking" data-tertiary="boundary cases" id="sgxkbd"></a><a contenteditable="false" data-type="indexterm" data-primary="unpacking assignments" data-secondary="boundary cases" id="pksbdcs"></a><a contenteditable="false" data-type="indexterm" data-primary="extended-unpacking assignments" data-secondary="boundary cases" id="xpksgbr"></a>flexible, some boundary (atypical) cases are worth noting. First, the starred target may match just a single item, but is always assigned a list:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>seq = [1, 2, 3, 4]</strong></code>
+
+&gt;&gt;&gt; <code><strong>a, b, c, *d = seq</strong></code>
+&gt;&gt;&gt; <code><strong>print(a, b, c, d)</strong></code>
+1 2 3 [4]</pre>
+<p>Second, if there is nothing left to match the starred target, it is assigned an empty list, regardless of where it appears. In the following, names <code>a</code>, <code>b</code>, <code>c</code>, and <code>d</code> have matched every item in the sequence, but Python assigns <code>e</code> an empty list instead of treating this as an error case:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a, b, c, d, *e = seq</strong></code>
+&gt;&gt;&gt; <code><strong>print(a, b, c, d, e)</strong></code>
+1 2 3 4 []
+
+&gt;&gt;&gt; <code><strong>a, b, *e, c, d = seq</strong></code>
+&gt;&gt;&gt; <code><strong>print(a, b, c, d, e)</strong></code>
+1 2 3 4 []</pre>
+<p>Errors can still be triggered, though, if there is more than one starred target, if there are too few values and no star (as before), and if the starred target is not itself coded inside a sequence:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a, *b, c, *d = seq</strong></code>
+SyntaxError: multiple starred expressions in assignment
+
+&gt;&gt;&gt; <code><strong>a, b = seq</strong></code>
+ValueError: too many values to unpack (expected 2)
+
+&gt;&gt;&gt; <code><strong>*a = seq</strong></code>
+SyntaxError: starred assignment target must be in a list or tuple 
+
+&gt;&gt;&gt; <code><strong>*a, = seq</strong></code>         <code><em># A one-item tuple sans parentheses</em></code>
+&gt;&gt;&gt; <code><strong>a</strong>  </code>               <code><em># Same as a = seq, but makes a new copy!
+</em></code>[1, 2, 3, 4]</pre>
+<p>Technically, the single-appearance rule for starred targets on the left of <code>=</code> really applies only to <em>each</em> sequence when there is <em>nesting</em> on both sides—though you still can’t have more than one per nested sequence:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>[(a, *b), (c, *d)] = [(1, 2, 3, 4), (5, 6, 7, 8)]</strong></code>
+&gt;&gt;&gt; <code><strong>a, b, c, d</strong></code>
+(1, [2, 3, 4], 5, [6, 7, 8])
+ 
+&gt;&gt;&gt; <code><strong>[(a, *b, *x), (c, *d)] = [(1, 2, 3, 4), (5, 6, 7, 8)]</strong></code>
+SyntaxError: multiple starred expressions in <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="extended-unpacking" data-tertiary="boundary cases" data-startref="sgxkbd" id="id2503"></a><a contenteditable="false" data-type="indexterm" data-primary="unpacking assignments" data-secondary="boundary cases" data-startref="pksbdcs" id="id2504"></a><a contenteditable="false" data-type="indexterm" data-primary="extended-unpacking assignments" data-secondary="boundary cases" data-startref="xpksgbr" id="id2505"></a>assignment</pre>
+<p>And finally, any assignment <em>target</em> can be starred—though you may be hard-pressed to find some in real code:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a, *L = [1, 2, 3]</strong></code>          <code><em># Name target</em></code> 
+&gt;&gt;&gt; <code><strong>a, L</strong></code>
+(1, [2, 3])
+&gt;&gt;&gt; <code><strong>a, *L[0] = [4, 5, 6]</strong></code>       <code><em># Index target</em></code>
+&gt;&gt;&gt; <code><strong>a, L</strong></code>
+(4, [[5, 6], 3])
+&gt;&gt;&gt; <code><strong>a, *L[1:] = [7, 8, 9]</strong> </code>     <code><em># Slice target</em></code>
+&gt;&gt;&gt; <code><strong>a, L</strong></code>
+(7, [[5, 6], 8, 9])
+
+&gt;&gt;&gt; <code><strong>class C: …</strong><em>code</em><strong>…</strong>  </code>          <em># See Part VI</em>
+&gt;&gt;&gt; <code><strong>a, *C.attr = 'yikes'</strong></code>       <code><em># Attribute target</em></code>
+&gt;&gt;&gt; <code><strong>a, C.attr</strong></code>
+('y', ['i', 'k', 'e', 's'])</pre>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="A useful convenience"><div class="sect3" id="a_useful_convenience">
+<h3>A useful convenience</h3>
+<p>Keep in mind that extended-unpacking assignment is just a convenience (well, in addition to a mouthful). We can usually achieve the same effects with explicit indexing and slicing, but extended unpacking is simpler to code. The common “first, rest” splitting coding pattern, for example, can be coded either way, but slicing is extra work:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>seq</strong></code>
+[1, 2, 3, 4]
+
+&gt;&gt;&gt; <code><strong>a, *b = seq</strong></code>                        <code><em># First, rest</em></code>
+&gt;&gt;&gt; <code><strong>a, b</strong></code>
+(1, [2, 3, 4])
+
+&gt;&gt;&gt; <code><strong>a, b = seq[0], seq[1:]</strong></code>             <code><em># First, rest sans *
+</em></code>&gt;&gt;&gt; <code><strong>a, b</strong></code>
+(1, [2, 3, 4])</pre>
+<p>The also-common “rest, last” splitting pattern can similarly be coded either way, but extended-unpacking syntax again requires noticeably fewer keystrokes (and notably fewer neurons):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>*a, b = seq</strong></code>                       <code> <em># Rest, last</em></code>
+&gt;&gt;&gt; <code><strong>a, b</strong></code>
+([1, 2, 3], 4)
+
+&gt;&gt;&gt; <code><strong>a, b = seq[:-1], seq[-1]</strong></code>           <code><em># Rest, last sans *</em></code>
+&gt;&gt;&gt; <code><strong>a, b</strong></code>
+([1, 2, 3], 4)</pre>
+<p>Being both simpler and arguably more natural, extended-unpacking syntax is also common in Python code.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Application to for loops"><div class="sect3" id="application_to_for_loops">
+<h3>Application to for loops</h3>
+<p>Because the loop variable in the <code>for</code> loop statement can be any assignment target, extended unpacking <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="extended-unpacking" data-tertiary="for loops" id="id2506"></a><a contenteditable="false" data-type="indexterm" data-primary="unpacking assignments" data-secondary="for loops" id="id2507"></a><a contenteditable="false" data-type="indexterm" data-primary="extended-unpacking assignments" data-secondary="for loops" id="id2508"></a><a contenteditable="false" data-type="indexterm" data-primary="for loops" data-secondary="extended-unpacking assignments" id="id2509"></a>works here too. We used the <code>for</code> loop iteration tool briefly in <a data-type="xref" href="ch04.html#introducing_python_objects">Chapter 4</a> and will study it formally in <a data-type="xref" href="ch13.html#while_and_for_loops">Chapter 13</a>, but its tie-in here is straightforward: extended-unpacking assignments may show up after the word <code>for</code>, where a simple variable name is more commonly used:</p>
+<pre data-type="programlisting">for (a, *b, c) in [(1, 2, 3, 4), (5, 6, 7, 8)]: …</pre>
+<p>When used in this context, on each iteration Python simply assigns the next tuple of values to the tuple of targets. On the first loop, for example, it’s as if we’d run the following assignment statement:</p>
+<pre data-type="programlisting">a, *b, c = (1, 2, 3, 4)                            <code><em># b gets [2, 3]</em></code></pre>
+<p>The names <code>a</code>, <code>b</code>, and <code>c</code> can be used within the loop’s code to reference the extracted components. In fact, this is really not a special case at all, but just an instance of general assignment at work. As we saw earlier in this chapter, for example, we can do similar in loops with simple sequence (tuple) assignment:</p>
+<pre data-type="programlisting">for (a, b, c) in [(1, 2, 3), (4, 5, 6)]: …          <code><em># a, b, c = (1, 2, 3), …</em></code></pre>
+<p>And we can always emulate extended-unpacking assignment behavior by manually slicing:</p>
+<pre data-type="programlisting">for all in [(1, 2, 3, 4), (5, 6, 7, 8)]: …
+    a, b, c = all[0], all[1:-1], all[-1]</pre>
+<p>Since we haven’t learned enough to get more detailed <a contenteditable="false" data-type="indexterm" data-primary="extended-unpacking assignments" data-secondary="for loops" data-startref="xpklppo" id="id2510"></a>about the syntax of <code>for</code> loops, we’ll put this topic on the back burner until its reprise in <a data-type="xref" href="ch13.html#while_and_for_loops">Chapter 13</a>.</p>
+<aside data-type="sidebar" epub:type="sidebar"><div class="sidebar" id="the_many_stars_of_python">
+<h1>The Many Stars of Python</h1>
+<p>No, this sidebar is not about personalities (which already permeate software culture more than they should). It’s a <a contenteditable="false" data-type="indexterm" data-primary="* (asterisk) use in code" id="id2511"></a>reference to all the special-case appearances of <code>*</code> that have cropped up in Python over the years, many of which you’ve already seen. Prior to Python 3.5, the special starred-item syntax forms can appear in:</p>
+<ul>
+<li><p><em>Assignments</em>, where a single <code>*<em>X</em></code> starred assignment target of any kind (name, index, <a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="assignments" id="id2512"></a><a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="syntax" id="id2513"></a>slice, attribute), and repeatable in nested parts, collects unmatched items in a new list, as covered in this chapter</p></li>
+<li><p><em>Function headers</em>, where <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="function headers" id="id2514"></a><a contenteditable="false" data-type="indexterm" data-primary="function headers" id="id2515"></a>single <code>*<em>X</em></code> and <code>**<em>X</em></code> starred names collect unmatched positional and keyword arguments in a tuple and dictionary, respectively</p></li>
+<li><p><em>Function calls</em>, where single <code>*<em>X</em></code> and <code>**<em>X</em></code> starred expressions <a contenteditable="false" data-type="indexterm" data-primary="function calls" data-secondary="assignments" id="id2516"></a><a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="function calls" id="id2517"></a>unpack iterables and mappings into individual positional and keyword arguments, respectively</p></li>
+</ul>
+<p>As of Python 3.5, <em>function calls</em> (the latter listed item) support any number of <code>*<em>X</em></code> and <code>**<em>X</em></code> unpacking expressions, and any number of <code>*<em>X</em></code> and <code>**<em>X</em></code> starred expressions can also appear in <em>object literals</em>, where they unpack collections of types implied by the literal in which they appear:</p>
+<pre data-type="programlisting">[x, *iter]       <code><em># List:  unpack items in iterables</em></code>
+(x, *iter, y)    <code><em># Tuple: ditto, parentheses or not</em></code>
+{*iter, x}       <code><em># Set:   ditto, though values are unordered and unique</em></code>
+{x: y, **map}    <code><em># Dict:  unpack keys/values in mappings, rightmost dup wins</em></code></pre>
+<p>As of Python 3.10, both <em>*</em><code><em>X</em></code> and <em>**</em><code><em>X</em></code> starred names can also show up in the patterns of the <code>match</code> statement covered in the next chapter, where they serve roles similar to that in sequence assignment, though only <code>*<em>X</em></code> overlaps between the two, and its assignment in <code>match</code> is really a side effect of a true-or-false test.</p>
+<p>And as of Python 3.11, an <code>except*</code> can appear in <code>try</code> statements, where it allows multiple handlers to be run to process multiple exceptions wrapped in an exception <em>group</em>—an addition that bifurcates the already-convoluted <code>try</code> for narrow roles, which we won’t meet until <a data-type="xref" href="ch35.html#exception_objects">Chapter 35</a>.</p>
+<p>All that being said, the avenue of stars has been a meandering walk in Python, and it’s not impossible that other parts of the language will rise to stardom in the future. Consult the stars for more info.</p>
+</div></aside>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Multiple-Target Assignments"><div class="sect2" id="multiple_target_assignments">
+<h2>Multiple-Target Assignments</h2>
+<p>Simpler than sequence assignment on <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="multiple-targets" id="id2518"></a><a contenteditable="false" data-type="indexterm" data-primary="multiple-target assignments" id="id2519"></a>first glance, a <em>multiple-target assignment</em> simply assigns all the given targets to the same object all the way to the right. The following, for example, assigns the three names (variables) <code>a</code>, <code>b</code>, and <code>c</code> to the string <code>'code'</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a = b = c = 'code'</strong></code>
+&gt;&gt;&gt; <code><strong>a, b, c</strong></code>
+('code', 'code', 'code')</pre>
+<p>This form is equivalent to—but easier to code and lighter on line count than—these three assignments:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>c = 'code'</strong></code>
+&gt;&gt;&gt; <code><strong>b = c</strong></code>
+&gt;&gt;&gt; <code><strong>a = b</strong></code></pre>
+<section data-type="sect3" data-pdf-bookmark="Multiple-target assignment and shared references"><div class="sect3" id="multiple_target_assignment_and_shared_r">
+<h3>Multiple-target assignment and shared references</h3>
+<p>While this seems simple, keep in <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="multiple-targets" data-tertiary="shared references" id="ssgpgrfr"></a><a contenteditable="false" data-type="indexterm" data-primary="multiple-target assignments" data-secondary="shared references" id="mptgsfr"></a><a contenteditable="false" data-type="indexterm" data-primary="shared references" data-secondary="multiple-target assignments" id="shrftg"></a><a contenteditable="false" data-type="indexterm" data-primary="references" data-secondary="shared" data-tertiary="multiple-target assignments" id="rfrsrmgg"></a>mind that there is just one object here, shared by all three variables: they all wind up referencing the <em>same</em> object in memory. This behavior is worry-free for <em>immutable</em> types—for example, when initializing a set of counters to zero (recall that variables must be assigned before they can be used in Python, so you must initialize counters to zero before you can start adding to them):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a = b = 0</strong></code>
+&gt;&gt;&gt; <code><strong>b = b + 1</strong></code>
+&gt;&gt;&gt; <code><strong>a, b</strong></code>
+(0, 1)</pre>
+<p>Here, changing <code>b</code> changes only <code>b</code> because numbers do not support in-place changes. As long as the object assigned is immutable, it’s irrelevant if more than one name references it.</p>
+<p>As usual, though, we have to be more cautious when initializing variables to an empty <em>mutable</em> object such as a list or dictionary:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a = b = []</strong></code>
+&gt;&gt;&gt; <code><strong>b.append(42)</strong></code>
+&gt;&gt;&gt; <code><strong>a, b</strong></code>
+([42], [42])</pre>
+<p>This time, because <code>a</code> and <code>b</code> reference the <em>same</em> object, appending to it in place through <code>b</code> will impact what we see through <code>a</code> as well. This is really just another example of the shared reference phenomenon we first met in <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>. To avoid the issue, initialize mutable objects in separate statements instead, so that each creates a distinct empty object, by running a distinct literal expression:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a = []</strong></code>
+&gt;&gt;&gt; <code><strong>b = []</strong></code>                 <code><em># a and b do not share the same object</em></code>
+&gt;&gt;&gt; <code><strong>b.append(42)</strong></code>
+&gt;&gt;&gt;<code> <strong>a, b</strong></code>
+([], [42])</pre>
+<p>A <em>tuple</em> assignment like the following has the same effect with more brevity—by running two list-literal expressions, it <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="multiple-targets" data-tertiary="shared references" data-startref="ssgpgrfr" id="id2520"></a><a contenteditable="false" data-type="indexterm" data-primary="multiple-target assignments" data-secondary="shared references" data-startref="mptgsfr" id="id2521"></a><a contenteditable="false" data-type="indexterm" data-primary="shared references" data-secondary="multiple-target assignments" data-startref="shrftg" id="id2522"></a><a contenteditable="false" data-type="indexterm" data-primary="references" data-secondary="shared" data-tertiary="multiple-target assignments" data-startref="rfrsrmgg" id="id2523"></a>creates two distinct objects:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a, b = [], []</strong></code>          <code><em># a and b do not share the same object</em></code></pre>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Augmented Assignments"><div class="sect2" id="augmented_assignments">
+<h2>Augmented Assignments</h2>
+<p>In addition to the basic, <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="augmented" id="asgaug"></a><a contenteditable="false" data-type="indexterm" data-primary="augmented assignments" id="augsmt"></a>sequence (original and starred), and multiple assignment forms already covered, Python gained all the assignment statement formats listed in <a data-type="xref" href="#augmented_assignment_statements">Table 11-2</a> relatively early in its career. Known as <em>augmented assignments</em>, and borrowed from the C language, these formats are mostly just shorthand: they imply the combination of a binary (two-operand) expression and an assignment. For instance, the following two formats are functionally equivalent, though the latter may use in-place options to change <code>X</code> directly, as you’ll see in a moment:</p>
+<pre data-type="programlisting">X = X + Y                       <code><em># Basic form</em></code>
+X += Y                          <code><em># Augmented form</em></code></pre>
+<table id="augmented_assignment_statements">
+<caption><span class="label">Table 11-2. </span>Augmented assignment statements</caption>
+<tbody>
+<tr>
+<td><code>X += Y</code></td>
+<td><code>X -= Y</code></td>
+<td><code>X *= Y</code></td>
+<td><code>X /= Y</code></td>
+<td><code>X @= Y</code></td>
+</tr>
+<tr>
+<td><code>X //= Y</code></td>
+<td><code>X %= Y</code></td>
+<td><code>X **= Y</code></td>
+<td><code>X &gt;&gt;= Y</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>X &lt;&lt;= Y</code></td>
+<td><code>X &amp;= Y</code></td>
+<td><code>X |= Y</code></td>
+<td><code>X ^= Y</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Augmented assignment works on any type that supports the implied binary expression. For example, here are two ways to add 1 to a name; really, they both change a name to reference different values:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x = 1</strong></code>
+&gt;&gt;&gt; <code><strong>x = x + 1</strong></code>                   <code><em># Basic</em></code>
+&gt;&gt;&gt; <code><strong>x</strong></code>
+2
+&gt;&gt;&gt; <code><strong>x += 1</strong></code>                      <code><em># Augmented</em></code>
+&gt;&gt;&gt; <code><strong>x</strong></code>
+3</pre>
+<p>When applied to a <em>sequence</em> such as a string, the augmented form performs concatenation instead, because that’s what <code>+</code> means for such objects. Thus, the second line here is equivalent to typing the longer <code>S = S + 'HACK'</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>S = 'hack'</strong></code>
+&gt;&gt;&gt; <code><strong>S += 'HACK'</strong></code>                 <code><em># Implied concatenation</em></code>
+&gt;&gt;&gt; <code><strong>S</strong></code>
+'hackHACK'</pre>
+<p>As shown in <a data-type="xref" href="#augmented_assignment_statements">Table 11-2</a>, there are analogous augmented assignment forms for other Python binary expression operators (i.e., operators with values on their left and right sides). For instance, <code>X *= Y</code> multiplies and assigns, <code>X &gt;&gt;= Y</code> shifts right and assigns, and so on (though per <a data-type="xref" href="ch05.html#numbers_and_expressions">Chapter 5</a>, the form <code>X @= Y</code> is unused and unimplemented by Python itself today). All told, augmented assignments have three noteworthy advantages:<sup><a data-type="noteref" id="ch11fn1-marker" href="ch11.html#ch11fn1">1</a></sup></p>
+<ul>
+<li><p>There’s less for you to type. (Need this book say more?)</p></li>
+<li><p>The left side has to be evaluated only once. In <code>X += Y</code>, <code>X</code> may be a complicated object expression. In the augmented form, its code must be run only once. However, in the long form, <code>X = X + Y</code>, <code>X</code> appears twice and must be run twice. Because of this, augmented assignments usually run faster.</p></li>
+<li><p>The optimal technique is automatically chosen. That is, for objects that support <em>in-place</em> changes, the augmented forms automatically perform in-place change operations instead of slower copies.</p></li>
+</ul>
+<p>The last point here requires a bit more explanation. For augmented assignments, in-place operations may be applied for mutable objects as an optimization. Recall that lists can be extended in a variety of ways. To add a single item to the end of a list, we can concatenate or call <code>append</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2]</strong></code>
+&gt;&gt;&gt; <code><strong>L = L + [3]</strong></code>                 <code><em># Concatenate one: slower</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[1, 2, 3]
+&gt;&gt;&gt; <code><strong>L.append(4)</strong></code>                 <code><em># Faster, but in place</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[1, 2, 3, 4]</pre>
+<p>And to add a set of items to the end, we can either concatenate again or call the list <code>extend</code> method:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = L + [5, 6]</strong></code>              <code><em># Concatenate many: slower</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[1, 2, 3, 4, 5, 6]
+&gt;&gt;&gt; <code><strong>L.extend([7, 8])</strong></code>            <code><em># Faster, but in place</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[1, 2, 3, 4, 5, 6, 7, 8]</pre>
+<p>In both cases, concatenation is less prone to the side effects of shared object references but will generally run slower than the in-place equivalent. Concatenation operations must create a new object, copy in the list on the left, and then copy in the list on the right. By contrast, in-place method calls simply add items at the end of a memory block (it can be a bit more complicated than that internally, but this description suffices).</p>
+<p>When we use augmented assignment to extend a list, we can largely forget these details—Python automatically calls the quicker <code>extend</code> method (or its equivalent) instead of using the slower concatenation operation implied by <code>+</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L += [9, 10]</strong></code>                <code><em># Mapped to L.extend([9, 10])</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</pre>
+<p>As suggested in <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>, we can also use slice assignment (e.g., <code>L[len(L):] = [11,12,13]</code>), but this works roughly the same as the simpler and more mnemonic list <code>extend</code> method or the <code>+=</code> statement. Note, however, that because of this equivalence <code>+=</code> for a list is not exactly the same as a <code>+</code> and <code>=</code> in all cases—for lists <code>+=</code> allows arbitrary sequences (just like <code>extend</code>), but concatenation normally does not:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = []</strong></code>
+&gt;&gt;&gt; <code><strong>L += 'hack'</strong></code>                 <code><em># += and extend allow any sequence, but + does not!
+</em></code>&gt;&gt;&gt; <code><strong>L</strong></code>
+['h', 'a', 'c', 'k'] 
+&gt;&gt;&gt; <code><strong>L = L + 'code'</strong></code>
+TypeError: can only concatenate list (not "str") to list</pre>
+<p>Moreover, using <em>index</em> and <em>slice</em> targets in augmented assignment may change mutables in other ways:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2]</strong></code>
+&gt;&gt;&gt; <code><strong>L[0] += 10</strong>  </code>               <code><em># Change an item of a list, in place</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[11, 2]
+
+&gt;&gt;&gt; <code><strong>L[-1:] += [3, 4]</strong> </code>          <code><em># Change a section of a list, in place</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[11, 2, 3, 4]</pre>
+<section data-type="sect3" data-pdf-bookmark="Augmented assignment and shared references"><div class="sect3" id="augmented_assignment_and_shared_referen">
+<h3>Augmented assignment and shared references</h3>
+<p>More subtly, the <em>in-place</em> change implicit in <code>+=</code> for lists is very different from the <em>new</em> object created by <code>+</code> concatenation. As for all shared-reference cases, this difference may matter when objects are shared by many names:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2]</strong></code>
+&gt;&gt;&gt; <code><strong>M = L</strong></code>                       <code><em># L and M reference the same object</em></code>
+&gt;&gt;&gt; <code><strong>L = L + [3, 4]</strong></code>              <code><em># Concatenation makes a new object</em></code>
+&gt;&gt;&gt; <code><strong>L, M</strong></code>                        <code><em># Changes L but not M
+</em></code>([1, 2, 3, 4], [1, 2])
+
+&gt;&gt;&gt; <code><strong>L = [1, 2]</strong></code>
+&gt;&gt;&gt; <code><strong>M = L</strong></code>
+&gt;&gt;&gt; <code><strong>L += [3, 4]</strong></code>                 <code><em># But += really means extend, not +
+</em></code>&gt;&gt;&gt; <code><strong>L, M</strong></code>                        <code><em># M sees the in-place change too!
+</em></code>([1, 2, 3, 4], [1, 2, 3, 4])</pre>
+<p>This only matters for mutables like lists and dictionaries, and it is a fairly obscure case (at least, until it impacts your code!). As always, make copies of your mutable objects if you need to <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="augmented" data-startref="asgaug" id="id2524"></a><a contenteditable="false" data-type="indexterm" data-primary="augmented assignments" data-startref="augsmt" id="id2525"></a>break the shared reference structure.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Named Assignment Expressions"><div class="sect2" id="named_assignment_expressions">
+<h2>Named Assignment Expressions</h2>
+<p>For most of Python’s three-decade tenure, it resisted <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="named assignment expression" id="ssgnmxp"></a><a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="named assignment expression" id="xpssgxp"></a><a contenteditable="false" data-type="indexterm" data-primary="named assignment expression" id="nsgxpr"></a>emulating the assignment-as-expression idiom of the C language, on the grounds that it was too subtle and error-prone, and fostered code that was hard to read. While these concerns still apply, Python 3.8 gained a flavor of this, known as <em>named assignment</em>.</p>
+<p>Importantly, this flavor does <em>not</em> make normal <code>=</code> assignment statements nestable expressions, as they are in C. Instead, it adds a new expression operator to Python, <code>:=</code>, on the grounds that its different and limited syntax may neutralize pitfalls of other languages. You still can’t accidentally type <code>=</code> when you mean <code>==</code>, and <code>:=</code> is visually distinct.</p>
+<p>We explored this expression briefly in a spoiler note in the previous chapter. In short, the expression <code><em>name</em> := <em>value</em></code> first evaluates expression <code><em>value</em></code>, and then both:</p>
+<ul>
+<li><p><em>Assigns</em> the result to the provided variable <code><em>name</em></code></p></li>
+<li><p><em>Returns</em> the result as the value of the overall <code>:=</code> expression</p></li>
+</ul>
+<p>There’s no reason to use this syntax for the first part alone, because all of Python’s <code>=</code> assignment statements already assign values to names (in fact, you’ll get a syntax error if you try using <code>:=</code> as a statement sans parentheses). Because <code>:=</code> is an <em>expression</em> that returns the value assigned, though, it can be nested in contexts where statements aren’t allowed and may be used in roles that both test and then use the assigned name.</p>
+<p>As an artificial first example, the following nested <code>:=</code> both assigns <code>2</code> to <code>b</code>, and returns it to be used in the <code>*</code> string-repetition result assigned to <code>a</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a = 'hack' * (b := 2)</strong></code> 
+&gt;&gt;&gt; <code><strong>a</strong></code>
+'hackhack'
+&gt;&gt;&gt; <code><strong>b</strong></code>
+2</pre>
+<p>Among its deliberate limitations, named assignment allows only a simple, single <em>name</em> (variable) on the left, so neither other assignment-statement forms nor references to data-structure components work here:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>(python := 3.12) + 0.01</strong></code>         <code><em># Just a name on the left</em></code>
+3.13
+&gt;&gt;&gt; <code><strong>python</strong></code>
+3.12
+
+&gt;&gt;&gt; <code><strong>(python, Python := 3.12, 3.13) + 0.01</strong></code>
+TypeError: can only concatenate tuple (not "float") to tuple
+&gt;&gt;&gt; <code><strong>(python[0] := 3.12) + 0.01</strong></code>
+SyntaxError: cannot use assignment expressions with subscript
+&gt;&gt;&gt; <code><strong>(python.attr := 3.12) + 0.01</strong></code>
+SyntaxError: cannot use assignment expressions with attribute</pre>
+<p>The first of these failers, for example, is taken to be a three-item tuple with <code>:=</code> in the middle, not a two-target named sequence assignment. Moreover, named assignment does not support any of the <em>augmented</em> assignment forms we met earlier: there is no <code>:+=</code>, for instance, and coding statement <code>X += 1</code> may actually take less work than expression <code>(X := X + 1)</code> (subtly, a <code>:=+</code> runs, but simply applies the <code>+</code> identity operator to the expression on the right).</p>
+<section data-type="sect3" data-pdf-bookmark="When to use named assignment"><div class="sect3" id="when_to_use_named_assignment">
+<h3>When to use named assignment</h3>
+<p>While more useful contexts for <code>:=</code> are limited, its most common use cases arise in concert with the <code>if</code> and <code>while</code> statements, which were both introduced in the preceding chapter and earlier. Without <code>:=</code>, it was—and still is—common to assign a variable before the statement, test it in the statement header, and then use it in the statement body.</p>
+<p>For example, code that reads lines from files and must detect the end of the file (which, you’ll recall from <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a>, means an empty string that is logically false) may look like these partial snippets (to run code in this section live, open a text file for input and assign it to <code>file</code> before each snippet):</p>
+<pre data-type="programlisting">line = file.readline()             <code><em># Sans the := expression</em></code> 
+if line:
+    print(line)
+
+line = file.readline()             <code><em># Ditto, in while loops</em></code>
+while line:
+    print(line)
+    line = file.readline()</pre>
+<p>To avoid redundant calls, it’s also common to code the latter like this in Python—as in the preceding chapter:</p>
+<pre data-type="programlisting">while True:                        <code><em># Sans both := and redundancy</em></code>
+   line = file.readline()
+   if not line: break
+   print(line)</pre>
+<p>These forms still work well, and the <code>:=</code> is never required. With <code>:=</code>, however, we can sometimes collapse a fetch, assignment, and test into a one-liner within statement headers themselves:</p>
+<pre data-type="programlisting">if line := file.readline():        <code><em># The := alternatives</em></code>
+    print(line)
+
+while line := file.readline():     <code><em># Read all lines (vs: for line in file)</em></code>
+    print(line)</pre>
+<p>In both cases, because <code>:=</code> <em>returns</em> the results of the <code>readline</code> call, its logical value can be tested in the statement header itself. And because <code>:=</code> also <em>assigns</em> the result to <code>line</code>, it can be used in the statement’s body if it is run. The upshot is that <code>:=</code> provides a sort of <em>shortcut</em> that allows multiple operations to be coded in a compact way.</p>
+<p>If you opt to use this expression, bear in mind that it often requires enclosing <em>parentheses</em> to avoid interacting with surrounding code. Even comparing its result to an explicit value, for instance, mandates parentheses that are not required in the equivalent statements:</p>
+<pre data-type="programlisting">if (line := file.readline()) != ignore:          <code><em># Parentheses required</em></code>
+    print(line)
+
+while (line := file.readline()) != stop:         <code><em># And not a bad idea</em></code> 
+    print(line)</pre>
+<p>As a rule of thumb, if you opt to use <code>:=</code>, wrapping it in parentheses both sets it off visually and avoids sticky issues that may arise if the code surrounding it changes its meaning unexpectedly. In the preceding, for example, names are assigned the results of the <code>!=</code> tests if parentheses are omitted, because it binds tighter than <code>:=</code> (see <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a>). Moreover, <code>:=</code> has special syntax rules that we’ll omit here, but they encourage parenthesized usage by design.</p>
+<p>Besides file reads and similar roles, the <code>:=</code> can be leveraged to reuse results in literals and get last results in comprehensions and other iteration tools, and can even be nested in f-strings and itself—with requisite parentheses:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>[val := 'Py!', val * 2, val * 3]</strong></code>               <code><em># Reusing a value</em></code>
+['Py!', 'Py!Py!', 'Py!Py!Py!']
+
+&gt;&gt;&gt; <code><strong>list(pow := 2 ** num for num in [2, 4, 8])</strong></code>     <code><em># Capturing a result</em></code>
+[4, 16, 256]
+&gt;&gt;&gt; <code><strong>pow</strong></code>
+256
+
+&gt;&gt;&gt; <code><strong>f'Hello {(name := input('Who are you? '))}'</strong></code>    <code><em># Nesting in f-strings (hmm)</em></code>
+Who are you? <code><strong>Pat</strong></code>
+'Hello Pat'
+&gt;&gt;&gt; <code><strong>name</strong></code>
+'Pat'
+
+&gt;&gt;&gt; <code><strong>(x := (y := (z := 1) + 1) + 1)</strong>  </code>               <code><em># Nesting in itself (hmm * 2)</em></code>
+3
+&gt;&gt;&gt; <code><strong>x, y, z</strong></code>
+(3, 2, 1)</pre>
+<p>As another rule of thumb, bear in mind that a deeply nested and obscure <code>:=</code> expression might seem clever but will be a lot harder to read—and even <em>notice</em>—than a simple standalone assignment. You’ll be able to judge this for yourself in examples in <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a>. Generally speaking, though, for the sake of others (including your future self!), use <code>:=</code>, like so many <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="named assignment expression" data-startref="ssgnmxp" id="id2526"></a><a contenteditable="false" data-type="indexterm" data-primary="expressions" data-secondary="named assignment expression" data-startref="xpssgxp" id="id2527"></a><a contenteditable="false" data-type="indexterm" data-primary="named assignment expression" data-startref="nsgxpr" id="id2528"></a>nestable tools, sparingly and wisely. Clarity is usually worth the extra line or two.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Variable Name Rules"><div class="sect2" id="variable_name_rules">
+<h2>Variable Name Rules</h2>
+<p>Now that we’ve explored assignment <a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="naming rules" id="vrbnmrl"></a><a contenteditable="false" data-type="indexterm" data-primary="naming variables" id="nmgvrg"></a>statements and expressions, it’s time to get more formal about the use of variable <em>names</em>. In Python, names come into existence when you assign values to them, but there are a few rules to follow when choosing names for the subjects of your programs:</p>
+<dl>
+<dt>Syntax: (underscore or letter) + (any number of letters, digits, or underscores)</dt>
+<dd><p>Variable names must start <a contenteditable="false" data-type="indexterm" data-primary="syntax" data-secondary="variable names" id="id2529"></a>with an underscore or letter, which can be followed by any number of letters, digits, or underscores. <code>_hack</code>, <code>hack</code>, and <code>Hack_1</code> are legal names, but <code>1_hack</code>, <code>hack$</code>, and <code>@#!</code> are not.</p>
+<p>Python also allows non-ASCII <em>Unicode</em> characters to appear in variable names, but such characters may make your code difficult to use in some contexts and are subject to a handful of rules that require deep Unicode knowledge and are too arcane to cover here. See <a data-type="xref" href="ch37.html#unicode_and_byte_strings">Chapter 37</a>’s note “Unicode in variable names” for expanded coverage of this topic, and Python’s language manuals for full details.</p></dd>
+<dt>Case matters: <code>HACK</code> is not <a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="names, case" id="id2530"></a>the same as <code>hack</code></dt>
+<dd>Python always pays attention to case in programs, both in names you create and in reserved words. For instance, the names <code>X</code> and <code>x</code> refer to two different variables. For portability, case also matters in the names of imported module files, even on platforms where the filesystems are case-insensitive (as is common in Windows). That way, your imports still work after programs are copied to differing platforms.</dd>
+<dt>Reserved words are off-limits</dt>
+<dd>Names you define cannot be the same <a contenteditable="false" data-type="indexterm" data-primary="reserved words in variable naming" id="id2531"></a>as words that mean special things in the Python language. For instance, Python will raise a syntax error if you try to use <code>class</code> as a variable name, but <code>klass</code> and <code>Class</code> work fine. <a data-type="xref" href="#python_reserved_words">Table 11-3</a> lists the words that are currently <em>reserved</em>—and hence off-limits for names of your own—in Python. Note: Python’s docs call these “keywords” today, despite the longstanding and differing use of “keywords” for pass-by-name function arguments; to avoid confusion, this book uses “reserved words” for, well, reserved words.</dd>
+</dl>
+<table id="python_reserved_words">
+<caption><span class="label">Table 11-3. </span>Python reserved words</caption>
+<tbody>
+<tr>
+<td><code>False</code></td>
+<td><code>await</code></td>
+<td><code>else</code> </td>
+<td><code>import</code></td>
+<td><code>pass</code> </td>
+</tr>
+<tr>
+<td><code>None</code></td>
+<td><code>break</code> </td>
+<td><code>except</code></td>
+<td><code>in</code> </td>
+<td><code>raise</code> </td>
+</tr>
+<tr>
+<td><code>True</code></td>
+<td><code>class</code> </td>
+<td><code>finally</code> </td>
+<td><code>is</code> </td>
+<td><code>return</code> </td>
+</tr>
+<tr>
+<td><code>and</code></td>
+<td><code>continue</code> </td>
+<td><code>for</code> </td>
+<td><code>lambda</code> </td>
+<td><code>try</code> </td>
+</tr>
+<tr>
+<td><code>as</code></td>
+<td><code>def</code> </td>
+<td><code>from</code> </td>
+<td><code>nonlocal</code> </td>
+<td><code>while</code> </td>
+</tr>
+<tr>
+<td><code>assert</code></td>
+<td><code>del</code> </td>
+<td><code>global</code> </td>
+<td><code>not</code> </td>
+<td><code>with</code></td>
+</tr>
+<tr>
+<td><code>async</code></td>
+<td><code>elif</code> </td>
+<td><code>if</code> </td>
+<td><code>or</code> </td>
+<td><code>yield</code></td>
+</tr>
+</tbody>
+</table>
+<p>In addition to <a data-type="xref" href="#python_reserved_words">Table 11-3</a> (and as partly leaked in <a data-type="xref" href="ch10.html#introducing_python_statements">Chapter 10</a>), the words <code>match</code>, <code>case</code>, <code>_</code>, and <code>type</code> are <em>soft</em> reserved words: they are reserved only in the context of the statement to which they belong and can be used as variables anywhere else. As you’ll learn in the next chapter, the first three are part of a multiple-choice <code>match</code> statement; the latter is used by a <code>type</code> statement that creates type aliases, used for the type hinting discussed at the end of <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>.</p>
+<p>As you can see, most of Python’s reserved words are all lowercase. They are also all truly reserved—unlike names in the <em>built-in scope</em> that you will meet in the next part of this book, you cannot redefine reserved words by assignment. The statement <code>and = 1</code>, for instance, results in a syntax error.</p>
+<p>Besides being of mixed case, the first three entries in <a data-type="xref" href="#python_reserved_words">Table 11-3</a>—<code>False</code>, <code>None</code>, and <code>True</code>—are somewhat unusual in meaning: they also appear in the built-in scope of Python described in <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>, and they are technically names assigned to objects. They are truly reserved in all other senses, though, and cannot be used for any other purpose in your script other than that of the objects they represent. All the other reserved words are hardwired into Python’s syntax and can appear only in the specific contexts for which they are intended.<sup><a data-type="noteref" id="ch11fn3-marker" href="ch11.html#ch11fn3">2</a></sup></p>
+<p>Furthermore, because module names in <code>import</code> statements become variables in your scripts, variable name constraints extend to your <em>module filenames</em> too. For instance, you can code files called <em>and.py</em> and <em>my-code.py</em> and can run them as top-level scripts, but you cannot import them: their names without their <em>.py</em> extensions become <em>variables</em> in your code on imports, and so must follow all the variable rules just outlined. Hence, reserved words are off-limits, and dashes won’t work, though underscores will. This module idea will be revisited in <a data-type="xref" href="part05.html#modules_and_packages">Part V</a> of this book, where you’ll find that this constraint also applies to names of “package” folders by extension.</p>
+<aside data-type="sidebar" epub:type="sidebar"><div class="sidebar" id="pythonapostrophes_deprecation_policies">
+<h1>Python’s Deprecation Policies</h1>
+<p>Because making new words reserved has the potential to break code widely, such changes are generally phased <a contenteditable="false" data-type="indexterm" data-primary="deprecation policies" id="id2532"></a>into the language gradually. When a change might impact existing code, Python often makes it an option and begins issuing <em>deprecation warnings</em> one or more releases before the mod is officially enabled. The idea is that you should have time to notice the warnings and update your code before upgrading your Python. More recently, the “soft” reserved-word category has arisen to allow new reserved words to be added with neither warnings nor breakages. This seems a tacit recognition that deprecations only go so far.</p>
+<p>Deprecation policies are not always followed, especially for major releases like 3.0 (which broke existing code wantonly), but also for newer changes deemed to be justifiable or innocuous by their promoters. In theory, changes are overseen by a <em>steering committee</em> charged with enforcing deprecation policies. While this helps in some cases, it is largely ineffectual in stemming the flood of opinionated morph and bloat in Python, which makes engineering reliable and durable software more challenging than it should be.</p>
+<p>Even when deprecation warnings <em>are</em> issued, though, programs that cannot be easily changed will break if they have been distributed in source code form to users who innocently upgrade their local Python. Those on the receiving end of such flux may legitimately see deprecation warnings less as a courtesy than a bandage on a gaping wound. Warning that you’re going to be rude doesn’t make it OK to be rude!</p>
+</div></aside>
+<section data-type="sect3" data-pdf-bookmark="Naming conventions"><div class="sect3" id="naming_conventions">
+<h3>Naming conventions</h3>
+<p>Besides these rules, there is also a set of naming <em>conventions</em>—rules that are not required but are followed in normal practice. For instance, because names with two leading and trailing underscores (e.g., <code>__name__</code>) generally have special meaning to the Python interpreter, you should avoid this pattern for your own names except in contexts where it is expected. Here is a list of the conventions Python <span class="keep-together">follows</span>:</p>
+<ul>
+<li><p>Names that begin with a single underscore (<code>_<em>X</em></code>) are not imported by a <code>from module import *</code> statement, described in <a data-type="xref" href="ch23.html#module_coding_basics">Chapter 23</a>.</p></li>
+<li><p>Names that have two leading and trailing underscores (<code>__<em>X</em>__</code>) are system-defined names that have special meaning to the interpreter and provide implementation details in the user-defined OOP classes of <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a>.</p></li>
+<li><p>Names that begin with two underscores and do not <em>end</em> with two more (<code>__<em>X</em></code>) are localized (“mangled”) to enclosing classes, per the discussion of pseudoprivate attributes in <a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a>.</p></li>
+<li><p>The name that is just a single underscore (<code>_</code>) retains the result of the last expression when you are working interactively at some REPLs and is a soft keyword for a wildcard in <code>match</code>, as covered in <a data-type="xref" href="ch12.html#if_and_match_selections">Chapter 12</a>.</p></li>
+</ul>
+<p>In addition to these Python interpreter conventions, there are various other conventions that Python programmers usually follow. For instance, some programmers distinguish parts of long names using “camelCase” (<code>aLongName</code>), and others use underscores (<code>a_Long_name</code>); either is completely valid according to both Python and this book.</p>
+<p>Later in the book, you’ll also see that <em>class</em> names commonly start with an uppercase letter and <em>module</em> names with a lowercase letter, and that the name <code>self</code>, though not reserved, usually has a special role in classes. Moreover, in <a data-type="xref" href="ch17.html#scopes">Chapter 17</a> we’ll study another, larger category of names known as the <em>built-ins</em>, which are predefined but not reserved (and so can be reassigned: <code>open = 99</code> silently works, though you might occasionally wish it didn’t!).</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Names have no type, but objects do"><div class="sect3" id="names_have_no_typecomma_but_objects_do">
+<h3>Names have no type, but objects do</h3>
+<p>This is mostly review, but remember that it’s crucial to keep Python’s distinction between names and objects clear. As described in <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>, objects have a type (e.g., integer, list) and may be mutable or not. Names (a.k.a. variables), on the other hand, are always just references to objects; they have no notion of mutability and have no associated type information, apart from the type of the object they happen to reference at a given point in time.</p>
+<p>Thus, it’s OK to assign the same name to different kinds of objects at different times:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x = 0</strong></code>               <code><em># x bound to an integer object</em></code>
+&gt;&gt;&gt; <code><strong>x = 'Hello'</strong></code>         <code><em># Now it's a string</em></code>
+&gt;&gt;&gt; <code><strong>x = [1, 2, 3]</strong></code>       <code><em># And now it's a list</em></code></pre>
+<p>Especially when we step up to functions and classes later in this book, you’ll see that this generic nature of names can be a decided advantage in Python programming. In <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>, you’ll also learn that names live in something called a <em>scope</em>, which defines where they can be used; the place where you assign a name determines where it is visible.<sup><a data-type="noteref" id="ch11fn4-marker" href="ch11.html#ch11fn4">3</a></sup></p>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Expression Statements"><div class="sect1" id="expression_statements">
+<h1>Expression Statements</h1>
+<p>In Python, you can use any <em>expression</em> as a statement, too—which usually means on a line by itself. Because the result of the expression won’t be saved, though, it usually makes sense to do so in scripts only if the expression does something useful as a side effect. Expressions are commonly used as statements in two situations:</p>
+<dl>
+<dt>For calls to functions and methods</dt>
+<dd>Some functions do their work without <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="expression statements" id="stxpttm"></a><a contenteditable="false" data-type="indexterm" data-primary="expression statements" id="xpsstt"></a>returning a value. Such functions are sometimes called <em>procedures</em> in other languages. Because they don’t return values that you might be interested in retaining, you can call these functions with expression statements. This also applies to methods, which are just functions with an implied subject.</dd>
+<dt>For printing values at the interactive prompt</dt>
+<dd>As you certainly know by now, Python echoes back the results of expressions typed at the interactive command line. Technically, these are expression statements, too; they serve as a shorthand for typing <code>print</code> statements.</dd>
+</dl>
+<p><a data-type="xref" href="#common_python_expression_statements">Table 11-4</a> lists some common expression statement forms in Python. Calls to functions and methods are coded with zero or more argument objects (really, expressions that evaluate to objects) in parentheses, after the function or method name.</p>
+<table class="border" id="common_python_expression_statements">
+<caption><span class="label">Table 11-4. </span>Common Python expression statements</caption>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hack('Py', 3.12)</code></td>
+<td>Function calls</td>
+</tr>
+<tr>
+<td><code>code.hack('Py')</code></td>
+<td>Method calls</td>
+</tr>
+<tr>
+<td><code>hack</code></td>
+<td>Printing results in the interactive interpreter (REPL)</td>
+</tr>
+<tr>
+<td><code>print(a, b, c, sep='')</code></td>
+<td>Printing operations (a special function call)</td>
+</tr>
+<tr>
+<td><code>yield x ** 2</code></td>
+<td>Yielding expression statements (generators)</td>
+</tr>
+<tr>
+<td><code>await producer()</code></td>
+<td>Pausing for steps to finish (coroutines)</td>
+</tr>
+</tbody>
+</table>
+<p>The last three entries in <a data-type="xref" href="#common_python_expression_statements">Table 11-4</a> are somewhat special cases. As you’ll see later in this chapter, printing in Python is a function call usually coded as a statement by itself, and important enough to callout here. The <code>yield</code> and <code>await</code> operations on generator and coroutine functions (discussed in <a data-type="xref" href="ch20.html#comprehensions_and_generations">Chapter 20</a>) are regularly coded as statements as well. All three, though, are really just instances of expressions masquerading as statements.</p>
+<p>For instance, though you normally run a <code>print</code> call on a line by itself as an expression statement, it actually returns a value like any other function call—the return value is <code>None</code>, the default return value for functions that don’t return anything meaningful (it requires another <code>print</code> to reveal in output):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>x = print('code')</strong></code>         <code><em># print is a function-call expression</em></code>
+code
+&gt;&gt;&gt; <code><strong>print(x)</strong></code>                  <code><em># But is usually coded as an expression statement</em></code>
+None</pre>
+<p>Also keep in mind that although expressions can appear as statements in Python, the <em>converse</em> is not true: statements cannot be used as expressions. A statement that is not also an expression must generally appear on a line all by itself, not nested in a larger syntactic structure.</p>
+<p>For example, Python doesn’t allow you to embed basic assignment statements (<code>=</code>) in other expressions. The rationale for this is that it avoids common coding mistakes; you can’t accidentally change a variable by typing <code>=</code> when you really mean to use the <code>==</code> equality test. If you really miss this coding pattern from other languages, though, the newer and visually distinct <code>:=</code> named-assignment expression we met earlier works the same way with less chance <a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="expression statements" data-startref="stxpttm" id="id2533"></a><a contenteditable="false" data-type="indexterm" data-primary="expression statements" data-startref="xpsstt" id="id2534"></a>of being confused with <code>==</code>, and a variety of coding alternatives achieve similar goals (e.g., see <code>while</code> coverage in <a data-type="xref" href="ch13.html#while_and_for_loops">Chapter 13</a>).</p>
+<section data-type="sect2" data-pdf-bookmark="Expression Statements and In-Place Changes"><div class="sect2" id="expression_statements_and_in_place_chan">
+<h2>Expression Statements and In-Place Changes</h2>
+<p>This brings up a common mistake in Python work, which we’ve encountered before, but is so pervasive that it <a contenteditable="false" data-type="indexterm" data-primary="expression statements" data-secondary="in-place changes" id="id2535"></a><a contenteditable="false" data-type="indexterm" data-primary="in-place changes" data-secondary="expression statements" id="id2536"></a>merits another quick nag here. Expression statements are often used to run list methods that change a list in place:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = [1, 2]</strong></code>
+&gt;&gt;&gt; <code><strong>L.append(3)</strong></code>               <code><em># Append is an in-place change</em></code>
+&gt;&gt;&gt; <code><strong>L</strong></code>
+[1, 2, 3]</pre>
+<p>It’s not unusual, though, for Python newcomers to code this as an assignment statement instead:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>L = L.append(4)</strong></code>           <code><em># But append returns None, not L</em></code>
+&gt;&gt;&gt; <code><strong>print(L)</strong></code>                  <code><em># So we lose our list!</em></code>
+None</pre>
+<p>But this doesn’t work: in-place change methods like <code>append</code>, <code>sort</code>, and <code>reverse</code> always change the list in place, but do not return the list they have changed; instead, they return the <code>None</code> object. Assigning such an operation’s result back to the variable name loses your reference to the list (and it’s probably garbage-collected in the process).</p>
+<p>So don’t do that—call in-place change operations without assigning their results. We’ll revisit this phenomenon in <a data-type="xref" href="ch15.html#common_coding_gotchas">“Common Coding Gotchas”</a>, because it can also appear in the context of some looping statements we’ll explore in the chapters ahead.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Print Operations"><div class="sect1" id="print_operations">
+<h1>Print Operations</h1>
+<p>In Python, <code>print</code> prints things—it’s simply a programmer-friendly interface to the standard <a contenteditable="false" data-type="indexterm" data-primary="print operations" id="id2537"></a>output stream. It’s a function-call expression that we’re calling out here because it’s so pervasive and is usually coded as a statement.</p>
+<p>Technically, printing converts one or more objects to their textual representations, adds some minor formatting, and sends the resulting text to either standard output or another file-like stream. In a bit more detail, <code>print</code> is strongly bound up with the notions of <em>files and streams</em> in Python:</p>
+<dl>
+<dt>File object methods</dt>
+<dd>In <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a>, we explored file object methods that write text (e.g., <code><em>file</em>.write(<em>str</em>)</code>). Printing operations are similar, but more <a contenteditable="false" data-type="indexterm" data-primary="print operations" data-secondary="file object methods" id="id2538"></a><a contenteditable="false" data-type="indexterm" data-primary="file objects" data-secondary="print operations" id="id2539"></a>focused—whereas file write methods write strings to arbitrary files, <code>print</code> writes objects to the <code>stdout</code> stream by default, with some automatic conversion and formatting added. Unlike with file methods, there is no need to convert objects to strings when using print operations.</dd>
+<dt>Standard output stream</dt>
+<dd><p>The standard output stream (often known as <code>stdout</code>) is simply a default place to send a <a contenteditable="false" data-type="indexterm" data-primary="print operations" data-secondary="standard output streams" id="id2540"></a><a contenteditable="false" data-type="indexterm" data-primary="standard output streams, print operations" id="id2541"></a>program’s text output. Along with the standard input and error streams, it’s one of three data connections created when your script starts. The standard output stream is usually mapped to the window where you started your Python program or REPL, unless it’s been redirected to a file or pipe in your operating system’s shell or rerouted by your coding GUI.</p>
+<p>Because the standard output stream is available in Python as the <code>stdout</code> file object in the built-in <code>sys</code> module (i.e., <code>sys.stdout</code>), it’s possible to emulate <code>print</code> with file write method calls. However, <code>print</code> is noticeably simpler to use in most roles and makes it easy to print text to other files and streams.</p></dd>
+</dl>
+
+<div data-type="note" epub:type="note"><h6>Note</h6>
+    <p><em>Blast from the past</em>: Printing is also one of the most visible places where Python 3.X and 2.X diverged: it morphed from statement in 2.X to built-in function in 3.X—and broke nearly every existing Python program in the process. This book no longer covers 2.X’s statement, but the legacy of 3.X’s backward incompatibilities lives on as a natural brake on language changes (and in the muscle memory of Python coders who still type <code>print x</code> unconsciously!).</p>
+  </div>
+
+<section data-type="sect2" data-pdf-bookmark="The print Function"><div class="sect2" id="the_print_function">
+<h2>The print Function</h2>
+<p>Strictly speaking, printing is not a separate statement form. Instead, it is simply an instance of the <em>expression statement</em> we studied in the preceding section. The <code>print</code> built-in function is normally called on a line of its own, because it doesn’t return any value we care about (technically, it returns <code>None</code>, per the preceding section). Because it is a normal function, though, it can use standard function-call syntax (including keyword arguments for special operation modes) and may be both passed around as an object and reassigned to a different implementation.</p>
+<section data-type="sect3" data-pdf-bookmark="Call format"><div class="sect3" id="call_format">
+<h3>Call format</h3>
+<p>Syntactically, calls to <a contenteditable="false" data-type="indexterm" data-primary="print function" data-secondary="call format" id="prfclf"></a>the <code>print</code> function have the following form:</p>
+<pre data-type="programlisting">print([<code><em>object</em></code>, …][, sep=' '][, end='\n'][, file=sys.stdout][, flush=False])</pre>
+<p>In this notation, items in square brackets are optional and may be omitted in a given call, and values after <code>=</code> give keyword-argument defaults. In English, this built-in function prints the textual representation of one or more <code>object</code>s, separated by the string <code>sep</code> and followed by the string <code>end</code>, to the stream <code>file</code>, flushing buffered output or not per <code>flush</code>.</p>
+<p>The <code>sep</code>, <code>end</code>, <code>file</code>, and <code>flush</code> parts, if present, must be given as <em>keyword arguments</em>—that is, you must use a <code><em>name</em>=<em>value</em></code> syntax to pass the arguments by name instead of position. Keyword arguments are covered in depth in <a data-type="xref" href="ch18.html#arguments">Chapter 18</a>, but they’re straightforward to use. The keyword arguments sent to this call may appear in any left-to-right order following the objects to be printed, and they control the <code>print</code> operation:</p>
+<ul>
+<li><p><code>sep</code> is a string inserted between each object’s text, which defaults to a single space if not passed. Passing an empty string suppresses separators altogether.</p></li>
+<li><p><code>end</code> is a string added at the end of the printed text, which defaults to a <code>\n</code> newline character if not passed. Passing an empty string avoids dropping down to the next output line at the end of the printed text—the next <code>print</code> will keep adding to the end of the current output line.</p></li>
+<li><p><code>file</code> specifies the file, standard stream, or other file-like object to which the text will be sent. It defaults to the <code>sys.stdout</code> standard output stream if not passed, but any object with a file-like <code>write(<em>string</em>)</code> method may be passed, including real file objects that have already been opened for output to external files.</p></li>
+<li><p><code>flush</code> defaults to <code>False</code>. It allows prints to mandate that their text be flushed through the output stream immediately to any waiting recipients. Normally, whether printed output is buffered in memory or not is determined by the <code>file</code> object; passing a true value to <code>flush</code> forcibly flushes the stream.</p></li>
+</ul>
+<p>The textual representation of each <code><em>object</em></code> to be printed is obtained by passing the object to the <code>str</code> built-in call (or its equivalent inside Python); as we’ve seen, this built-in returns a “user friendly” display string for any object.<sup><a data-type="noteref" id="ch11fn5-marker" href="ch11.html#ch11fn5">4</a></sup> With no arguments at all, the <code>print</code> function simply prints a newline character to the standard output stream, which usually <a contenteditable="false" data-type="indexterm" data-primary="print function" data-secondary="call format" data-startref="prfclf" id="id2542"></a>displays a blank line.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="The print function in action"><div class="sect3" id="the_print_function_in_action">
+<h3>The print function in action</h3>
+<p>Printing is probably simpler than its full details may imply. To illustrate, let’s run some quick examples in the REPL. The <a contenteditable="false" data-type="indexterm" data-primary="print function" id="prfctn"></a>following prints a variety of object types to the default standard output stream, with the default separator and end-of-line formatting added (these are the defaults because they are the most common use case):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>print()</strong></code>                                      <code><em># Display a blank line
+</em></code>
+&gt;&gt;&gt; <code><strong>x = 'python'</strong></code>
+&gt;&gt;&gt; <code><strong>y = 3.12</strong></code>
+&gt;&gt;&gt; <code><strong>z = ['lp6e']</strong></code>
+
+&gt;&gt;&gt; <code><strong>print(x, y, z)</strong></code>                               <code><em># Print objects per defaults</em></code>
+python 3.12 ['lp6e']</pre>
+<p>There’s no need to convert objects to strings here, as would be required for file write methods. By default, <code>print</code> calls add a space between the objects printed. To suppress this, send an empty string to the <code>sep</code> keyword argument, or send an alternative separator of your choosing:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>print(x, y, z, sep='')</strong></code>                       <code><em># Suppress separator
+</em></code>python3.12['lp6e']
+&gt;&gt;&gt;
+&gt;&gt;&gt; <code><strong>print(x, y, z, sep=', ')</strong></code>                     <code><em># Custom separator</em></code>
+python, 3.12, ['lp6e']</pre>
+<p>Also by default, <code>print</code> adds an <a contenteditable="false" data-type="indexterm" data-primary="print function" data-secondary="end-of-line character" id="id2543"></a><a contenteditable="false" data-type="indexterm" data-primary="end-of-line character" id="id2544"></a>end-of-line character to terminate the output line. You can suppress this and avoid the line break altogether by passing an empty string to the <code>end</code> keyword argument, or you can pass a different terminator of your own including a <code>\n</code> character to break the line manually if desired (the second of the following is two statements on one line, separated by a semicolon to demo the effect of custom terminators in the REPL):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>print(x, y, z, end='')</strong></code>                       <code> <em># Suppress line break (see &gt;&gt;&gt;)
+</em></code>python 3.12 ['lp6e']&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; <code><strong>print(x, y, z, end=''); print(x, y, z)</strong></code>        <code><em># Two prints, same output line</em></code>
+python 3.12 ['lp6e']python 3.12 ['lp6e']
+&gt;&gt;&gt; <code><strong>print(x, y, z, end='...\n')</strong></code>                   <code><em># Custom line end</em></code>
+python 3.12 ['lp6e']...
+&gt;&gt;&gt;</pre>
+<p>You can also combine keyword arguments <a contenteditable="false" data-type="indexterm" data-primary="print function" data-secondary="keyword arguments" id="id2545"></a><a contenteditable="false" data-type="indexterm" data-primary="keyword arguments" data-secondary="print operations" id="id2546"></a>to specify both separators and end-of-line strings—they may appear in any order but must appear after all the objects being printed:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>print(x, y, z, sep='...', end='!\n')</strong></code>          <code><em># Multiple keywords</em></code>
+python...3.12...['lp6e']!
+&gt;&gt;&gt; <code><strong>print(x, y, z, end='!\n', sep='...')</strong></code>          <code><em># Order doesn't matter</em></code>
+python...3.12...['lp6e']!</pre>
+<p>Here is how the <code>file</code> keyword argument is used—it directs the printed text to an open output file or other compatible object for the duration of the single <code>print</code> (this is really a form of stream redirection, a topic we will revisit later in this section):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>print(x, y, z, sep='...', file=open('data.txt', 'w'))</strong></code>      <code><em># Print to a file</em></code>
+&gt;&gt;&gt; <code><strong>print(x, y, z)</strong></code>                                             <code><em># Back to stdout</em></code>
+python 3.12 ['lp6e']
+&gt;&gt;&gt; <code><strong>print(open('data.txt').read())</strong></code>                             <code><em># Display file text</em></code>
+python...3.12...['lp6e']</pre>
+<p>Finally, keep in mind that the separator and end-of-line options provided by print operations are just conveniences. If you need to display more specific formatting, don’t print this way. Instead, build up a more custom string either ahead of time or within the <code>print</code> itself, using the string tools we mastered in <a data-type="xref" href="ch07.html#string_fundamentals">Chapter 7</a>—and print the string all at once. String <em>formatting</em> expressions and f-strings, for example, were designed for this sort of job:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>text = '%s: %-.4f, %05d' % (x, y, int(z[0][-2]))</strong></code>
+&gt;&gt;&gt; <code><strong>print(text)</strong></code>
+python: 3.1200, 00006
+
+&gt;&gt;&gt; <code><strong>print(f'{x}: {y:-0.4f}, {int(z[0][-2]):05d}')</strong></code>
+python: 3.1200, 00006</pre>
+<p>On the other hand, there seems <a contenteditable="false" data-type="indexterm" data-primary="print function" data-secondary="f-strings" id="id2547"></a><a contenteditable="false" data-type="indexterm" data-primary="f-strings" id="id2548"></a>to be a misconception that f-strings are somehow required for <code>print</code>, and they crop up needlessly. In truth, f-strings are overkill if you’re simply <a contenteditable="false" data-type="indexterm" data-primary="print function" data-startref="prfctn" id="id2549"></a>trying to print objects separated by spaces:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>a, b, c, = 11, 3.14, 'hack'</strong></code>
+&gt;&gt;&gt; <code><strong>print(f'{a} {b} {c}')</strong></code>
+11 3.14 hack
+&gt;&gt;&gt; <code><strong>print(a, b, c)</strong></code>
+11 3.14 hack</pre>
+<p>As usual, don’t use a sledgehammer to drive every nail!</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Print Stream Redirection"><div class="sect2" id="print_stream_redirection">
+<h2>Print Stream Redirection</h2>
+<p>As we’ve seen, <code>print</code> sends text to the standard output stream by default. However, it’s often useful to send it elsewhere—to a text file, for example, to save results for later use or testing purposes. Although such redirection can usually be accomplished in system shells outside Python itself (with syntax like <span class="keep-together"><code>&gt; file</code>,</span> per <a data-type="xref" href="ch03.html#command_line_usage_variations">“Command-Line Usage Variations”</a>), this is not a Python tool, and it’s just as easy to redirect a script’s streams from Python code.</p>
+<section data-type="sect3" data-pdf-bookmark="The Python “hello world” program"><div class="sect3" id="the_python_quotation_markhello_worldquo">
+<h3>The Python “hello world” program</h3>
+<p>Let’s start off with the usual (and largely pointless) language benchmark—the “hello world” program. To <a contenteditable="false" data-type="indexterm" data-primary="print operations" data-secondary="print stream redirection" data-tertiary="hello world" id="id2550"></a><a contenteditable="false" data-type="indexterm" data-primary="print stream" data-secondary="redirecting" data-tertiary="hello world" id="id2551"></a>print a “hello world” message in Python, simply print the string with print:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>print('hello world')</strong></code>               <code><em># Print a string object
+</em></code>hello world</pre>
+<p>Really, because expression results are echoed on the interactive command line, you often don’t even need to use a <code>print</code> statement there—simply type the expressions you’d like to have printed, and their results are echoed back:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>'hello world'</strong></code>                      <code><em># Interactive echoes</em></code>
+'hello world'</pre>
+<p>This code isn’t exactly an earth-shattering feat of software mastery, but it serves to illustrate printing behavior. Technically, though, the <code>print</code> operation is just an <em>ergonomic</em> feature of Python—it provides a simple interface to the <code>sys.stdout</code> object, with a bit of default formatting. In fact, if you enjoy working harder than you must (or are pining for your Java coding days) you can also code print operations this way, which omits the <code>write</code> call’s return value for space, as in <a data-type="xref" href="ch09.html#tuplescomma_filescomma_and_everything_e">Chapter 9</a>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import sys</strong></code>                         <code><em># Printing the hard way</em></code>
+&gt;&gt;&gt; <code><strong>sys.stdout.write('hello world\n')</strong></code>
+hello world</pre>
+<p>This code explicitly calls the <code>write</code> method of <code>sys.stdout</code>—an attribute preset when Python starts up to an open file object connected to the output stream. The <code>print</code> operation hides most of those details, providing a simple tool for simple printing tasks.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Manual stream redirection"><div class="sect3" id="manual_stream_redirection">
+<h3>Manual stream redirection</h3>
+<p>So, why bother learning the hard <a contenteditable="false" data-type="indexterm" data-primary="print operations" data-secondary="print stream redirection" data-tertiary="manual" id="popsmrd"></a><a contenteditable="false" data-type="indexterm" data-primary="print stream" data-secondary="redirecting" data-tertiary="manual" id="psmrdmn"></a>way to print? The <code>sys.stdout</code> equivalent to <code>print</code> turns out to be the basis of a common technique in Python. In general, <code>print</code> and <code>sys.stdout</code> are directly related as follows. This statement:</p>
+<pre data-type="programlisting">print(X, Y)</pre>
+<p>is equivalent to the longer:</p>
+<pre data-type="programlisting">import sys
+sys.stdout.write(str(X) + ' ' + str(Y) + '\n')</pre>
+<p>which manually performs a string conversion with <code>str</code>, adds a separator and newline with <code>+</code>, and calls the output stream’s <code>write</code> method. That is, this is what the <code>print</code> does. Which would you rather code?</p>
+<p>Obviously, the long form isn’t all that useful for printing by itself. However, it is useful to know that this is exactly what <code>print</code> operations do because it is possible to <em>reassign</em> <code>sys.stdout</code> to something different from the standard output stream. In other words, this equivalence provides a way of making your <code>print</code> operations send their text to other places. For example:</p>
+<pre data-type="programlisting">import sys
+sys.stdout = open('log.txt', 'a')       <code><em># Redirects prints to a file</em></code>
+…
+print(x, y, x)                          <code><em># Now printed text shows up in log.txt</em></code></pre>
+<p>Here, we reset <code>sys.stdout</code> to a manually opened file named <em>log.txt</em>, located in the script’s working directory (CWD) and opened in <code>'a'</code> append mode (so we add to its current content). After the reset, every <code>print</code> operation anywhere in the program will write its text to the end of the file <em>log.txt</em> instead of to the original output stream. The <code>print</code> operations are happy to keep calling <code>sys.stdout</code>’s <code>write</code> method, no matter what <code>sys.stdout</code> happens to refer to. And because there is just one <code>sys</code> module in your program (technically, process), assigning <code>sys.stdout</code> this way will redirect every <code>print</code> anywhere in your program.</p>
+<p>In fact, as the sidebar <a data-type="xref" href="#why_you_will_care_print_and_stdout">“Why You Will Care: print and stdout”</a> will explain, you can even reset <code>sys.stdout</code> to an object that isn’t a file at all, as long as it has the expected interface: a method named <code>write</code> to receive the printed text-string argument. When that object is a <em>class</em>, printed text can be routed and processed arbitrarily per a <code>write</code> method you code yourself.</p>
+<p>This trick of resetting the output stream might be more useful for programs originally coded with <code>print</code> statements. If you know that output should go to a file to begin with, you can always call file write methods instead. To redirect the output of a <code>print</code>-based program, though, resetting <code>sys.stdout</code> provides a convenient alternative to changing every <code>print</code> statement or using system shell-based redirection syntax, which may be above users’ pay grades.</p>
+<p>In other roles, streams may <a contenteditable="false" data-type="indexterm" data-primary="print operations" data-secondary="print stream redirection" data-tertiary="manual" data-startref="popsmrd" id="id2552"></a><a contenteditable="false" data-type="indexterm" data-primary="print stream" data-secondary="redirecting" data-tertiary="manual" data-startref="psmrdmn" id="id2553"></a>be reset to objects that display them in pop-up windows in GUIs, colorize them in IDEs like IDLE, and so on. It’s a general technique.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Automatic stream redirection"><div class="sect3" id="automatic_stream_redirection">
+<h3>Automatic stream redirection</h3>
+<p>Although redirecting printed text by assigning <code>sys.stdout</code> is a useful tool, a potential problem <a contenteditable="false" data-type="indexterm" data-primary="print operations" data-secondary="print stream redirection" data-tertiary="automatic" id="popsmrdau"></a><a contenteditable="false" data-type="indexterm" data-primary="print stream" data-secondary="redirecting" data-tertiary="automatic" id="psmrdrau"></a>with the last section’s code is that there is no direct way to restore the original output stream should you need to switch back after printing to a file. Because <code>sys.stdout</code> is just a normal file object, though, you can always save it and restore it if needed:<sup><a data-type="noteref" id="ch11fn6-marker" href="ch11.html#ch11fn6">5</a></sup></p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import sys</strong></code>
+&gt;&gt;&gt; <code><strong>temp = sys.stdout</strong></code>                   <code><em># Save for restoring later</em></code>
+&gt;&gt;&gt; <code><strong>sys.stdout = open('log.txt', 'a')</strong></code>   <code><em># Redirect prints to a file</em></code>
+
+&gt;&gt;&gt; <code><strong>print('lp6e was here')</strong></code>              <code><em># Prints go to file, not here</em></code>
+&gt;&gt;&gt; <code><strong>print(1, 2, 3)</strong></code>
+&gt;&gt;&gt; <code><strong>sys.stdout.close()</strong></code>                  <code><em># Flush output to disk</em></code>
+
+&gt;&gt;&gt; <code><strong>sys.stdout = temp</strong></code>                  <code> <em># Restore original stream</em></code>
+&gt;&gt;&gt; <code><strong>print('back in the REPL')</strong></code>          <code> <em># Prints show up here again</em></code>
+back in the REPL
+&gt;&gt;&gt; <code><strong>print(open('log.txt').read())</strong></code>       <code><em># Result of earlier prints</em></code>
+lp6e was here
+1 2 3</pre>
+<p>As you can see, though, manual saving and restoring of the original output stream like this involves extra juggling work. Because this crops up fairly often, a <code>print</code> extension is available to make it <span class="keep-together">unnecessary</span>.</p>
+<p>As introduced earlier, the <code>file</code> keyword allows a single <code>print</code> call to send its text to the <code>write</code> method of a file (or file-like object), without actually resetting <code>sys.stdout</code>. Because the redirection is temporary, normal <code>print</code> calls keep printing to the original output stream. For example, the following abstract snippet again sends printed text to a file named <em>log.txt</em>:</p>
+<pre data-type="programlisting">log = open('log.txt', 'a')
+print(x, y, z, file=log)                <code><em># Print to a file-like object</em></code>
+print(a, b, c)                          <code><em># Print to original stdout</em></code></pre>
+<p>These redirected forms of <code>print</code> are handy if you need to print to <em>both</em> files and the standard output stream in the same program. If you use these forms, however, be sure to give them a file object (or an object that has the same <code>write</code> method as a file object), not a file’s name string. Here is the technique in action live:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>log = open('log2.txt', 'w')</strong></code>
+&gt;&gt;&gt; <code><strong>print(1, 2, 3, file=log)</strong></code>
+&gt;&gt;&gt; <code><strong>print(4, 5, 6, file=log)</strong></code>
+&gt;&gt;&gt; <code><strong>log.close()</strong></code>
+&gt;&gt;&gt; <code><strong>print(7, 8, 9)</strong></code>
+7 8 9
+&gt;&gt;&gt; <code><strong>print(open('log2.txt').read())</strong></code>
+1 2 3
+4 5 6</pre>
+<p>These extended forms of <code>print</code> are also commonly used to print error messages to the standard <em>error</em> stream, available to your script as the preopened file object <code>sys.stderr</code>. You can either use its file <code>write</code> methods and format the output manually, or print with redirection syntax:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import sys</strong></code>
+&gt;&gt;&gt; <code><strong>sys.stderr.write(('Bad!' * 8) + '\n')</strong></code>
+Bad!Bad!Bad!Bad!Bad!Bad!Bad!Bad!
+
+&gt;&gt;&gt; <code><strong>print('Bad!' * 8, file=sys.stderr)</strong></code>
+Bad!Bad!Bad!Bad!Bad!Bad!Bad!Bad!</pre>
+<p>Now that you know all about print redirections, the equivalence between printing and file <code>write</code> methods should be clear. The following demo prints both ways, then redirects the output to an external file to verify that the same text is printed (on Unix, you won’t get the <code>\r</code> added to newlines here on <span class="keep-together">Windows</span>, and <code>write</code> results are back here):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import sys</strong></code>
+&gt;&gt;&gt; <code><strong>X, Y = 1, 2</strong></code>
+
+&gt;&gt;&gt; <code><strong>print(X, Y)</strong></code>                                            <code><em># Print: the easy way</em></code>
+1 2
+&gt;&gt;&gt; <code><strong>sys.stdout.write(str(X) + ' ' + str(Y) + '\n')</strong></code>         <code><em># Print: the hard way</em></code>
+1 2
+4
+
+&gt;&gt;&gt; <code><strong>print(X, Y, file=open('temp1', 'w'))</strong></code>                   <code><em># Redirect text to file</em></code>
+&gt;&gt;&gt; <code><strong>open('temp2', 'w').write(str(X) + ' ' + str(Y) + '\n')</strong> <em># Send to file manually</em></code>
+4
+
+&gt;&gt;&gt; <code><strong>print(open('temp1', 'rb').read())</strong></code>                      <code><em># Binary mode for bytes</em></code>
+b'1 2\r\n'
+&gt;&gt;&gt; <code><strong>print(open('temp2', 'rb').read())</strong></code>
+b'1 2\r\n'</pre>
+<p>As you can see, unless you happen to enjoy typing, print operations are often the best option for displaying text. For another example of the equivalence between prints and file writes, watch for a <code>print</code> function emulation example in <a data-type="xref" href="ch18.html#arguments">Chapter 18</a>; it uses the coding patterns here <a contenteditable="false" data-type="indexterm" data-primary="print operations" data-secondary="print stream redirection" data-tertiary="automatic" data-startref="popsmrdau" id="id2554"></a><a contenteditable="false" data-type="indexterm" data-primary="print stream" data-secondary="redirecting" data-tertiary="automatic" data-startref="psmrdrau" id="id2555"></a>to provide a <code>print</code> equivalent that can be customized.</p>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00021">
+<h1>Chapter Summary</h1>
+<p>In this chapter, we began our in-depth look at Python statements by exploring assignments, expressions, and print operations. Although these are generally simple to use, they have some alternative forms that, while optional, are often convenient in practice—for example, augmented and named assignments, as well as the redirection form of <code>print</code> operations, allow us to avoid some manual coding work. Along the way, we also studied the syntax of variable names, stream redirection techniques, and a variety of common mistakes to avoid, such as assigning the result of an <code>append</code> method call back to a variable.</p>
+<p>In the next chapter, we’ll continue our statement tour by filling in details about the <code>if</code> statement, Python’s main selection tool; there, we’ll also revisit Python’s syntax model in more depth and look at the behavior of Boolean expressions, as well as the <code>match</code> multiple-choice statement. Before we move on, though, the end-of-chapter quiz will test your knowledge of what you’ve learned here.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000144">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>Name three ways that you can assign three variables to the same value.</p></li>
+<li><p>What’s dangerous about assigning three variables to a mutable object?</p></li>
+<li><p>What’s wrong with saying <code>L = L.sort()</code>?</p></li>
+<li><p>How might you use the <code>print</code> operation to send text to an external file?</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000143">
+<h1>Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>You can use multiple-target assignments (<code>A = B = C = 0</code>), sequence assignment (<code>A, B, C = 0, 0, 0</code>), or multiple assignment statements on three separate lines (<code>A = 0</code>, <code>B = 0</code>, and <code>C = 0</code>). With the latter technique, as introduced in <a data-type="xref" href="ch10.html#introducing_python_statements">Chapter 10</a>, you can also string the three separate statements together on the same line by separating them with semicolons (<code>A = 0; B = 0; C = 0</code>).</p></li>
+<li><p>If you assign them this way: <code>A = B = C = []</code>, then all three names reference the same object, so changing it in place from one (e.g., <code>A.append(99)</code>) will affect the others. This is true only for in-place changes to mutable objects like lists and dictionaries; for immutable objects such as numbers and strings, this issue is irrelevant because they can never be changed in place.</p></li>
+<li><p>The list <code>sort</code> method is like <code>append</code> in that it makes an in-place change to the subject list—it returns <code>None</code>, not the list it changes. The assignment back to <code>L</code> sets <code>L</code> to <code>None</code>, not to the sorted list. As discussed both earlier and later in this book (e.g., <a data-type="xref" href="ch08.html#lists_and_dictionaries">Chapter 8</a>), a newer built-in function, <code>sorted</code>, sorts any sequence and returns a new list with the sorting result; because this is not an in-place change, its result can be safely and meaningfully assigned to a name.</p></li>
+<li><p>To print to a file for a single <code>print</code> operation, you can use the <code>print(X, file=F)</code> call form, or assign <code>sys.stdout</code> to a manually opened file before the <code>print</code> and restore the original after if needed. You can also redirect all of a program’s printed text to a file with special syntax in the system shell like <code>&gt; file</code>, but this is outside Python’s scope.</p></li>
+</ol>
+<aside data-type="sidebar" epub:type="sidebar"><div class="sidebar" id="why_you_will_care_print_and_stdout">
+<h1>Why You Will Care: print and stdout</h1>
+<p>The equivalence between the <code>print</code> operation and writing to <code>sys.stdout</code> makes it <a contenteditable="false" data-type="indexterm" data-primary="print operations" data-secondary="print statement" id="id2556"></a><a contenteditable="false" data-type="indexterm" data-primary="print operations" data-secondary="stdout" id="id2557"></a><a contenteditable="false" data-type="indexterm" data-primary="stdout" id="id2558"></a>possible to reassign <code>sys.stdout</code> to any user-defined object that provides the same <code>write</code> method as files. Because the <code>print</code> statement just sends text to the <code>sys.stdout.write</code> method, you can capture printed text in your programs by assigning <code>sys.stdout</code> to an object whose <code>write</code> method processes the text in arbitrary ways.</p>
+<p>For instance, you can send printed text to a GUI window, or tee it off to multiple destinations, by defining an object with a <code>write</code> method that does the required routing. You’ll see an example of this trick when we study classes in <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a> of this book, but as an abstract preview, it looks like this:</p>
+<pre data-type="programlisting">class FileFaker:
+    def write(self, string):
+        <code><em># Do something with the printed text in string</em></code>
+
+import sys
+sys.stdout = FileFaker()
+print(someObjects)              <code><em># Sends text to class write method</em></code></pre>
+<p>This works because <code>print</code> is what we will call in the next part of this book a <em>polymorphic</em> <span class="keep-together">operation—it</span> doesn’t care what <code>sys.stdout</code> is, only that it has a method (i.e., interface) called <code>write</code>. This redirection to objects is made even simpler with the <code>file</code> keyword argument of <code>print</code>, because we don’t need to reset <code>sys.stdout</code> explicitly—normal prints will still be routed to the <code>stdout</code> stream:</p>
+<pre data-type="programlisting">myobj = FileFaker()             <code><em># Redirect to object for one print</em></code>
+print(someObjects, file=myobj)  <code><em># Does not reset sys.stdout</em></code></pre>
+<p>Python’s built-in <code>input</code> function <em>reads</em> from the <code>sys.stdin</code> file, so you can intercept read requests in a similar way, using classes that implement file-like <code>read</code> methods instead. See the <code>input</code> and <code>while</code> loop example in <a data-type="xref" href="ch10.html#introducing_python_statements">Chapter 10</a> for more background on this function.</p>
+<p>Notice that because printed text goes to the <code>stdout</code> stream, it’s also the way to print HTML reply pages in server-side scripts used on the web, and enables you to redirect Python script input and output at the operating system’s shell command line as usual:</p>
+<pre data-type="programlisting">python script.py &lt; inputfile &gt; outputfile
+python script.py | filterProgram</pre>
+<p>Python’s print operation redirection tools are essentially pure-Python alternatives to some of these shell syntax forms. See other resources for more on web scripts and shell syntax.</p>
+</div></aside>
+</div></section>
+<div data-type="footnotes"><p data-type="footnote" id="ch11fn1"><sup><a href="ch11.html#ch11fn1-marker">1</a></sup> C/C++ programmers also take note: although Python now supports statements like <code>X += Y</code>, it still does not have C’s auto-increment/decrement operators (e.g., <code>X++</code>, <code>−−X</code>). These don’t quite map to the Python object model because Python has no notion of <em>in-place</em> changes to immutable objects like numbers. As a preview of the next section, there also are no augmented-named expression forms today; <code>:+= 1</code> would be close to <code>++</code> but thankfully is fiction. That said, we eventually got <code>+=</code> and <code>:=</code>, so…</p><p data-type="footnote" id="ch11fn3"><sup><a href="ch11.html#ch11fn3-marker">2</a></sup> Exception: Alternative implementations of Python such as Jython might allow reserved words to appear as identifiers in some contexts. See <a data-type="xref" href="ch02.html#how_python_runs_programs">Chapter 2</a> for more on alternative Pythons.</p><p data-type="footnote" id="ch11fn4"><sup><a href="ch11.html#ch11fn4-marker">3</a></sup> If you’ve used a more restrictive language like C++, you may be interested to know that there is no notion of C++’s <code>const</code> declaration in Python; certain objects may be <em>immutable</em>, but names can always be assigned. Python also has ways to hide names in classes and modules, but they’re <a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="naming rules" data-startref="vrbnmrl" id="id2559"></a><a contenteditable="false" data-type="indexterm" data-primary="naming variables" data-startref="nmgvrg" id="id2560"></a>not the same as C++’s declarations (if hiding attributes matters to you, see the coverage of <code>_<em>X</em></code> module names in <a data-type="xref" href="ch25.html#module_odds_and_ends">Chapter 25</a>, <code>__<em>X</em></code> class names in <a data-type="xref" href="ch31.html#designing_with_classes">Chapter 31</a>, and the <code>Private</code> and <code>Public</code> class decorators example in <a data-type="xref" href="ch39.html#decorators">Chapter 39</a>).</p><p data-type="footnote" id="ch11fn5"><sup><a href="ch11.html#ch11fn5-marker">4</a></sup> Technically, printing uses the <em>equivalent</em> of <code>str</code> in the internal implementation of Python, but the effect is the same. Besides this to-string conversion role, <code>str</code> is also the name of the string data type and can be used to decode Unicode strings from raw bytes with an extra encoding argument, as you’ll learn in <a data-type="xref" href="ch37.html#unicode_and_byte_strings">Chapter 37</a>; this latter role is an advanced usage that you can safely ignore here.</p><p data-type="footnote" id="ch11fn6"><sup><a href="ch11.html#ch11fn6-marker">5</a></sup> You may also be able to use the <code>__stdout__</code> attribute in the <code>sys</code> module, which refers to the original value <code>sys.stdout</code> had at program startup time. You still need to restore <code>sys.stdout</code> to <code>sys.__stdout__</code> to go back to this original stream value, though. See the <code>sys</code> module documentation for more details. Also note that <code>sys.stdout</code> and its cohorts may be <code>None</code> in some GUI programs with no console on which to display tests; be sure to check this where it matters.</p></div></div></section></div>
+</div>
+</body>
+</html>

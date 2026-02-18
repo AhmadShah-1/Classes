@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xml:lang="en"
+lang="en"
+xmlns="http://www.w3.org/1999/xhtml"
+xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>Learning Python, 6th Edition</title>
+<link rel="stylesheet" type="text/css" href="override_v1.css"/>
+<link rel="stylesheet" type="text/css" href="epub.css"/>
+</head>
+<body>
+<div id="book-content">
+<div id="sbo-rt-content"><section data-type="chapter" epub:type="chapter" data-pdf-bookmark="Chapter 23. Module Coding Basics"><div class="chapter" id="module_coding_basics">
+<h1><span class="label">Chapter 23. </span>Module Coding Basics</h1>
+<p>Now that we’ve studied the larger ideas behind modules, let’s turn to some examples of modules in action. Although some of the early topics in this chapter will be review for linear readers who have already applied them in previous chapters’ demos, even simple modules can quickly lead us to further details that we haven’t yet encountered in full, such as nesting, reloads, scopes, and more, which we’ll pick up here.</p>
+<p>In general, Python modules are easy to <em>create</em>; they’re just files of Python program code created with a text editor, and require no special syntax. Because Python does all the work of finding and loading modules, they are also easy to <em>use</em>; simply import a module or its names, and use the objects they reference. Let’s explore both sides of this fence.</p>
+<section data-type="sect1" data-pdf-bookmark="Creating Modules"><div class="sect1" id="creation_modules">
+<h1>Creating Modules</h1>
+<p>To define a module, simply use your text editor <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="defining" id="id3441"></a>to type Python code into a text file, and save it with a <em>.py</em> extension; any such file is automatically considered a Python <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="creating" id="mdlcrtg"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="attributes" id="id3442"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="modules" id="id3443"></a>module. As we’ve seen, all the names assigned at the top level of the module become its <em>attributes</em> (names associated with the module object) and are exported for clients to use—they morph from variable to module object attribute automatically.</p>
+<p>For instance, if you type the code in <a data-type="xref" href="#example_twothree_onedot_moduleonedotpy">Example 23-1</a> into a file called <em>module1.py</em> and import it, you create a module object with one attribute—the name <code>printer</code>, which happens to be a reference to a function object.</p>
+<div data-type="example" id="example_twothree_onedot_moduleonedotpy">
+<h5><span class="label">Example 23-1. </span>module1.py</h5>
+<pre data-type="programlisting">def printer(x):           <code><em># Module attribute</em></code>
+    print(x)</pre>
+</div>
+<p>Again, this code may seem simplistic if you read the content of this book that precedes this chapter, but our goal here is to strip out the extraneous bits so we can study modules in isolation.</p>
+<section data-type="sect2" data-pdf-bookmark="Module Filenames"><div class="sect2" id="module_filenames">
+<h2>Module Filenames</h2>
+<p>Before we go on, let’s get <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="filenames" id="mdlsfnm"></a><a contenteditable="false" data-type="indexterm" data-primary="filenames" data-secondary="modules" id="flnmmd"></a>more formal about module filenames. You can call modules just about anything you like, but module filenames should end in a <em>.py</em> suffix if you <a contenteditable="false" data-type="indexterm" data-primary=".py suffix" data-primary-sortas="py suffix" id="id3444"></a>plan to import them as modules. The <em>.py</em> is technically optional for top-level files that will be run but not imported (i.e., for <em>scripts</em>), but adding it in all cases makes your files’ types more obvious, may enable Python-specific features in some text editors and file explorers, and allows you to import any of your files in the future (recall that this is one way to run a file).</p>
+<p>Because module names become <a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="names" id="id3445"></a><a contenteditable="false" data-type="indexterm" data-primary="names" data-secondary="variables" id="id3446"></a>variable names inside a Python program (without the <em>.py</em>), they should also follow the normal variable name rules outlined in <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>. For instance, you can create a module file named <em>if.py</em>, but you cannot import it because <code>if</code> is a reserved word—when you try to run <code>import if</code>, you’ll get a syntax error. In fact, both the names of module <em>files</em> and the names of <em>directories</em> used in package imports (discussed in the next chapter) must conform to the rules for variable names presented in <a data-type="xref" href="ch11.html#assignmentscomma_expressionscomma_and_p">Chapter 11</a>; they may, for example, contain only letters, digits, and underscores. Package directories also cannot contain platform-specific syntax such as spaces in their names.</p>
+<p>When a module is imported, Python maps the module name to an external filename by adding a directory path from the module search path of the last chapter to the front, and a <em>.py</em> or other extension at the end. For instance, a module named <code>M</code> ultimately maps to an external file <code><em>directory</em>/M.<em>extension</em></code> that contains <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="filenames" data-startref="mdlsfnm" id="id3447"></a><a contenteditable="false" data-type="indexterm" data-primary="filenames" data-secondary="modules" data-startref="flnmmd" id="id3448"></a>the module’s code.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Other Kinds of Modules"><div class="sect2" id="other_kinds_of_modules">
+<h2>Other Kinds of Modules</h2>
+<p>As mentioned in the preceding chapter, it <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="extension modules" id="id3449"></a><a contenteditable="false" data-type="indexterm" data-primary="extension modules" id="id3450"></a>is also possible to create a Python module by writing code in an external language such as C, C++, and others (e.g., Java, in the Jython implementation of the language). Such modules are called <em>extension modules</em>, and they are generally used to wrap up external libraries for use in Python scripts or optimize parts of a program. When imported by Python code, extension modules look and feel the same as modules coded as Python source code files—they are accessed with import statements, and they provide functions and objects as module attributes. They’re also beyond the scope of <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="creating" data-startref="mdlcrtg" id="id3451"></a>this book; see Python’s standard manuals for more details.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Using Modules"><div class="sect1" id="using_modules">
+<h1>Using Modules</h1>
+<p>On the other side of the fence, clients can <em>use</em> the simple module file we just wrote by running an <code>import</code> or <code>from</code> statement. Both statements were introduced <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="using" id="mdlsusg"></a>in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a>, and have been used in earlier examples. They both find, compile, and run a module file’s code if it hasn’t yet been loaded, per the process covered in the prior chapter. The chief difference is that <code>import</code> fetches the module as a <em>whole</em>, so you must qualify to fetch its names, whereas <code>from</code> fetches (really, copies) specific <em>names</em> out of the module.</p>
+<p>Let’s see what this means in terms of code. All of the following examples wind up calling the <code>printer</code> function defined in module file <em>module1.py</em> of <a data-type="xref" href="#example_twothree_onedot_moduleonedotpy">Example 23-1</a> but in different ways.</p>
+<section data-type="sect2" data-pdf-bookmark="The import Statement"><div class="sect2" id="the_import_statement">
+<h2>The import Statement</h2>
+<p>In the first example that follows, the name <code>module1</code> serves two different purposes—it identifies an external <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="import statement" id="mdipsttm"></a><a contenteditable="false" data-type="indexterm" data-primary="import statement" id="impsttm"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="import" id="sttmpr"></a>file to be loaded, and it becomes a variable in the script, which references the module object after the import. In a REPL:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import module1</strong></code>                         <code><em># Get module as a whole (one or more)</em></code>
+&gt;&gt;&gt; <code><strong>module1.printer('Hello world!')</strong></code>        <code><em># Qualify to get names</em></code>
+Hello world!</pre>
+<p>The <code>import</code> statement simply lists one or more names of modules to load, separated by commas. Because it gives a name that refers to the <em>whole module</em> object, we must go <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="import statement" data-startref="mdipsttm" id="id3452"></a><a contenteditable="false" data-type="indexterm" data-primary="import statement" data-startref="impsttm" id="id3453"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="import" data-startref="sttmpr" id="id3454"></a>through the module name to fetch its attributes (e.g., <code>module1.printer</code>).</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="The from Statement"><div class="sect2" id="the_from_statement">
+<h2>The from Statement</h2>
+<p>By contrast, because <code>from</code> copies <em>specific names</em> from one file over to another scope, it allows <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="from statement" id="id3455"></a><a contenteditable="false" data-type="indexterm" data-primary="from statement" id="id3456"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="from" id="id3457"></a>us to use the copied names directly in the script without going through the module (e.g., <code>printer</code>):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from module1 import printer</strong></code>            <code><em># Copy out a variable (one or more)</em></code>
+&gt;&gt;&gt; <code><strong>printer('Hello world!')</strong></code>                <code><em># No need to qualify name (and can't!)
+</em></code>Hello world!</pre>
+<p>This form of <code>from</code> allows us to list one or more names to be copied out, separated by commas. Here, it has the same effect as the prior example, but because the imported name is copied into the scope where the <code>from</code> statement appears, using that name in the script requires less typing—we can use it directly instead of naming the enclosing module. In fact, we must; <code>from</code> doesn’t assign the name of the module itself, so <code>module1</code> is undefined.</p>
+<p>As you’ll see in more detail later, the <code>from</code> statement is really just a minor extension to the <code>import</code> statement—it imports the module file as usual (running the full three-step procedure of the preceding chapter), but adds an extra step that copies one or more <em>names</em> (not objects) out of the file. The entire file is loaded, but you’re given names for more direct access to its parts.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="The from * Statement"><div class="sect2" id="the_from_asterisk_statement">
+<h2>The from * Statement</h2>
+<p>Finally, the next example uses a <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="from * statement" id="mdfmtt"></a><a contenteditable="false" data-type="indexterm" data-primary="from * statement" id="frmstt"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="from *" id="sttfrm"></a>special form of <code>from</code>: when we use a <code>*</code> instead of specific names, we get copies of <em>all names</em> assigned at the top level of the referenced module. Here again, we can then use the copied name <code>printer</code> in our script without going through the module name:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>from module1 import *</strong></code>                   <code><em># Copy out _all_ variables</em></code>
+&gt;&gt;&gt; <code><strong>printer('Hello world!')</strong>  </code>               <code><em># Use names unqualified</em></code>
+Hello world!</pre>
+<p>Technically, both <code>import</code> and <code>from</code> statements invoke the same import operation; the <code>from *</code> form simply adds an extra step that copies all the names in the module into the importing scope. It essentially <em>merges</em> one module’s namespace into another, which again means less typing for us, albeit at the expense of name segregation.</p>
+<p>Note that only a single <code>*</code> works in this context; you can’t use arbitrary pattern matching to select a subset of names (you could in principle by looping through a module’s <code>__dict__</code> discussed ahead, but it’s substantially more work). Also, note the <code>from *</code> may not really get “all” names in the module if that module uses special tricks like <code>_<em>X</em></code> naming or an <code>__all__</code> list to hide some of its names from this statement, but we’ll defer to <a data-type="xref" href="ch25.html#module_odds_and_ends">Chapter 25</a> for more on such tools.</p>
+<p>And that’s it—apart from the search-path configurations of the prior chapter, modules really are simple to use. To give you a better understanding of what really happens when you define and use modules, though, let’s move on to look at some of their properties in more detail.</p>
+<div data-type="note" epub:type="note"><h6>Note</h6>
+<p><em>OK, there is a special case</em>: The <code>*</code> form of the <code>from</code> statement form described here can be used <em>only</em> at the top level of a module file, not within a function (and generates a syntax error there), because this would make it impossible for Python to detect local variables before the function runs. It’s rare to see either <code>import</code> or <code>from</code> inside a function anyhow, and best practice recommends listing all your imports at the top of a module file; it’s not required, but makes them easier to spot, and <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="from * statement" data-startref="mdfmtt" id="id3458"></a><a contenteditable="false" data-type="indexterm" data-primary="from * statement" data-startref="frmstt" id="id3459"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="from *" data-startref="sttfrm" id="id3460"></a>avoids a speed penalty for re-importing modules on every call to a function. The <code>from *</code> has other issues enumerated ahead, and may be best limited to one per file, or interactive REPLs.</p>
+</div>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Imports Happen Only Once"><div class="sect2" id="imports_happen_only_once">
+<h2>Imports Happen Only Once</h2>
+<p>One of the most common questions people <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="imports" data-tertiary="one-time" id="id3461"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="modules" data-tertiary="one-time" id="id3462"></a>seem to ask when they start using modules is, “Why won’t my imports keep working?” They often report that the first import works fine, but later imports during an interactive session (or program run) seem to have no effect. In fact, this is by design—modules are loaded and run on the first <code>import</code> or <code>from</code>, and only the first. Because importing is an expensive operation, by default Python does it just once per file, per process. Later import operations simply fetch the already loaded module object.</p>
+<section data-type="sect3" data-pdf-bookmark="Initialization code"><div class="sect3" id="initialization_code">
+<h3>Initialization code</h3>
+<p>As one consequence, because top-level code <a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="modules" data-tertiary="initialization code" id="id3463"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="imports" data-tertiary="initialization code" id="id3464"></a>in a module file is usually executed only once, you can use it to initialize names once, but allow their state to change. As a demo, consider the file <em>init.py</em> in <a data-type="xref" href="#example_twothree_twodot_initdotpy">Example 23-2</a>.</p>
+<div data-type="example" id="example_twothree_twodot_initdotpy">
+<h5><span class="label">Example 23-2. </span>init.py</h5>
+<pre data-type="programlisting">print('hello')
+flag = 1                   <code><em># Initialize variable – just once!</em></code></pre>
+</div>
+<p>In this example, the <code>print</code> and <code>=</code> statements run the first time the module is imported, and the variable <code>flag</code> is initialized at import time (recall from <a data-type="xref" href="ch17.html#scopes">Chapter 17</a> that the REPL works like another module file here):</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>import init</strong></code>            <code><em># First import: loads and runs file's code</em></code>
+hello
+&gt;&gt;&gt; <code><strong>init.flag</strong></code>              <code><em># Assignment makes an attribute</em></code>
+1</pre>
+<p>Second and later imports don’t rerun the module’s code; they just fetch the already created module object from Python’s internal modules table. Thus, the variable <code>flag</code> is not reinitialized:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>init.flag = 2</strong></code>          <code><em># Change attribute in module</em></code>
+&gt;&gt;&gt; <code><strong>import init</strong></code>            <code><em># Just fetches already loaded module
+</em></code>&gt;&gt;&gt; <code><strong>init.flag</strong></code>              <code><em># Code wasn't rerun: attribute unchanged</em></code>
+2</pre>
+<p>Of course, sometimes you really <em>want</em> a module’s code to be rerun on a subsequent import. You’ll see how to do this with Python’s <code>reload</code> function later in this chapter.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Imports Are Runtime Assignments"><div class="sect2" id="imports_are_runtime_assignments">
+<h2>Imports Are Runtime Assignments</h2>
+<p>Just like <code>def</code>, <code>import</code> and <code>from</code> are <em>executable statements</em>, not compile-time declarations. They may be nested in <code>if</code> tests, to <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="imports" data-tertiary="runtime assignment" id="mdprnms"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="modules" data-tertiary="runtime assignment" id="ipmdssg"></a><a contenteditable="false" data-type="indexterm" data-primary="runtime operations" data-secondary="module imports" id="id3465"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="executable" data-tertiary="from" id="id3466"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="executable" data-tertiary="import" id="id3467"></a><a contenteditable="false" data-type="indexterm" data-primary="executable statements" data-secondary="from" id="id3468"></a><a contenteditable="false" data-type="indexterm" data-primary="executable statements" data-secondary="import" id="id3469"></a>select among module options; appear in function <code>def</code>s, to be loaded only on calls (subject to the preceding note); be used in <code>try</code> statements, to provide defaults on errors; and so on. As an abstract example:</p>
+<pre data-type="programlisting">if <em>sometest</em>:
+    from moduleA import name
+else: 
+    from moduleB import name</pre>
+<p>Wherever they appear, imports are not resolved or run until Python reaches them while executing your program. As one upshot, imported modules and names are not available until their associated <code>import</code> or <code>from</code> statements run.</p>
+<section data-type="sect3" data-pdf-bookmark="Changing mutables in modules"><div class="sect3" id="changing_mutables_in_modules">
+<h3>Changing mutables in modules</h3>
+<p>Also like <code>def</code>, <code>import</code> and <code>from</code> are <em>implicit <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="mutables, changing" id="id3470"></a><a contenteditable="false" data-type="indexterm" data-primary="mutable objects" data-secondary="changing" id="id3471"></a><a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="implicit" data-tertiary="from" id="id3472"></a><a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="implicit" data-tertiary="import" id="id3473"></a>assignments</em>:</p>
+<ul>
+<li><p><code>import</code> assigns an entire module object to a single name.</p></li>
+<li><p><code>from</code> assigns one or more names to objects of the same names in another module.</p></li>
+</ul>
+<p>Hence, everything you’ve already learned about assignment applies to module access, too. For instance, names copied with a <code>from</code> become references to shared objects; much like function arguments, reassigning a copied name has no effect on the module from which it was copied, but changing a shared <em>mutable object</em> through a copied name can also change it in the module from which it was imported. Consider the following file, <em>share.py</em>, in <a data-type="xref" href="#example_twothree_threedot_sharedotpy">Example 23-3</a>.</p>
+<div data-type="example" id="example_twothree_threedot_sharedotpy">
+<h5><span class="label">Example 23-3. </span>share.py</h5>
+<pre data-type="programlisting">x = 1
+y = [1, 2]</pre>
+</div>
+<p>When importing with <code>from</code>, we copy <em>names</em> to the importer’s scope that initially share <em>objects</em> referenced by the module’s names (again, the REPL serves as the importing module here):</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>from share import x, y</strong></code>         <code><em># Copy two names out</em></code>
+&gt;&gt;&gt; <code><strong>x = 'hack'</strong></code>                     <code><em># Changes local x only
+</em></code>&gt;&gt;&gt; <code><strong>y[0] = 'hack'</strong></code>                  <code><em># Changes shared mutable in place</em></code>
+&gt;&gt;&gt; <code><strong>x, y</strong>  </code>                         <code><em># This module's x and y</em></code>
+('hack', ['hack', 2])</pre>
+<p>Here, <code>x</code> is not a shared mutable object, but <code>y</code> is. The names <code>y</code> in the importer and the imported modules both reference the same list object, so changing it from one place changes it in the other; continuing the REPL session:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import share</strong></code>                   <code><em># Get module name (from doesn't)</em></code>
+&gt;&gt;&gt; <code><strong>share.x</strong></code>                        <code><em># share's x is not my x</em></code>
+1
+&gt;&gt;&gt; <code><strong>share.y</strong></code>                        <code><em># But we share a changed mutable</em></code>
+['hack', 2]</pre>
+<p class="pagebreak-before">For more background on this, see <a data-type="xref" href="ch06.html#the_dynamic_typing_interlude">Chapter 6</a>. And for a graphical picture of what <code>from</code> assignments do with references, flip back to <a data-type="xref" href="ch18.html#function_arguments_and_shared_object_re">Figure 18-1</a> (function argument passing), and mentally replace “caller” and “function” with “imported” and “importer.” The effect is the same, except that here we’re dealing with names in modules, not functions. Assignment works the same everywhere in Python.</p>
+</div></section>
+<section data-type="sect3" data-pdf-bookmark="Cross-file name changes"><div class="sect3" id="cross_file_name_changes">
+<h3>Cross-file name changes</h3>
+<p>In the preceding example, the assignment to <code>x</code> in the interactive session changed the name <code>x</code> in that scope only, not the <code>x</code> in the file—there is no link from a name copied with <code>from</code> back to the file it came from. To really change a global name in another file, you must use <code>import</code>:</p>
+<pre data-type="programlisting">$ <code><strong>python3
+</strong></code>&gt;&gt;&gt; <code><strong>from share import x, y</strong></code>         <code><em># Copy two names out</em></code>
+&gt;&gt;&gt; <code><strong>x = 23</strong></code>                         <code><em># Changes my x only
+</em></code>
+&gt;&gt;&gt; <code><strong>import share</strong></code>                   <code><em># Get module name</em></code>
+&gt;&gt;&gt; <code><strong>share.x = 23</strong></code>                   <code><em># Changes x in other module</em></code></pre>
+<p>This phenomenon was introduced in <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>. Because changing variables in other modules like this is a common source of confusion (and often a subpar design choice), we’ll revisit this technique again later in this part of the book.  Subtly, the change to <code>y[0]</code> in the prior session is different; it changes an <em>object</em>, not a name, and the <em>name</em> in both modules references the same, changed object. This can be similarly subpar unless all <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="imports" data-tertiary="runtime assignment" data-startref="mdprnms" id="id3474"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="modules" data-tertiary="runtime assignment" data-startref="ipmdssg" id="id3475"></a>module clients expect it.</p>
+</div></section>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="import and from Equivalence"><div class="sect2" id="import_and_from_equivalence">
+<h2>import and from Equivalence</h2>
+<p>Notice in the prior example that we have to execute an <code>import</code> statement after the <code>from</code> to access the <code>share</code> module name at all. <code>from</code> only copies names from one module to another; it does not assign the module name itself. It may help to remember that, at least conceptually, a <code>from</code> statement like this one:</p>
+<pre data-type="programlisting">from module import name1, name2     <code><em># Copy these two names out (only)</em></code></pre>
+<p>is equivalent to this statement sequence:</p>
+<pre data-type="programlisting">import module                       <code><em># Fetch the module object</em></code>
+name1 = module.name1                <code><em># Copy names out by assignment</em></code>
+name2 = module.name2
+del module                          <code><em># Get rid of the module name – here only</em></code></pre>
+<p>Like all assignments, the <code>from</code> statement creates new variables in the importer, which initially refer to objects of the same names in the imported file. Only the <em>names</em> are copied out, though, not the objects they reference, and not the name of the module itself. When we use the <code>from *</code> form of this statement (<code>from module import *</code>), the equivalence is the same, but all the top-level names in the module are copied over to the importing scope this way.</p>
+<p>Importantly, the first step of the <code>from</code> runs a normal <code>import</code> operation, with all the semantics outlined in the preceding chapter. As a result, the <code>from</code> always imports the <em>entire</em> module into memory if it has not yet been imported, regardless of how many names it copies out of the file. There is no way to load just part of a module file (e.g., just one function), but because modules are bytecode in standard Python instead of machine code, the performance implications are generally negligible.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Potential Pitfalls of the from Statement"><div class="sect2" id="potential_pitfalls_of_the_from_statemen">
+<h2>Potential Pitfalls of the from Statement</h2>
+<p>One downside of the <code>from</code> statement is <a contenteditable="false" data-type="indexterm" data-primary="from statement" data-secondary="potential problems" id="frmsttpp"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="from" data-tertiary="potential problems" id="sttfptt"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="from statement" data-tertiary="potential problems" id="mdfttpp"></a>that it makes the meaning of a variable more obscure: <code>name</code> is less useful to the reader than <code>module.name</code>, and may require a search for the <code>from</code> that loaded it. Because of this, some Python users recommend coding <code>import</code> instead of <code>from</code> most of the time. Like most advice, though, this doesn’t always make sense. <code>from</code> is commonly and widely used, without dire consequences. Moreover, it’s convenient not to have to type a module’s name every time you wish to use one of its tools, especially when working in the REPL.</p>
+<p>It is true that the <code>from</code> statement has the potential to corrupt namespaces, at least in principle—if you use it to import variables that happen to have the same names as existing variables in your scope, your variables will be silently overwritten. This problem doesn’t occur with the <code>import</code> statement because you must always go through a module’s name to get to its contents: <code>module.attr</code> will not <a contenteditable="false" data-type="indexterm" data-primary="name clashes" id="id3476"></a>clash with a variable named <code>attr</code> in your scope. As long as you understand that this can happen when using <code>from</code>, though, this isn’t a concern in practice: assigning a variable with <code>from</code> has the same effect as any other assignment in your code.</p>
+<p>On the other hand, the <code>from</code> statement has legitimate issues when used in conjunction with the <code>reload</code> call, as imported names might reference prior versions of objects. Moreover, the <code>from *</code> form really <em>can</em> trash namespaces and make code difficult to understand, especially when applied to more than one <span class="keep-together">file—in</span> this case, there is no way to tell which module a name came from, short of searching external files. In effect, the <code>from *</code> form collapses one namespace into another, and so defeats the namespace partitioning purpose of modules. We’ll save demos of these issues for <a data-type="xref" href="ch25.html#module_gotchas">“Module Gotchas”</a> (at the end of this part of the book), and meet tools that can minimize the <code>from *</code> damage with data hiding in <a data-type="xref" href="ch25.html#module_odds_and_ends">Chapter 25</a>.</p>
+<p>Probably the best real-world advice here is to generally prefer <code>import</code> to <code>from</code> for simple modules; to explicitly list the variables you want in most <code>from</code> statements; and to limit the <code>from *</code> form to just one per file, or the REPL’s throw-away code. That way, any names not called out by attribute qualification or <code>from</code> lists can be assumed to live in the sole module imported by the <code>from *</code>. Some care is required when using the <code>from</code> statement, but armed with a little knowledge, most programmers find it to be a convenient way to access modules.</p>
+<section data-type="sect3" data-pdf-bookmark="When import is required"><div class="sect3" id="when_import_is_required">
+<h3>When import is required</h3>
+<p>The only time you really <em>must</em> use <code>import</code> instead of <code>from</code> is when you must use the same name defined in two different modules. For example, imagine that two files define the same name differently, as in this abstract snippet:</p>
+<pre data-type="programlisting"><code><em># M.py
+</em></code>def func():
+    …<code><em>do something</em></code>…
+
+<code><em># N.py</em></code>
+def func():
+    …<code><em>do something else</em></code>…</pre>
+<p>If you must use <em>both</em> versions of this name in your program, the <code>from</code> statement will fail—you can have only one assignment to the name in your scope:</p>
+<pre data-type="programlisting"><code><em># O.py</em></code>
+from M import func
+from N import func             <code><em># This overwrites the one we fetched from M</em></code>
+func()                         <code><em># Calls N.func only!</em></code></pre>
+<p>An <code>import</code> will work here, though, because including the name of the enclosing module makes the two names unique:</p>
+<pre data-type="programlisting"><code><em># O.py</em></code>
+import M, N                    <code><em># Get the whole modules, not their names</em></code>
+M.func()                       <code><em># We can call both names now</em></code>
+N.func()                       <code><em># The module names make them unique</em></code></pre>
+<p>This case is unusual enough that you’re unlikely to encounter it very often in practice. If you do, though, <code>import</code> allows you to avoid the name collision. Another way out of this dilemma is using the <code>as</code> extension, a renaming tool that we’ll cover fully in <a data-type="xref" href="ch25.html#module_odds_and_ends">Chapter 25</a> but is simple enough to introduce here:</p>
+<pre data-type="programlisting"><code><em># O.py</em></code>
+from M import func as mfunc    <code><em># Rename uniquely with "as"</em></code>
+from N import func as nfunc
+mfunc(); nfunc()               <code><em># Call one or the other</em></code></pre>
+<p>The <code>as</code> extension works in both <code>import</code> and <code>from</code> as a simple renaming tool (it can also be used to give a shorter synonym for a long module name in <code>import</code>); more on <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="using" data-startref="mdlsusg" id="id3477"></a><a contenteditable="false" data-type="indexterm" data-primary="from statement" data-secondary="potential problems" data-startref="frmsttpp" id="id3478"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="from" data-tertiary="potential problems" data-startref="sttfptt" id="id3479"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="from statement" data-tertiary="potential problems" data-startref="mdfttpp" id="id3480"></a>this form in Chapters <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch24.html#module_packages">24</a> and <a data-type="xref" data-xrefstyle="select:labelnumber" href="ch25.html#module_odds_and_ends">25</a>.</p>
+</div></section>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Module Namespaces"><div class="sect1" id="module_namespaces">
+<h1>Module Namespaces</h1>
+<p>Modules are probably best understood as packages of names—i.e., places to define names you want to make visible to the rest of a system. Technically, modules usually correspond to files, and Python creates a module object to contain all the names assigned in a module file. But in simple terms, modules are just namespaces (places where names are created), and the names that live in a module are its attributes. This section expands on the details behind this model.</p>
+<section data-type="sect2" data-pdf-bookmark="How Files Generate Namespaces"><div class="sect2" id="how_files_generate_namespaces">
+<h2>How Files Generate Namespaces</h2>
+<p>We’ve seen that files <em>morph</em> into <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="namespaces" data-tertiary="generating" id="mdnmpgn"></a><a contenteditable="false" data-type="indexterm" data-primary="namespaces" data-secondary="generating" id="nmpgnt"></a>namespaces, but how does this actually happen? The short answer is that every name that is assigned a value at the top level of a module file (i.e., not nested in a function or class body) becomes an attribute of that module.</p>
+<p>For instance, given an assignment statement such as <code>X = 1</code> at the top level of a module file <em>M.py</em>, the name <code>X</code> becomes an attribute of <code>M</code>, which we can refer to from outside the module as <code>M.X</code>. The name <code>X</code> also becomes a global variable to other code inside <em>M.py</em>, but we need to firm up the relationship of module loading and scopes to understand why:</p>
+<ul>
+<li><p><strong>Module statements run on <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="statements" data-tertiary="import" id="id3481"></a><a contenteditable="false" data-type="indexterm" data-primary="statements" data-secondary="module imports" id="id3482"></a>the first import.</strong> The first time a module is imported anywhere in a system, Python creates an empty module object and executes the statements in the module file one after another, from the top of the file to the bottom.</p></li>
+<li><p><strong>Top-level assignments <a contenteditable="false" data-type="indexterm" data-primary="assignments" data-secondary="module attribute creation" id="id3483"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="attributes" data-tertiary="creating" id="id3484"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="modules" data-tertiary="creating" id="id3485"></a>create module attributes.</strong> During an import, statements at the top level of the file not nested in a <code>def</code> or <code>class</code> that assign names (e.g., <code>=</code>, <code>def</code>) create attributes of the module object. Names assigned by these statements are stored in the module’s namespace.</p></li>
+<li><p><strong>Module namespaces are dictionaries.</strong> Module namespaces created by imports may be accessed <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="namespaces" data-tertiary="dictionaries" id="mdnmpdr"></a><a contenteditable="false" data-type="indexterm" data-primary="namespaces" data-secondary="modules" data-tertiary="dictionaries" id="nmpmddc"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="module namespaces" id="dctmnmp"></a><a contenteditable="false" data-type="indexterm" data-primary="__dict__ attribute" data-primary-sortas="dict attribute" id="id3486"></a>through the built-in <code>__dict__</code> dictionary attribute of module objects, and may be inspected with the <code>dir</code> function. <code>dir</code> is the same as the sorted keys of <code>__dict__</code> for modules, but includes inherited names for classes.</p></li>
+<li><p><strong>Modules are a single scope (local is global).</strong> As we saw in <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>, names at the top level of a module follow the same scope rules as names in a function, but the local and global scopes are the same—or, more formally, they follow the <em>LEGB</em> scope rule presented in <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>, but without the <em>L</em> and <em>E</em> lookup layers.</p></li>
+<li><p><strong>Module scopes outlive imports.</strong> A module’s global scope becomes an attribute dictionary of a <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="scopes" data-tertiary="imports and" id="id3487"></a><a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="modules" data-tertiary="imports and" id="id3488"></a>module object after the module has been loaded. Unlike function scopes, where the local namespace exists only while a function call runs, a module file’s scope lives on after the import, providing a source of tools to importers.</p></li>
+</ul>
+<p>Here’s a demonstration of these ideas. Suppose we create the module file in <a data-type="xref" href="#example_twothree_fourdot_spacesdotpy">Example 23-4</a> with a text editor, and call it <em>spaces.py</em>.</p>
+<div data-type="example" id="example_twothree_fourdot_spacesdotpy">
+<h5><span class="label">Example 23-4. </span>spaces.py</h5>
+<pre data-type="programlisting">print('starting to load...')
+import sys
+var = 23
+
+def func(): pass
+
+class klass: pass
+
+print('done loading.')</pre>
+</div>
+<p>The first time this module is imported (or run as a program), Python executes its statements from top to bottom. Some statements create names in the module’s namespace as a side effect, but others do actual work while the import is going on. For instance, the two <code>print</code> statements in this file execute at import time:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import spaces</strong></code>
+starting to load...
+done loading.</pre>
+<p>Once the module is loaded, its scope becomes an attribute namespace in the module object we get back from <code>import</code>. We can then access attributes in this namespace by qualifying them with the name of the enclosing module:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>spaces.sys</strong></code>
+&lt;module 'sys' (built-in)&gt;
+&gt;&gt;&gt; <code><strong>spaces.var</strong></code>
+23
+&gt;&gt;&gt; <code><strong>spaces.func</strong></code>
+&lt;function func at 0x101ce7b00&gt;
+&gt;&gt;&gt; <code><strong>spaces.klass</strong></code>
+&lt;class 'spaces.klass'&gt;</pre>
+<p>Here, <code>sys</code>, <code>var</code>, <code>func</code>, and <code>klass</code> were all assigned while the module’s statements were being run, so they are attributes after the import. We’ll study classes in <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a>, but notice the <code>sys</code> attribute—<code>import</code> statements <em>assign</em> module objects to names, and any type of assignment to a name at <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="namespaces" data-tertiary="generating" data-startref="mdnmpgn" id="id3489"></a><a contenteditable="false" data-type="indexterm" data-primary="namespaces" data-secondary="generating" data-startref="nmpgnt" id="id3490"></a>the top level of a file generates a module attribute.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Namespace Dictionaries: __dict__"><div class="sect2" id="namespace_dictionaries_dict">
+<h2>Namespace Dictionaries: __dict__</h2>
+<p>In fact, internally, module namespaces are <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="attributes" data-tertiary="__dict__" data-tertiary-sortas="dict" id="mdttbdct"></a><a contenteditable="false" data-type="indexterm" data-primary="__dict__ attribute" data-primary-sortas="dict attribute" id="dctttrgb"></a>stored as <em>dictionary</em> objects. These are just normal dictionaries with all the usual methods. When needed, we can access a module’s namespace dictionary through the module’s <code>__dict__</code> attribute—for instance, to write tools that list module content generically, as we will in <a data-type="xref" href="ch25.html#module_odds_and_ends">Chapter 25</a>. Continuing the prior section’s example:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>spaces.__dict__.keys()</strong></code>
+dict_keys(['__name__', '__doc__', '__package__', '__loader__', '__spec__', 
+'__file__', '__cached__', '__builtins__', 'sys', 'var', 'func', 'klass'])</pre>
+<p>The names we assigned in the module file become dictionary keys internally, so some of the keys here reflect top-level assignments in our file. The value of <code>var</code>, for example, can be had two ways (though the first is normal):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>spaces.var, spaces.__dict__['var']</strong></code>
+(23, 23)</pre>
+<p>Python also adds some useful names in the module’s namespace. For instance, <code>__file__</code> gives the name of the file from which the module was loaded (useful to find resources bundled with code), and <code>__name__</code> gives its name as known to importers (without the <em>.py</em> extension and directory path):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>spaces.__name__, spaces.__file__</strong></code>
+('spaces', '/Users/me/…/LP6E/Chapter23/spaces.py')</pre>
+<p>To see just the names your code assigns, filter out double-underscore names as we did in <a data-type="xref" href="ch15.html#the_documentation_interlude">Chapter 15</a>’s <code>dir</code> coverage and <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>’s built-in scope coverage, but this time with a generator expression. We can also omit <code>keys</code> because dictionaries generate keys automatically, and the <code>dir</code> built-in for modules is just the sorted keys list of <code>__dict__</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>list(name for name in spaces.__dict__ if not name.startswith('__'))</strong></code>
+['sys', 'var', 'func', 'klass']
+&gt;&gt;&gt; <code><strong>dir(spaces) == sorted(spaces.__dict__)</strong></code>
+True</pre>
+<p>As another lesser-used alternative, Python’s <code>vars</code> built-in function simply fetches the <code>__dict__</code> of a module passed to it (an option, perhaps, after you’ve written enough Python code to wear out your keyboard’s underscore key?):</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>vars(spaces) == spaces.__dict__</strong></code>
+True
+&gt;&gt;&gt; <code><strong>dir(spaces) == sorted(vars(spaces))</strong></code>
+True</pre>
+<p>See <a data-type="xref" href="ch07.html#string_fundamentals">Chapter 7</a> for other <code>vars</code> roles. You’ll see similar <code>__dict__</code> dictionaries on <em>class</em>-related objects in <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a> too. In all cases, attribute fetch is similar to dictionary indexing, though <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="namespaces" data-tertiary="dictionaries" data-startref="mdnmpdr" id="id3491"></a><a contenteditable="false" data-type="indexterm" data-primary="namespaces" data-secondary="modules" data-tertiary="dictionaries" data-startref="nmpmddc" id="id3492"></a><a contenteditable="false" data-type="indexterm" data-primary="dictionaries" data-secondary="module namespaces" data-startref="dctmnmp" id="id3493"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="attributes" data-tertiary="__dict__" data-tertiary-sortas="dict" data-startref="mdttbdct" id="id3494"></a><a contenteditable="false" data-type="indexterm" data-primary="__dict__ attribute" data-primary-sortas="dict attribute" data-startref="dctttrgb" id="id3495"></a>only the former kicks off <em>inheritance</em> in classes.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Attribute Name Qualification"><div class="sect2" id="attribute_name_qualification">
+<h2>Attribute Name Qualification</h2>
+<p>Speaking of attribute fetch, now that you’re <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="attributes" data-tertiary="names, qualification" id="mdlttnq"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="modules" data-tertiary="names, qualification" id="attbmqfc"></a><a contenteditable="false" data-type="indexterm" data-primary="qualification, attribute names" id="qfttbn"></a>becoming more familiar with modules, we should firm up the notion of name qualification more formally too. In Python, you can access the attributes of any object that has attributes using the <em>qualification</em> (a.k.a. attribute fetch) syntax <code><em>object.attribute</em></code>.</p>
+<p>Qualification is really an expression that returns the value assigned to an attribute name associated with an object. For example, the expression <code>spaces.sys</code> in the previous example fetches the value assigned to <code>sys</code> in <code>spaces</code>. Similarly, if we have a built-in list object <code>L</code>, <code>L.append</code> returns the <code>append</code> method object associated with that list.</p>
+<p>It’s important to keep in mind that attribute qualification has nothing to do with the <em>scope</em> rules we studied in <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>; it’s an independent concept. When you use qualification to access names, you give Python an explicit object from which to fetch the specified names. The LEGB scope rule applies only to bare, unqualified names; it may be used for the leftmost name in a qualification path, but later names after dots search specific objects instead.</p>
+<p>This distinction may seem blurred by the fact that module scopes morph into attributes at the end of an import, but thereafter, names are part of a module <em>object</em>. For reference, here are the full rules for name resolution in Python:</p>
+<dl>
+<dt>Simple variables</dt>
+<dd><code>X</code> means search for the name <code>X</code> in the current scopes (following the LEGB rule of <a data-type="xref" href="ch17.html#scopes">Chapter 17</a>).</dd>
+<dt>Qualification</dt>
+<dd><code>X.Y</code> means find <code>X</code> in the current scopes, then search for the attribute <code>Y</code> in the object <code>X</code> (not in scopes).</dd>
+<dt>Qualification paths</dt>
+<dd><code>X.Y.Z</code> means look up the name <code>Y</code> in the object <code>X</code>, then look up <code>Z</code> in the object <code>X.Y</code>.</dd>
+<dt>Generality</dt>
+<dd>Qualification works on all objects with attributes: modules, classes, C extension types, etc.</dd>
+</dl>
+<p>As noted earlier, in <a data-type="xref" href="part06.html#classes_and_oop">Part VI</a> you’ll see that attribute qualification means a bit more for classes—it’s also the place where inheritance happens. In general, though, the rules outlined here apply to all <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="attributes" data-tertiary="names, qualification" data-startref="mdlttnq" id="id3496"></a><a contenteditable="false" data-type="indexterm" data-primary="attributes" data-secondary="modules" data-tertiary="names, qualification" data-startref="attbmqfc" id="id3497"></a><a contenteditable="false" data-type="indexterm" data-primary="qualification, attribute names" data-startref="qfttbn" id="id3498"></a>names in Python.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Imports Versus Scopes"><div class="sect2" id="imports_versus_scopes">
+<h2>Imports Versus Scopes</h2>
+<p>As we’ve seen, it is <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="imports" data-tertiary="variables" id="mdlpibv"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="modules" data-tertiary="variables" id="ipmvrbl"></a><a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="imports" id="vrbprts"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="scopes" data-tertiary="variables" id="mldcvr"></a><a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="modules" data-tertiary="variables" id="ipmspos"></a><a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="scopes" id="vrbspc"></a>never possible to access names defined in another module file without first importing that file. That is, you never automatically get to see names in another file, regardless of the structure of imports or function calls in your program. A variable’s meaning is always determined by the locations of assignments in your <em>source code</em>, and attributes are always requested of an object explicitly.</p>
+<p>For example, consider the following two simple modules. The first, <em>lex1.py</em> in <a data-type="xref" href="#example_twothree_fivedot_lexonedotpy">Example 23-5</a>, defines a variable <code>X</code> global to code in its file only, along with a function that changes the global <code>X</code> in this file.</p>
+<div data-type="example" id="example_twothree_fivedot_lexonedotpy">
+<h5><span class="label">Example 23-5. </span>lex1.py</h5>
+<pre data-type="programlisting">X = 88                        <code><em># My X: global to this file only</em></code>
+
+def f():
+    global X                  <code><em># Change this file's X</em></code>
+    X = 99                    <code><em># Cannot see names in other modules</em></code></pre>
+</div>
+<p>The second module, <em>lex2.py</em> in <a data-type="xref" href="#example_twothree_sixdot_lextwodotpy">Example 23-6</a>, defines its own global variable <code>X</code> and imports and calls the function in the first module.</p>
+<div data-type="example" id="example_twothree_sixdot_lextwodotpy">
+<h5><span class="label">Example 23-6. </span>lex2.py</h5>
+<pre data-type="programlisting">X = 11                        <code><em># My X: global to this file only</em></code>
+
+import lex1                   <code><em># Gain access to names in lex1
+</em></code>lex1.f()                      <code><em># Sets lex1.X, not this file's X</em></code>
+print(X, lex1.X)</pre>
+</div>
+<p>When run, <code>lex1.f</code> changes the <code>X</code> in <code>lex1</code>, not the <code>X</code> in <code>lex2</code>. The global scope for <code>lex1.f</code> is always the file <em>enclosing</em> it, regardless of which module it is ultimately called from:</p>
+<pre data-type="programlisting">$ <code><strong>python3 lex2.py</strong></code>
+11 99</pre>
+<p>In other words, import operations never give upward visibility to code in imported files—an imported file cannot see names in the <em>importing</em> file. More formally:</p>
+<ul>
+<li><p>Functions can never see names in other functions unless they are physically enclosing.</p></li>
+<li><p>Module code can never see names in other modules unless they are explicitly imported.</p></li>
+</ul>
+<p>Such behavior is part of <a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="lexical scoping" id="id3499"></a><a contenteditable="false" data-type="indexterm" data-primary="lexical scoping" id="id3500"></a>the <em>lexical scoping</em> notion—in Python, the scopes surrounding a piece of code are completely determined by the code’s physical position in your file. Scopes are never influenced by function calls or module imports. Some languages act differently and provide for <em>dynamic scoping</em>, where scopes really may depend on runtime calls. This tends to make code trickier, though, because the meaning of a variable can differ over time. In Python, scopes more simply <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="imports" data-tertiary="variables" data-startref="mdlpibv" id="id3501"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="modules" data-tertiary="variables" data-startref="ipmvrbl" id="id3502"></a><a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="imports" data-startref="vrbprts" id="id3503"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="scopes" data-tertiary="variables" data-startref="mldcvr" id="id3504"></a><a contenteditable="false" data-type="indexterm" data-primary="scopes" data-secondary="modules" data-tertiary="variables" data-startref="ipmspos" id="id3505"></a><a contenteditable="false" data-type="indexterm" data-primary="variables" data-secondary="scopes" data-startref="vrbspc" id="id3506"></a>correspond to the text of your program.</p>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="Namespace Nesting"><div class="sect2" id="namespace_nesting">
+<h2>Namespace Nesting</h2>
+<p>Finally, although imports do not nest <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="imports" data-tertiary="namespace nesting" id="mpnspn"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="modules" data-tertiary="namespace nesting" id="ipmmnn"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="namespaces" data-tertiary="nesting" id="mdnpsnt"></a><a contenteditable="false" data-type="indexterm" data-primary="namespaces" data-secondary="modules" data-tertiary="nesting" id="nmpcmdn"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="namespaces, in modules" id="nstmpm"></a>namespaces upward, they do in some sense nest downward. That is, although an imported module never has direct access to names in a file that imports it, using attribute qualification paths it is possible to descend into arbitrarily nested modules and access their attributes. For example, consider the next three files. First, <em>nest3.py</em> of <a data-type="xref" href="#example_twothree_sevendot_nestthreedotp">Example 23-7</a> defines a single global name and attribute by assignment.</p>
+<div data-type="example" id="example_twothree_sevendot_nestthreedotp">
+<h5><span class="label">Example 23-7. </span>nest3.py</h5>
+<pre data-type="programlisting">X = 3</pre>
+</div>
+<p>Next, <em>nest2.py</em> of <a data-type="xref" href="#example_twothree_eightdot_nesttwodotpy">Example 23-8</a> defines its own <code>X</code>, then imports <code>nest3</code> and uses name qualification to access the imported module’s attribute.</p>
+<div data-type="example" id="example_twothree_eightdot_nesttwodotpy">
+<h5><span class="label">Example 23-8. </span>nest2.py</h5>
+<pre data-type="programlisting">X = 2
+import nest3
+
+print(X, end=' ')             <code><em># My global X</em></code>
+print(nest3.X)                <code><em># nest3's X</em></code></pre>
+</div>
+<p>And at the top, <em>nest1.py</em> of <a data-type="xref" href="#example_twothree_ninedot_nestonedotpy">Example 23-9</a> also defines its own <code>X</code>, then imports <code>nest2</code>, and fetches attributes in both the first and second files.</p>
+<div data-type="example" id="example_twothree_ninedot_nestonedotpy">
+<h5><span class="label">Example 23-9. </span>nest1.py</h5>
+<pre data-type="programlisting">X = 1
+import nest2
+
+print(X, end=' ')             <code><em># My global X</em></code>
+print(nest2.X, end=' ')       <code><em># nest2's X</em></code>
+print(nest2.nest3.X)          <code><em># Nested nest3's X</em></code></pre>
+</div>
+<p>Really, when <code>nest1</code> imports <code>nest2</code> here, it sets up a two-level namespace nesting. By using the path of names <code>nest2.nest3.X</code>, it can descend into <code>nest3</code>, which is nested in the imported <code>nest2</code>. The net effect is that <code>nest1</code> can see the <code>X</code>s in all three files, and hence has access to all three global scopes:</p>
+<pre data-type="programlisting">$ <code><strong>python3 nest1.py</strong></code>
+2 3
+1 2 3</pre>
+<p>The reverse, however, is not true: <code>nest3</code> cannot see names in <code>nest2</code>, and <code>nest2</code> cannot see names in <code>nest1</code>. This example may be easier to grasp if you don’t think in terms of namespaces and scopes, but instead focus on the objects involved. Within <code>nest1</code>, <code>nest2</code> is just a name that refers to an object with attributes, some of which may refer to other objects with attributes (<code>import</code> is an assignment). For paths like <code>nest2.nest3.X</code>, Python simply evaluates from left to right, fetching attributes from objects along the way.</p>
+<p>Note that <code>nest1</code> can say <code>import nest2</code>, and then <code>nest2.nest3.X</code>, but it cannot say <code>import nest2.nest3</code>—this syntax invokes something called <em>package</em> (directory) imports, the topic we’ll take up in the next chapter after we study reloads here. Package imports also create module <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="imports" data-tertiary="namespace nesting" data-startref="mpnspn" id="id3507"></a><a contenteditable="false" data-type="indexterm" data-primary="imports" data-secondary="modules" data-tertiary="namespace nesting" data-startref="ipmmnn" id="id3508"></a><a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="namespaces" data-tertiary="nesting" data-startref="mdnpsnt" id="id3509"></a><a contenteditable="false" data-type="indexterm" data-primary="namespaces" data-secondary="modules" data-tertiary="nesting" data-startref="nmpcmdn" id="id3510"></a><a contenteditable="false" data-type="indexterm" data-primary="nesting" data-secondary="namespaces, in modules" data-startref="nstmpm" id="id3511"></a>namespace nesting, but their <code>import</code> statements are taken to reflect <em>directory</em> trees, not simple file <em>import</em> chains.</p>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Reloading Modules"><div class="sect1" id="reloading_modules-id000107">
+<h1>Reloading Modules</h1>
+<p>As we’ve seen, a module’s code is run <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="reload function" id="mdlrldf"></a><a contenteditable="false" data-type="indexterm" data-primary="reload function" id="rlfct"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="reload" id="fctrld"></a>only once per process by default. To force a module’s code to be reloaded and rerun, you need to ask Python to do so explicitly by calling the <code>reload</code> built-in function, introduced briefly in <a data-type="xref" href="ch03.html#how_you_run_programs">Chapter 3</a>. In this section, we’ll explore how to use reloads to make your systems more dynamic. In a nutshell:</p>
+<ul>
+<li><p>Imports—via both <code>import</code> and <code>from</code> statements—load and run a module’s code only the first time the module is imported in a process.</p></li>
+<li><p>Later imports use the already loaded module object without reloading or rerunning the file’s code. This is true even if you resave the module’s source code file during the program run.</p></li>
+<li><p>The <code>reload</code> function forces an already loaded module’s code to be reloaded and rerun. Assignments in the file’s new code change the existing module object in place.</p></li>
+</ul>
+<p>So why care about reloading modules? In short, REPL testing and customization. When testing code interactively, it may be easier to reload a module you’ve changed in another window than it is to restart the REPL.</p>
+<p>The more grandiose rationale is <em>dynamic customization</em>: the <code>reload</code> function allows parts of a program to be changed without stopping the whole program. With <code>reload</code>, the effects of changes in components can be observed immediately. Reloading doesn’t help in every situation, but where it does, it makes for a much shorter development cycle. For instance, imagine a database program that must connect to a server on startup; because program changes or customizations can be tested immediately after reloads, you need to connect only once while debugging. Long-running servers can update themselves this way, too.</p>
+<p>Because Python is interpreted (more or less), it already gets rid of the compile/link steps you need to go through to get a C program to run: modules are loaded dynamically when imported by a running program. Reloading offers a further performance advantage by allowing you to also change parts of running programs without stopping.</p>
+<p>One note here: our use of <code>reload</code> in this book is limited to modules written in Python. Compiled extension modules coded in a language such as C can be dynamically loaded by imports at runtime, too, but they are out of scope here (though most users probably prefer to code customizations in Python <span class="keep-together">anyhow!</span>).</p>
+<section data-type="sect2" data-pdf-bookmark="reload Basics"><div class="sect2" id="reload_basics">
+<h2>reload Basics</h2>
+<p>Unlike <code>import</code> and <code>from</code>:</p>
+<ul>
+<li><p><code>reload</code> is a function in Python, not a statement.</p></li>
+<li><p><code>reload</code> is passed an existing module object, not a string name.</p></li>
+<li><p><code>reload</code> lives in a standard-library module and must be imported itself.</p></li>
+</ul>
+<p>Because <code>reload</code> expects an object, a module must have been previously imported successfully before you can reload it (and if the import was unsuccessful due to a syntax or other error, you may need to repeat it before you can reload the module). Furthermore, the syntax of <code>import</code> statements and <code>reload</code> calls differs: as a function, reloads require parentheses, but import statements do not. Abstractly, reloading looks like this:</p>
+<pre data-type="programlisting">import module                     <code><em># Initial module import</em></code>
+…<code><em>use module.attributes</em></code>… 
+…<code><em>change the module file</em></code>…
+
+from importlib import reload      <code><em># Get reload itself</em></code>
+reload(module)                    <code><em># Get updated module</em></code>
+…<code><em>use module.attributes</em></code>…</pre>
+<p>The typical usage pattern is that you import a module, then change its source code in a text editor, and then reload it. This can occur when working interactively, but also in larger programs that reload <span class="keep-together">periodically</span>.</p>
+<p>When you call <code>reload</code>, Python rereads the module’s code and reruns its top-level statements. Perhaps the most important thing to know about <code>reload</code> is that it changes a module object <em>in place</em>; it does not delete and re-create the module object. Because of that, every reference to an entire module <em>object</em> anywhere in your program is automatically affected by a reload. Here are the details:</p>
+<ul>
+<li><p><code><strong>reload</strong></code> <strong>runs a module file’s new code in the module’s current namespace.</strong> Rerunning a module file’s code overwrites its existing namespace, rather than deleting and re-creating it.</p></li>
+<li><p><strong>Top-level assignments in the file replace names with new values.</strong> For instance, rerunning a <code>def</code> statement replaces the prior version of the function in the module’s namespace by reassigning the function name.</p></li>
+<li><p><strong>Reloads impact all clients that use</strong> <code><strong>import</strong></code> <strong>to fetch modules.</strong> Because clients that use <code>import</code> qualify to fetch attributes, they’ll find new values in the module object after a reload.</p></li>
+<li><p><strong>Reloads impact future</strong> <code><strong>from</strong></code> <strong>clients only.</strong> Clients that used <code>from</code> to fetch attributes in the past won’t be affected by a reload; they’ll still have references to the old objects fetched before the reload.</p></li>
+<li><p><strong>Reloads apply to a single module only.</strong> You must run them on each module you wish to update unless you use code or tools that apply reloads transitively.</p></li>
+</ul>
+</div></section>
+<section data-type="sect2" data-pdf-bookmark="reload Example"><div class="sect2" id="reload_example">
+<h2>reload Example</h2>
+<p>To demonstrate, here’s a more concrete example of <code>reload</code> in action. In the following, we’ll change and reload a module file without stopping the interactive Python session. Reloads are useful in other scenarios, too, but we’ll keep things simple for illustration here. First, in the text editor of your choice, write a module file named <em>changer.py</em> with the contents given in <a data-type="xref" href="#example_twothree_onezerodot_changerdotp">Example 23-10</a>.</p>
+<div data-type="example" id="example_twothree_onezerodot_changerdotp">
+<h5><span class="label">Example 23-10. </span>changer.py (start)</h5>
+<pre data-type="programlisting">message = 'First version'
+def printer():
+    print(message)</pre>
+</div>
+<p>This module creates and exports two names—one bound to a string, and another to a function. Now, start the Python interpreter (i.e., your local REPL), import the module, and call the function it exports. The function will print the value of the global <code>message</code> variable as you probably expect:</p>
+<pre data-type="programlisting">$ <code><strong>python3</strong></code>
+&gt;&gt;&gt; <code><strong>import changer</strong></code>
+&gt;&gt;&gt; <code><strong>changer.printer()</strong></code>
+First version</pre>
+<p>Keeping the interpreter active, now edit and save the module file in another window. Change the global <code>message</code> variable, as well as the <code>printer</code> function body:</p>
+<pre data-type="programlisting">message = 'After editing'
+def printer():
+    print('reloaded:', message)</pre>
+<p>Then, return to the Python window and reload the module to fetch the new code. Notice in the following interaction that importing the module again has no effect; we get the original message, even though the file’s been changed. We have to call <code>reload</code> in order to get the new version:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import changer
+</strong></code>&gt;&gt;&gt; <code><strong>changer.printer()</strong></code>                 <code><em># No effect: uses loaded module</em></code>
+First version
+
+&gt;&gt;&gt; <code><strong>from importlib import reload
+</strong></code>&gt;&gt;&gt; <code><strong>reload(changer)</strong></code>                   <code><em># Forces new code to load/run</em></code>
+&lt;module 'changer' from '/…/LP6E/Chapter23/changer.py'&gt;
+
+&gt;&gt;&gt; <code><strong>changer.printer()</strong></code>                 <code><em># Runs the new version now</em></code>
+reloaded: After editing</pre>
+<p>Notice that <code>reload</code> actually <em>returns</em> the module object for us—its result is usually ignored, but because expression results are printed at the interactive prompt, Python shows a default <code>&lt;module …&gt;</code> <span class="keep-together">representation.</span></p>
+<p>You can also reload a module by string name using the <code>sys.modules</code> dictionary demoed in the prior chapter if you don’t have a variable assigned to it by <code>import</code>:</p>
+<pre data-type="programlisting">&gt;&gt;&gt; <code><strong>import sys</strong></code>
+&gt;&gt;&gt; <code><strong>reload(sys.modules['changer'])</strong></code></pre>
+<p>In this case, it’s probably easier to run <code>import changer</code> to get a handle on the module, but the <code>sys.modules</code> scheme may be useful in programs that need to reload modules more generically. It’s also possible to <em>delete</em> modules from <code>sys.modules</code> to force a reload, but this is generally discouraged for reasons we’ll skip here; use <code>reload</code>.</p>
+</div></section>
+<section data-type="sect2" class="pagebreak-before" data-pdf-bookmark="reload Odds and Ends"><div class="sect2" id="reload_odds_and_ends">
+<h2 class="less_space">reload Odds and Ends</h2>
+<p>Finally, four brief module-reload notes in closing:</p>
+<ul>
+<li><p>If you use <code>reload</code>, you’ll probably want to pair it with <code>import</code> instead of <code>from</code>, as names fetched with the latter are not updated by reload operations—leaving your names in a state that’s strange enough to warrant postponing elaboration until this part’s “gotchas” at the end of <a data-type="xref" href="ch25.html#module_odds_and_ends">Chapter 25</a>.</p></li>
+<li><p>By itself, <code>reload</code> updates only a <em>single</em> module, but it’s straightforward to code a function that applies it transitively to related modules—an extension we’ll save for a case study near the end of <a data-type="xref" href="ch25.html#module_odds_and_ends">Chapter 25</a>.</p></li>
+<li><p>Some development tools (e.g. Jupyter notebooks) have REPLs that offer an <em>auto-reload</em> mode that may obviate manual <code>reload</code> calls. This works only in specific tools, though, and doesn’t address customization roles.</p></li>
+<li><p>And last, <code>reload</code> has had a long and checkered past—morphing from built-in function, to <code>imp</code> module attribute in this book’s prior edition, to its current <code>importlib</code> host. While this may be a symptom of Python’s constant morph, which is apt to relocate <code>reload</code> again, it must be asked: does this function <a contenteditable="false" data-type="indexterm" data-primary="modules" data-secondary="reload function" data-startref="mdlrldf" id="id3512"></a><a contenteditable="false" data-type="indexterm" data-primary="reload function" data-startref="rlfct" id="id3513"></a><a contenteditable="false" data-type="indexterm" data-primary="functions" data-secondary="reload" data-startref="fctrld" id="id3514"></a>have trouble working with others?!</p></li>
+</ul>
+</div></section>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Chapter Summary"><div class="sect1" id="chapter_summary-id00034">
+<h1>Chapter Summary</h1>
+<p>This chapter drilled down into the essentials of module coding tools—the <code>import</code> and <code>from</code> statements, and the <code>reload</code> call. It showed how the <code>from</code> statement simply adds an extra step that copies names out of a file after it has been imported, and how <code>reload</code> forces a file to be imported again without stopping and restarting Python. This chapter also detailed what happens when imports are nested, explored the way files become module namespaces, and covered some potential pitfalls of the <code>from</code> statement.</p>
+<p>Although you’ve already learned enough to handle module files in most programs, the next chapter extends the coverage of the import model by presenting <em>package imports</em>—a way for <code>import</code> statements to specify part of the directory path leading to the desired module. As you’ll find, package imports give us a hierarchy that is useful in larger systems and allow us to break conflicts between same-named modules. Before we move on, though, here’s a quick quiz on the concepts presented here.</p>
+</div></section>
+<section data-type="sect1" data-pdf-bookmark="Test Your Knowledge: Quiz"><div class="sect1" id="test_your_knowledge_quiz-id000167">
+<h1>Test Your Knowledge: Quiz</h1>
+<ol>
+<li><p>How do you make a module?</p></li>
+<li><p>How is the <code>from</code> statement related to the <code>import</code> statement?</p></li>
+<li><p>How is the <code>reload</code> function related to imports?</p></li>
+<li><p>When must you use <code>import</code> instead of <code>from</code>?</p></li>
+<li><p>Name three potential pitfalls of the <code>from</code> statement.</p></li>
+</ol>
+</div></section>
+<section data-type="sect1" class="pagebreak-before" data-pdf-bookmark="Test Your Knowledge: Answers"><div class="sect1" id="test_your_knowledge_answers-id000166">
+<h1 class="less_space">Test Your Knowledge: Answers</h1>
+<ol>
+<li><p>To create a module, you simply write a text file containing Python statements; every source code file is automatically a module, and there is no syntax for declaring one. Import operations load module files into module objects in memory. You can also make a module by writing code in an external language like C or Java, but such extension modules are beyond the scope of this book (and most of its readers).</p></li>
+<li><p>The <code>from</code> statement imports an entire module, like the <code>import</code> statement, but as an extra step, it also copies one or more variables from the imported module into the scope where the <code>from</code> appears. This enables you to use the imported names directly (<code>name</code>) instead of having to go through the module (<code>module.name</code>).</p></li>
+<li><p>By default, a module is imported only once per process. The <code>reload</code> function forces a module to be imported again. It is mostly used to pick up new versions of a module’s source code during development, and in dynamic customization scenarios where users change part of a system without restarting it.</p></li>
+<li><p>You must use <code>import</code> instead of <code>from</code> only when you need to access the same name in two different modules. To make the two names unique, qualify with the names of their enclosing modules obtained with <code>import</code>. The <code>as</code> extension can render <code>from</code> usable in this context as well, by renaming imports uniquely.</p></li>
+<li><p>The <code>from</code> statement can obscure the meaning of a variable (which module it is defined in), can have problems with the <code>reload</code> call (names may reference prior versions of objects), and can corrupt namespaces (it might silently overwrite names you are using in your scope). The <code>from *</code> form is worse in most regards—it can corrupt namespaces arbitrarily and obscure the meaning of variables, so it is probably best used sparingly.</p></li>
+</ol>
+</div></section>
+</div></section></div>
+</div>
+</body>
+</html>
