@@ -18,5 +18,3 @@ Lecture 2
 Lecture 3
 Lecture 4
 Week 9: midterm
-
-Hello
