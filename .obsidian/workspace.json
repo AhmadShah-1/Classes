@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "f5f9dd46cd3653bb",
+        "id": "e6b092187bcdc2b7",
         "type": "tabs",
         "children": [
           {
-            "id": "c2b811bc0d26ad0e",
+            "id": "c0a2040ca33e4e2d",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -78,7 +78,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "50165ecf48411235",
@@ -171,19 +172,21 @@
       "github-sync:Sync with Remote": false
     }
   },
-  "active": "c2b811bc0d26ad0e",
+  "active": "c0a2040ca33e4e2d",
   "lastOpenFiles": [
+    "Images/Pasted image 20260218181237.png",
+    "Images/Pasted image 20260218180752.png",
+    "Classes/Spring 2025/Deep Learning/Recordings/Lecture2.mp4",
+    "Classes/Spring 2025/Deep Learning/Lecture 1.md",
+    "Classes/Spring 2025/Deep Learning/Lecture 2.md",
     "Images/Pasted image 20260218092936.png",
     "Images/Pasted image 20260218092925.png",
     "Images/Pasted image 20260218092854.png",
     "Images/Pasted image 20260218092716.png",
     "Images/Pasted image 20260218092644.png",
-    "Classes/Spring 2025/Deep Learning/Lecture 1.md",
     "Classes/Spring 2025/Deep Learning/Lecture 1_2.md",
-    "Classes/Spring 2025/Deep Learning/Lecture 2.md",
     "Classes/Fall 2025/AAI551_EngineeringProgrammingPython/Work/Class_Code/Lecture7/permute.py",
     "Classes/Spring 2025/Deep Learning/1. Syllabus/Class Structure.md",
-    "Classes/Spring 2025/Deep Learning/Recordings/Lecture2.mp4",
     "Classes/Spring 2025/Status.md",
     "Classes/Spring 2025/Deep Learning/Recordings",
     "Untitled.md",
@@ -192,8 +195,6 @@
     "Images/Pasted image 20260217225247.png",
     "Images/Pasted image 20260217225216.png",
     "Images/Pasted image 20260217224822.png",
-    "Images/Pasted image 20260217224748.png",
-    "Images/Pasted image 20260217224710.png",
     "Classes/Spring 2025/Modeling and Optimization (CPE 608)/Lecture 1.md",
     "Classes/Spring 2025/Modeling and Optimization (CPE 608)/1. Syllabus/Syllabus.pdf",
     "Classes/Spring 2025/Big Data Analytics (AAI 627)/1. Syllabus/Class Structure.md",
