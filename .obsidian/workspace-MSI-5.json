@@ -4,21 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "5a0306ef6b314b46",
+        "id": "946d2fca03c6d7c9",
         "type": "tabs",
         "children": [
           {
-            "id": "026083247660d3b8",
+            "id": "090f335a3b576233",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Classes/Spring 2025/Deep Learning/Lecture 1.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "Lecture 1"
+              "title": "New tab"
             }
           }
         ]
@@ -171,51 +167,28 @@
       "github-sync:Sync with Remote": false
     }
   },
-  "active": "026083247660d3b8",
+  "active": "3ac6f5d6215980ac",
   "lastOpenFiles": [
-    "Classes/Spring 2025/Deep Learning/Recordings/Lecture2.mp4",
-    "Classes/Spring 2025/Deep Learning/Lecture 2.md",
-    "Classes/Spring 2025/Status.md",
-    "Classes/Spring 2025/Deep Learning/Recordings",
-    "Untitled.md",
-    "Classes/Spring 2025/Deep Learning/Lecture 1.md",
-    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 4.md",
-    "Images/Pasted image 20260217225919.png",
-    "Images/Pasted image 20260217225247.png",
-    "Images/Pasted image 20260217225216.png",
-    "Images/Pasted image 20260217224822.png",
-    "Images/Pasted image 20260217224748.png",
-    "Images/Pasted image 20260217224710.png",
-    "Images/Pasted image 20260217224447.png",
-    "Images/Pasted image 20260217224332.png",
-    "Images/Pasted image 20260217224145.png",
-    "Images/Pasted image 20260217224133.png",
-    "Classes/Spring 2025/Modeling and Optimization (CPE 608)/Lecture 1.md",
-    "Classes/Spring 2025/Modeling and Optimization (CPE 608)/1. Syllabus/Syllabus.pdf",
-    "Classes/Spring 2025/Big Data Analytics (AAI 627)/1. Syllabus/Class Structure.md",
-    "Classes/Spring 2025/Modeling and Optimization (CPE 608)/1. Syllabus/Class Structure.md",
-    "Classes/Spring 2025/Deep Learning/1. Syllabus/Class Structure.md",
-    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/1. Syllabus/Class Structure.md",
-    "Classes/Spring 2025/Big Data Analytics (AAI 627)/1. Syllabus/Syllabus.pdf",
-    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 3.md",
-    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 3.md",
-    "General/Personal/Skin.md",
-    "General/Personal",
-    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 2.md",
-    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 1.md",
-    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 2.md",
-    "General/Projects/MLBlocks/Things to add.md",
-    "General/Projects/ProteinFolding/1. Notable Links.md",
-    "General/Projects/ProteinFolding",
-    "General/Projects/MLBlocks",
     "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 1.md",
-    "General/Learning/DSA/4_LinkedLists/2. Fast and Slow Pointers.md",
-    "General/Learning/DSA/4_LinkedLists/1. LinkedList.md",
-    "General/Learning/DSA/2_Arrays_Strings/Sliding Window.md",
-    "General/Learning/DSA/3_Hashing/Hashing.md",
-    "General/Learning/DSA/4_LinkedLists/4_ReversingLinkedList.md",
-    "General/Learning/DSA/4_LinkedLists/3. Questions.md",
+    "Classes/Spring 2025/Deep Learning/Lecture 1.md",
+    "Images/Pasted image 20260131202340.png",
+    "Images/Pasted image 20260131201924.png",
+    "Images/Pasted image 20260131201737.png",
+    "Images/Pasted image 20260131200505.png",
+    "Classes/Spring 2025/Deep Learning/1. Syllabus/Class Structure.md",
     "Classes/Spring 2025/Deep Learning/1. Syllabus/Syllabus.pdf",
+    "Classes/Spring 2025/Modeling and Optimization (CPE 608)/Lecture 1.md",
+    "Classes/Spring 2025/Modeling and Optimization (CPE 608)/1. Syllabus/Class Structure.md",
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 1.md",
+    "Images/Pasted image 20260125143505.png",
+    "Images/Pasted image 20260125143241.png",
+    "Images/Pasted image 20260125143215.png",
+    "Images/Pasted image 20260125143207.png",
+    "Classes/Spring 2025/Big Data Analytics (AAI 627)/1. Syllabus/Syllabus.pdf",
+    "Classes/Spring 2025/Big Data Analytics (AAI 627)/1. Syllabus/Class Structure.md",
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/1. Syllabus/Class Structure.md",
+    "Images/Pasted image 20260125133657.png",
+    "Images/Pasted image 20260125133010.png",
     "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/1. Syllabus/Syllabus.pdf",
     "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lectures"
   ]
