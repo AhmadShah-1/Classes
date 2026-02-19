@@ -78,8 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "50165ecf48411235",
@@ -174,6 +173,7 @@
   },
   "active": "c0a2040ca33e4e2d",
   "lastOpenFiles": [
+    "Images/Pasted image 20260218190844.png",
     "Images/Pasted image 20260218190555.png",
     "Images/Pasted image 20260218190550.png",
     "Images/Pasted image 20260218190540.png",
@@ -184,7 +184,6 @@
     "Images/Pasted image 20260218190205.png",
     "Images/Pasted image 20260218185610.png",
     "Images/Pasted image 20260218185600.png",
-    "Images/Pasted image 20260218185104.png",
     "Classes/Spring 2025/Deep Learning/Recordings/Lecture2.mp4",
     "Classes/Spring 2025/Deep Learning/Lecture 1.md",
     "Classes/Spring 2025/Deep Learning/Lecture 2.md",

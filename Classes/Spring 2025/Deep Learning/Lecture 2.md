@@ -120,3 +120,9 @@ We can use logistic regression, random forest, decision tree, xgboost, etc as th
 
 ![[Pasted image 20260218190555.png]]
 
+![[Pasted image 20260218190844.png]]
+Normally when working with models, you want numerical data, and when you have text data such as names (which we cannot turn to columns) we would use OneHotEncoding to translate it to a language the model can process
+
+Amazon for example would assign objectIDs to names, which would result in large values, if those were oneHotEncoded, it would result in a large number of parameters, additionally when thinking of the insane amount of words in the English language, if we were to do 1-gram, then 2-gram, etc. The size of possibilities would continually grow, the model would be unable to learn as it is unable to make similarities between words, and this exponential growth also has an effect on our storage.
+
+To solve this we use embeddings instead
