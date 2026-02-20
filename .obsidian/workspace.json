@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Classes/Spring 2025/Deep Learning/Lecture 3.md",
+                "file": "General/Learning/AWS/Important Links.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Lecture 3"
+              "title": "Important Links"
             }
           }
         ]
@@ -173,6 +173,12 @@
   },
   "active": "c0a2040ca33e4e2d",
   "lastOpenFiles": [
+    "General/Learning/AWS/AWS Certified Developer Associate/1. Info.md",
+    "General/Learning/AWS/Cloud Practitioner Essentials/Module 3.md",
+    "General/Learning/AWS/Cloud Practitioner Essentials/Module 4.md",
+    "Classes/Spring 2025/Status.md",
+    "General/Work/Job_Search/Job Sites.md",
+    "Classes/Spring 2025/Deep Learning/Lecture 3.md",
     "Classes/Spring 2025/Big Data Analytics (AAI 627)/Recordings/Lecture 4.mp4",
     "Classes/Spring 2025/Deep Learning/Recordings/Lecture 3.mp4",
     "Classes/Spring 2025/Deep Learning/Recordings/Lecture 2.mp4",
@@ -188,7 +194,6 @@
     "Images/Pasted image 20260218190434.png",
     "Images/Pasted image 20260218190205.png",
     "Classes/Spring 2025/Deep Learning/Lecture 2.md",
-    "Classes/Spring 2025/Deep Learning/Lecture 3.md",
     "Classes/Spring 2025/Modeling and Optimization (CPE 608)/Lecture 2/Gradient Descent Algorithm (Linear Regression).pdf",
     "Classes/Spring 2025/Modeling and Optimization (CPE 608)/Lecture 2",
     "Classes/Spring 2025/Deep Learning/Recordings",
@@ -198,7 +203,6 @@
     "Classes/Spring 2025/Deep Learning/Lecture 1_2.md",
     "Classes/Fall 2025/AAI551_EngineeringProgrammingPython/Work/Class_Code/Lecture7/permute.py",
     "Classes/Spring 2025/Deep Learning/1. Syllabus/Class Structure.md",
-    "Classes/Spring 2025/Status.md",
     "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 4.md",
     "Classes/Spring 2025/Modeling and Optimization (CPE 608)/Lecture 1.md",
     "Classes/Spring 2025/Modeling and Optimization (CPE 608)/1. Syllabus/Syllabus.pdf",
@@ -214,9 +218,6 @@
     "General/Projects/MLBlocks/Things to add.md",
     "General/Projects/ProteinFolding/1. Notable Links.md",
     "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 1.md",
-    "General/Learning/DSA/4_LinkedLists/2. Fast and Slow Pointers.md",
-    "General/Learning/DSA/4_LinkedLists/1. LinkedList.md",
-    "General/Learning/DSA/2_Arrays_Strings/Sliding Window.md",
-    "General/Learning/DSA/3_Hashing/Hashing.md"
+    "General/Learning/DSA/4_LinkedLists/2. Fast and Slow Pointers.md"
   ]
 }

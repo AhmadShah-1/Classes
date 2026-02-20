@@ -1,6 +1,5 @@
 
 Applied Modeling and Optimization:
-Lecture 4
 Lecture 5
 Week 6: midterm
 
