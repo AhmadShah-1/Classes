@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "General/Work/Job_Search/Questions/Untitled.md",
+                "file": "General/Work/Job_Search/Questions/Palantir.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Untitled"
+              "title": "Palantir"
             }
           }
         ]
@@ -173,8 +173,9 @@
   },
   "active": "f65f45604dbd972c",
   "lastOpenFiles": [
-    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 3.md",
     "General/Work/Job_Search/Questions/Untitled.md",
+    "General/Work/Job_Search/Questions/Palantir.md",
+    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 3.md",
     "General/Work/Job_Search/Palantir/Untitled.md",
     "General/Work/Job_Search/Questions",
     "General/Work/Job_Search/Palantir",
@@ -217,7 +218,6 @@
     "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 2.md",
     "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 1.md",
     "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 2.md",
-    "General/Projects/MLBlocks/Things to add.md",
-    "General/Projects/ProteinFolding/1. Notable Links.md"
+    "General/Projects/MLBlocks/Things to add.md"
   ]
 }
