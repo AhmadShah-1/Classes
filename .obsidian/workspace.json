@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 3.md",
+                "file": "General/Work/Job_Search/Questions/Untitled.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Lecture 3"
+              "title": "Untitled"
             }
           }
         ]
@@ -173,10 +173,15 @@
   },
   "active": "f65f45604dbd972c",
   "lastOpenFiles": [
+    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 3.md",
+    "General/Work/Job_Search/Questions/Untitled.md",
+    "General/Work/Job_Search/Palantir/Untitled.md",
+    "General/Work/Job_Search/Questions",
+    "General/Work/Job_Search/Palantir",
+    "General/Work/Job_Search/Untitled.md",
     "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 4.md",
     "Images/Pasted image 20260222070914.png",
     "Images/Pasted image 20260222070305.png",
-    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 3.md",
     "Images/Pasted image 20260220090828.png",
     "Classes/Spring 2025/Deep Learning/Lecture 3.md",
     "Images/Pasted image 20260222063449.png",
@@ -201,9 +206,7 @@
     "Images/Pasted image 20260218190529.png",
     "Images/Pasted image 20260218190501.png",
     "Classes/Spring 2025/Modeling and Optimization (CPE 608)/Lecture 4",
-    "Classes/Spring 2025/Big Data Analytics (AAI 627)/1. Syllabus/Syllabus.pdf",
     "Classes/Spring 2025/Status.md",
-    "Classes/Spring 2025/Deep Learning/Recordings",
     "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 4.md",
     "Classes/Spring 2025/Big Data Analytics (AAI 627)/1. Syllabus/Class Structure.md",
     "Classes/Spring 2025/Modeling and Optimization (CPE 608)/1. Syllabus/Class Structure.md",
@@ -215,8 +218,6 @@
     "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 1.md",
     "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 2.md",
     "General/Projects/MLBlocks/Things to add.md",
-    "General/Projects/ProteinFolding/1. Notable Links.md",
-    "General/Learning/DSA/4_LinkedLists/2. Fast and Slow Pointers.md",
-    "General/Learning/DSA/4_LinkedLists/1. LinkedList.md"
+    "General/Projects/ProteinFolding/1. Notable Links.md"
   ]
 }
