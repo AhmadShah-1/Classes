@@ -45,3 +45,26 @@ For heapify when checking if its sorted (All parents have higher values than the
 ![[Pasted image 20260224140731.png]]
 
 ![[Pasted image 20260224141233.png]]
+![[Pasted image 20260224141315.png]]
+
+![[Pasted image 20260224141343.png]]
+![[Pasted image 20260224141405.png]]
+
+![[Pasted image 20260224141426.png]]
+![[Pasted image 20260224141437.png]]
+
+![[Pasted image 20260224141448.png]]
+![[Pasted image 20260224141514.png]]
+
+![[Pasted image 20260224141539.png]]
+![[Pasted image 20260224141548.png]]
+
+![[Pasted image 20260224141606.png]]
+![[Pasted image 20260224141622.png]]
+
+![[Pasted image 20260224141632.png]]
+![[Pasted image 20260224141639.png]]
+![[Pasted image 20260224141650.png]]
+![[Pasted image 20260224141659.png]]
+![[Pasted image 20260224141714.png]]
+
