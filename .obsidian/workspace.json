@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "f3a9aa5e68ea559e",
+        "id": "e6b092187bcdc2b7",
         "type": "tabs",
         "children": [
           {
-            "id": "d61a4fd5422f3e58",
+            "id": "c0a2040ca33e4e2d",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 4.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "Lecture 4"
             }
           }
         ]
@@ -167,52 +171,52 @@
       "github-sync:Sync with Remote": false
     }
   },
-  "active": "d61a4fd5422f3e58",
+  "active": "c0a2040ca33e4e2d",
   "lastOpenFiles": [
     "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Recordings/Lecture 5.mp4",
-    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 4.md",
-    "General/Work/Job_Search/Questions/Palantir.md",
-    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Recordings",
-    "General/Work/Job_Search/Questions/Untitled.md",
-    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 3.md",
-    "General/Work/Job_Search/Palantir/Untitled.md",
-    "General/Work/Job_Search/Questions",
-    "General/Work/Job_Search/Palantir",
-    "General/Work/Job_Search/Untitled.md",
-    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 4.md",
+    "General/Learning/AWS/Important Links.md",
     "Images/Pasted image 20260222070914.png",
     "Images/Pasted image 20260222070305.png",
-    "Images/Pasted image 20260220090828.png",
-    "Classes/Spring 2025/Deep Learning/Lecture 3.md",
     "Images/Pasted image 20260222063449.png",
-    "Classes/Spring 2025/Modeling and Optimization (CPE 608)/Lecture 2/Gradient Descent Algorithm (Linear Regression).pdf",
-    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 1.md",
-    "Classes/Spring 2025/Deep Learning/Lecture 2.md",
-    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Untitled",
-    "Classes/Spring 2025/Deep Learning/Lecture 1_2.md",
-    "Classes/Spring 2025/Deep Learning/Lecture 1.md",
+    "General/Work/Job_Search/Questions/Untitled.md",
+    "General/Work/Job_Search/Questions/Palantir.md",
+    "General/Work/Job_Search/Questions",
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Recordings",
+    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 4.md",
+    "General/Learning/AWS/AWS Certified Developer Associate/1. Info.md",
+    "General/Learning/AWS/Cloud Practitioner Essentials/Module 3.md",
+    "General/Learning/AWS/Cloud Practitioner Essentials/Module 4.md",
+    "Classes/Spring 2025/Status.md",
+    "General/Work/Job_Search/Job Sites.md",
+    "Classes/Spring 2025/Deep Learning/Lecture 3.md",
     "Classes/Spring 2025/Big Data Analytics (AAI 627)/Recordings/Lecture 4.mp4",
-    "Classes/Spring 2025/Deep Learning/Recordings/Lecture 2.mp4",
-    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Recordings",
     "Classes/Spring 2025/Deep Learning/Recordings/Lecture 3.mp4",
+    "Classes/Spring 2025/Deep Learning/Recordings/Lecture 2.mp4",
     "Untitled.md",
-    "Untitled 1.md",
-    "Classes/Spring 2025/Modeling and Optimization (CPE 608)/Lecture 1.md",
+    "Images/Pasted image 20260220090828.png",
     "Images/Pasted image 20260218190844.png",
     "Images/Pasted image 20260218190555.png",
     "Images/Pasted image 20260218190550.png",
     "Images/Pasted image 20260218190540.png",
     "Images/Pasted image 20260218190529.png",
     "Images/Pasted image 20260218190501.png",
-    "Classes/Spring 2025/Status.md",
+    "Classes/Spring 2025/Deep Learning/Lecture 2.md",
+    "Classes/Spring 2025/Modeling and Optimization (CPE 608)/Lecture 2/Gradient Descent Algorithm (Linear Regression).pdf",
+    "Classes/Spring 2025/Modeling and Optimization (CPE 608)/Lecture 2",
+    "Classes/Spring 2025/Deep Learning/Recordings",
+    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Recordings",
+    "Classes/Spring 2025/Deep Learning/Lecture 1.md",
+    "Classes/Spring 2025/Deep Learning/Lecture 1_2.md",
+    "Classes/Spring 2025/Deep Learning/1. Syllabus/Class Structure.md",
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 4.md",
+    "Classes/Spring 2025/Modeling and Optimization (CPE 608)/Lecture 1.md",
     "Classes/Spring 2025/Big Data Analytics (AAI 627)/1. Syllabus/Class Structure.md",
     "Classes/Spring 2025/Modeling and Optimization (CPE 608)/1. Syllabus/Class Structure.md",
-    "Classes/Spring 2025/Deep Learning/1. Syllabus/Class Structure.md",
     "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/1. Syllabus/Class Structure.md",
     "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 3.md",
+    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 3.md",
     "General/Personal/Skin.md",
     "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 2.md",
-    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 1.md",
-    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 2.md"
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 1.md"
   ]
 }
