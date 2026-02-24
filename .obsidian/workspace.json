@@ -8,17 +8,17 @@
         "type": "tabs",
         "children": [
           {
-            "id": "c0a2040ca33e4e2d",
+            "id": "1fd731a1710afc87",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 4.md",
+                "file": "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 5.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Lecture 4"
+              "title": "Lecture 5"
             }
           }
         ]
@@ -171,10 +171,20 @@
       "github-sync:Sync with Remote": false
     }
   },
-  "active": "c0a2040ca33e4e2d",
+  "active": "1fd731a1710afc87",
   "lastOpenFiles": [
-    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 3.md",
+    "Untitled 2.md",
     "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 4.md",
+    "Untitled 1.md",
+    "Images/Pasted image 20260224091320.png",
+    "Images/Pasted image 20260224091240.png",
+    "Images/Pasted image 20260224091220.png",
+    "Images/Pasted image 20260224091213.png",
+    "Images/Pasted image 20260224090940.png",
+    "Images/Pasted image 20260224090612.png",
+    "Images/Pasted image 20260224090123.png",
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 5.md",
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 3.md",
     "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Recordings/Lecture 5.mp4",
     "General/Learning/AWS/Important Links.md",
     "Images/Pasted image 20260222070914.png",
@@ -195,13 +205,6 @@
     "Classes/Spring 2025/Deep Learning/Recordings/Lecture 3.mp4",
     "Classes/Spring 2025/Deep Learning/Recordings/Lecture 2.mp4",
     "Untitled.md",
-    "Images/Pasted image 20260220090828.png",
-    "Images/Pasted image 20260218190844.png",
-    "Images/Pasted image 20260218190555.png",
-    "Images/Pasted image 20260218190550.png",
-    "Images/Pasted image 20260218190540.png",
-    "Images/Pasted image 20260218190529.png",
-    "Images/Pasted image 20260218190501.png",
     "Classes/Spring 2025/Deep Learning/Lecture 2.md",
     "Classes/Spring 2025/Modeling and Optimization (CPE 608)/Lecture 2/Gradient Descent Algorithm (Linear Regression).pdf",
     "Classes/Spring 2025/Modeling and Optimization (CPE 608)/Lecture 2",
@@ -215,8 +218,6 @@
     "Classes/Spring 2025/Modeling and Optimization (CPE 608)/1. Syllabus/Class Structure.md",
     "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/1. Syllabus/Class Structure.md",
     "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 3.md",
-    "General/Personal/Skin.md",
-    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 2.md",
-    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 1.md"
+    "General/Personal/Skin.md"
   ]
 }
