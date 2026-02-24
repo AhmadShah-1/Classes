@@ -17,3 +17,19 @@ For heapify when checking if its sorted (All parents have higher values than the
 
 ![[Pasted image 20260224090940.png]]
 
+
+
+
+
+![[Pasted image 20260224091213.png]]
+![[Pasted image 20260224091220.png]]
+
+
+
+![[Pasted image 20260224091240.png]]
+![[Pasted image 20260224091320.png]]
+
+
+
+
+16:40
