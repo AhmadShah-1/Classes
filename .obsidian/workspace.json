@@ -4,19 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "eb3cd44e144c1163",
+        "id": "f3a9aa5e68ea559e",
         "type": "tabs",
         "children": [
           {
-            "id": "f65f45604dbd972c",
+            "id": "d61a4fd5422f3e58",
             "type": "leaf",
             "state": {
-              "type": "video",
-              "state": {
-                "file": "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Recordings/Lecture 5.mp4"
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "Lecture 5"
+              "title": "New tab"
             }
           }
         ]
@@ -169,11 +167,11 @@
       "github-sync:Sync with Remote": false
     }
   },
-  "active": "f65f45604dbd972c",
+  "active": "d61a4fd5422f3e58",
   "lastOpenFiles": [
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Recordings/Lecture 5.mp4",
     "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 4.md",
     "General/Work/Job_Search/Questions/Palantir.md",
-    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Recordings/Lecture 5.mp4",
     "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Recordings",
     "General/Work/Job_Search/Questions/Untitled.md",
     "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 3.md",
