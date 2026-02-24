@@ -32,4 +32,7 @@ For heapify when checking if its sorted (All parents have higher values than the
 
 
 
-16:40
+
+![[Pasted image 20260224134745.png]]
+
+
