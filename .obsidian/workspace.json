@@ -11,14 +11,12 @@
             "id": "f65f45604dbd972c",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "video",
               "state": {
-                "file": "General/Work/Job_Search/Questions/Palantir.md",
-                "mode": "source",
-                "source": false
+                "file": "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Recordings/Lecture 5.mp4"
               },
               "icon": "lucide-file",
-              "title": "Palantir"
+              "title": "Lecture 5"
             }
           }
         ]
@@ -173,8 +171,11 @@
   },
   "active": "f65f45604dbd972c",
   "lastOpenFiles": [
-    "General/Work/Job_Search/Questions/Untitled.md",
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 4.md",
     "General/Work/Job_Search/Questions/Palantir.md",
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Recordings/Lecture 5.mp4",
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Recordings",
+    "General/Work/Job_Search/Questions/Untitled.md",
     "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 3.md",
     "General/Work/Job_Search/Palantir/Untitled.md",
     "General/Work/Job_Search/Questions",
@@ -199,16 +200,13 @@
     "Untitled.md",
     "Untitled 1.md",
     "Classes/Spring 2025/Modeling and Optimization (CPE 608)/Lecture 1.md",
-    "Classes/Spring 2025/Modeling and Optimization (CPE 608)/Lecture 2",
     "Images/Pasted image 20260218190844.png",
     "Images/Pasted image 20260218190555.png",
     "Images/Pasted image 20260218190550.png",
     "Images/Pasted image 20260218190540.png",
     "Images/Pasted image 20260218190529.png",
     "Images/Pasted image 20260218190501.png",
-    "Classes/Spring 2025/Modeling and Optimization (CPE 608)/Lecture 4",
     "Classes/Spring 2025/Status.md",
-    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 4.md",
     "Classes/Spring 2025/Big Data Analytics (AAI 627)/1. Syllabus/Class Structure.md",
     "Classes/Spring 2025/Modeling and Optimization (CPE 608)/1. Syllabus/Class Structure.md",
     "Classes/Spring 2025/Deep Learning/1. Syllabus/Class Structure.md",
@@ -217,7 +215,6 @@
     "General/Personal/Skin.md",
     "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 2.md",
     "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 1.md",
-    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 2.md",
-    "General/Projects/MLBlocks/Things to add.md"
+    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 2.md"
   ]
 }
