@@ -39,5 +39,9 @@ If you take the difference of France - Paris, and compare  it to the difference 
 ![[Pasted image 20260225090853.png]]
 If you have the vector for "King" and subtract it with the vector "Man" and then add the vector "Woman", the resulting vector will be the vector for "Queen"
 
-Unlike bag of word, or any frequency measurement and relationsship between words.
-The model, using embeddings, can acertain the meaning of words and derive it from other words as well, to build a seman
+Unlike bag of word, or any frequency measurement and relationship between words.
+The model, using embeddings, can ascertain the meaning of words and derive it from other words as well, to build a semantical meaning in a sense.
+
+
+![[Pasted image 20260225091304.png]]
+You can differentiate different people based on numerical vectors 
