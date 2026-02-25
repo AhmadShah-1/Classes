@@ -12,8 +12,13 @@ Ways to turn textual data to numerical info:
 
 There is a better way using Embeddings that provides meaning to the semantical meaning, 
 
+When LLM and NLP started, they provided rules to the model to understand meaning and grammar, but it was very tedious
+
 
 ![[Pasted image 20260225085814.png]]
 Turn each word into a numerical vector
+- Start from random noise: Assign a random vector to each word (good word = positive, bad word = negative)
+- Have Neural Net derive meaning from the vectors of each word
+- After Neural Net tuned all the vectors, we do not need the Neural Net anymore, just the vectors 
 
-When LLM and NLP started, they provided rules to the model to understand e
+The vector of a word in the system is known as the "hidden representation" 
