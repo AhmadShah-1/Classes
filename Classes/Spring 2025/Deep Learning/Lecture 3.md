@@ -21,4 +21,7 @@ Turn each word into a numerical vector
 - Have Neural Net derive meaning from the vectors of each word
 - After Neural Net tuned all the vectors, we do not need the Neural Net anymore, just the vectors 
 
-The vector of a word in the system is known as the "hidden representation" 
+The vector of a word in the system is known as the "hidden representation." Say we have vectors for water and milk, the are similar in a way, meaning that their vector representation in the space is close together. But if two things are very distinct they will be very far away 
+
+"Thank" and "You" are always used together, so when the model is tuning the vectors, the resulting vectors will also place the two close together.
+
