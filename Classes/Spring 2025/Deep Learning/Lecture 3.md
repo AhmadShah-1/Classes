@@ -33,4 +33,11 @@ Say we have 4 vectors:
 - China
 - Beijing
 
-If you take the difference of France 
+If you take the difference of France - Paris, and compare  it to the difference between China - Beijing, you  will see that they have equivalent vector directions
+
+
+![[Pasted image 20260225090853.png]]
+If you have the vector for "King" and subtract it with the vector "Man" and then add the vector "Woman", the resulting vector will be the vector for "Queen"
+
+Unlike bag of word, or any frequency measurement and relationsship between words.
+The model, using embeddings, can acertain the meaning of words and derive it from other words as well, to build a seman
