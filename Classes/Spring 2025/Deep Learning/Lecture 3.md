@@ -25,3 +25,12 @@ The vector of a word in the system is known as the "hidden representation." Say 
 
 "Thank" and "You" are always used together, so when the model is tuning the vectors, the resulting vectors will also place the two close together.
 
+
+![[Pasted image 20260225090731.png]]
+Say we have 4 vectors:
+- France
+- Paris
+- China
+- Beijing
+
+If you take the difference of France 
