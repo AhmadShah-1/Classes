@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 5.md",
+                "file": "Classes/Spring 2025/Deep Learning/Lecture 3.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Lecture 5"
+              "title": "Lecture 3"
             }
           }
         ],
@@ -93,7 +93,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "50165ecf48411235",
@@ -186,8 +187,13 @@
       "github-sync:Sync with Remote": false
     }
   },
-  "active": "3ac6f5d6215980ac",
+  "active": "a87b4669b3daea0f",
   "lastOpenFiles": [
+    "Classes/Spring 2025/Deep Learning/Recordings/Lecture 3.mp4",
+    "Classes/Spring 2025/Modeling and Optimization (CPE 608)/1. Syllabus/Class Structure.md",
+    "Classes/Spring 2025/Modeling and Optimization (CPE 608)/Lecture 2/Gradient Descent Algorithm (Linear Regression).pdf",
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Recordings/Lecture 5.mp4",
+    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 5.md",
     "Untitled 2.md",
     "Images/Pasted image 20260224141714.png",
     "Images/Pasted image 20260224141659.png",
@@ -224,15 +230,10 @@
     "General/Learning/DSA/Leetcode/6_TreesGraphs",
     "General/Learning/DSA/Leetcode/5_StacksQueues",
     "General/Learning/DSA/Leetcode/3_Hashing",
-    "General/Learning/DSA/Leetcode/2_Arrays_Strings",
-    "General/Learning/DSA/Leetcode/1_Introduction",
     "Untitled 1.md",
-    "Classes/Spring 2025/Data Structures and Algorithms (CPE 593)/Lecture 5.md",
     "Classes/Spring 2025/Deep Learning/Lecture 3.md",
     "General/Work/Job_Search/Questions/Untitled.md",
     "General/Work/Job_Search/Questions/Palantir.md",
-    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 4.md",
-    "Classes/Spring 2025/Deep Learning/Lecture 2.md",
-    "Classes/Spring 2025/Deep Learning/Lecture 1.md"
+    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 4.md"
   ]
 }
