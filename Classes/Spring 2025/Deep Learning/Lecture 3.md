@@ -49,4 +49,7 @@ You can differentiate different people based on numerical vectors (Personality E
 
 
 ![[Pasted image 20260225091657.png]]
-w
+
+
+![[Pasted image 20260225091935.png]]
+
