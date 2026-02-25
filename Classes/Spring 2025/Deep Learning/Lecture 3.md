@@ -43,5 +43,10 @@ Unlike bag of word, or any frequency measurement and relationship between words.
 The model, using embeddings, can ascertain the meaning of words and derive it from other words as well, to build a semantical meaning in a sense.
 
 
-![[Pasted image 20260225091304.png]]
-You can differentiate different people based on numerical vectors 
+![[Pasted image 20260225091407.png]]
+You can differentiate different people based on numerical vectors (Personality Embedding Vector). You can use Personality Embedding Vector to match different people on dating apps that would match well if their vectors are close
+
+
+
+![[Pasted image 20260225091657.png]]
+w
