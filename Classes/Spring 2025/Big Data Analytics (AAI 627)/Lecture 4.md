@@ -32,4 +32,16 @@ Now if we say how does X(t) (today) compare to X(t-2) (two days ago (initial)) t
 the second subscript when it says (a_0, 1) The 1 is the AR(1) and then AR(2) and so on, its just to differentiate it
 
 So to find the AR(p) of a model, you guess and test different AR models.
-When you are testing a AR(p) model, look at the highest order coefficient (for the first its a_1,1 for the second its a_2,2 etc) and if the value is close to 0, you kno
+When you are testing a AR(p) model, look at the highest order coefficient (for the first its a_1,1 for the second its a_2,2 etc) and if the value is close to 0, you know that you overestimated, and that you should go back
+
+![[Pasted image 20260227215636.png]]
+
+![[Pasted image 20260227220506.png]]
+The graph shows that the model does not depend on 3 days before, it depends on 1 and 2 days before
+
+
+![[Pasted image 20260227220627.png]]
+
+![[Pasted image 20260227220846.png]]
+For a 5% significance level (2.5% on each side), if the value of the PACF drops to be within 2.5% of 0 in either direction, then it is evaluated as being 0 (so we take p to be the previous number)
+Of course, the number of data points you have also plays a role too, but thats the rule of thumb usually
