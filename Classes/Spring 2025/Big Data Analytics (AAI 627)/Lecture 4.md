@@ -45,3 +45,32 @@ The graph shows that the model does not depend on 3 days before, it depends on 1
 ![[Pasted image 20260227220846.png]]
 For a 5% significance level (2.5% on each side), if the value of the PACF drops to be within 2.5% of 0 in either direction, then it is evaluated as being 0 (so we take p to be the previous number)
 Of course, the number of data points you have also plays a role too, but thats the rule of thumb usually
+
+![[Pasted image 20260227221517.png]]
+The Yule Walker equations help in estimating the a1 to ap that we need for AR(p)
+
+![[Pasted image 20260227222106.png]]
+For time series, you move it back day by day (if by 1 day) and calculate the cross product of overlapping days
+
+this is what is meant by Xt then Xt-1 etc
+
+
+![[Pasted image 20260227222243.png]]
+The left hand side is the autocorrelation between X_t and its past values at lags 1 through p (How strongly today is correalted with yesterday; with two days ago; up to p days ago)
+
+The large matrix in the right hand side is the correlation structure among the lagged predictions X_t-1, X_t-2, ..., X_t-p
+![[Pasted image 20260227222554.png]]
+
+The Px1 matrix on the right hand side are the AR coefficients we want to solve for
+
+To solve for the coefficients, just inverse the large matrix and solve (as shown in the image)
+
+
+![[Pasted image 20260227222732.png]]
+How would you use this info:
+1. Use ACF to tell you the kind of model you're dealing with (AR, MA, ARMA other kinds of models)
+2. Use PACF to get the p value (if its AR)
+3. Use Yule-Walker to get the a1 to ap values
+ACF -> PACF -> AR(p)
+
+
