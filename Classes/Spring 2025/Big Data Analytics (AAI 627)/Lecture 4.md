@@ -1,4 +1,4 @@
-
+![[Pasted image 20260227212833.png]]
 
 
 #Auto-correlation-Function
