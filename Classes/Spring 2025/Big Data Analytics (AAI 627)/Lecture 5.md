@@ -106,3 +106,4 @@ you would want a majority of the content to be what the user is looking for
 but you also show other topics such as hiking and kayaking to possibly generate new interest for the user
 
 ![[Pasted image 20260228221215.png]]
+ 
