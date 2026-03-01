@@ -85,6 +85,11 @@ and looking at the values for the ACF, we note 0, 1, 2 as being non-zero, so we 
 For this stock data we need to use ARIMA, as by taking the mean of window selections, they are obviously different
 
 ![[Pasted image 20260228215619.png]]
-When using the first order difference for ARIMA, the data is now stationary, however the variance is high, and it happens often and at random points
+When using the first order difference for ARIMA, the mean of the data seems okay, however the variance is high, and it happens often and at random points
 this is time invariant volatility
 
+say we perform ACF and MA on this so we assumed ARIMA(3, 1, 2) [AR(3), I(1), MA(2)]
+![[Pasted image 20260228215931.png]]
+When looking at ACF, today (day 0 or lag 0) has correlation with itself, but none of the previous days has any correlation, this is descriptive of noise 
+
+ 
