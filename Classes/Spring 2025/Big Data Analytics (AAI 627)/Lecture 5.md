@@ -21,5 +21,8 @@ If residual ACF is flat -> good
 ![[Pasted image 20260228202025.png]]
 
 
-![[Pasted image 20260228202118.png]]
+![[Pasted image 20260228210328.png]]
+Say you have two models, and are not sure which is better
+compare the residuals (e_t)
+the one that closely models the actual noise is the better model
 
