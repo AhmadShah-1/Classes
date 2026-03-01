@@ -133,4 +133,14 @@ its MA(q)
 
 ### If time-series is not stationary 
 ![[Pasted image 20260228194548.png]]
-If time series isn't stationary, and you can't derive stationarity 
+If time series isn't stationary, You use ARIMA **to make it stationary through differencing**, then model it.
+
+the I stands for integrated, where you subtract and observation from a prev observation, and if it still isn't stationary, do it again until you get something close. You record the number of differences you have take with d, so d_1 if you take 1 difference, or if you do it twice record d_2
+
+The ARIMA Function:
+ARIMA(p, d, q)
+- ppp = AR order
+- ddd = number of differences taken
+- qqq = MA order
+
+ARIMA = difference until stationary, then model the stationary series with AR and MA.
