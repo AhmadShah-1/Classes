@@ -158,3 +158,9 @@ if you observe a different pattern build off that
 for example:
 if you see it exponentially growing, equate y_t = log(X_t) then perform the differences
 
+
+![[Pasted image 20260228200721.png]]
+
+![[Pasted image 20260228200803.png]]
+
+![[Pasted image 20260228200858.png]]
