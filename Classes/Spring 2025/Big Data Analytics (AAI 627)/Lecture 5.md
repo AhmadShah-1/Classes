@@ -54,7 +54,12 @@ etc
 
 ## Is this Data AR or MA model?
 ![[Pasted image 20260228212612.png]]
-First lets look at the expected properties of AR(1) and MA(1)
+First lets look at the expected properties of AR(1) and MA(1) based on the ACF and PACF values we have
+
 For AR(1):
-- ACF shows the correlation between todays value and the previous days values
-- PACF 
+- ACF shows the correlation between todays value and the previous days values (correlation so a gradual decline)
+- PACF shows how many days of previous data actually correlate to today (the kind of AR(p) model, thus provides p)
+
+For MA(1):
+- ACF shows the correlation between todays noise with the previous days noise (no correlation so a drop)
+- PACF shows 
