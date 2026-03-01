@@ -108,3 +108,7 @@ Shock is just unexpected noise
 ![[Pasted image 20260228192743.png]]
 
 
+MA(q) = AR(infinity)
+AR(p) = MA(infinity)
+
+ 
