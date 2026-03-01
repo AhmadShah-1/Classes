@@ -88,3 +88,11 @@ X_t: Observed value at time t (same as AR)
 c   : A constant (mean level)
 e_t: White noise (shock, innovation)
 b1, ..., bq: weights on past shocks 
+
+
+
+A stationary AR(1) can be rewritten as an infinite MA process (Had GPT organize Professor notes)
+![[Pasted image 20260228192318.png]]
+![[Pasted image 20260228192405.png]]
+
+
