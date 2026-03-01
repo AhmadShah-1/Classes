@@ -64,11 +64,17 @@ For MA(1):
 - ACF here still shows the correlation between todays values with the previous days values but with a focus on the noise from those days, basically we are saying today's noise depends on yesterday's noise [but noise has no correlation] so at t=1 (today) we will have some value for ACF, but then subsequent days is a large drop (no correlation so a drop)
 - PACF shows the relation of the overlapping noise (shocks), if today depends on the shock of yesterday, does the noise from the day before yesterday help contribute any information on today, and as you progress you see a gradual decay
 
-When I said "basically we are saying today's noise depends on yesterday's noise", this is an incorrect statement, conceptually we are  
-
+When I said "basically we are saying today's noise depends on yesterday's noise", this is an incorrect statement, conceptually we are saying correlation but not in this way 
+![[Pasted image 20260228214837.png]]
 
 
 
 Refresher for why:
 AR(1) = MA(infinity) also the reverse is applicable
 ![[Pasted image 20260228213718.png]]
+
+
+So to the question:
+Is this Data AR or MA model?
+Its a MA model
+and looking at the values for the ACF, we note 0, 1, 2 as being non-zero, so we this is a MA(2) model
