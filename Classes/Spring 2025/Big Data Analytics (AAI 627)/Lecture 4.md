@@ -164,3 +164,5 @@ if you see it exponentially growing, equate y_t = log(X_t) then perform the diff
 ![[Pasted image 20260228200803.png]]
 
 ![[Pasted image 20260228200858.png]]
+![[Pasted image 20260228201518.png]]
+
