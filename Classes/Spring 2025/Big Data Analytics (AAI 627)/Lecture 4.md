@@ -74,4 +74,8 @@ How would you use this info:
 ACF -> PACF -> AR(p)
 
 
-1:06:45
+
+
+## New Concept
+
+k
