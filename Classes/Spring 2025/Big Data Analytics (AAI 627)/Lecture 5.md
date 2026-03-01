@@ -97,3 +97,7 @@ When looking at ACF, today (day 0 or lag 0) has correlation with itself, but non
 You can try to tune the model by further changing our original ARIMA values
 
 
+## Next Topic Recommender
+
+![[Pasted image 20260228220542.png]]
+
