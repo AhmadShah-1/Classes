@@ -78,4 +78,6 @@ ACF -> PACF -> AR(p)
 
 ## New Concept
 
-k
+![[Pasted image 20260228191128.png]]
+The equation in red is just the AR(p) model, and look at the right graph
+When the PACF has a sudden drop then we know AR(p) is applicable, however when you see a gradual decline, AR(p) isn't fit, so M
