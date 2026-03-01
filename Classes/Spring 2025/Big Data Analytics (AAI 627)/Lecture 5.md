@@ -46,4 +46,10 @@ The other values that fall within the blue dashes, are statically insignificant 
 So after 2 days, there is not correlation
 
 In the PACF Graph:
-The points where the points fall are the coefficient value
+The points where the points fall are the coefficient values.
+So 
+if its AR(1) then the a<sub>1, 1</sub> coefficient is -0.42
+If its AR(2) then the a<sub>2, 2</sub> coefficient is -0.4
+etc
+
+Is this AR or MA model?
