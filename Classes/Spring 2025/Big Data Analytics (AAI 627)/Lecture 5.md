@@ -34,3 +34,16 @@ the one that closely models the actual noise is the better model
 Mean is 0, so it is stationary
 However the values fluctuate greatly, so the variance is high
 However realistically, the variance isn't that bad, say you took several sections of the data to look at, 50-100 and 150-200 and 250-300 they all follow the same kind of structure
+
+![[Pasted image 20260228211527.png]]
+This is the ACF and PACF of the previous graph
+In the ACF Graph:
+So in the first one at lag 0 (today) it has a high correlation with today (obviously)
+then if you compare today with yesterday (where it says -0.4) you see some negative correlation
+
+The other values that fall within the blue dashes, are statically insignificant relation and are considered 0
+
+So after 2 days, there is not correlation
+
+In the PACF Graph:
+The points where the points fall are the coefficient value
