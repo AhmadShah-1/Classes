@@ -26,3 +26,4 @@ Say you have two models, and are not sure which is better
 compare the residuals (e_t)
 the one that closely models the actual noise is the better model
 
+![[Pasted image 20260228210836.png]]
