@@ -104,4 +104,7 @@ Shock is just unexpected noise
 ![[Pasted image 20260228192646.png]]
 ![[Pasted image 20260228192654.png]]
 ![[Pasted image 20260228192706.png]]
+![[Pasted image 20260228192722.png]]
+![[Pasted image 20260228192743.png]]
+
 
