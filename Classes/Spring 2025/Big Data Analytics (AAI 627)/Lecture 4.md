@@ -132,3 +132,5 @@ its MA(q)
 
 
 ### If time-series is not stationary and you can't derive stationary from it
+![[Pasted image 20260228194548.png]]
+If 
