@@ -107,8 +107,15 @@ Shock is just unexpected noise
 ![[Pasted image 20260228192722.png]]
 ![[Pasted image 20260228192743.png]]
 
-
-MA(q) = AR(infinity)
 AR(p) = MA(infinity)
+MA(q) = AR(infinity)
+
+AR(p) = MA(infinity) means that if today depends on p days before, then today depends on all the infinite history noise summed together
+
+MA(q) = AR(infinity) means that if today depends on the past q noise, then today depends on all the history observations
+
+
+![[Pasted image 20260228193546.png]]
+Sometimes the data might rely on AR and MA, so use ARMA (both)
 
  
