@@ -94,5 +94,14 @@ b1, ..., bq: weights on past shocks
 A stationary AR(1) can be rewritten as an infinite MA process (Had GPT organize Professor notes)
 ![[Pasted image 20260228192318.png]]
 ![[Pasted image 20260228192405.png]]
+![[Pasted image 20260228192446.png]]
 
+![[Pasted image 20260228192509.png]]
+![[Pasted image 20260228192514.png]]
+
+
+Shock is just unexpected noise
+![[Pasted image 20260228192646.png]]
+![[Pasted image 20260228192654.png]]
+![[Pasted image 20260228192706.png]]
 
