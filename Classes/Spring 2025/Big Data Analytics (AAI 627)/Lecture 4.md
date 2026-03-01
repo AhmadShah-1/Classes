@@ -131,6 +131,6 @@ its MA(q)
 
 
 
-### If time-series is not stationary and you can't derive stationary from it
+### If time-series is not stationary 
 ![[Pasted image 20260228194548.png]]
-If 
+If time series isn't stationary, and you can't derive stationarity 
