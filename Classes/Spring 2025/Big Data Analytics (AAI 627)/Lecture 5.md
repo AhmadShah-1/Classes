@@ -6,3 +6,20 @@ The goal of the model is to fit all the data, excluding the noise
 So after fitting ARIMA, the only thing left should be pure randomness
 Data = Signal + Noise   (The leftover (resididuals) should look like noise)
 
+Check the residual errors from the fitted model with ACF and PACF. This is because the residuals should behave like white noise, meaning:
+- Mean is around 0
+- Constant Variance
+- No autocorrelation
+
+So if you plot:
+- ACF of residuals
+- PACF of residuals
+If you see spikes, then the model missed some structure
+If residual ACF is flat -> good
+
+![[Pasted image 20260228202008.png]]
+![[Pasted image 20260228202025.png]]
+
+
+![[Pasted image 20260228202118.png]]
+
