@@ -139,8 +139,21 @@ the I stands for integrated, where you subtract and observation from a prev obse
 
 The ARIMA Function:
 ARIMA(p, d, q)
-- ppp = AR order
-- ddd = number of differences taken
-- qqq = MA order
+- p = AR order
+- d = number of differences taken
+- q = MA order
 
 ARIMA = difference until stationary, then model the stationary series with AR and MA.
+
+
+#### When do we stop differencing?
+Stop when:
+- Mean looks constant
+- ACF stops showing slow decay
+- Variance looks stable
+
+![[Pasted image 20260228200207.png]]
+The way you derive y_t doesn't have to be by purely subtraction of prev value
+if you observe a different pattern build off that
+for example:
+if you see it exponentially growing, equate y_t = log(X_t)
