@@ -153,7 +153,8 @@ Stop when:
 - Variance looks stable
 
 ![[Pasted image 20260228200207.png]]
-The way you derive y_t doesn't have to be by purely subtraction of prev value
+The way you derive y_t sometimes doesn't fit to stationarity purely by subtraction of prev value
 if you observe a different pattern build off that
 for example:
-if you see it exponentially growing, equate y_t = log(X_t)
+if you see it exponentially growing, equate y_t = log(X_t) then perform the differences
+
