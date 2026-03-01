@@ -107,9 +107,14 @@ but you also show other topics such as hiking and kayaking to possibly generate 
 
 ![[Pasted image 20260228221215.png]]
  ![[Pasted image 20260228221531.png]]
- When searchign for things, we map items to a numerical vector in a space (just like how we do embeddings for AI same thing, different purpose)
+ Content-base retrieval:
+ When searching for things, we map items to a numerical vector in a space (just like how we do embeddings for AI same thing, different purpose)
 Say the user searches for "swimming goggles" (the blue vector), we show that but also all of its neighbors (the green rectangle encompassing several other vectors)
 
 If you take the user's embeddings and multiply it with the item embedding,
 - if you get a large value then they are related to each other
-- if you get a small number (orthogonal to each other) they are not similiar
+- if you get a small number (orthogonal to each other) they are not similar
+
+Collaborative Filtering:
+Previous user engagement with other content
+
