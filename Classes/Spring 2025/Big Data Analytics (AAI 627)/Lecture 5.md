@@ -78,3 +78,13 @@ So to the question:
 Is this Data AR or MA model?
 Its a MA model
 and looking at the values for the ACF, we note 0, 1, 2 as being non-zero, so we this is a MA(2) model
+
+
+
+![[Pasted image 20260228215555.png]]
+For this stock data we need to use ARIMA, as by taking the mean of window selections, they are obviously different
+
+![[Pasted image 20260228215619.png]]
+When using the first order difference for ARIMA, the data is now stationary, however the variance is high, and it happens often and at random points
+this is time invariant volatility
+
