@@ -63,3 +63,8 @@ For AR(1):
 For MA(1):
 - ACF shows the correlation between todays noise with the previous days noise, basically we are saying today's noise depends on yesterday's noise [but noise has no correlation] so at t=1 (today) we will have some value for ACF, but then subsequent days is a large drop (no correlation so a drop)
 - PACF shows 
+
+
+Refresher for why:
+AR(1) = MA(infinity) also the reverse is applicable
+![[Pasted image 20260228213718.png]]
