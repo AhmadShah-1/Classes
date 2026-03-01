@@ -129,3 +129,6 @@ then
 its MA(q)
 
 
+
+
+### If time-series is not stationary and you can't derive stationary from it
