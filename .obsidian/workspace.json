@@ -41,12 +41,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 4.md",
+                "file": "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 5.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Lecture 4"
+              "title": "Lecture 5"
             }
           }
         ],
@@ -202,6 +202,9 @@
   },
   "active": "ad0f40626be5dba1",
   "lastOpenFiles": [
+    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 4.md",
+    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 5.md",
+    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Recordings/Lecture 5.mp4",
     "Images/Pasted image 20260228200858.png",
     "Images/Pasted image 20260228200803.png",
     "Images/Pasted image 20260228200721.png",
@@ -212,10 +215,8 @@
     "Images/Pasted image 20260228192722.png",
     "Images/Pasted image 20260228192706.png",
     "Images/Pasted image 20260228192654.png",
-    "Images/Pasted image 20260228192646.png",
     "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 2.md",
     "Classes/Spring 2025/Big Data Analytics (AAI 627)/Recordings/Lecture 4.mp4",
-    "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 4.md",
     "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 3.md",
     "Classes/Spring 2025/Big Data Analytics (AAI 627)/Lecture 1.md",
     "Classes/Spring 2025/Deep Learning/Lecture 3.md",
@@ -246,7 +247,6 @@
     "General/Learning/DSA/Leetcode/5_StacksQueues/2_Queues.md",
     "General/Learning/DSA/Leetcode/1_Introduction/Big O.md",
     "General/Learning/DSA/Leetcode/4_LinkedLists",
-    "General/Learning/DSA/Leetcode/3_Hashing",
-    "General/Learning/DSA/Leetcode/2_Arrays_Strings"
+    "General/Learning/DSA/Leetcode/3_Hashing"
   ]
 }
