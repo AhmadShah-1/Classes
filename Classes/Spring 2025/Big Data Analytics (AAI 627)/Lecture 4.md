@@ -118,4 +118,14 @@ MA(q) = AR(infinity) means that if today depends on the past q noise, then today
 ![[Pasted image 20260228193546.png]]
 Sometimes the data might rely on AR and MA, so use ARMA (both)
 
- 
+ If you have:
+ q = 0 
+ then
+ its AR(p)
+
+If you have:
+p = 0
+then
+its MA(q)
+
+
