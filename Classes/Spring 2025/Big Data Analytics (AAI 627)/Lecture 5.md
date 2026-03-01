@@ -62,7 +62,11 @@ For AR(1):
 
 For MA(1):
 - ACF here still shows the correlation between todays values with the previous days values but with a focus on the noise from those days, basically we are saying today's noise depends on yesterday's noise [but noise has no correlation] so at t=1 (today) we will have some value for ACF, but then subsequent days is a large drop (no correlation so a drop)
-- PACF shows the relation of the overlapping noise (shocks), if today depends on the shock of yesterday, yesterday's shock depends on the day before that, and so on, so we see a gradual decay in the importance of previous shocks to today's value.
+- PACF shows the relation of the overlapping noise (shocks), if today depends on the shock of yesterday, does the noise from the day before yesterday help contribute any information on today, and as you progress you see a gradual decay
+
+When I said "basically we are saying today's noise depends on yesterday's noise", this is an incorrect statement, conceptually we are  
+
+
 
 
 Refresher for why:
