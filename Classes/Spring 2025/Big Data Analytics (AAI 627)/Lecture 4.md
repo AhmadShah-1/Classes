@@ -80,4 +80,11 @@ ACF -> PACF -> AR(p)
 
 ![[Pasted image 20260228191128.png]]
 The equation in red is just the AR(p) model, and look at the right graph
-When the PACF has a sudden drop then we know AR(p) is applicable, however when you see a gradual decline, AR(p) isn't fit, so M
+When the PACF has a sudden drop then we know AR(p) is applicable, however when you see a gradual decline, AR(p) isn't fit, so MA (Moving Average) works here
+
+
+In the MA(q) equation we aren't using past values of X, instead we use the Past Shocks (Errors).
+X_t: Observed value at time t (same as AR)
+c   : A constant (mean level)
+e_t: White noise (shock, innovation)
+b1, ..., bq: weights on past shoc
