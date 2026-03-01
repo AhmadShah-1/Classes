@@ -89,7 +89,11 @@ When using the first order difference for ARIMA, the mean of the data seems okay
 this is time invariant volatility
 
 say we perform ACF and MA on this so we assumed ARIMA(3, 1, 2) [AR(3), I(1), MA(2)]
-![[Pasted image 20260228215931.png]]
+![[Pasted image 20260228220044.png]]
 When looking at ACF, today (day 0 or lag 0) has correlation with itself, but none of the previous days has any correlation, this is descriptive of noise 
 
- 
+ When looking at PACF, we note that there is some data, where at 30 lag we see some information, so its not a terrible model, but it certainly isn't great
+
+You can try to tune the model by further changing our original ARIMA values
+
+
