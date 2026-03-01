@@ -52,4 +52,9 @@ if its AR(1) then the a<sub>1, 1</sub> coefficient is -0.42
 If its AR(2) then the a<sub>2, 2</sub> coefficient is -0.4
 etc
 
-Is this AR or MA model?
+## Is this Data AR or MA model?
+![[Pasted image 20260228212612.png]]
+First lets look at the expected properties of AR(1) and MA(1)
+For AR(1):
+- ACF shows the correlation between todays value and the previous days values
+- PACF 
