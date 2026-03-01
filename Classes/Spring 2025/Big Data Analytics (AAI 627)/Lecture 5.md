@@ -29,3 +29,8 @@ the one that closely models the actual noise is the better model
 ![[Pasted image 20260228210836.png]]
 ![[Pasted image 20260228210951.png]]
 
+
+![[Pasted image 20260228211242.png]]
+Mean is 0, so it is stationary
+However the values fluctuate greatly, so the variance is high
+However realistically, the variance isn't that bad, say you took several sections of the data to look at, 50-100 and 150-200 and 250-300 they all follow the same kind of structure
