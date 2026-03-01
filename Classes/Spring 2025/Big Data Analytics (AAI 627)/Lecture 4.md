@@ -87,4 +87,4 @@ In the MA(q) equation we aren't using past values of X, instead we use the Past 
 X_t: Observed value at time t (same as AR)
 c   : A constant (mean level)
 e_t: White noise (shock, innovation)
-b1, ..., bq: weights on past shoc
+b1, ..., bq: weights on past shocks 
