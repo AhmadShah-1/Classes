@@ -1,4 +1,4 @@
-![[Pasted image 20260227212833.png]]
+ ![[Pasted image 20260227212833.png]]
 We need to make sure that to apply AR(1) the data has to be stationary, in the case of stock prices (X_t), it keeps going up or continously down, so that is not stationary
 
 so what do you do, try figuring out some quality of the data that is stationary
